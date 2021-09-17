@@ -59,6 +59,8 @@ export const AmmConfig: IAmmConfiguration = {
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.hardhat]: {},
+    [eEthereumNetwork.geth]: {},
+    [eEthereumNetwork.localhost]: {},
     [eEthereumNetwork.coverage]: {},
     [eEthereumNetwork.kovan]: {
       DAI: '0xFf795577d9AC8bD7D90Ee22b6C1703490b6512FD',

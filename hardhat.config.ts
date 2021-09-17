@@ -100,6 +100,7 @@ const buidlerConfig: HardhatUserConfig = {
     matic: getCommonNetworkConfig(ePolygonNetwork.matic, 137),
     mumbai: getCommonNetworkConfig(ePolygonNetwork.mumbai, 80001),
     xdai: getCommonNetworkConfig(eXDaiNetwork.xdai, 100),
+    geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
@@ -115,6 +116,14 @@ const buidlerConfig: HardhatUserConfig = {
       })),
       forking: buildForkConfig(),
     },
+
+      localhost: {
+          chainId: 1337,
+          throwOnTransactionFailures: true,
+          throwOnCallFailures: true,
+          url: 'http://localhost:8545',
+      },
+
     buidlerevm_docker: {
       hardfork: 'berlin',
       blockGasLimit: 9500000,

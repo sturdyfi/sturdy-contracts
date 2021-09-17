@@ -13,6 +13,8 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+  geth = 'geth',
+  localhost = 'localhost',
   tenderlyMain = 'tenderlyMain',
 }
 
@@ -411,6 +413,8 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
+  [eEthereumNetwork.geth]: T;
+  [eEthereumNetwork.localhost]: T;
   [eEthereumNetwork.tenderlyMain]: T;
 }
 

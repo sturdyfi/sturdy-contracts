@@ -227,14 +227,17 @@ export const initReservesByHelper = async (
   //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
+  console.log(`----------chunkedSymbols---------------`, chunkedSymbols)
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
-    const tx3 = await waitForTx(
-      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
-    );
-
-    console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
-    console.log('    * gasUsed', tx3.gasUsed.toString());
-    //gasUsage = gasUsage.add(tx3.gasUsed);
+      //todo: this place should be checked before deploying on mainnet. dd gas limit as in comment pointed
+      const tx3 = await waitForTx(
+          //possibly for mainnet gas limit is required. On local node this transaction failed without gas limit
+          //await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex], { gasPrice: 1000000000, gasLimit:7850000})
+          await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
+      );
+      console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+      console.log('    * gasUsed', tx3.gasUsed.toString());
+      //gasUsage = gasUsage.add(tx3.gasUsed);
   }
 
   return gasUsage; // Deprecated
@@ -287,7 +290,6 @@ export const configureReservesByHelper = async (
     stableBorrowingEnabled: boolean;
     borrowingEnabled: boolean;
   }[] = [];
-
   for (const [
     assetSymbol,
     {
@@ -306,7 +308,6 @@ export const configureReservesByHelper = async (
       continue;
     }
     if (baseLTVAsCollateral === '-1') continue;
-
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
       (value) => value === assetSymbol
     );
@@ -322,7 +323,6 @@ export const configureReservesByHelper = async (
       continue;
     }
     // Push data
-
     inputParams.push({
       asset: tokenAddress,
       baseLTV: baseLTVAsCollateral,
@@ -344,16 +344,16 @@ export const configureReservesByHelper = async (
     const enableChunks = 20;
     const chunkedSymbols = chunk(symbols, enableChunks);
     const chunkedInputParams = chunk(inputParams, enableChunks);
-
-    console.log(`- Configure reserves in ${chunkedInputParams.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedInputParams.length; chunkIndex++) {
       await waitForTx(
         await atokenAndRatesDeployer.configureReserves(chunkedInputParams[chunkIndex], {
-          gasLimit: 12000000,
+          gasLimit: 7900000,
         })
       );
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
+
+    console.log('-------addressProvider------------')
     // Set deployer back as admin
     await waitForTx(await addressProvider.setPoolAdmin(admin));
   }

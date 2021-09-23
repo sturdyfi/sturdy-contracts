@@ -56,6 +56,7 @@ export const AaveConfig: IAaveConfiguration = {
     YFI: strategyYFI,
     ZRX: strategyZRX,
     xSUSHI: strategyXSUSHI,
+    stETH: strategyUSDC
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},

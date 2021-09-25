@@ -14,9 +14,9 @@ import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 export const CommonsConfig: ICommonConfiguration = {
   MarketId: 'Commons',
-  ATokenNamePrefix: 'Aave interest bearing',
-  StableDebtTokenNamePrefix: 'Aave stable debt bearing',
-  VariableDebtTokenNamePrefix: 'Aave variable debt bearing',
+  ATokenNamePrefix: 'Sturdy interest bearing',
+  StableDebtTokenNamePrefix: 'Sturdy stable debt bearing',
+  VariableDebtTokenNamePrefix: 'Sturdy variable debt bearing',
   SymbolPrefix: '',
   ProviderId: 0, // Overriden in index.ts
   ProtocolGlobalParams: {
@@ -45,60 +45,60 @@ export const CommonsConfig: ICommonConfiguration = {
     DAI: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    TUSD: {
+/*     TUSD: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
-    },
+    }, */
     USDC: {
       borrowRate: oneRay.multipliedBy(0.039).toFixed(),
     },
-    SUSD: {
+/*     SUSD: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
-    },
+    }, */
     USDT: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     },
-    BAT: {
+/*     BAT: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    AAVE: {
+    }, */
+/*     AAVE: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    LINK: {
+    }, */
+/*     LINK: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    KNC: {
+    }, */
+/*     KNC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    MKR: {
+    }, */
+/*     MKR: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    MANA: {
+    }, */
+/*     MANA: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    WBTC: {
+    }, */
+/*     WBTC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    ZRX: {
+    }, */
+/*     ZRX: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    SNX: {
+    }, */
+/*     SNX: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    YFI: {
+    }, */
+/*     YFI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    REN: {
+    }, */
+/*     REN: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    UNI: {
+    }, */
+/*     UNI: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    ENJ: {
+    }, */
+/*      ENJ: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
-    BUSD: {
+    },  */
+/*      BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
-    },
+    },  */
     stETH: {
         borrowRate: oneRay.multipliedBy(0.05).toFixed(),
       },
@@ -250,11 +250,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.localhost]: {},
     [eEthereumNetwork.buidlerevm]: {},
     [eEthereumNetwork.kovan]: {
-      AAVE: '0xd04647B7CB523bb9f26730E9B6dE1174db7591Ad',
+/*       AAVE: '0xd04647B7CB523bb9f26730E9B6dE1174db7591Ad',
       BAT: '0x0e4fcEC26c9f85c3D714370c98f43C4E02Fc35Ae',
-      BUSD: '0xbF7A18ea5DE0501f7559144e702b29c55b055CcB',
+      BUSD: '0xbF7A18ea5DE0501f7559144e702b29c55b055CcB', */
       DAI: '0x22B58f1EbEDfCA50feF632bD73368b2FdA96D541',
-      ENJ: '0xfaDbe2ee798889F02d1d39eDaD98Eff4c7fe95D4',
+ /*      ENJ: '0xfaDbe2ee798889F02d1d39eDaD98Eff4c7fe95D4',
       KNC: '0xb8E8130d244CFd13a75D6B9Aee029B1C33c808A7',
       LINK: '0x3Af8C569ab77af5230596Acf0E8c2F9351d24C38',
       MANA: '0x1b93D8E109cfeDcBb3Cc74eD761DE286d5771511',
@@ -263,20 +263,20 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0xF9A76ae7a1075Fe7d646b06fF05Bd48b9FA5582e',
       SUSD: '0xb343e7a1aF578FA35632435243D814e7497622f7',
       TUSD: '0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660',
-      UNI: '0x17756515f112429471F86f98D5052aCB6C47f6ee',
+      UNI: '0x17756515f112429471F86f98D5052aCB6C47f6ee', */
       USDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
       USDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
-      WBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
+/*       WBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
       YFI: '0xC5d1B1DEb2992738C0273408ac43e1e906086B6C',
-      ZRX: '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883',
+      ZRX: '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883', */
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
     [eEthereumNetwork.ropsten]: {
-      AAVE: ZERO_ADDRESS,
-      BAT: '0xafd8186c962daf599f171b8600f3e19af7b52c92',
-      BUSD: '0x0A32D96Ff131cd5c3E0E5AAB645BF009Eda61564',
+    //  AAVE: ZERO_ADDRESS,
+    //  BAT: '0xafd8186c962daf599f171b8600f3e19af7b52c92',
+    //  BUSD: '0x0A32D96Ff131cd5c3E0E5AAB645BF009Eda61564',
       DAI: '0x64b8e49baded7bfb2fd5a9235b2440c0ee02971b',
-      ENJ: ZERO_ADDRESS,
+/*       ENJ: ZERO_ADDRESS,
       KNC: '0x19d97ceb36624a31d827032d8216dd2eb15e9845',
       LINK: '0xb8c99b98913bE2ca4899CdcaF33a3e519C20EeEc',
       MANA: '0xDab909dedB72573c626481fC98CEE1152b81DEC2',
@@ -285,20 +285,20 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0xA95674a8Ed9aa9D2E445eb0024a9aa05ab44f6bf',
       SUSD: '0xe054b4aee7ac7645642dd52f1c892ff0128c98f0',
       TUSD: '0x523ac85618df56e940534443125ef16daf785620',
-      UNI: ZERO_ADDRESS,
+      UNI: ZERO_ADDRESS, */
       USDC: '0xe1480303dde539e2c241bdc527649f37c9cbef7d',
       USDT: '0xc08fe0c4d97ccda6b40649c6da621761b628c288',
-      WBTC: '0x5b8B87A0abA4be247e660B0e0143bB30Cdf566AF',
+/*       WBTC: '0x5b8B87A0abA4be247e660B0e0143bB30Cdf566AF',
       YFI: ZERO_ADDRESS,
-      ZRX: '0x1d0052e4ae5b4ae4563cbac50edc3627ca0460d7',
+      ZRX: '0x1d0052e4ae5b4ae4563cbac50edc3627ca0460d7', */
       USD: '0x8468b2bDCE073A157E560AA4D9CcF6dB1DB98507',
     },
     [eEthereumNetwork.main]: {
-      AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
-      BAT: '0x0d16d4528239e9ee52fa531af613AcdB23D88c94',
-      BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
+    //  AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
+    //  BAT: '0x0d16d4528239e9ee52fa531af613AcdB23D88c94',
+    //  BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
-      ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
+/*       ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
       KNC: '0x656c0544eF4C98A6a98491833A89204Abb045d6b',
       LINK: '0xDC530D9457755926550b59e8ECcdaE7624181557',
       MANA: '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9',
@@ -307,21 +307,21 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
-      UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e',
+      UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e', */
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
-      WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
+/*       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
-      ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
+      ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962', */
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
-      xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
+  //    xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
     },
     [eEthereumNetwork.tenderlyMain]: {
-      AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
+/*       AAVE: '0x6Df09E975c830ECae5bd4eD9d90f3A95a4f88012',
       BAT: '0x0d16d4528239e9ee52fa531af613AcdB23D88c94',
-      BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd',
+      BUSD: '0x614715d2Af89E6EC99A233818275142cE88d1Cfd', */
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
-      ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
+/*       ENJ: '0x24D9aB51950F3d62E9144fdC2f3135DAA6Ce8D1B',
       KNC: '0x656c0544eF4C98A6a98491833A89204Abb045d6b',
       LINK: '0xDC530D9457755926550b59e8ECcdaE7624181557',
       MANA: '0x82A44D92D6c329826dc557c5E1Be6ebeC5D5FeB9',
@@ -330,14 +330,14 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
-      UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e',
+      UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e', */
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
-      WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
+/*       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
-      ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962',
+      ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962', */
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
-      xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
+   //   xSUSHI: '0x9b26214bEC078E68a394AaEbfbffF406Ce14893F',
     },
   },
   ReserveAssets: {

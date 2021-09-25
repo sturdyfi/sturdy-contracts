@@ -54,7 +54,7 @@ export const CommonsConfig: ICommonConfiguration = {
     WBTC: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     },
-    UniDAIWETH: {
+  /*   UniDAIWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },
     UniWBTCWETH: {
@@ -101,7 +101,7 @@ export const CommonsConfig: ICommonConfiguration = {
     },
     BptBALWETH: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
-    },
+    }, */
   },
   // ----------------
   // COMMON PROTOCOL ADDRESSES ACROSS POOLS
@@ -301,7 +301,7 @@ export const CommonsConfig: ICommonConfiguration = {
       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
-      UniDAIWETH: '0x66a6b87a18db78086acda75b7720dc47cdabcc05',
+  /*     UniDAIWETH: '0x66a6b87a18db78086acda75b7720dc47cdabcc05',
       UniWBTCWETH: '0x7004BB6F2013F13C54899309cCa029B49707E547',
       UniAAVEWETH: '0xB525547968610395B60085bDc8033FFeaEaa5F64',
       UniBATWETH: '0xB394D8a1CE721630Cbea8Ec110DCEf0D283EDE3a',
@@ -316,7 +316,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UniWBTCUSDC: '0x11f4ba2227F21Dc2A9F0b0e6Ea740369d580a212',
       UniYFIWETH: '0x664223b8Bb0934aE0970e601F452f75AaCe9Aa2A',
       BptWBTCWETH: '0x4CA8D8fC2b4fCe8A2dcB71Da884bba042d48E067',
-      BptBALWETH: '0x2e4e78936b100be6Ef85BCEf7FB25bC770B02B85',
+      BptBALWETH: '0x2e4e78936b100be6Ef85BCEf7FB25bC770B02B85', */
       USD: '0x9326BFA02ADD2366b30bacB125260Af641031331',
     },
   },

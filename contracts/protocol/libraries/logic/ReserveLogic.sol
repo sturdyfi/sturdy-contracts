@@ -15,6 +15,13 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
+
+//todo:to block collatoral to be borrowed
+//todo:how the aToken ~==~ stETH calculated for balance
+
+//todo:new reserve logic - maybe
+
+
 /**
  * @title ReserveLogic library
  * @author Aave
@@ -166,7 +173,8 @@ library ReserveLogic {
     address aTokenAddress,
     address stableDebtTokenAddress,
     address variableDebtTokenAddress,
-    address interestRateStrategyAddress
+    address interestRateStrategyAddress,
+    bool borrowingEnabled
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
 
@@ -176,6 +184,7 @@ library ReserveLogic {
     reserve.stableDebtTokenAddress = stableDebtTokenAddress;
     reserve.variableDebtTokenAddress = variableDebtTokenAddress;
     reserve.interestRateStrategyAddress = interestRateStrategyAddress;
+    reserve.borrowingEnabled = borrowingEnabled;
   }
 
   struct UpdateInterestRatesLocalVars {

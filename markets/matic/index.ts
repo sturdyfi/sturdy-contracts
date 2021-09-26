@@ -23,10 +23,10 @@ export const MaticConfig: IMaticConfiguration = {
     DAI: strategyDAI,
     USDC: strategyUSDC,
     USDT: strategyUSDT,
-    WBTC: strategyWBTC,
+   // WBTC: strategyWBTC,
     WETH: strategyWETH,
-    WMATIC: strategyMATIC,
-    AAVE: strategyAAVE,
+    //WMATIC: strategyMATIC,
+   // AAVE: strategyAAVE,
   },
   ReserveAssets: {
     [ePolygonNetwork.matic]: {

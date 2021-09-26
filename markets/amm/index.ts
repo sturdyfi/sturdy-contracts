@@ -38,7 +38,7 @@ export const AmmConfig: IAmmConfiguration = {
     DAI: strategyDAI,
     USDC: strategyUSDC,
     USDT: strategyUSDT,
-    WBTC: strategyWBTC,
+   /*  WBTC: strategyWBTC,
     UniDAIWETH: strategyDAIWETH,
     UniWBTCWETH: strategyWBTCWETH,
     UniAAVEWETH: strategyAAVEWETH,
@@ -54,7 +54,7 @@ export const AmmConfig: IAmmConfiguration = {
     UniWBTCUSDC: strategyWBTCUSDC,
     UniYFIWETH: strategyYFIWETH,
     BptWBTCWETH: strategyWBTCWETH,
-    BptBALWETH: strategyBALWETH,
+    BptBALWETH: strategyBALWETH, */
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},

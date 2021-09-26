@@ -342,7 +342,8 @@ interface ILendingPool {
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
-    address interestRateStrategyAddress
+    address interestRateStrategyAddress,
+    bool borrowingEnabled
   ) external;
 
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)

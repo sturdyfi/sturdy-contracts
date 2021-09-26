@@ -80,7 +80,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
-
     if (!configData) {
       decimals = 18;
     }
@@ -290,7 +289,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await deployUniswapLiquiditySwapAdapter(adapterParams);
   await deployUniswapRepayAdapter(adapterParams);
   await deployFlashLiquidationAdapter(adapterParams);
-  console.log('----next------------')
   const augustus = await deployMockParaSwapAugustus();
 
   const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
@@ -298,7 +296,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
 
   await deployWalletBalancerProvider();
-  console.log('----next------------')
   const gateWay = await deployWETHGateway([mockTokens.WETH.address]);
   await authorizeWETHGateway(gateWay.address, lendingPoolAddress);
 

@@ -119,7 +119,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       aTokenProxyAddress,
       stableDebtTokenProxyAddress,
       variableDebtTokenProxyAddress,
-      input.interestRateStrategyAddress
+      input.interestRateStrategyAddress,
+      input.borrowingEnabled
     );
 
     DataTypes.ReserveConfigurationMap memory currentConfig =

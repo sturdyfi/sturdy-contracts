@@ -279,8 +279,9 @@ export type iAavePoolAssets<T> = Pick<
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
-  | 'stETH' 
 */
+  | 'stETH' 
+
 >;
 
 export type iLpPoolAssets<T> = Pick<

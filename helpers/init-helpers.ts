@@ -88,6 +88,7 @@ export const initReservesByHelper = async (
     stableDebtTokenName: string;
     stableDebtTokenSymbol: string;
     params: string;
+    borrowingEnabled:boolean
   }[] = [];
 
   let strategyRates: [
@@ -216,6 +217,7 @@ export const initReservesByHelper = async (
       stableDebtTokenName: `${stableDebtTokenNamePrefix} ${reserveSymbols[i]}`,
       stableDebtTokenSymbol: `stableDebt${symbolPrefix}${reserveSymbols[i]}`,
       params: '0x10',
+      borrowingEnabled: reserveSymbols[i]=="stETH"?false:true
     });
   }
 
@@ -353,7 +355,6 @@ export const configureReservesByHelper = async (
       console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     }
 
-    console.log('-------addressProvider------------')
     // Set deployer back as admin
     await waitForTx(await addressProvider.setPoolAdmin(admin));
   }

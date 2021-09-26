@@ -128,7 +128,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
            
     //todo: add borrowingEnabled to exclude usdc, usdt ... as collatoral
-    if (isFirstDeposit && reserve.borrowingEnabled) {
+    if (isFirstDeposit) {
         _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
         emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf); //todo: just for stETH but not for USDC
     }

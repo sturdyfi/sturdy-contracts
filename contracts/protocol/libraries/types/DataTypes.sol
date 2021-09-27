@@ -25,8 +25,6 @@ library DataTypes {
     address interestRateStrategyAddress;
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
-    //sturdy. Check if this reserved allowed to be borrowed. Ex. stETH is not allowed to be borrowed.
-    bool borrowingEnabled;
   }
 
   struct ReserveConfigurationMap {

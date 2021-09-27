@@ -20,7 +20,6 @@ interface ILendingPoolConfigurator {
     string stableDebtTokenName;
     string stableDebtTokenSymbol;
     bytes params;
-    bool borrowingEnabled;
   }
 
   struct UpdateATokenInput {

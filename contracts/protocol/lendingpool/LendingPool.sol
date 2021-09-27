@@ -126,7 +126,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
-           
+
     //todo: add borrowingEnabled to exclude usdc, usdt ... as collatoral
     if (isFirstDeposit) {
         _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
@@ -796,16 +796,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
-    address interestRateStrategyAddress,
-    bool borrowingEnabled
+    address interestRateStrategyAddress
   ) external override onlyLendingPoolConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
       variableDebtAddress,
-      interestRateStrategyAddress,
-      borrowingEnabled
+      interestRateStrategyAddress
     );
     _addReserveToList(asset);
   }

@@ -173,8 +173,7 @@ library ReserveLogic {
     address aTokenAddress,
     address stableDebtTokenAddress,
     address variableDebtTokenAddress,
-    address interestRateStrategyAddress,
-    bool borrowingEnabled
+    address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
 
@@ -184,7 +183,6 @@ library ReserveLogic {
     reserve.stableDebtTokenAddress = stableDebtTokenAddress;
     reserve.variableDebtTokenAddress = variableDebtTokenAddress;
     reserve.interestRateStrategyAddress = interestRateStrategyAddress;
-    reserve.borrowingEnabled = borrowingEnabled;
   }
 
   struct UpdateInterestRatesLocalVars {

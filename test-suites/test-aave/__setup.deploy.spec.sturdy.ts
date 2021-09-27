@@ -248,7 +248,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
-  console.log('----------CONFIG------------', config);
   const {
     ATokenNamePrefix,
     StableDebtTokenNamePrefix,

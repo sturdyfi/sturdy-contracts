@@ -12,6 +12,9 @@ import { tEthereumAddress } from '../../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import { getDb, DRE } from '../../../../helpers/misc-utils';
 import { AaveProtocolDataProvider } from '../../../../types/AaveProtocolDataProvider';
+import web3  from "web3";
+
+export const ETHfromWei = (value) => web3.utils.fromWei(value + "", "ether");
 
 export const getReserveData = async (
   helper: AaveProtocolDataProvider,
@@ -126,3 +129,21 @@ const getATokenUserData = async (
   const scaledBalance = await aToken.scaledBalanceOf(user);
   return scaledBalance.toString();
 };
+
+export const printUserAccountData = async (state: any) => {
+    console.log(`${state?.user} ${state?.action}: ${state?.amount} ${state?.coin}`)
+    console.log(`totalDebtETH: `, ETHfromWei(state?.totalDebtETH.toString()));
+    console.log(
+        `availableBorrowsETH: `,
+        ETHfromWei(state?.availableBorrowsETH.toString())
+    );
+    console.log(
+        `currentLiquidationThreshold: `,
+        ETHfromWei(state?.currentLiquidationThreshold.toString())
+    );
+    console.log('\n\n')
+  };
+
+  export const printDivider =  () => {
+    console.log('=================================================')
+  };

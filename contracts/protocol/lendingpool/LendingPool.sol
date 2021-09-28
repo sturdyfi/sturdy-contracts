@@ -110,7 +110,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address onBehalfOf,
-    uint16 referralCode
+    uint16 referralCode,
+    bool collatoral
   ) external override whenNotPaused {
     //todo: asset - should be address of stETH
     DataTypes.ReserveData storage reserve = _reserves[asset];
@@ -128,8 +129,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     //todo: add borrowingEnabled to exclude usdc, usdt ... as collatoral
+    console.log('-----collatoral-----', collatoral);
     if (isFirstDeposit) {
-        _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
+        _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
         emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf); //todo: just for stETH but not for USDC
     }
 

@@ -158,7 +158,8 @@
   "license": "AGPLv3",
   "dependencies": {
     "axios-curlirize": "^1.3.7",
-    "tmp-promise": "^3.0.2"
+    "tmp-promise": "^3.0.2",
+    "web3": "^1.3.5"
   },
   "keywords": [
     "aave",

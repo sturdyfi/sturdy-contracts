@@ -142,7 +142,7 @@ library ValidationLogic {
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     
-    //place where stETH is blocked from being borrowed
+    //sturdy: place where stETH is blocked from being borrowed
     require(vars.borrowingEnabled, Errors.VL_BORROWING_NOT_ENABLED);
 
     //validate interest rate mode

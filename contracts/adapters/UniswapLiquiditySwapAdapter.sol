@@ -172,7 +172,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       // Deposit new reserve
       IERC20(assetToSwapToList[vars.i]).safeApprove(address(LENDING_POOL), 0);
       IERC20(assetToSwapToList[vars.i]).safeApprove(address(LENDING_POOL), vars.receivedAmount);
-      LENDING_POOL.deposit(assetToSwapToList[vars.i], vars.receivedAmount, msg.sender, 0);
+      LENDING_POOL.deposit(assetToSwapToList[vars.i], vars.receivedAmount, msg.sender, 0, true);
     }
   }
 
@@ -228,7 +228,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     // Deposit new reserve
     IERC20(assetTo).safeApprove(address(LENDING_POOL), 0);
     IERC20(assetTo).safeApprove(address(LENDING_POOL), vars.receivedAmount);
-    LENDING_POOL.deposit(assetTo, vars.receivedAmount, initiator, 0);
+    LENDING_POOL.deposit(assetTo, vars.receivedAmount, initiator, 0, true);
 
     vars.flashLoanDebt = amount.add(premium);
     vars.amountToPull = vars.amountToSwap.add(premium);

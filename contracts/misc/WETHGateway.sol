@@ -44,7 +44,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     uint16 referralCode
   ) external payable override {
     WETH.deposit{value: msg.value}();
-    ILendingPool(lendingPool).deposit(address(WETH), msg.value, onBehalfOf, referralCode);
+    ILendingPool(lendingPool).deposit(address(WETH), msg.value, onBehalfOf, referralCode, true);
   }
 
   /**

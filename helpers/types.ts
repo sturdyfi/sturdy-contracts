@@ -13,6 +13,8 @@ export enum eEthereumNetwork {
   main = 'main',
   coverage = 'coverage',
   hardhat = 'hardhat',
+  geth = 'geth',
+  localhost = 'localhost',
   tenderlyMain = 'tenderlyMain',
 }
 
@@ -204,10 +206,10 @@ export interface iAssetCommon<T> {
 export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
-  TUSD: T;
+//  TUSD: T;
   USDC: T;
   USDT: T;
-  SUSD: T;
+/*   SUSD: T;
   AAVE: T;
   BAT: T;
   MKR: T;
@@ -219,8 +221,9 @@ export interface iAssetBase<T> {
   SNX: T;
   BUSD: T;
   YFI: T;
-  UNI: T;
+  UNI: T; */
   USD: T;
+/*
   REN: T;
   ENJ: T;
   UniDAIWETH: T;
@@ -240,8 +243,10 @@ export interface iAssetBase<T> {
   BptWBTCWETH: T;
   BptBALWETH: T;
   WMATIC: T;
-  STAKE: T;
+  STAKE: T; 
   xSUSHI: T;
+*/
+  stETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -251,9 +256,10 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
-  | 'TUSD'
+//  | 'TUSD'
   | 'USDC'
   | 'USDT'
+/*
   | 'SUSD'
   | 'AAVE'
   | 'BAT'
@@ -264,13 +270,18 @@ export type iAavePoolAssets<T> = Pick<
   | 'MANA'
   | 'ZRX'
   | 'SNX'
-  | 'BUSD'
+  | 'BUSD' 
+*/
   | 'WETH'
+/*
   | 'YFI'
   | 'UNI'
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
+*/
+  | 'stETH' 
+
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -278,9 +289,9 @@ export type iLpPoolAssets<T> = Pick<
   | 'DAI'
   | 'USDC'
   | 'USDT'
-  | 'WBTC'
+//  | 'WBTC'
   | 'WETH'
-  | 'UniDAIWETH'
+ /*  | 'UniDAIWETH'
   | 'UniWBTCWETH'
   | 'UniAAVEWETH'
   | 'UniBATWETH'
@@ -295,17 +306,17 @@ export type iLpPoolAssets<T> = Pick<
   | 'UniWBTCUSDC'
   | 'UniYFIWETH'
   | 'BptWBTCWETH'
-  | 'BptBALWETH'
+  | 'BptBALWETH' */
 >;
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'WMATIC' | 'AAVE'
+  'DAI' | 'USDC' | 'USDT'/*  | 'WBTC' */ | 'WETH' /* | 'WMATIC' */  /*| 'AAVE' */
 >;
 
 export type iXDAIPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' | 'WBTC' | 'WETH' | 'STAKE'
+  'DAI' | 'USDC' | 'USDT' /* | 'WBTC' */ | 'WETH'/*  | 'STAKE' */
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -316,12 +327,15 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
   DAI = 'DAI',
+/*   
   AAVE = 'AAVE',
   TUSD = 'TUSD',
-  BAT = 'BAT',
+  BAT = 'BAT', 
+*/
   WETH = 'WETH',
   USDC = 'USDC',
   USDT = 'USDT',
+/*   
   SUSD = 'SUSD',
   ZRX = 'ZRX',
   MKR = 'MKR',
@@ -331,8 +345,10 @@ export enum TokenContractId {
   MANA = 'MANA',
   REN = 'REN',
   SNX = 'SNX',
-  BUSD = 'BUSD',
+  BUSD = 'BUSD', 
+*/
   USD = 'USD',
+/*
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
@@ -353,8 +369,10 @@ export enum TokenContractId {
   BptWBTCWETH = 'BptWBTCWETH',
   BptBALWETH = 'BptBALWETH',
   WMATIC = 'WMATIC',
-  STAKE = 'STAKE',
+  STAKE = 'STAKE', 
   xSUSHI = 'xSUSHI',
+*/
+  stETH = 'stETH'
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -411,6 +429,8 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.ropsten]: T;
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.hardhat]: T;
+  [eEthereumNetwork.geth]: T;
+  [eEthereumNetwork.localhost]: T;
   [eEthereumNetwork.tenderlyMain]: T;
 }
 

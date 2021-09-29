@@ -1,5 +1,5 @@
 # Sturdy 
-Sturdy is building a DeFi lending protocol. You can find the overview of the protocol [here](https://docs.google.com/document/d/13ynB4h0dmeEoSkbGe0qpF3Umu6p0ROpXvwdbuk278TA/edit?usp=sharing). In summary, we want users to be able to deposit ETH as collateral, which we convert to stETH. The yield from stETH rebasing is automatically distributed to depositors. The only collateral will be ETH / stETH and the only assets that can be deposited or borrowed will be USDC, Tether, and DAI.
+Sturdy is building a DeFi lending protocol. You can find an overview of the protocol [here](https://docs.google.com/document/d/13ynB4h0dmeEoSkbGe0qpF3Umu6p0ROpXvwdbuk278TA/edit?usp=sharing). In summary, we want users to be able to deposit ETH as collateral, which we convert to stETH. The yield from stETH rebasing is automatically distributed to depositors. The only collateral will be ETH / stETH and the only assets that can be deposited or borrowed will be USDC, Tether, and DAI.
 
  Our current changes to Aave (starting from commit ca49e619742739036ef3515c00e3365e412faa00) have been:
 - Removed all assets except USDC, Tether, and DAI
@@ -7,7 +7,9 @@ Sturdy is building a DeFi lending protocol. You can find the overview of the pro
 - Disabled USDC, Tether, and DAI from being used as collateral
 - Disabled deposited stETH from being borrowed 
 
-There are a few things we need to add. First, the stETH asset doesn't actually reference the stETH contract in Lido. This will likely require a change to aave/markets/aave/index.ts. Second, we want to allow users to deposit ETH and automatically convert it to stETH. Aave's existing WETH Gateway functions will likely be useful here. 
+There are a few things we need to add. 
+- First, the stETH asset doesn't actually reference the stETH contract in Lido. This will likely require a change to aave/markets/aave/index.ts. 
+- Second, we want to allow users to deposit ETH and automatically convert it to stETH. Aave's existing WETH Gateway functions will likely be useful here. 
 
 ### Deploy
 Go into the `aave` folder
@@ -34,6 +36,10 @@ USDC: 0xE9155b0da226D965C9b4C24bE52732191B3B762A
 ```
 npm run test_sturdy
 ```
+
+The original Aave readme is included below:
+
+
 ## Aave Protocol v2
 
 This repository contains the smart contracts source code and markets configuration for Aave Protocol V2. The repository uses Docker Compose and Hardhat as development enviroment for compilation, testing and deployment tasks.

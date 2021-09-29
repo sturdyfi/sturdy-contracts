@@ -227,17 +227,17 @@ export const initReservesByHelper = async (
   //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
-  console.log(`----------chunkedSymbols---------------`, chunkedSymbols)
+  console.log(`----------chunkedSymbols---------------`, chunkedSymbols);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
-      //todo: this place should be checked before deploying on mainnet. dd gas limit as in comment pointed
-      const tx3 = await waitForTx(
-          //possibly for mainnet gas limit is required. On local node this transaction failed without gas limit
-          //await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex], { gasPrice: 1000000000, gasLimit:7850000})
-          await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
-      );
-      console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
-      console.log('    * gasUsed', tx3.gasUsed.toString());
-      //gasUsage = gasUsage.add(tx3.gasUsed);
+    //todo: this place should be checked before deploying on mainnet. dd gas limit as in comment pointed
+    const tx3 = await waitForTx(
+      //possibly for mainnet gas limit is required. On local node this transaction failed without gas limit
+      // await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex], { gasPrice: 1000000000, gasLimit:7850000})
+      await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
+    );
+    console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+    console.log('    * gasUsed', tx3.gasUsed.toString());
+    //gasUsage = gasUsage.add(tx3.gasUsed);
   }
 
   return gasUsage; // Deprecated
@@ -256,10 +256,9 @@ export const getPairsTokenAggregator = (
       const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
         (value) => value === tokenSymbol
       );
-      const [, aggregatorAddress] = (Object.entries(aggregatorsAddresses) as [
-        string,
-        tEthereumAddress
-      ][])[aggregatorAddressIndex];
+      const [, aggregatorAddress] = (
+        Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+      )[aggregatorAddressIndex];
       return [tokenAddress, aggregatorAddress];
     }
   }) as [string, string][];

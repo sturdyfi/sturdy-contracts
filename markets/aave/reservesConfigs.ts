@@ -267,13 +267,13 @@ export const strategyXSUSHI: IReserveParams = {
 };
 
 export const strategySTETH: IReserveParams = {
-    strategy: rateStrategySTETH,
-    baseLTVAsCollateral: '5000',
-    liquidationThreshold: '6500',
-    liquidationBonus: '11000',
-    borrowingEnabled: false,
-    stableBorrowRateEnabled: false,
-    reserveDecimals: '18',
-    aTokenImpl: eContractid.AToken,
-    reserveFactor: '0'
+  strategy: rateStrategySTETH,
+  baseLTVAsCollateral: '5000',
+  liquidationThreshold: '6500',
+  liquidationBonus: '11000',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '0'
   };

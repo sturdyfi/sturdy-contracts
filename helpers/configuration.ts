@@ -21,6 +21,7 @@ export enum ConfigNames {
   Aave = 'Aave',
   Matic = 'Matic',
   Amm = 'Amm',
+  STURDY = 'Sturdy',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {

@@ -52,6 +52,7 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  SturdyLendingPoolFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -668,5 +669,13 @@ export const deployParaSwapLiquiditySwapAdapter = async (
     await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.ParaSwapLiquiditySwapAdapter,
     args,
+    verify
+  );
+
+export const deploySturdy = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new SturdyLendingPoolFactory(await getFirstSigner()).deploy(),
+    eContractid.SturdyLendingPool,
+    [],
     verify
   );

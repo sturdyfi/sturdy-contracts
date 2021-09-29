@@ -92,6 +92,7 @@ export enum eContractid {
   MockParaSwapAugustus = 'MockParaSwapAugustus',
   MockParaSwapAugustusRegistry = 'MockParaSwapAugustusRegistry',
   ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
+  SturdyLendingPool = 'SturdyLendingPool',
 }
 
 /*
@@ -206,10 +207,10 @@ export interface iAssetCommon<T> {
 export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
-//  TUSD: T;
+  //  TUSD: T;
   USDC: T;
   USDT: T;
-/*   SUSD: T;
+  /*   SUSD: T;
   AAVE: T;
   BAT: T;
   MKR: T;
@@ -223,7 +224,7 @@ export interface iAssetBase<T> {
   YFI: T;
   UNI: T; */
   USD: T;
-/*
+  /*
   REN: T;
   ENJ: T;
   UniDAIWETH: T;
@@ -256,10 +257,10 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 export type iAavePoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
-//  | 'TUSD'
+  //  | 'TUSD'
   | 'USDC'
   | 'USDT'
-/*
+  /*
   | 'SUSD'
   | 'AAVE'
   | 'BAT'
@@ -273,15 +274,14 @@ export type iAavePoolAssets<T> = Pick<
   | 'BUSD' 
 */
   | 'WETH'
-/*
+  /*
   | 'YFI'
   | 'UNI'
   | 'REN'
   | 'ENJ'
   | 'xSUSHI'
 */
-  | 'stETH' 
-
+  | 'stETH'
 >;
 
 export type iLpPoolAssets<T> = Pick<
@@ -289,9 +289,9 @@ export type iLpPoolAssets<T> = Pick<
   | 'DAI'
   | 'USDC'
   | 'USDT'
-//  | 'WBTC'
+  //  | 'WBTC'
   | 'WETH'
- /*  | 'UniDAIWETH'
+  /*  | 'UniDAIWETH'
   | 'UniWBTCWETH'
   | 'UniAAVEWETH'
   | 'UniBATWETH'
@@ -311,12 +311,12 @@ export type iLpPoolAssets<T> = Pick<
 
 export type iMaticPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT'/*  | 'WBTC' */ | 'WETH' /* | 'WMATIC' */  /*| 'AAVE' */
+  'DAI' | 'USDC' | 'USDT' /*  | 'WBTC' */ | 'WETH' /* | 'WMATIC' */ /*| 'AAVE' */
 >;
 
 export type iXDAIPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' /* | 'WBTC' */ | 'WETH'/*  | 'STAKE' */
+  'DAI' | 'USDC' | 'USDT' /* | 'WBTC' */ | 'WETH' /*  | 'STAKE' */
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
@@ -327,7 +327,7 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
   DAI = 'DAI',
-/*   
+  /*   
   AAVE = 'AAVE',
   TUSD = 'TUSD',
   BAT = 'BAT', 
@@ -335,7 +335,7 @@ export enum TokenContractId {
   WETH = 'WETH',
   USDC = 'USDC',
   USDT = 'USDT',
-/*   
+  /*   
   SUSD = 'SUSD',
   ZRX = 'ZRX',
   MKR = 'MKR',
@@ -348,7 +348,7 @@ export enum TokenContractId {
   BUSD = 'BUSD', 
 */
   USD = 'USD',
-/*
+  /*
   YFI = 'YFI',
   UNI = 'UNI',
   ENJ = 'ENJ',
@@ -372,7 +372,7 @@ export enum TokenContractId {
   STAKE = 'STAKE', 
   xSUSHI = 'xSUSHI',
 */
-  stETH = 'stETH'
+  stETH = 'stETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {

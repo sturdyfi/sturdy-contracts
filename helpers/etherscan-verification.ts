@@ -84,7 +84,7 @@ export const runTaskWithRetry = async (
         '[ETHERSCAN][ERROR] Errors after all the retries, check the logs for more information.'
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     counter--;
 
     if (okErrors.some((okReason) => error.message.includes(okReason))) {

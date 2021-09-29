@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { HardhatUserConfig } from 'hardhat/types';
+import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
@@ -114,15 +114,27 @@ const buidlerConfig: HardhatUserConfig = {
         privateKey: secretKey,
         balance,
       })),
-      forking: buildForkConfig(),
+      forking: {...buildForkConfig(), blockNumber: 13322379 } as HardhatNetworkForkingUserConfig,
     },
 
-      localhost: {
-          chainId: 1337,
-          throwOnTransactionFailures: true,
-          throwOnCallFailures: true,
-          url: 'http://localhost:8545',
-      },
+    localhost: {
+      chainId: 1337,
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
+      url: 'http://localhost:8545',
+    },
+
+    forked_main: {
+      chainId: 31337,
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
+      url: 'http://localhost:8545',
+      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+      gas: DEFAULT_BLOCK_GAS_LIMIT,
+      gasPrice: 8000000000,
+      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
+      forking: {...buildForkConfig(), blockNumber: 13322379 } as HardhatNetworkForkingUserConfig,
+    },
 
     buidlerevm_docker: {
       hardfork: 'berlin',

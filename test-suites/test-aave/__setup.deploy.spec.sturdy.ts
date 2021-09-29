@@ -72,6 +72,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
+    console.log(tokenSymbol);
     if (tokenSymbol === 'WETH') {
       tokens[tokenSymbol] = await deployWETHMocked();
       await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
@@ -150,10 +151,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {
       WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
-   //   TUSD: mockTokens.TUSD.address,
+      //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
       USDT: mockTokens.USDT.address,
- /*
+      /*
       SUSD: mockTokens.SUSD.address,
       AAVE: mockTokens.AAVE.address,
       BAT: mockTokens.BAT.address,
@@ -192,7 +193,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       BptBALWETH: mockTokens.BptBALWETH.address,
       WMATIC: mockTokens.WMATIC.address, */
       USD: USD_ADDRESS,
-/*       
+      /*       
       STAKE: mockTokens.STAKE.address,
       xSUSHI: mockTokens.xSUSHI.address, 
 */
@@ -248,12 +249,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
-  const {
-    ATokenNamePrefix,
-    StableDebtTokenNamePrefix,
-    VariableDebtTokenNamePrefix,
-    SymbolPrefix,
-  } = config;
+  const { ATokenNamePrefix, StableDebtTokenNamePrefix, VariableDebtTokenNamePrefix, SymbolPrefix } =
+    config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(
@@ -307,7 +304,7 @@ before(async () => {
   const FORK = process.env.FORK;
 
   if (FORK) {
-    await rawBRE.run('aave:mainnet');
+    await rawBRE.run('aave:dev:fork:mainnet');
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

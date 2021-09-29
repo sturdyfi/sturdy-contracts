@@ -15,6 +15,7 @@ import {
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
   getParaSwapLiquiditySwapAdapter,
+  getFirstSigner,
 } from '../../../helpers/contracts-getters';
 import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -42,6 +43,8 @@ import { AaveConfig } from '../../../markets/aave';
 import { FlashLiquidationAdapter } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
+import { ILido } from '../../../types/ILido';
+import { ILidoFactory } from '../../../types/ILidoFactory';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -65,6 +68,7 @@ export interface TestEnv {
   usdc: MintableERC20;
   aave: MintableERC20;
   stETH: MintableERC20;
+  lido: ILido;
   addressesProvider: LendingPoolAddressesProvider;
   uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
   uniswapRepayAdapter: UniswapRepayAdapter;
@@ -93,6 +97,7 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
   stETH: {} as MintableERC20,
+  lido: {} as ILido,
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
   uniswapRepayAdapter: {} as UniswapRepayAdapter,
@@ -103,6 +108,7 @@ const testEnv: TestEnv = {
 } as TestEnv;
 
 export async function initializeMakeSuite() {
+  const lidoAddress = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
   const [_deployer, ...restSigners] = await getEthersSigners();
   const deployer: SignerWithAddress = {
     address: await _deployer.getAddress(),
@@ -145,7 +151,9 @@ export async function initializeMakeSuite() {
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
-  
+
+  console.log(reservesTokens);
+  console.log(aDaiAddress, aWEthAddress, daiAddress, usdcAddress, wethAddress, stethAddress);
   if (!aDaiAddress || !aWEthAddress) {
     process.exit(1);
   }
@@ -159,7 +167,7 @@ export async function initializeMakeSuite() {
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.stETH = await getMintableERC20(stethAddress);
-//  testEnv.aave = await getMintableERC20(aaveAddress);
+  //  testEnv.aave = await getMintableERC20(aaveAddress);
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
 
@@ -168,6 +176,7 @@ export async function initializeMakeSuite() {
   testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter();
 
   testEnv.paraswapLiquiditySwapAdapter = await getParaSwapLiquiditySwapAdapter();
+  testEnv.lido = ILidoFactory.connect(lidoAddress, await getFirstSigner());
 }
 
 const setSnapshot = async () => {

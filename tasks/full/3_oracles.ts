@@ -25,7 +25,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
   .setAction(async ({ verify, pool }, DRE) => {
     try {
       await DRE.run('set-DRE');
-      const network = <eNetwork>DRE.network.name;
+      const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
       const poolConfig = loadPoolConfig(pool);
       const {
         ProtocolGlobalParams: { UsdAddress },

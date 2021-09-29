@@ -1,19 +1,40 @@
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Build pass](https://github.com/AAVE/protocol-v2/actions/workflows/node.js.yml/badge.svg)](https://github.com/aave/protocol-v2/actions/workflows/node.js.yml)
-```
-        .///.                .///.     //.            .//  `/////////////-
-       `++:++`              .++:++`    :++`          `++:  `++:......---.`
-      `/+: -+/`            `++- :+/`    /+/         `/+/   `++.
-      /+/   :+/            /+:   /+/    `/+/        /+/`   `++.
-  -::/++::`  /+:       -::/++::` `/+:    `++:      :++`    `++/:::::::::.
-  -:+++::-`  `/+:      --++/---`  `++-    .++-    -++.     `++/:::::::::.
-   -++.       .++-      -++`       .++.    .++.  .++-      `++.
-  .++-         -++.    .++.         -++.    -++``++-       `++.
- `++:           :++`  .++-           :++`    :+//+:        `++:----------`
- -/:             :/-  -/:             :/.     ://:         `/////////////-
-```
+# Sturdy 
+Sturdy is building a DeFi lending protocol. You can find the overview of the protocol [here](https://docs.google.com/document/d/13ynB4h0dmeEoSkbGe0qpF3Umu6p0ROpXvwdbuk278TA/edit?usp=sharing). In summary, we want users to be able to deposit ETH as collateral, which we convert to stETH. The yield from stETH rebasing is automatically distributed to depositors. The only collateral will be ETH / stETH and the only assets that can be deposited or borrowed will be USDC, Tether, and DAI.
 
-# Aave Protocol v2
+ Our current changes to Aave (starting from commit ca49e619742739036ef3515c00e3365e412faa00) have been:
+- Removed all assets except USDC, Tether, and DAI
+- Added stETH as an asset
+- Disabled USDC, Tether, and DAI from being used as collateral
+- Disabled deposited stETH from being borrowed 
+
+There are a few things we need to add. First, the stETH asset doesn't actually reference the stETH contract in Lido. This will likely require a change to aave/markets/aave/index.ts. Second, we want to allow users to deposit ETH and automatically convert it to stETH. Aave's existing WETH Gateway functions will likely be useful here. 
+
+### Deploy
+Go into the `aave` folder
+
+```
+npm install
+```
+```
+npm run aave:evm:dev:migration
+```
+**The result:**
+```
+N# Contracts: 79
+MintableERC20: 0xB1111Ee0d0DD31B382f21c95C928CE0aC77Ad180
+DAI: 0xC7250a5884364101F1619B14fF3E6644e36B62AD
+AAVE: 0xd01d3eED74A39a95d4088C00ECd9526472951392
+TUSD: 0x7e9A8B54DEc4c12b39F85F7b56E9C1eDc4bC704F
+BAT: 0x77160ab68B699263162806E3Be7dbE1e012AF6a0
+WETH: 0x9244018Ca564809Ae8146118697D4CBC44bCfaB7
+USDC: 0xE9155b0da226D965C9b4C24bE52732191B3B762A
+.........
+```
+### Run tests
+```
+npm run test_sturdy
+```
+## Aave Protocol v2
 
 This repository contains the smart contracts source code and markets configuration for Aave Protocol V2. The repository uses Docker Compose and Hardhat as development enviroment for compilation, testing and deployment tasks.
 

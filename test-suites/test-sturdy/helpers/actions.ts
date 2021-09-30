@@ -141,7 +141,8 @@ export const deposit = async (
   sendValue: string,
   expectedResult: string,
   testEnv: TestEnv,
-  revertMessage?: string
+  revertMessage?: string,
+  collatoral?:boolean
 ) => {
   const { pool } = testEnv;
 
@@ -166,7 +167,7 @@ export const deposit = async (
     const txResult = await waitForTx(
       await pool
         .connect(sender.signer)
-        .deposit(reserve, amountToDeposit, onBehalfOf, '0', txOptions)
+        .deposit(reserve, amountToDeposit, onBehalfOf, '0', collatoral)
     );
 
     const {

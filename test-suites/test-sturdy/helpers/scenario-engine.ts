@@ -39,7 +39,7 @@ export const executeStory = async (story: Story, testEnv: TestEnv) => {
 };
 
 const executeAction = async (action: Action, users: SignerWithAddress[], testEnv: TestEnv) => {
-  const { reserve, user: userIndex, borrowRateMode } = action.args;
+  const { reserve, user: userIndex, borrowRateMode, collatoral } = action.args;
   const { name, expected, revertMessage } = action;
 
   if (!name || name === '') {
@@ -107,7 +107,8 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
           sendValue,
           expected,
           testEnv,
-          revertMessage
+          revertMessage,
+          collatoral
         );
       }
       break;

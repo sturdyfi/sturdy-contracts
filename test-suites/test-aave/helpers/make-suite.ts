@@ -108,7 +108,12 @@ const testEnv: TestEnv = {
 } as TestEnv;
 
 export async function initializeMakeSuite() {
+  // Mainnet missing addresses
   const lidoAddress = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
+  const uniswapLiquiditySwapAdapterAddress = '0x3b9653eD3992d4339d8B6bF3379997edBbCeaA4d';
+  const uniswapRepayAdapterAddress = '0xF9807Be7bD65de8ddF59830790056A3353459feF';
+  const flashLiquidationAdapterAddress = '0x52E3a370Bad37956ec281385AFC97978d734139d';
+
   const [_deployer, ...restSigners] = await getEthersSigners();
   const deployer: SignerWithAddress = {
     address: await _deployer.getAddress(),
@@ -152,8 +157,6 @@ export async function initializeMakeSuite() {
   //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
   const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
-  console.log(reservesTokens);
-  console.log(aDaiAddress, aWEthAddress, daiAddress, usdcAddress, wethAddress, stethAddress);
   if (!aDaiAddress || !aWEthAddress) {
     process.exit(1);
   }
@@ -171,12 +174,16 @@ export async function initializeMakeSuite() {
   testEnv.weth = await getWETHMocked(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
 
-  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
-  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
-  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter();
+  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter(
+    uniswapLiquiditySwapAdapterAddress
+  );
+  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter(uniswapRepayAdapterAddress);
+  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter(
+    flashLiquidationAdapterAddress
+  );
 
   testEnv.paraswapLiquiditySwapAdapter = await getParaSwapLiquiditySwapAdapter();
-  testEnv.lido = ILidoFactory.connect(lidoAddress, await getFirstSigner());
+  testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

@@ -55,6 +55,7 @@ import AaveConfig from '../../markets/aave';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
+  getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
@@ -298,6 +299,15 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.timeEnd('setup');
 };
 
+const buildMissingTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
+  if (!process.env.FORK) return;
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  const augustus = await deployMockParaSwapAugustus();
+  const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
+  await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
+};
+
 before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
@@ -305,6 +315,7 @@ before(async () => {
 
   if (FORK) {
     await rawBRE.run('aave:dev:fork:mainnet');
+    await buildMissingTestEnv(deployer, secondaryWallet);
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

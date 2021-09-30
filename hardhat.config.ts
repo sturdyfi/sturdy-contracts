@@ -114,7 +114,7 @@ const buidlerConfig: HardhatUserConfig = {
         privateKey: secretKey,
         balance,
       })),
-      forking: {...buildForkConfig(), blockNumber: 13322379 } as HardhatNetworkForkingUserConfig,
+      forking: buildForkConfig(),
     },
 
     localhost: {

@@ -11,6 +11,29 @@ There are a few things we need to add.
 - First, the stETH asset doesn't actually reference the stETH contract in Lido. This will likely require a change to aave/markets/aave/index.ts. 
 - Second, we want to allow users to deposit ETH and automatically convert it to stETH. Aave's existing WETH Gateway functions will likely be useful here. 
 
+
+## Dev Environment
+- EnvironmentFile (.env)
+```
+ALCHEMY_KEY="xxx"
+```
+
+- First run the hardhat node on localhost.
+```
+FORK=main yarn hardhat node
+```
+
+- Next run the following task to deploy all smart contracts including sample contract "SturdyLendingPool"
+```
+yarn aave:evm:dev:fork:mainnet:migration
+```
+
+- For test, run the following task to have a test of sample contract on the localhost.
+```
+yarn test_sturdy:fork:mainnet
+```
+
+
 ### Deploy
 Go into the `aave` folder
 

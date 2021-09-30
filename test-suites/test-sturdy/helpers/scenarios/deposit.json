@@ -127,12 +127,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 WETH in an empty reserve",
+      "description": "User 0 deposits 1 stETH in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "STETH",
             "amount": "1",
             "user": "0"
           },
@@ -141,7 +141,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "WETH",
+            "reserve": "STETH",
             "user": "0"
           },
           "expected": "success"
@@ -149,7 +149,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "WETH",
+            "reserve": "STETH",
             "amount": "1",
             "user": "0"
           },
@@ -163,7 +163,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
+            "reserve": "STETH",
             "amount": "1",
             "user": "1"
           },
@@ -173,7 +173,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "stETH",
+            "reserve": "STETH",
             "user": "1"
           },
           "expected": "success"
@@ -181,7 +181,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "stETH",
+            "reserve": "STETH",
             "amount": "1",
             "user": "1"
           },
@@ -195,7 +195,7 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
+            "reserve": "STETH",
             "amount": "1",
             "user": "0"
           },
@@ -204,7 +204,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "stETH",
+            "reserve": "STETH",
             "amount": "0",
             "user": "1"
           },
@@ -253,7 +253,7 @@
         {
           "name": "borrow",
           "args": {
-            "reserve": "stETH",
+            "reserve": "STETH",
             "amount": "0.1",
             "borrowRateMode": "variable",
             "user": "2"

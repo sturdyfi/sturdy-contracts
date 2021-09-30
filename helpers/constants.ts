@@ -30,13 +30,13 @@ export const USD_ADDRESS = '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96';
 export const AAVE_REFERRAL = '0';
 
 export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
-/*   
+  /*   
   AAVE: oneEther.multipliedBy('0.003620948469').toFixed(),
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(), 
 */
   DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
-/*   
+  /*   
   ENJ: oneEther.multipliedBy('0.00029560').toFixed(),
   KNC: oneEther.multipliedBy('0.001072').toFixed(),
   LINK: oneEther.multipliedBy('0.009955').toFixed(),
@@ -50,7 +50,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
 */
   USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
   USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
-  stETH: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  stETH: oneEther.toFixed(),
   WETH: oneEther.toFixed(),
   /*
 WBTC: oneEther.multipliedBy('47.332685').toFixed(),

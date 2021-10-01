@@ -23,6 +23,11 @@ ALCHEMY_KEY="xxx"
 FORK=main yarn hardhat node
 ```
 
+- Compile
+```
+FORK=main yarn hardhat compile
+```
+
 - Next run the following task to deploy all smart contracts including sample contract "SturdyLendingPool"
 ```
 yarn aave:evm:dev:fork:mainnet:migration

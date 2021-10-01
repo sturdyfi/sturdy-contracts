@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -124,15 +124,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
-
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     //todo: add borrowingEnabled to exclude usdc, usdt ... as collatoral
     console.log('-----collatoral-----', collatoral);
     if (isFirstDeposit) {
-        _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
-        emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf); //todo: just for stETH but not for USDC
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
+      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf); //todo: just for stETH but not for USDC
     }
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
@@ -265,8 +264,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount =
-      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
+    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -443,17 +443,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receiveAToken
-        )
-      );
+    (bool success, bytes memory result) = collateralManager.delegatecall(
+      abi.encodeWithSignature(
+        'liquidationCall(address,address,address,uint256,bool)',
+        collateralAsset,
+        debtAsset,
+        user,
+        debtToCover,
+        receiveAToken
+      )
+    );
 
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
@@ -724,7 +723,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -870,10 +869,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH =
-      IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-        10**reserve.configuration.getDecimals()
-      );
+    uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
+      10**reserve.configuration.getDecimals()
+    );
 
     ValidationLogic.validateBorrow(
       vars.asset,

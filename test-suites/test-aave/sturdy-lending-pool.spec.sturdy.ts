@@ -34,14 +34,6 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     expect(aTokensBalance).to.be.equal(depositedWstETHBalance);
   });
 
-  // it('withdraw stETH should be failed', async () => {
-  //   const { deployer, lido } = testEnv;
-  //   const sturdyLendingPool = await getSturdyLendingPool();
-  //   const balanceOfVault = await lido.balanceOf(sturdyLendingPool.address);
-  //   await expect(lido.transferFrom(sturdyLendingPool.address, deployer, balanceOfVault)).to.be
-  //     .reverted;
-  // });
-
   it('withdraw from collateral', async () => {
     const { deployer, lido, wstETH } = testEnv;
     const sturdyLendingPool = await getSturdyLendingPool();
@@ -58,11 +50,8 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     expect(wstETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
     expect(beforStETHbalanceOfUser.gt(parseEther('0.9999'))).to.be.equal(true);
     expect(currentStETHbalanceOfUser.lt(parseEther('0.0001'))).to.be.equal(true);
-    // expect(
-    //   ethCurrentBalanceOfUser
-    //   .sub(ethBeforeBalanceOfUser)
-    //   .gt(parseEther('0.9'))
-    // ).to.be.equal(true);                                                         //ToDo: need to enable after curve binding
-    // expect(currentBalanceOfVault.lt(parseEther('0.0001'))).to.be.equal(true);    //ToDo: need to enable after curve binding
+    expect(ethCurrentBalanceOfUser.sub(ethBeforeBalanceOfUser).gt(parseEther('0.9'))).to.be.equal(
+      true
+    );
   });
 });

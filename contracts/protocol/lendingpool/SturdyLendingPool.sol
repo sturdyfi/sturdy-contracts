@@ -5,11 +5,18 @@ import {SturdyLendingPoolStorage} from './SturdyLendingPoolStorage.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IWstETH} from '../../interfaces/IWstETH.sol';
+import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
 
 contract SturdyLendingPool is SturdyLendingPoolStorage {
-  constructor(address lendingPool) public {
+  constructor(address lendingPool, address curveSwap) public {
     _lendingPool = lendingPool;
+    _curveSwap = curveSwap;
   }
+
+  /**
+   * @dev Receive Ether
+   */
+  receive() external payable {}
 
   /**
    * @dev Deposits an `amount` of ETH as collateral to borrow asset.
@@ -52,7 +59,12 @@ contract SturdyLendingPool is SturdyLendingPoolStorage {
 
     balanceOfETH[msg.sender] = balance.sub(_stETHAmount);
 
-    //ToDo: Convert stETH -> ETH by using curve
+    // Exchange stETH -> ETH via Curve
+    IERC20(LIDO).approve(_curveSwap, _stETHAmount);
+    uint256 _minAmount = ICurveSwap(_curveSwap).get_dy(1, 0, _stETHAmount);
+    uint256 _receivedAmount = ICurveSwap(_curveSwap).exchange(1, 0, _stETHAmount, _minAmount);
+    (bool sent, bytes memory data) = address(msg.sender).call{value: _receivedAmount}('');
+    require(sent, 'Failed to send Ether');
   }
 
   /**

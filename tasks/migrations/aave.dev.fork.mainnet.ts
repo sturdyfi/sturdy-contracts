@@ -4,6 +4,7 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 import { getLendingPool } from '../../helpers/contracts-getters';
+import { curveSwapAddress } from '../../helpers/misc-utils';
 
 task('aave:dev:fork:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -39,7 +40,10 @@ task('aave:dev:fork:mainnet', 'Deploy development enviroment')
 
     console.log('7. Deploy sturdy');
     const lendingPoolAddress = await getLendingPool();
-    await DRE.run('dev:sturdy', { lendingPool: lendingPoolAddress.address });
+    await DRE.run('dev:sturdy', {
+      lendingPool: lendingPoolAddress.address,
+      curveSwap: curveSwapAddress.main,
+    });
 
     if (verify) {
       printContracts();

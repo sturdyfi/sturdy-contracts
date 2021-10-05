@@ -13,6 +13,7 @@ contract SturdyLendingPoolStorage {
   uint256 public totalBalance;
 
   address internal _lendingPool;
+  address internal _curveSwap;
 
   constructor() public {}
 }

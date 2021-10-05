@@ -672,7 +672,7 @@ export const deployParaSwapLiquiditySwapAdapter = async (
     verify
   );
 
-export const deploySturdy = async (args: [tEthereumAddress], verify?: boolean) =>
+export const deploySturdy = async (args: [tEthereumAddress, tEthereumAddress], verify?: boolean) =>
   withSaveAndVerify(
     await new SturdyLendingPoolFactory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyLendingPool,

@@ -11,8 +11,14 @@ import { ethers } from 'ethers';
 const { parseEther } = ethers.utils;
 
 makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
-  it('deposit for collateral', async () => {
+  it('failed deposit for collateral without ether', async () => {
     const { deployer, lido } = testEnv;
+    const sturdyLendingPool = await getSturdyLendingPool();
+    await expect(sturdyLendingPool.depositForCollateral()).to.be.reverted;
+  });
+
+  it('deposit 1ETH for collateral', async () => {
+    const { deployer, lido, wstETH, awstETH } = testEnv;
     const sturdyLendingPool = await getSturdyLendingPool();
     const beforePooledEther = await lido.getTotalPooledEther();
     await sturdyLendingPool.depositForCollateral({ value: parseEther('1') });
@@ -20,6 +26,18 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     const balanceOfUser = await sturdyLendingPool.balanceOfETH(deployer.address);
     expect(currentPooledEther.sub(beforePooledEther)).to.be.equal(parseEther('1'));
     expect(balanceOfUser).to.be.equal(parseEther('1'));
+    expect(await lido.balanceOf(sturdyLendingPool.address)).to.be.equal(0);
+    expect(await wstETH.balanceOf(sturdyLendingPool.address)).to.be.equal(0);
+    expect((await awstETH.balanceOf(sturdyLendingPool.address)).gt(parseEther('0.9'))).to.be.equal(
+      true
+    );
+    expect(await ethers.getDefaultProvider().getBalance(sturdyLendingPool.address)).to.be.equal(0);
+  });
+
+  it('transfering aStETH should be failed after deposit 1ETH', async () => {
+    const { awstETH, deployer, users } = testEnv;
+    await expect(awstETH.connect(deployer.signer).transfer(users[0].address, parseEther('0.9'))).to
+      .be.reverted;
   });
 
   it('stETH & aStETH balance check after deposit for collateral', async () => {
@@ -32,6 +50,13 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
     expect(wstETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
     expect(aTokensBalance).to.be.equal(depositedWstETHBalance);
+  });
+
+  it('withdraw from collateral should be failed if user has not enough balance', async () => {
+    const { deployer, lido, wstETH } = testEnv;
+    const sturdyLendingPool = await getSturdyLendingPool();
+    await expect(sturdyLendingPool.withdrawFromCollateral(parseEther('1.1'), deployer.address)).to
+      .be.reverted;
   });
 
   it('withdraw from collateral', async () => {
@@ -53,5 +78,6 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     expect(ethCurrentBalanceOfUser.sub(ethBeforeBalanceOfUser).gt(parseEther('0.9'))).to.be.equal(
       true
     );
+    expect(await ethers.getDefaultProvider().getBalance(sturdyLendingPool.address)).to.be.equal(0);
   });
 });

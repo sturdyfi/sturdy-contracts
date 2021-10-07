@@ -103,6 +103,11 @@ library Errors {
   string public constant LP_NOT_CONTRACT = '78';
   string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
+  string public constant ST_COLLATORAL_DEPOSIT_REQUIRE_ETH = '81'; //Only accept ETH for collatoral deposit
+  string public constant ST_COLLATORAL_DEPOSIT_INVALID = '82'; //Collatoral deposit failed
+  string public constant ST_LIQUIDITY_DEPOSIT_INVALID = '83'; //Only accept USDC, USDT, DAI for liquidity deposit
+  string public constant ST_COLLATORAL_WITHDRAW_INVALID = '84'; //Collatoral withdraw failed
+  string public constant ST_COLLATORAL_WITHDRAW_INVALID_AMOUNT = '85'; //Collatoral withdraw has not enough amount
 
   enum CollateralManagerErrors {
     NO_ERROR,

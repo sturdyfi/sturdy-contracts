@@ -53,7 +53,6 @@ export enum eContractid {
   ValidationLogic = 'ValidationLogic',
   ReserveLogic = 'ReserveLogic',
   GenericLogic = 'GenericLogic',
-  LendingPool = 'LendingPool',
   PriceOracle = 'PriceOracle',
   Proxy = 'Proxy',
   MockAggregator = 'MockAggregator',

@@ -3,8 +3,6 @@ import { checkVerification } from '../../helpers/etherscan-verification';
 import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
-import { getLendingPool } from '../../helpers/contracts-getters';
-import { curveSwapAddress } from '../../helpers/misc-utils';
 
 task('aave:dev:fork:mainnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -32,18 +30,11 @@ task('aave:dev:fork:mainnet', 'Deploy development enviroment')
     console.log('4. Deploy Data Provider');
     await DRE.run('full:data-provider', { pool: POOL_NAME });
 
-    console.log('5. Deploy WETH Gateway');
-    await DRE.run('full-deploy-weth-gateway', { pool: POOL_NAME });
+    // console.log('5. Deploy WETH Gateway');
+    // await DRE.run('full-deploy-weth-gateway', { pool: POOL_NAME });
 
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
-
-    console.log('7. Deploy sturdy');
-    const lendingPoolAddress = await getLendingPool();
-    await DRE.run('dev:sturdy', {
-      lendingPool: lendingPoolAddress.address,
-      curveSwap: curveSwapAddress.main,
-    });
 
     if (verify) {
       printContracts();

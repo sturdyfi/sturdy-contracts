@@ -11,7 +11,7 @@ import {
   deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
-  deployLendingPool,
+  deploySturdyLendingPool,
   deployPriceOracle,
   deployAaveOracle,
   deployLendingPoolCollateralManager,
@@ -50,7 +50,7 @@ import { initReservesByHelper, configureReservesByHelper } from '../../helpers/i
 import AmmConfig from '../../markets/amm';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
-  getLendingPool,
+  getSturdyLendingPool,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
 } from '../../helpers/contracts-getters';
@@ -111,14 +111,14 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1)
   );
 
-  const lendingPoolImpl = await deployLendingPool();
+  const lendingPoolImpl = await deploySturdyLendingPool();
 
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
   const lendingPoolAddress = await addressesProvider.getLendingPool();
-  const lendingPoolProxy = await getLendingPool(lendingPoolAddress);
+  const lendingPoolProxy = await getSturdyLendingPool(lendingPoolAddress);
 
-  await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
+  await insertContractAddressInDb(eContractid.SturdyLendingPool, lendingPoolProxy.address);
 
   const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator();
   await waitForTx(

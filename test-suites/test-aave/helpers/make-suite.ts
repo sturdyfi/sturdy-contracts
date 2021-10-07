@@ -1,7 +1,7 @@
 import { evmRevert, evmSnapshot, DRE } from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
-  getLendingPool,
+  getSturdyLendingPool,
   getLendingPoolAddressesProvider,
   getAaveProtocolDataProvider,
   getAToken,
@@ -18,7 +18,7 @@ import {
   getFirstSigner,
 } from '../../../helpers/contracts-getters';
 import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
-import { LendingPool } from '../../../types/LendingPool';
+import { SturdyLendingPool } from '../../../types/SturdyLendingPool';
 import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
 import { AToken } from '../../../types/AToken';
@@ -59,7 +59,7 @@ export interface SignerWithAddress {
 export interface TestEnv {
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
-  pool: LendingPool;
+  pool: SturdyLendingPool;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
@@ -89,7 +89,7 @@ const setBuidlerevmSnapshotId = (id: string) => {
 const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
-  pool: {} as LendingPool,
+  pool: {} as SturdyLendingPool,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
@@ -131,7 +131,7 @@ export async function initializeMakeSuite() {
     });
   }
   testEnv.deployer = deployer;
-  testEnv.pool = await getLendingPool();
+  testEnv.pool = await getSturdyLendingPool();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
@@ -141,6 +141,7 @@ export async function initializeMakeSuite() {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
       getParamPerNetwork(AaveConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
+    testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     testEnv.oracle = await getPriceOracle();
@@ -160,12 +161,12 @@ export async function initializeMakeSuite() {
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
-  const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
+  // const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
   if (!aDaiAddress || !aWEthAddress || !awstETHAddress) {
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress || /* !aaveAddress || */ !wethAddress || !wstethAddress) {
+  if (!daiAddress || !usdcAddress || /* !aaveAddress ||  !wethAddress || */ !wstethAddress) {
     process.exit(1);
   }
 
@@ -177,8 +178,8 @@ export async function initializeMakeSuite() {
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.wstETH = IWstETHFactory.connect(wstethAddress, deployer.signer);
   //  testEnv.aave = await getMintableERC20(aaveAddress);
-  testEnv.weth = await getWETHMocked(wethAddress);
-  testEnv.wethGateway = await getWETHGateway();
+  // testEnv.weth = await getWETHMocked(wethAddress);
+  // testEnv.wethGateway = await getWETHGateway();
 
   testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter(
     uniswapLiquiditySwapAdapterAddress

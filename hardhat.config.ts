@@ -21,6 +21,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
 import 'solidity-coverage';
+import "hardhat-contract-sizer";
 import { fork } from 'child_process';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
@@ -133,7 +134,7 @@ const buidlerConfig: HardhatUserConfig = {
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
-      forking: {...buildForkConfig(), blockNumber: 13322379 } as HardhatNetworkForkingUserConfig,
+      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
     },
 
     buidlerevm_docker: {

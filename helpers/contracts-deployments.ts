@@ -28,7 +28,6 @@ import {
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
   LendingPoolConfiguratorFactory,
-  LendingPoolFactory,
   LendingRateOracleFactory,
   MintableDelegationERC20Factory,
   MintableERC20Factory,
@@ -195,11 +194,14 @@ export const deployAaveLibraries = async (
   };
 };
 
-export const deployLendingPool = async (verify?: boolean) => {
+export const deploySturdyLendingPool = async (verify?: boolean) => {
   const libraries = await deployAaveLibraries(verify);
-  const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
+  const lendingPoolImpl = await new SturdyLendingPoolFactory(
+    libraries,
+    await getFirstSigner()
+  ).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
-  return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPool, [], verify);
+  return withSaveAndVerify(lendingPoolImpl, eContractid.SturdyLendingPool, [], verify);
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>
@@ -668,14 +670,6 @@ export const deployParaSwapLiquiditySwapAdapter = async (
   withSaveAndVerify(
     await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.ParaSwapLiquiditySwapAdapter,
-    args,
-    verify
-  );
-
-export const deploySturdy = async (args: [tEthereumAddress, tEthereumAddress], verify?: boolean) =>
-  withSaveAndVerify(
-    await new SturdyLendingPoolFactory(await getFirstSigner()).deploy(...args),
-    eContractid.SturdyLendingPool,
     args,
     verify
   );

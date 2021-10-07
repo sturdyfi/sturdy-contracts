@@ -9,11 +9,6 @@ import { BuidlerRuntimeEnvironment } from '@nomiclabs/buidler/types';
 import { tEthereumAddress } from './types';
 import { isAddress } from 'ethers/lib/utils';
 import { isZeroAddress } from 'ethereumjs-util';
-import { eNetwork } from './types';
-
-export const curveSwapAddress = {
-  main: '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',
-};
 
 export const toWad = (value: string | number) => new BigNumber(value).times(WAD).toFixed();
 

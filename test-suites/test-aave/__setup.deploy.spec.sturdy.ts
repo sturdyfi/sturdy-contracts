@@ -5,13 +5,14 @@ import {
   getEthersSigners,
   registerContractInJsonDb,
   getEthersSignersAddresses,
+  getParamPerNetwork,
 } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
   deployMintableERC20,
   deployLendingPoolAddressesProviderRegistry,
   deployLendingPoolConfigurator,
-  deployLendingPool,
+  deploySturdyLendingPool,
   deployPriceOracle,
   deployAaveOracle,
   deployLendingPoolCollateralManager,
@@ -32,7 +33,7 @@ import {
   deployParaSwapLiquiditySwapAdapter,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
-import { eEthereumNetwork } from '../../helpers/types';
+import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -54,10 +55,11 @@ import { initReservesByHelper, configureReservesByHelper } from '../../helpers/i
 import AaveConfig from '../../markets/aave';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
-  getLendingPool,
+  getSturdyLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
+  getPriceOracle,
 } from '../../helpers/contracts-getters';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 
@@ -116,14 +118,14 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProviderRegistry.registerAddressesProvider(addressesProvider.address, 1)
   );
 
-  const lendingPoolImpl = await deployLendingPool();
+  const lendingPoolImpl = await deploySturdyLendingPool();
 
   await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
   const lendingPoolAddress = await addressesProvider.getLendingPool();
-  const lendingPoolProxy = await getLendingPool(lendingPoolAddress);
+  const lendingPoolProxy = await getSturdyLendingPool(lendingPoolAddress);
 
-  await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
+  await insertContractAddressInDb(eContractid.SturdyLendingPool, lendingPoolProxy.address);
 
   const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator();
   await waitForTx(

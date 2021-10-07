@@ -10,7 +10,6 @@ import {
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
   LendingPoolConfiguratorFactory,
-  LendingPoolFactory,
   LendingRateOracleFactory,
   MintableERC20Factory,
   MockATokenFactory,
@@ -60,15 +59,6 @@ export const getLendingPoolConfiguratorProxy = async (address?: tEthereumAddress
     await getFirstSigner()
   );
 };
-
-export const getLendingPool = async (address?: tEthereumAddress) =>
-  await LendingPoolFactory.connect(
-    address ||
-      (
-        await getDb().get(`${eContractid.LendingPool}.${DRE.network.name}`).value()
-      ).address,
-    await getFirstSigner()
-  );
 
 export const getPriceOracle = async (address?: tEthereumAddress) =>
   await PriceOracleFactory.connect(
@@ -316,7 +306,7 @@ export const getProxy = async (address: tEthereumAddress) =>
   await InitializableAdminUpgradeabilityProxyFactory.connect(address, await getFirstSigner());
 
 export const getLendingPoolImpl = async (address?: tEthereumAddress) =>
-  await LendingPoolFactory.connect(
+  await SturdyLendingPoolFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.LendingPoolImpl}.${DRE.network.name}`).value()

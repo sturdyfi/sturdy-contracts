@@ -103,35 +103,42 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    *   0 if the action is executed directly by the user, without any middle-man
    **/
 
-  //todo:supplyers also uses, usdc
-  //todo:if steth as coll
-
   function deposit(
+    address asset,
+    uint256 amount,
+    address onBehalfOf,
+    uint16 referralCode
+  ) external override whenNotPaused {
+    require(asset != WstETH, Errors.ST_LIQUIDITY_DEPOSIT_INVALID);
+    _deposit(asset, amount, onBehalfOf, referralCode, false);
+  }
+
+  function _deposit(
     address asset,
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode,
     bool collatoral
-  ) external override whenNotPaused {
-    //todo: asset - should be address of stETH
+  ) internal {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    //todo: amount of stETH
     ValidationLogic.validateDeposit(reserve, amount);
-
-    //todo: aTokens should be named like aUSDT, aUSDC, ......     aSt
     address aToken = reserve.aTokenAddress;
 
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+    if (collatoral) {
+      IERC20(asset).safeTransfer(aToken, amount);
+    } else {
+      IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+    }
+
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
-    //todo: add borrowingEnabled to exclude usdc, usdt ... as collatoral
-    console.log('-----collatoral-----', collatoral);
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
-      emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf); //todo: just for stETH but not for USDC
+      if (collatoral) {
+        emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
+      }
     }
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
@@ -153,6 +160,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
+    return _withdraw(asset, amount, to);
+  }
+
+  function _withdraw(
+    address asset,
+    uint256 amount,
+    address to
+  ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;

@@ -80,7 +80,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
-
     if (!configData) {
       decimals = 18;
     }
@@ -151,9 +150,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {
       WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
-      TUSD: mockTokens.TUSD.address,
+   //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
       USDT: mockTokens.USDT.address,
+ /*
       SUSD: mockTokens.SUSD.address,
       AAVE: mockTokens.AAVE.address,
       BAT: mockTokens.BAT.address,
@@ -169,12 +169,12 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       REN: mockTokens.REN.address,
       UNI: mockTokens.UNI.address,
       ENJ: mockTokens.ENJ.address,
-      // DAI: mockTokens.LpDAI.address,
-      // USDC: mockTokens.LpUSDC.address,
-      // USDT: mockTokens.LpUSDT.address,
-      // WBTC: mockTokens.LpWBTC.address,
-      // WETH: mockTokens.LpWETH.address,
-      UniDAIWETH: mockTokens.UniDAIWETH.address,
+       DAI: mockTokens.LpDAI.address,
+       USDC: mockTokens.LpUSDC.address,
+       USDT: mockTokens.LpUSDT.address,
+       WBTC: mockTokens.LpWBTC.address,
+       WETH: mockTokens.LpWETH.address,
+       UniDAIWETH: mockTokens.UniDAIWETH.address,
       UniWBTCWETH: mockTokens.UniWBTCWETH.address,
       UniAAVEWETH: mockTokens.UniAAVEWETH.address,
       UniBATWETH: mockTokens.UniBATWETH.address,
@@ -190,10 +190,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       UniYFIWETH: mockTokens.UniYFIWETH.address,
       BptWBTCWETH: mockTokens.BptWBTCWETH.address,
       BptBALWETH: mockTokens.BptBALWETH.address,
-      WMATIC: mockTokens.WMATIC.address,
+      WMATIC: mockTokens.WMATIC.address, */
       USD: USD_ADDRESS,
+/*       
       STAKE: mockTokens.STAKE.address,
-      xSUSHI: mockTokens.xSUSHI.address,
+      xSUSHI: mockTokens.xSUSHI.address, 
+*/
+      stETH: mockTokens.stETH.address,
     },
     fallbackOracle
   );
@@ -285,7 +288,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await deployUniswapLiquiditySwapAdapter(adapterParams);
   await deployUniswapRepayAdapter(adapterParams);
   await deployFlashLiquidationAdapter(adapterParams);
-
   const augustus = await deployMockParaSwapAugustus();
 
   const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
@@ -293,7 +295,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
 
   await deployWalletBalancerProvider();
-
   const gateWay = await deployWETHGateway([mockTokens.WETH.address]);
   await authorizeWETHGateway(gateWay.address, lendingPoolAddress);
 

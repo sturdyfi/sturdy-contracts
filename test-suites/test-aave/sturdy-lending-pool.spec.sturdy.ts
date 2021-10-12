@@ -21,9 +21,7 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     const beforePooledEther = await lido.getTotalPooledEther();
     await pool.depositForCollateral({ value: parseEther('1.1') });
     const currentPooledEther = await lido.getTotalPooledEther();
-    const balanceOfUser = await pool.balanceOfETH(deployer.address);
     expect(currentPooledEther.sub(beforePooledEther)).to.be.equal(parseEther('1.1'));
-    expect(balanceOfUser).to.be.equal(parseEther('1.1'));
     expect(await lido.balanceOf(pool.address)).to.be.equal(0);
     expect(await wstETH.balanceOf(pool.address)).to.be.equal(0);
     expect(await awstETH.balanceOf(pool.address)).to.be.equal(0);
@@ -56,17 +54,13 @@ makeSuite('SturdyLendingPool', (testEnv: TestEnv) => {
     const { deployer, lido, wstETH, pool } = testEnv;
     const stETHBalanceOfPool = await lido.balanceOf(pool.address);
     const wstETHBalanceOfPool = await wstETH.balanceOf(pool.address);
-    const beforStETHbalanceOfUser = await pool.balanceOfETH(deployer.address);
     const ethBeforeBalanceOfUser = await deployer.signer.getBalance();
 
     await pool.withdrawFromCollateral(parseEther('1'), deployer.address);
 
-    const currentStETHbalanceOfUser = await pool.balanceOfETH(deployer.address);
     const ethCurrentBalanceOfUser = await deployer.signer.getBalance();
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
     expect(wstETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
-    expect(beforStETHbalanceOfUser.gt(parseEther('0.9999'))).to.be.equal(true);
-    expect(currentStETHbalanceOfUser.lt(parseEther('0.1001'))).to.be.equal(true);
     expect(ethCurrentBalanceOfUser.sub(ethBeforeBalanceOfUser).gt(parseEther('0.9'))).to.be.equal(
       true
     );

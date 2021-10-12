@@ -47,6 +47,7 @@ import { ILido } from '../../../types/ILido';
 import { ILidoFactory } from '../../../types/ILidoFactory';
 import { IWstETHFactory } from '../../../types/IWstETHFactory';
 import { IWstETH } from '../../../types/IWstETH';
+import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -79,6 +80,7 @@ export interface TestEnv {
   wethGateway: WETHGateway;
   flashLiquidationAdapter: FlashLiquidationAdapter;
   paraswapLiquiditySwapAdapter: ParaSwapLiquiditySwapAdapter;
+  registryOwnerSigner: Signer;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -142,6 +144,13 @@ export async function initializeMakeSuite() {
       getParamPerNetwork(AaveConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
     testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
+
+    const poolConfig = loadPoolConfig(ConfigNames.Aave);
+    const providerRegistryOwner = getParamPerNetwork(
+      poolConfig.ProviderRegistryOwner,
+      process.env.FORK as eNetwork
+    );
+    testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     testEnv.oracle = await getPriceOracle();

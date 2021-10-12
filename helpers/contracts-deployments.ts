@@ -65,7 +65,7 @@ import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariable
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
+import { SturdyLendingPoolLibraryAddresses } from '../types/SturdyLendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 
 export const deployUiPoolDataProvider = async (
@@ -120,6 +120,16 @@ export const deployLendingPoolConfigurator = async (verify?: boolean) => {
   );
 };
 
+export const deploySturdyLendingPoolLogicLibrary = async (verify?: boolean) => {
+  const sturdyLendingPoolLogicFactory = await DRE.ethers.getContractFactory(
+    eContractid.SturdyLendingPoolLogic
+  );
+  const sturdyLendingPoolLogic = await (
+    await sturdyLendingPoolLogicFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+  return withSaveAndVerify(sturdyLendingPoolLogic, eContractid.SturdyLendingPoolLogic, [], verify);
+};
+
 export const deployReserveLogicLibrary = async (verify?: boolean) =>
   withSaveAndVerify(
     await new ReserveLogicFactory(await getFirstSigner()).deploy(),
@@ -172,10 +182,11 @@ export const deployValidationLogic = async (
 
 export const deployAaveLibraries = async (
   verify?: boolean
-): Promise<LendingPoolLibraryAddresses> => {
+): Promise<SturdyLendingPoolLibraryAddresses> => {
   const reserveLogic = await deployReserveLogicLibrary(verify);
   const genericLogic = await deployGenericLogic(reserveLogic, verify);
   const validationLogic = await deployValidationLogic(reserveLogic, genericLogic, verify);
+  const sturdyLendingPoolLogic = await deploySturdyLendingPoolLogicLibrary(verify);
 
   // Hardcoded solidity placeholders, if any library changes path this will fail.
   // The '__$PLACEHOLDER$__ can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
@@ -191,6 +202,7 @@ export const deployAaveLibraries = async (
   return {
     ['__$de8c0cf1a7d7c36c802af9a64fb9d86036$__']: validationLogic.address,
     ['__$22cd43a9dda9ce44e9b92ba393b88fb9ac$__']: reserveLogic.address,
+    ['__$747238410b23b0f099d94029e8fda6d066$__']: sturdyLendingPoolLogic.address,
   };
 };
 

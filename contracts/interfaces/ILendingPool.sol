@@ -182,7 +182,8 @@ interface ILendingPool {
     address asset,
     uint256 amount,
     address onBehalfOf,
-    uint16 referralCode
+    uint16 referralCode,
+    bool collatoral
   ) external;
 
   /**
@@ -199,6 +200,13 @@ interface ILendingPool {
   function withdraw(
     address asset,
     uint256 amount,
+    address to
+  ) external returns (uint256);
+
+  function withdrawFrom(
+    address asset,
+    uint256 amount,
+    address from,
     address to
   ) external returns (uint256);
 

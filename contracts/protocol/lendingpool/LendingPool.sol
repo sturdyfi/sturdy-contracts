@@ -107,19 +107,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address onBehalfOf,
-    uint16 referralCode
-  ) external override whenNotPaused {
-    require(asset != WstETH, Errors.ST_LIQUIDITY_DEPOSIT_INVALID);
-    _deposit(asset, amount, onBehalfOf, referralCode, false);
-  }
-
-  function _deposit(
-    address asset,
-    uint256 amount,
-    address onBehalfOf,
     uint16 referralCode,
     bool collatoral
-  ) internal {
+  ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
@@ -160,19 +150,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
-    return _withdraw(asset, amount, to);
+    return _withdraw(asset, amount, msg.sender, to);
+  }
+
+  function withdrawFrom(
+    address asset,
+    uint256 amount,
+    address from,
+    address to
+  ) external override whenNotPaused returns (uint256) {
+    return _withdraw(asset, amount, from, to);
   }
 
   function _withdraw(
     address asset,
     uint256 amount,
+    address from,
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
 
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+    uint256 userBalance = IAToken(aToken).balanceOf(from);
 
     uint256 amountToWithdraw = amount;
 
@@ -185,7 +185,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw,
       userBalance,
       _reserves,
-      _usersConfig[msg.sender],
+      _usersConfig[from],
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -196,13 +196,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
     if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      _usersConfig[from].setUsingAsCollateral(reserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(asset, from);
     }
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+    IAToken(aToken).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+    emit Withdraw(asset, from, to, amountToWithdraw);
 
     return amountToWithdraw;
   }

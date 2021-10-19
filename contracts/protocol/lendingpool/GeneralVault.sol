@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity >=0.6.12;
 pragma experimental ABIEncoderV2;
 
 import 'hardhat/console.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
-contract GeneralVault {
+contract GeneralVault is Ownable {
   address public immutable lendingPool;
 
   constructor(address _lendingPool) public {
@@ -50,7 +51,12 @@ contract GeneralVault {
   /**
    * @dev Get yield based on strategy and re-deposit
    */
-  function processYield(address _asset) external virtual {}
+  function processYield() external virtual {}
+
+  /**
+   * @dev Get yield amount based on strategy
+   */
+  function getYield() external view virtual returns (uint256) {}
 
   /**
    * @dev Deposit to yield pool based on strategy and receive stAsset

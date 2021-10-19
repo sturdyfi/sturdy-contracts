@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity >=0.6.12;
 
 /**
  * @title Errors library
@@ -108,6 +108,8 @@ library Errors {
   string public constant VT_LIQUIDITY_DEPOSIT_INVALID = '83'; //Only accept USDC, USDT, DAI for liquidity deposit
   string public constant VT_COLLATORAL_WITHDRAW_INVALID = '84'; //Collatoral withdraw failed
   string public constant VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT = '85'; //Collatoral withdraw has not enough amount
+  string public constant VT_CONVERT_ASSET_BY_CURVE_INVALID = '86'; //Convert asset by curve invalid
+  string public constant VT_PROCESS_YIELD_INVALID = '87'; //Processing yield is invalid
 
   enum CollateralManagerErrors {
     NO_ERROR,

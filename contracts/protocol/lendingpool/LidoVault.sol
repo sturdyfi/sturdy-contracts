@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity 0.7.6;
 pragma experimental ABIEncoderV2;
 
 import 'hardhat/console.sol';
@@ -9,13 +9,19 @@ import {IWstETH} from '../../interfaces/IWstETH.sol';
 import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
+import {ISwapRouter} from '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
+import {TransferHelper} from '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
 contract LidoVault is GeneralVault {
   using SafeMath for uint256;
 
+  //ToDo: need to think about using registering flow instead of constant value
   address constant LIDO = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
-  address constant CurveSwap = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
+  address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
+  address constant UniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
   address constant WstETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
+  address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
   mapping(address => uint256) balanceOfETH;
   uint256 totalBalance;
@@ -26,6 +32,24 @@ contract LidoVault is GeneralVault {
    * @dev Receive Ether
    */
   receive() external payable {}
+
+  /**
+   * @dev Grab excess stETH which was from rebasing on Lido
+   */
+  function processYield() external override onlyOwner {
+    uint256 yieldStETH = _getYieldFromLido();
+    require(yieldStETH > 0, Errors.VT_PROCESS_YIELD_INVALID);
+
+    // Exchange stETH -> ETH via Curve
+    uint256 receivedETHAmount = _convertAssetByCurve(LIDO, yieldStETH);
+  }
+
+  /**
+   * @dev Get yield amount based on strategy
+   */
+  function getYield() external view override returns (uint256) {
+    return _getYieldFromLido();
+  }
 
   /**
    * @dev Deposit to yield pool based on strategy and receive stAsset
@@ -88,10 +112,8 @@ contract LidoVault is GeneralVault {
 
     if (_asset == address(0)) {
       // Exchange stETH -> ETH via Curve
-      IERC20(LIDO).approve(CurveSwap, stETHAmount);
-      uint256 minAmount = ICurveSwap(CurveSwap).get_dy(1, 0, stETHAmount);
-      uint256 receivedAmount = ICurveSwap(CurveSwap).exchange(1, 0, stETHAmount, minAmount);
-      (bool sent, bytes memory data) = address(_to).call{value: receivedAmount}('');
+      uint256 receivedETHAmount = _convertAssetByCurve(LIDO, stETHAmount);
+      (bool sent, bytes memory data) = address(_to).call{value: receivedETHAmount}('');
       require(sent, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
     } else {
       require(_asset == LIDO, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
@@ -99,17 +121,23 @@ contract LidoVault is GeneralVault {
     }
   }
 
-  // /**
-  //  * @dev Grab excess stETH which was from rebasing on Lido
-  //  * And deposit lendingPool (pool2) to distribute rewards of aToken for suppliers.
-  //  */
-  // function excessCollect() external returns (uint256) {
-  //   uint256 totalStETH = IERC20(LIDO).balanceOf(address(this));
-  //   uint256 excessStETH = totalStETH.sub(totalBalance);
-  //   if (excessStETH > 0) {
-  //     //ToDo deposit to lendingPool (pool2)
-  //   }
+  /**
+   * @dev Get yield amount based on Lido rebasing
+   */
+  function _getYieldFromLido() private view returns (uint256) {
+    uint256 totalStETH = IERC20(LIDO).balanceOf(address(this));
+    if (totalStETH > totalBalance) return totalStETH.sub(totalStETH);
 
-  //   return excessStETH;
-  // }
+    return 0;
+  }
+
+  /**
+   * @dev convert asset via curve
+   */
+  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount) private returns (uint256) {
+    IERC20(_fromAsset).approve(CurveswapLidoPool, _fromAmount);
+    uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
+    uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
+    return receivedAmount;
+  }
 }

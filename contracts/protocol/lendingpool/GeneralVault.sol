@@ -72,7 +72,7 @@ contract GeneralVault is Ownable {
    */
   function withdrawFromYieldPool(
     address _asset,
-    uint256 _amountToWithdraw,
+    uint256 _amount,
     address _to
   ) internal virtual {}
 

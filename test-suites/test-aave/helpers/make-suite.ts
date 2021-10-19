@@ -1,7 +1,7 @@
 import { evmRevert, evmSnapshot, DRE } from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
-  getSturdyLendingPool,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getAaveProtocolDataProvider,
   getAToken,
@@ -16,9 +16,10 @@ import {
   getFlashLiquidationAdapter,
   getParaSwapLiquiditySwapAdapter,
   getFirstSigner,
+  getLidoVault,
 } from '../../../helpers/contracts-getters';
 import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
-import { SturdyLendingPool } from '../../../types/SturdyLendingPool';
+import { LendingPool } from '../../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
 import { AToken } from '../../../types/AToken';
@@ -40,7 +41,7 @@ import { WETH9Mocked } from '../../../types/WETH9Mocked';
 import { WETHGateway } from '../../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../../markets/aave';
-import { FlashLiquidationAdapter } from '../../../types';
+import { FlashLiquidationAdapter, LidoVault } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ILido } from '../../../types/ILido';
@@ -60,7 +61,8 @@ export interface SignerWithAddress {
 export interface TestEnv {
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
-  pool: SturdyLendingPool;
+  pool: LendingPool;
+  lidoVault: LidoVault;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
@@ -91,7 +93,8 @@ const setBuidlerevmSnapshotId = (id: string) => {
 const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
-  pool: {} as SturdyLendingPool,
+  pool: {} as LendingPool,
+  lidoVault: {} as LidoVault,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
@@ -133,7 +136,8 @@ export async function initializeMakeSuite() {
     });
   }
   testEnv.deployer = deployer;
-  testEnv.pool = await getSturdyLendingPool();
+  testEnv.pool = await getLendingPool();
+  testEnv.lidoVault = await getLidoVault();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
@@ -167,6 +171,7 @@ export async function initializeMakeSuite() {
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const wstethAddress = reservesTokens.find((token) => token.symbol === 'wstETH')?.tokenAddress;
+  const stethAddress = reservesTokens.find((token) => token.symbol === 'stETH')?.tokenAddress;
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;

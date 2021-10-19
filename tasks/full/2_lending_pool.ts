@@ -2,7 +2,7 @@ import { task } from 'hardhat/config';
 import { getParamPerNetwork, insertContractAddressInDb } from '../../helpers/contracts-helpers';
 import {
   deployATokensAndRatesHelper,
-  deploySturdyLendingPool,
+  deployLendingPool,
   deployLendingPoolConfigurator,
   deployStableAndVariableTokensHelper,
 } from '../../helpers/contracts-deployments';
@@ -10,7 +10,7 @@ import { eContractid, eNetwork } from '../../helpers/types';
 import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import {
   getLendingPoolAddressesProvider,
-  getSturdyLendingPool,
+  getLendingPool,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
@@ -32,7 +32,7 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
       let lendingPoolImplAddress = getParamPerNetwork(LendingPool, network);
       if (!notFalsyOrZeroAddress(lendingPoolImplAddress)) {
         console.log('\tDeploying new lending pool implementation & libraries...');
-        const lendingPoolImpl = await deploySturdyLendingPool(verify);
+        const lendingPoolImpl = await deployLendingPool(verify);
         lendingPoolImplAddress = lendingPoolImpl.address;
         await lendingPoolImpl.initialize(addressesProvider.address);
       }
@@ -41,9 +41,9 @@ task('full:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
       await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImplAddress));
 
       const address = await addressesProvider.getLendingPool();
-      const lendingPoolProxy = await getSturdyLendingPool(address);
+      const lendingPoolProxy = await getLendingPool(address);
 
-      await insertContractAddressInDb(eContractid.SturdyLendingPool, lendingPoolProxy.address);
+      await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
       // Reuse/deploy lending pool configurator
       let lendingPoolConfiguratorImplAddress = getParamPerNetwork(LendingPoolConfigurator, network); //await deployLendingPoolConfigurator(verify);

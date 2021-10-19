@@ -91,6 +91,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _maxNumberOfReserves = 128;
   }
 
+  function registerVault(address _vaultAddress) external override onlyLendingPoolConfigurator {
+    _availableVaults[_vaultAddress] = true;
+  }
+
   /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
@@ -110,17 +114,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode,
     bool collatoral
   ) external override whenNotPaused {
+    if (collatoral) {
+      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+    }
+
     DataTypes.ReserveData storage reserve = _reserves[asset];
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
-    if (collatoral) {
-      IERC20(asset).safeTransfer(aToken, amount);
-    } else {
-      IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
-    }
+
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 

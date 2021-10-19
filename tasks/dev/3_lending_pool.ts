@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import {
   deployATokensAndRatesHelper,
-  deploySturdyLendingPool,
+  deployLendingPool,
   deployLendingPoolConfigurator,
   deployStableAndVariableTokensHelper,
 } from '../../helpers/contracts-deployments';
@@ -10,7 +10,7 @@ import { waitForTx } from '../../helpers/misc-utils';
 import {
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
-  getSturdyLendingPool,
+  getLendingPool,
 } from '../../helpers/contracts-getters';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
 
@@ -21,15 +21,15 @@ task('dev:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
 
     const addressesProvider = await getLendingPoolAddressesProvider();
 
-    const lendingPoolImpl = await deploySturdyLendingPool(verify);
+    const lendingPoolImpl = await deployLendingPool(verify);
 
     // Set lending pool impl to Address Provider
     await waitForTx(await addressesProvider.setLendingPoolImpl(lendingPoolImpl.address));
 
     const address = await addressesProvider.getLendingPool();
-    const lendingPoolProxy = await getSturdyLendingPool(address);
+    const lendingPoolProxy = await getLendingPool(address);
 
-    await insertContractAddressInDb(eContractid.SturdyLendingPool, lendingPoolProxy.address);
+    await insertContractAddressInDb(eContractid.LendingPool, lendingPoolProxy.address);
 
     const lendingPoolConfiguratorImpl = await deployLendingPoolConfigurator(verify);
 

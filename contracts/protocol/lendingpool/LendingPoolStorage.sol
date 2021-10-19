@@ -20,6 +20,9 @@ contract LendingPoolStorage {
   // the list of the available reserves, structured as a mapping for gas savings reasons
   mapping(uint256 => address) internal _reservesList;
 
+  // the available vaults
+  mapping(address => bool) internal _availableVaults;
+
   uint256 internal _reservesCount;
 
   bool internal _paused;

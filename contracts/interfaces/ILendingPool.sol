@@ -186,6 +186,8 @@ interface ILendingPool {
     bool collatoral
   ) external;
 
+  function registerVault(address _vaultAddress) external;
+
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC

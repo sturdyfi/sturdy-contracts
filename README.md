@@ -28,7 +28,7 @@ FORK=main yarn hardhat node
 FORK=main yarn hardhat compile
 ```
 
-- Next run the following task to deploy all smart contracts including sample contract "SturdyLendingPool"
+- Next run the following task to deploy all smart contracts including sample contract "LendingPool"
 ```
 yarn aave:evm:dev:fork:mainnet:migration
 ```

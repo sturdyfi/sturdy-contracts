@@ -1,7 +1,7 @@
 import { evmRevert, evmSnapshot, DRE } from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
-  getSturdyLendingPool,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getAaveProtocolDataProvider,
   getAToken,
@@ -110,7 +110,7 @@ export async function initializeMakeSuite() {
     });
   }
   testEnv.deployer = deployer;
-  testEnv.pool = await getSturdyLendingPool();
+  testEnv.pool = await getLendingPool();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

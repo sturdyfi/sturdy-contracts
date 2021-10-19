@@ -91,8 +91,8 @@ export enum eContractid {
   MockParaSwapAugustus = 'MockParaSwapAugustus',
   MockParaSwapAugustusRegistry = 'MockParaSwapAugustusRegistry',
   ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
-  SturdyLendingPool = 'SturdyLendingPool',
-  SturdyLendingPoolLogic = 'SturdyLendingPoolLogic',
+  LendingPool = 'LendingPool',
+  LidoVault = 'LidoVault',
 }
 
 /*

@@ -11,7 +11,7 @@ import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAaveProtocolDataProvider,
   getAddressById,
-  getSturdyLendingPool,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolAddressesProviderRegistry,
   getLendingPoolCollateralManager,
@@ -106,7 +106,7 @@ task('verify:general', 'Verify contracts at Etherscan')
 
       // Lending Pool implementation
       console.log('\n- Verifying LendingPool Implementation...\n');
-      await verifyContract(eContractid.SturdyLendingPool, lendingPoolImpl, []);
+      await verifyContract(eContractid.LendingPool, lendingPoolImpl, []);
 
       // Lending Pool Configurator implementation
       console.log('\n- Verifying LendingPool Configurator Implementation...\n');

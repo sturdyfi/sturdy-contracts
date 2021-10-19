@@ -1,10 +1,11 @@
 import BigNumber from 'bignumber.js';
+
+import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite } from './helpers/make-suite';
 import { RateMode } from '../../helpers/types';
 import { printUserAccountData, ETHfromWei, printDivider } from './helpers/utils/helpers';
-import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -87,6 +88,15 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
       '6500',
       'Invalid liquidation threshold'
     );
+
+    //approve protocol to access borrower wallet
+    await usdc.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    await expect(
+      pool
+        .connect(borrower.signer)
+        .repay(usdc.address, amountUSDCToBorrow, RateMode.Variable, borrower.address)
+    ).to.not.be.reverted;
   });
 });
 
@@ -174,66 +184,14 @@ makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier 
       '6500',
       'Invalid liquidation threshold'
     );
-  });
-});
 
-makeSuite('borrow wstETH', (testEnv) => {
-  it('Should revert if borrow wstETH. User1 deposits wstETH, User2 deposits ETH as collatoral and borrows wstETH', async () => {
-    const { wstETH, users, pool, lidoVault, oracle } = testEnv;
-    const ethers = (DRE as any).ethers;
-    const depositor = users[0];
-    const borrower = users[1];
-    printDivider();
-    const wstETHOwnerAddress = '0x73d1937bd68a970030b2ffda492860cfb87013c4';
-    const depositWstETH = '10';
-    //Make some test wstETH for depositor
-    await impersonateAccountsHardhat([wstETHOwnerAddress]);
-    const signer = await ethers.provider.getSigner(wstETHOwnerAddress);
-    await wstETH
-      .connect(signer)
-      .transfer(depositor.address, ethers.utils.parseEther(depositWstETH));
+    //approve protocol to access borrower wallet
+    await usdc.connect(borrower.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //approve protocol to access depositor wallet
-    await wstETH.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    //user 1 deposits 5 wstETH
-    const amountWstETHtoDeposit = await convertToCurrencyDecimals(wstETH.address, '5');
-
-    await expect(
-      pool
-        .connect(depositor.signer)
-        .deposit(wstETH.address, amountWstETHtoDeposit, depositor.address, '0', false)
-    ).to.not.be.reverted;
-
-    //Make 5ETH deposit for collatoral
-    await lidoVault
-      .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: ethers.utils.parseEther('5') });
-
-    const borrowerGlobalData = await pool.getUserAccountData(borrower.address);
-    printUserAccountData({
-      user: `Borrower ${borrower.address}`,
-      action: 'deposits',
-      amount: 5,
-      coin: 'swtETH',
-      ...borrowerGlobalData,
-    });
-    //user 2 borrows
-
-    const userGlobalData = await pool.getUserAccountData(borrower.address);
-    const wstETHPrice = await oracle.getAssetPrice(wstETH.address);
-
-    const amountWstETHToBorrow = await convertToCurrencyDecimals(
-      wstETH.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
-        .div(wstETHPrice.toString())
-        .multipliedBy(0.95)
-        .toFixed(0)
-    );
     await expect(
       pool
         .connect(borrower.signer)
-        .borrow(wstETH.address, amountWstETHToBorrow, RateMode.Stable, '0', borrower.address)
-    ).to.be.reverted;
+        .repay(usdc.address, amountUSDCToBorrow, RateMode.Variable, borrower.address)
+    ).to.not.be.reverted;
   });
 });

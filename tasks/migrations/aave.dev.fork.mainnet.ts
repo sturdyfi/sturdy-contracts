@@ -36,6 +36,9 @@ task('aave:dev:fork:mainnet', 'Deploy development enviroment')
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
+    console.log('7. Deploy Lido vault');
+    await DRE.run('full:deploy-lido-vault', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('8. Veryfing contracts');

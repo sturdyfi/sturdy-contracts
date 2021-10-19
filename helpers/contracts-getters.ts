@@ -32,7 +32,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
-  SturdyLendingPoolFactory,
+  LendingPoolFactory,
+  LidoVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
@@ -306,7 +307,7 @@ export const getProxy = async (address: tEthereumAddress) =>
   await InitializableAdminUpgradeabilityProxyFactory.connect(address, await getFirstSigner());
 
 export const getLendingPoolImpl = async (address?: tEthereumAddress) =>
-  await SturdyLendingPoolFactory.connect(
+  await LendingPoolFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.LendingPoolImpl}.${DRE.network.name}`).value()
@@ -424,11 +425,17 @@ export const getParaSwapLiquiditySwapAdapter = async (address?: tEthereumAddress
     await getFirstSigner()
   );
 
-export const getSturdyLendingPool = async (address?: tEthereumAddress) =>
-  await SturdyLendingPoolFactory.connect(
+export const getLendingPool = async (address?: tEthereumAddress) =>
+  await LendingPoolFactory.connect(
     address ||
       (
-        await getDb().get(`${eContractid.SturdyLendingPool}.${DRE.network.name}`).value()
+        await getDb().get(`${eContractid.LendingPool}.${DRE.network.name}`).value()
       ).address,
+    await getFirstSigner()
+  );
+
+export const getLidoVault = async (address?: tEthereumAddress) =>
+  await LidoVaultFactory.connect(
+    address || (await getDb().get(`${eContractid.LidoVault}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );

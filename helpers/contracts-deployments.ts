@@ -51,7 +51,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
-  SturdyLendingPoolFactory,
+  LendingPoolFactory,
+  LidoVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -65,7 +66,7 @@ import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariable
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { SturdyLendingPoolLibraryAddresses } from '../types/SturdyLendingPoolFactory';
+import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import { UiPoolDataProvider } from '../types';
 
 export const deployUiPoolDataProvider = async (
@@ -120,16 +121,6 @@ export const deployLendingPoolConfigurator = async (verify?: boolean) => {
   );
 };
 
-export const deploySturdyLendingPoolLogicLibrary = async (verify?: boolean) => {
-  const sturdyLendingPoolLogicFactory = await DRE.ethers.getContractFactory(
-    eContractid.SturdyLendingPoolLogic
-  );
-  const sturdyLendingPoolLogic = await (
-    await sturdyLendingPoolLogicFactory.connect(await getFirstSigner()).deploy()
-  ).deployed();
-  return withSaveAndVerify(sturdyLendingPoolLogic, eContractid.SturdyLendingPoolLogic, [], verify);
-};
-
 export const deployReserveLogicLibrary = async (verify?: boolean) =>
   withSaveAndVerify(
     await new ReserveLogicFactory(await getFirstSigner()).deploy(),
@@ -182,11 +173,10 @@ export const deployValidationLogic = async (
 
 export const deployAaveLibraries = async (
   verify?: boolean
-): Promise<SturdyLendingPoolLibraryAddresses> => {
+): Promise<LendingPoolLibraryAddresses> => {
   const reserveLogic = await deployReserveLogicLibrary(verify);
   const genericLogic = await deployGenericLogic(reserveLogic, verify);
   const validationLogic = await deployValidationLogic(reserveLogic, genericLogic, verify);
-  const sturdyLendingPoolLogic = await deploySturdyLendingPoolLogicLibrary(verify);
 
   // Hardcoded solidity placeholders, if any library changes path this will fail.
   // The '__$PLACEHOLDER$__ can be calculated via solidity keccak, but the LendingPoolLibraryAddresses Type seems to
@@ -202,18 +192,14 @@ export const deployAaveLibraries = async (
   return {
     ['__$de8c0cf1a7d7c36c802af9a64fb9d86036$__']: validationLogic.address,
     ['__$22cd43a9dda9ce44e9b92ba393b88fb9ac$__']: reserveLogic.address,
-    ['__$747238410b23b0f099d94029e8fda6d066$__']: sturdyLendingPoolLogic.address,
   };
 };
 
-export const deploySturdyLendingPool = async (verify?: boolean) => {
+export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deployAaveLibraries(verify);
-  const lendingPoolImpl = await new SturdyLendingPoolFactory(
-    libraries,
-    await getFirstSigner()
-  ).deploy();
+  const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
-  return withSaveAndVerify(lendingPoolImpl, eContractid.SturdyLendingPool, [], verify);
+  return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPool, [], verify);
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>
@@ -682,6 +668,14 @@ export const deployParaSwapLiquiditySwapAdapter = async (
   withSaveAndVerify(
     await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.ParaSwapLiquiditySwapAdapter,
+    args,
+    verify
+  );
+
+export const deployLidoVault = async (args: [tEthereumAddress], verify?: boolean) =>
+  withSaveAndVerify(
+    await new LidoVaultFactory(await getFirstSigner()).deploy(...args),
+    eContractid.LidoVault,
     args,
     verify
   );

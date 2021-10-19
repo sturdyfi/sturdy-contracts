@@ -5,7 +5,7 @@ import { ProtocolErrors } from '../../helpers/types';
 import { ethers } from 'ethers';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { waitForTx } from '../../helpers/misc-utils';
-import { deploySturdyLendingPool } from '../../helpers/contracts-deployments';
+import { deployLendingPool } from '../../helpers/contracts-deployments';
 
 const { utils } = ethers;
 
@@ -47,7 +47,7 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
 
     const currentAddressesProviderOwner = users[1];
 
-    const mockLendingPool = await deploySturdyLendingPool();
+    const mockLendingPool = await deployLendingPool();
     const proxiedAddressId = utils.keccak256(utils.toUtf8Bytes('RANDOM_PROXIED'));
 
     const proxiedAddressSetReceipt = await waitForTx(

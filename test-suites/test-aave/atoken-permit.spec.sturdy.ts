@@ -41,7 +41,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
     await dai.connect(signer).transfer(deployer.address, amountDAItoDeposit);
     await dai.connect(deployer.signer).approve(pool.address, amountDAItoDeposit);
 
-    await pool.deposit(dai.address, amountDAItoDeposit, deployer.address, 0);
+    await pool.deposit(dai.address, amountDAItoDeposit, deployer.address, 0, false);
   });
 
   it('Reverts submitting a permit with 0 expiration', async () => {

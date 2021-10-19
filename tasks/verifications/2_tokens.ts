@@ -18,7 +18,7 @@ import {
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork, verifyContract } from '../../helpers/contracts-helpers';
 import { eContractid, eNetwork, ICommonConfiguration, IReserveParams } from '../../helpers/types';
-import { LendingPoolConfiguratorFactory, SturdyLendingPoolFactory } from '../../types';
+import { LendingPoolConfiguratorFactory, LendingPoolFactory } from '../../types';
 
 task('verify:tokens', 'Deploy oracles for dev enviroment')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
@@ -30,7 +30,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
     const treasuryAddress = await getTreasuryAddress(poolConfig);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const lendingPoolProxy = SturdyLendingPoolFactory.connect(
+    const lendingPoolProxy = LendingPoolFactory.connect(
       await addressesProvider.getLendingPool(),
       await getFirstSigner()
     );

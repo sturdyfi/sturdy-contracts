@@ -186,6 +186,8 @@ interface ILendingPool {
     bool collatoral
   ) external;
 
+  function depositYield(address asset, uint256 amount) external;
+
   function registerVault(address _vaultAddress) external;
 
   /**

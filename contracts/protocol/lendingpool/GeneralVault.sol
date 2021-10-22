@@ -20,7 +20,7 @@ contract GeneralVault is Ownable {
    * @param _amount The deposit amount
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
-    (address _stAsset, uint256 _stAssetAmount) = depositToYieldPool(_asset, _amount);
+    (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
     ILendingPool(lendingPool).deposit(_stAsset, _stAssetAmount, msg.sender, 0, true);
   }
 
@@ -38,14 +38,14 @@ contract GeneralVault is Ownable {
     uint256 _amount,
     address _to
   ) external virtual {
-    (address _stAsset, uint256 _stAssetAmount) = getWithdrawalAmount(_asset, _amount);
+    (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
     uint256 _amountToWithdraw = ILendingPool(lendingPool).withdrawFrom(
       _stAsset,
       _stAssetAmount,
       msg.sender,
       address(this)
     );
-    withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+    _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
   }
 
   /**
@@ -58,10 +58,14 @@ contract GeneralVault is Ownable {
    */
   function getYield() external view virtual returns (uint256) {}
 
+  function _depositYield(address _asset, uint256 _amount) internal {
+    ILendingPool(lendingPool).depositYield(_asset, _amount);
+  }
+
   /**
    * @dev Deposit to yield pool based on strategy and receive stAsset
    */
-  function depositToYieldPool(address _asset, uint256 _amount)
+  function _depositToYieldPool(address _asset, uint256 _amount)
     internal
     virtual
     returns (address, uint256)
@@ -70,7 +74,7 @@ contract GeneralVault is Ownable {
   /**
    * @dev Withdraw from yield pool based on strategy with stAsset and deliver asset
    */
-  function withdrawFromYieldPool(
+  function _withdrawFromYieldPool(
     address _asset,
     uint256 _amount,
     address _to
@@ -79,7 +83,7 @@ contract GeneralVault is Ownable {
   /**
    * @dev Get Withdrawal amount of stAsset based on strategy
    */
-  function getWithdrawalAmount(address _asset, uint256 _amount)
+  function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
     view
     virtual

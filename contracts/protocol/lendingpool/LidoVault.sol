@@ -30,6 +30,9 @@ contract LidoVault is GeneralVault {
 
   mapping(address => uint256) balanceOfETH;
 
+  // asset address -> reserveIncome from yield based on strategy
+  mapping(address => uint256) reserveIncome;
+
   constructor(address _lendingPool) public GeneralVault(_lendingPool) {}
 
   /**
@@ -73,6 +76,8 @@ contract LidoVault is GeneralVault {
       IERC20(USDC).balanceOf(address(this)) == receivedUSDCAmount,
       Errors.VT_PROCESS_YIELD_INVALID
     );
+
+    _depositYield(USDC, receivedUSDCAmount);
   }
 
   /**
@@ -85,7 +90,7 @@ contract LidoVault is GeneralVault {
   /**
    * @dev Deposit to yield pool based on strategy and receive stAsset
    */
-  function depositToYieldPool(address _asset, uint256 _amount)
+  function _depositToYieldPool(address _asset, uint256 _amount)
     internal
     override
     returns (address, uint256)
@@ -115,7 +120,7 @@ contract LidoVault is GeneralVault {
   /**
    * @dev Get Withdrawal amount of stAsset based on strategy
    */
-  function getWithdrawalAmount(address _asset, uint256 _amount)
+  function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
     view
     override
@@ -128,7 +133,7 @@ contract LidoVault is GeneralVault {
   /**
    * @dev Withdraw from yield pool based on strategy with stAsset and deliver asset
    */
-  function withdrawFromYieldPool(
+  function _withdrawFromYieldPool(
     address _asset,
     uint256 _amount,
     address _to

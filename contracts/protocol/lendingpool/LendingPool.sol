@@ -140,6 +140,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
+   * @dev Deposits an `amount` of underlying asset into the reserve for supplier from vault
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   **/
+  function depositYield(address asset, uint256 amount) external override whenNotPaused {
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+
+    _vaultsYield[msg.sender] = _vaultsYield[msg.sender].add(amount);
+    _totalVaultsYield = _totalVaultsYield.add(amount);
+
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
+  }
+
+  /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
    * @param asset The address of the underlying asset to withdraw
@@ -692,7 +707,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     override
     returns (uint256)
   {
-    return _reserves[asset].getNormalizedIncome();
+    uint256 income = _reserves[asset].getNormalizedIncome();
+
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    uint256 scaledATokenSupply = IAToken(reserve.aTokenAddress).scaledTotalSupply();
+    income = income.add(_totalVaultsYield.wadToRay().rayDiv(scaledATokenSupply.wadToRay()));
+    return income;
   }
 
   /**

@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { HardhatUserConfig } from 'hardhat/types';
+import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
 import { eEthereumNetwork, eNetwork, ePolygonNetwork, eXDaiNetwork } from './helpers/types';
@@ -21,6 +21,7 @@ import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
 import 'solidity-coverage';
+import "hardhat-contract-sizer";
 import { fork } from 'child_process';
 
 const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
@@ -67,11 +68,22 @@ let forkMode;
 
 const buidlerConfig: HardhatUserConfig = {
   solidity: {
-    version: '0.6.12',
-    settings: {
-      optimizer: { enabled: true, runs: 200 },
-      evmVersion: 'istanbul',
-    },
+    compilers: [
+      {
+        version: "0.6.12",
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+          evmVersion: 'istanbul',
+        },
+      },
+      {
+        version: "0.7.6",
+        settings: {
+          optimizer: { enabled: true, runs: 200 },
+          evmVersion: 'istanbul',
+        },
+      },
+    ],
   },
   typechain: {
     outDir: 'types',
@@ -117,12 +129,24 @@ const buidlerConfig: HardhatUserConfig = {
       forking: buildForkConfig(),
     },
 
-      localhost: {
-          chainId: 1337,
-          throwOnTransactionFailures: true,
-          throwOnCallFailures: true,
-          url: 'http://localhost:8545',
-      },
+    localhost: {
+      chainId: 1337,
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
+      url: 'http://localhost:8545',
+    },
+
+    forked_main: {
+      chainId: 31337,
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
+      url: 'http://localhost:8545',
+      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+      gas: DEFAULT_BLOCK_GAS_LIMIT,
+      gasPrice: 8000000000,
+      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
+      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
+    },
 
     buidlerevm_docker: {
       hardfork: 'berlin',

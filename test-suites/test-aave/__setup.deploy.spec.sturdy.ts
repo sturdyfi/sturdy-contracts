@@ -5,6 +5,7 @@ import {
   getEthersSigners,
   registerContractInJsonDb,
   getEthersSignersAddresses,
+  getParamPerNetwork,
 } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
@@ -32,7 +33,7 @@ import {
   deployParaSwapLiquiditySwapAdapter,
   authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
-import { eEthereumNetwork } from '../../helpers/types';
+import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -55,8 +56,10 @@ import AaveConfig from '../../markets/aave';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
+  getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
+  getPriceOracle,
 } from '../../helpers/contracts-getters';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 
@@ -72,6 +75,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
+    console.log(tokenSymbol);
     if (tokenSymbol === 'WETH') {
       tokens[tokenSymbol] = await deployWETHMocked();
       await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
@@ -150,10 +154,10 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {
       WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
-   //   TUSD: mockTokens.TUSD.address,
+      //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
       USDT: mockTokens.USDT.address,
- /*
+      /*
       SUSD: mockTokens.SUSD.address,
       AAVE: mockTokens.AAVE.address,
       BAT: mockTokens.BAT.address,
@@ -192,11 +196,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       BptBALWETH: mockTokens.BptBALWETH.address,
       WMATIC: mockTokens.WMATIC.address, */
       USD: USD_ADDRESS,
-/*       
+      /*       
       STAKE: mockTokens.STAKE.address,
       xSUSHI: mockTokens.xSUSHI.address, 
 */
-      stETH: mockTokens.stETH.address,
+      wstETH: mockTokens.wstETH.address,
     },
     fallbackOracle
   );
@@ -248,12 +252,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
-  const {
-    ATokenNamePrefix,
-    StableDebtTokenNamePrefix,
-    VariableDebtTokenNamePrefix,
-    SymbolPrefix,
-  } = config;
+  const { ATokenNamePrefix, StableDebtTokenNamePrefix, VariableDebtTokenNamePrefix, SymbolPrefix } =
+    config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(
@@ -301,13 +301,23 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.timeEnd('setup');
 };
 
+const buildMissingTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
+  if (!process.env.FORK) return;
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  const augustus = await deployMockParaSwapAugustus();
+  const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
+  await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
+};
+
 before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
   const FORK = process.env.FORK;
 
   if (FORK) {
-    await rawBRE.run('aave:mainnet');
+    await rawBRE.run('aave:dev:fork:mainnet');
+    await buildMissingTestEnv(deployer, secondaryWallet);
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

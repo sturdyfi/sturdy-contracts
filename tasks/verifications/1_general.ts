@@ -53,7 +53,8 @@ task('verify:general', 'Verify contracts at Etherscan')
       : await getLendingPoolAddressesProviderRegistry();
     const lendingPoolAddress = await addressesProvider.getLendingPool();
     const lendingPoolConfiguratorAddress = await addressesProvider.getLendingPoolConfigurator(); //getLendingPoolConfiguratorProxy();
-    const lendingPoolCollateralManagerAddress = await addressesProvider.getLendingPoolCollateralManager();
+    const lendingPoolCollateralManagerAddress =
+      await addressesProvider.getLendingPoolCollateralManager();
 
     const lendingPoolProxy = await getProxy(lendingPoolAddress);
     const lendingPoolConfiguratorProxy = await getProxy(lendingPoolConfiguratorAddress);

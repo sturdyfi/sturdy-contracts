@@ -15,6 +15,8 @@ import {
   getUniswapRepayAdapter,
   getFlashLiquidationAdapter,
   getParaSwapLiquiditySwapAdapter,
+  getFirstSigner,
+  getLidoVault,
 } from '../../../helpers/contracts-getters';
 import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -39,9 +41,14 @@ import { WETH9Mocked } from '../../../types/WETH9Mocked';
 import { WETHGateway } from '../../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../../markets/aave';
-import { FlashLiquidationAdapter } from '../../../types';
+import { FlashLiquidationAdapter, LidoVault } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
+import { ILido } from '../../../types/ILido';
+import { ILidoFactory } from '../../../types/ILidoFactory';
+import { IWstETHFactory } from '../../../types/IWstETHFactory';
+import { IWstETH } from '../../../types/IWstETH';
+import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -55,6 +62,7 @@ export interface TestEnv {
   deployer: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
+  lidoVault: LidoVault;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
@@ -64,7 +72,9 @@ export interface TestEnv {
   aDai: AToken;
   usdc: MintableERC20;
   aave: MintableERC20;
-  stETH: MintableERC20;
+  wstETH: IWstETH;
+  awstETH: AToken;
+  lido: ILido;
   addressesProvider: LendingPoolAddressesProvider;
   uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
   uniswapRepayAdapter: UniswapRepayAdapter;
@@ -72,6 +82,7 @@ export interface TestEnv {
   wethGateway: WETHGateway;
   flashLiquidationAdapter: FlashLiquidationAdapter;
   paraswapLiquiditySwapAdapter: ParaSwapLiquiditySwapAdapter;
+  registryOwnerSigner: Signer;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -83,6 +94,7 @@ const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
+  lidoVault: {} as LidoVault,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
@@ -92,7 +104,9 @@ const testEnv: TestEnv = {
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
   aave: {} as MintableERC20,
-  stETH: {} as MintableERC20,
+  wstETH: {} as IWstETH,
+  awstETH: {} as AToken,
+  lido: {} as ILido,
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
   uniswapRepayAdapter: {} as UniswapRepayAdapter,
@@ -103,6 +117,12 @@ const testEnv: TestEnv = {
 } as TestEnv;
 
 export async function initializeMakeSuite() {
+  // Mainnet missing addresses
+  const lidoAddress = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
+  const uniswapLiquiditySwapAdapterAddress = '0x3b9653eD3992d4339d8B6bF3379997edBbCeaA4d';
+  const uniswapRepayAdapterAddress = '0xF9807Be7bD65de8ddF59830790056A3353459feF';
+  const flashLiquidationAdapterAddress = '0x52E3a370Bad37956ec281385AFC97978d734139d';
+
   const [_deployer, ...restSigners] = await getEthersSigners();
   const deployer: SignerWithAddress = {
     address: await _deployer.getAddress(),
@@ -117,6 +137,7 @@ export async function initializeMakeSuite() {
   }
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
+  testEnv.lidoVault = await getLidoVault();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
@@ -126,6 +147,14 @@ export async function initializeMakeSuite() {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
       getParamPerNetwork(AaveConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
+    testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
+
+    const poolConfig = loadPoolConfig(ConfigNames.Aave);
+    const providerRegistryOwner = getParamPerNetwork(
+      poolConfig.ProviderRegistryOwner,
+      process.env.FORK as eNetwork
+    );
+    testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     testEnv.oracle = await getPriceOracle();
@@ -137,37 +166,45 @@ export async function initializeMakeSuite() {
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
+  const awstETHAddress = allTokens.find((aToken) => aToken.symbol === 'awstETH')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
+  const wstethAddress = reservesTokens.find((token) => token.symbol === 'wstETH')?.tokenAddress;
   const stethAddress = reservesTokens.find((token) => token.symbol === 'stETH')?.tokenAddress;
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
-  const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
-  
-  if (!aDaiAddress || !aWEthAddress) {
+  // const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
+
+  if (!aDaiAddress || !aWEthAddress || !awstETHAddress) {
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress || /* !aaveAddress || */ !wethAddress || !stethAddress) {
+  if (!daiAddress || !usdcAddress || /* !aaveAddress ||  !wethAddress || */ !wstethAddress) {
     process.exit(1);
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
+  testEnv.awstETH = await getAToken(awstETHAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
-  testEnv.stETH = await getMintableERC20(stethAddress);
-//  testEnv.aave = await getMintableERC20(aaveAddress);
-  testEnv.weth = await getWETHMocked(wethAddress);
-  testEnv.wethGateway = await getWETHGateway();
+  testEnv.wstETH = IWstETHFactory.connect(wstethAddress, deployer.signer);
+  //  testEnv.aave = await getMintableERC20(aaveAddress);
+  // testEnv.weth = await getWETHMocked(wethAddress);
+  // testEnv.wethGateway = await getWETHGateway();
 
-  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter();
-  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter();
-  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter();
+  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter(
+    uniswapLiquiditySwapAdapterAddress
+  );
+  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter(uniswapRepayAdapterAddress);
+  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter(
+    flashLiquidationAdapterAddress
+  );
 
   testEnv.paraswapLiquiditySwapAdapter = await getParaSwapLiquiditySwapAdapter();
+  testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

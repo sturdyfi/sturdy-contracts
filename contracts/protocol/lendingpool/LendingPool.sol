@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
-import "hardhat/console.sol";
+import 'hardhat/console.sol';
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -91,6 +91,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     _maxNumberOfReserves = 128;
   }
 
+  function registerVault(address _vaultAddress) external override onlyLendingPoolConfigurator {
+    _availableVaults[_vaultAddress] = true;
+  }
+
   /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
@@ -103,9 +107,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    *   0 if the action is executed directly by the user, without any middle-man
    **/
 
-  //todo:supplyers also uses, usdc
-  //todo:if steth as coll
-
   function deposit(
     address asset,
     uint256 amount,
@@ -113,29 +114,44 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode,
     bool collatoral
   ) external override whenNotPaused {
-    //todo: asset - should be address of stETH
+    if (collatoral) {
+      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+    }
+
     DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    //todo: amount of stETH
     ValidationLogic.validateDeposit(reserve, amount);
-
-    //todo: aTokens should be named like aUSDT, aUSDC, ......     aSt
     address aToken = reserve.aTokenAddress;
 
     reserve.updateState();
     reserve.updateInterestRates(asset, aToken, amount, 0);
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
-    //todo: add borrowingEnabled to exclude usdc, usdt ... as collatoral
-    console.log('-----collatoral-----', collatoral);
     if (isFirstDeposit) {
-        _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
-        emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf); //todo: just for stETH but not for USDC
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
+      if (collatoral) {
+        emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
+      }
     }
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
+  }
+
+  /**
+   * @dev Deposits an `amount` of underlying asset into the reserve for supplier from vault
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   **/
+  function depositYield(address asset, uint256 amount) external override whenNotPaused {
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+
+    _vaultsYield[msg.sender] = _vaultsYield[msg.sender].add(amount);
+    _totalVaultsYield = _totalVaultsYield.add(amount);
+
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
   }
 
   /**
@@ -154,11 +170,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
+    return _withdraw(asset, amount, msg.sender, to);
+  }
+
+  function withdrawFrom(
+    address asset,
+    uint256 amount,
+    address from,
+    address to
+  ) external override whenNotPaused returns (uint256) {
+    return _withdraw(asset, amount, from, to);
+  }
+
+  function _withdraw(
+    address asset,
+    uint256 amount,
+    address from,
+    address to
+  ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     address aToken = reserve.aTokenAddress;
 
-    uint256 userBalance = IAToken(aToken).balanceOf(msg.sender);
+    uint256 userBalance = IAToken(aToken).balanceOf(from);
 
     uint256 amountToWithdraw = amount;
 
@@ -171,7 +205,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw,
       userBalance,
       _reserves,
-      _usersConfig[msg.sender],
+      _usersConfig[from],
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -182,13 +216,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
 
     if (amountToWithdraw == userBalance) {
-      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+      _usersConfig[from].setUsingAsCollateral(reserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(asset, from);
     }
 
-    IAToken(aToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+    IAToken(aToken).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
 
-    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+    emit Withdraw(asset, from, to, amountToWithdraw);
 
     return amountToWithdraw;
   }
@@ -265,8 +299,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount =
-      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
+    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -443,17 +478,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receiveAToken
-        )
-      );
+    (bool success, bytes memory result) = collateralManager.delegatecall(
+      abi.encodeWithSignature(
+        'liquidationCall(address,address,address,uint256,bool)',
+        collateralAsset,
+        debtAsset,
+        user,
+        debtToCover,
+        receiveAToken
+      )
+    );
 
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
@@ -673,7 +707,12 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     override
     returns (uint256)
   {
-    return _reserves[asset].getNormalizedIncome();
+    uint256 income = _reserves[asset].getNormalizedIncome();
+
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    uint256 scaledATokenSupply = IAToken(reserve.aTokenAddress).scaledTotalSupply();
+    income = income.add(_totalVaultsYield.wadToRay().rayDiv(scaledATokenSupply.wadToRay()));
+    return income;
   }
 
   /**
@@ -724,7 +763,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the fee on flash loans 
+   * @dev Returns the fee on flash loans
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -870,10 +909,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH =
-      IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-        10**reserve.configuration.getDecimals()
-      );
+    uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
+      10**reserve.configuration.getDecimals()
+    );
 
     ValidationLogic.validateBorrow(
       vars.asset,

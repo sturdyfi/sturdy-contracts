@@ -104,12 +104,12 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
 
       const lendingPoolAddress = await addressesProvider.getLendingPool();
 
-      let gateWay = getParamPerNetwork(WethGateway, network);
-      if (!notFalsyOrZeroAddress(gateWay)) {
-        gateWay = (await getWETHGateway()).address;
-      }
-      console.log('GATEWAY', gateWay);
-      await authorizeWETHGateway(gateWay, lendingPoolAddress);
+      // let gateWay = getParamPerNetwork(WethGateway, network);
+      // if (!notFalsyOrZeroAddress(gateWay)) {
+      //   gateWay = (await getWETHGateway()).address;
+      // }
+      // console.log('GATEWAY', gateWay);
+      // await authorizeWETHGateway(gateWay, lendingPoolAddress);
     } catch (err) {
       console.error(err);
       exit(1);

@@ -1,10 +1,14 @@
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../helpers/constants';
 import { BUIDLEREVM_CHAINID } from '../../helpers/buidler-constants';
-import { buildPermitParams, getSignatureFromTypedData } from '../../helpers/contracts-helpers';
+import {
+  buildPermitParams,
+  convertToCurrencyDecimals,
+  getSignatureFromTypedData,
+} from '../../helpers/contracts-helpers';
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { makeSuite, TestEnv } from './helpers/make-suite';
-import { DRE } from '../../helpers/misc-utils';
+import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { waitForTx } from '../../helpers/misc-utils';
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 
@@ -28,11 +32,16 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
 
   it('Get aDAI for tests', async () => {
     const { dai, pool, deployer } = testEnv;
+    const daiOwnerAddress = '0xC2c7D100d234D23cd7233066a5FEE97f56DB171C';
+    const ethers = (DRE as any).ethers;
 
-    await dai.mint(parseEther('20000'));
-    await dai.approve(pool.address, parseEther('20000'));
+    await impersonateAccountsHardhat([daiOwnerAddress]);
+    const signer = await ethers.provider.getSigner(daiOwnerAddress);
+    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
+    await dai.connect(signer).transfer(deployer.address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).approve(pool.address, amountDAItoDeposit);
 
-    await pool.deposit(dai.address, parseEther('20000'), deployer.address, 0);
+    await pool.deposit(dai.address, amountDAItoDeposit, deployer.address, 0, false);
   });
 
   it('Reverts submitting a permit with 0 expiration', async () => {

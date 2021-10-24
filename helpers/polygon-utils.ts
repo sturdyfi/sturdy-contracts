@@ -120,7 +120,7 @@ export const verifyAtPolygon = async (
     }
 
     throw Error(JSON.stringify(response.data, null, 2));
-  } catch (error) {
+  } catch (error: any) {
     if (error?.message.includes('Smart-contract already verified.')) {
       console.log(
         `[Polygon Verify] Already verified. Check it at: https://explorer-${net}.maticvigil.com/address/${instance.address}/contracts) \n`

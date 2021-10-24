@@ -9,8 +9,8 @@ import { eContractid } from '../../helpers/types';
 import { waitForTx } from '../../helpers/misc-utils';
 import {
   getLendingPoolAddressesProvider,
-  getLendingPool,
   getLendingPoolConfiguratorProxy,
+  getLendingPool,
 } from '../../helpers/contracts-getters';
 import { insertContractAddressInDb } from '../../helpers/contracts-helpers';
 

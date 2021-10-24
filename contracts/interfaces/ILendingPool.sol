@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity >=0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
@@ -19,7 +19,7 @@ interface ILendingPool {
     address user,
     address indexed onBehalfOf,
     uint256 amount,
-    uint16 indexed referral    
+    uint16 indexed referral
   );
 
   /**
@@ -186,6 +186,10 @@ interface ILendingPool {
     bool collatoral
   ) external;
 
+  function depositYield(address asset, uint256 amount) external;
+
+  function registerVault(address _vaultAddress) external;
+
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
@@ -200,6 +204,13 @@ interface ILendingPool {
   function withdraw(
     address asset,
     uint256 amount,
+    address to
+  ) external returns (uint256);
+
+  function withdrawFrom(
+    address asset,
+    uint256 amount,
+    address from,
     address to
   ) external returns (uint256);
 

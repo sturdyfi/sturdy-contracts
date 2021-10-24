@@ -28,7 +28,6 @@ import {
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
   LendingPoolConfiguratorFactory,
-  LendingPoolFactory,
   LendingRateOracleFactory,
   MintableDelegationERC20Factory,
   MintableERC20Factory,
@@ -52,6 +51,8 @@ import {
   WETH9MockedFactory,
   WETHGatewayFactory,
   FlashLiquidationAdapterFactory,
+  LendingPoolFactory,
+  LidoVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -667,6 +668,14 @@ export const deployParaSwapLiquiditySwapAdapter = async (
   withSaveAndVerify(
     await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
     eContractid.ParaSwapLiquiditySwapAdapter,
+    args,
+    verify
+  );
+
+export const deployLidoVault = async (args: [tEthereumAddress], verify?: boolean) =>
+  withSaveAndVerify(
+    await new LidoVaultFactory(await getFirstSigner()).deploy(...args),
+    eContractid.LidoVault,
     args,
     verify
   );

@@ -151,24 +151,24 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {
       WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
-   //   TUSD: mockTokens.TUSD.address,
+      //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
       USDT: mockTokens.USDT.address,
-    //  SUSD: mockTokens.SUSD.address,
-    //  AAVE: mockTokens.AAVE.address,
-    //  BAT: mockTokens.BAT.address,
-   //   MKR: mockTokens.MKR.address,
-  //    LINK: mockTokens.LINK.address,
-  //    KNC: mockTokens.KNC.address,
+      //  SUSD: mockTokens.SUSD.address,
+      //  AAVE: mockTokens.AAVE.address,
+      //  BAT: mockTokens.BAT.address,
+      //   MKR: mockTokens.MKR.address,
+      //    LINK: mockTokens.LINK.address,
+      //    KNC: mockTokens.KNC.address,
       WBTC: mockTokens.WBTC.address,
-   //   MANA: mockTokens.MANA.address,
-   //   ZRX: mockTokens.ZRX.address,
-   //   SNX: mockTokens.SNX.address,
-   //  BUSD: mockTokens.BUSD.address,
-   //   YFI: mockTokens.BUSD.address,
-   //  REN: mockTokens.REN.address,
+      //   MANA: mockTokens.MANA.address,
+      //   ZRX: mockTokens.ZRX.address,
+      //   SNX: mockTokens.SNX.address,
+      //  BUSD: mockTokens.BUSD.address,
+      //   YFI: mockTokens.BUSD.address,
+      //  REN: mockTokens.REN.address,
       UNI: mockTokens.UNI.address,
-   //   ENJ: mockTokens.ENJ.address,
+      //   ENJ: mockTokens.ENJ.address,
       // DAI: mockTokens.LpDAI.address,
       // USDC: mockTokens.LpUSDC.address,
       // USDT: mockTokens.LpUSDT.address,
@@ -194,7 +194,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       USD: USD_ADDRESS,
       STAKE: mockTokens.STAKE.address,
       xSUSHI: mockTokens.xSUSHI.address,
-      stETH: mockTokens.stETH.address,
+      wstETH: mockTokens.wstETH.address,
     },
     fallbackOracle
   );
@@ -246,12 +246,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
 
   const config = loadPoolConfig(ConfigNames.Aave);
 
-  const {
-    ATokenNamePrefix,
-    StableDebtTokenNamePrefix,
-    VariableDebtTokenNamePrefix,
-    SymbolPrefix,
-  } = config;
+  const { ATokenNamePrefix, StableDebtTokenNamePrefix, VariableDebtTokenNamePrefix, SymbolPrefix } =
+    config;
   const treasuryAddress = await getTreasuryAddress(config);
 
   await initReservesByHelper(

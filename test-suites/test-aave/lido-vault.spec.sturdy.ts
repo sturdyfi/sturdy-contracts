@@ -9,6 +9,7 @@ import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { printDivider } from './helpers/utils/helpers';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
+import { ILidoFactory } from '../../types/ILidoFactory';
 
 const { parseEther } = ethers.utils;
 
@@ -114,5 +115,34 @@ makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
     await expect(
       lidoVault.connect(depositor2.signer).depositCollateral(wstETH.address, amountWstETHtoDeposit)
     ).to.be.reverted;
+  });
+});
+
+makeSuite('LidoVault', (testEnv: TestEnv) => {
+  it('deposit ETH for collateral', async () => {
+    const { lidoVault, usdc, lido, wstETH } = testEnv;
+    expect(await lidoVault.getYield()).to.be.equal(0);
+
+    const ethers = (DRE as any).ethers;
+    const wstETHOwnerAddress = '0x73d1937bd68a970030b2ffda492860cfb87013c4';
+    const depositWstETH = '10';
+    const depositWstETHAmount = await convertToCurrencyDecimals(wstETH.address, depositWstETH);
+    //Make some test stETH for lidoVault
+    await impersonateAccountsHardhat([wstETHOwnerAddress]);
+    let signer = await ethers.provider.getSigner(wstETHOwnerAddress);
+
+    //unwrap, wstETH -> stETH
+    await wstETH.connect(signer).unwrap(depositWstETHAmount);
+
+    //transfer to vault
+    await lido.connect(signer).transfer(lidoVault.address, depositWstETHAmount);
+    expect((await lido.balanceOf(lidoVault.address)).gt(parseEther('9.999'))).to.be.equal(true);
+    expect((await lidoVault.getYield()).gt(parseEther('9.999'))).to.be.equal(true);
+    expect(await usdc.balanceOf(lidoVault.address)).to.be.equal(0);
+
+    // process yield, so all yield should be converted to usdc, estimated min price: 1ETH = 250USDC
+    await lidoVault.processYield();
+    const minUSDCAmount = await convertToCurrencyDecimals(usdc.address, '2500');
+    expect((await usdc.balanceOf(lidoVault.address)).gt(minUSDCAmount)).to.be.equal(true);
   });
 });

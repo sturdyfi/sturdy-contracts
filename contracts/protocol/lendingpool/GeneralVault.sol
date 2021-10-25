@@ -20,7 +20,11 @@ contract GeneralVault is Ownable {
    * @param _amount The deposit amount
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
+    // Deposit asset to vault and receive stAsset
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100wstETH
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
+
+    // Deposit stAsset to lendingPool, then user will get aToken of stAsset
     ILendingPool(lendingPool).deposit(_stAsset, _stAssetAmount, msg.sender, 0, true);
   }
 
@@ -38,13 +42,20 @@ contract GeneralVault is Ownable {
     uint256 _amount,
     address _to
   ) external virtual {
+    // Before withdraw from lending pool, get the stAsset address and withdrawal amount
+    // Ex: In Lido vault, it will return wstETH address and same amount
     (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
+
+    // withdraw from lendingPool, it will convert user's aToken to stAsset
     uint256 _amountToWithdraw = ILendingPool(lendingPool).withdrawFrom(
       _stAsset,
       _stAssetAmount,
       msg.sender,
       address(this)
     );
+
+    // Withdraw from vault, it will convert stAsset to asset and send to user
+    // Ex: In Lido vault, it will return ETH or stETH to user
     _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
   }
 

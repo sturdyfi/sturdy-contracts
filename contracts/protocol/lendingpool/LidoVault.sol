@@ -28,8 +28,6 @@ contract LidoVault is GeneralVault {
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;
 
-  mapping(address => uint256) balanceOfETH;
-
   // asset address -> reserveIncome from yield based on strategy
   mapping(address => uint256) reserveIncome;
 
@@ -45,6 +43,7 @@ contract LidoVault is GeneralVault {
    *  And convert stETH -> ETH -> USDC
    */
   function processYield() external override onlyOwner {
+    // Check the any yield stETH exist in vault
     uint256 yieldStETH = _getYieldFromLido();
     require(yieldStETH > 0, Errors.VT_PROCESS_YIELD_INVALID);
 
@@ -77,7 +76,7 @@ contract LidoVault is GeneralVault {
       Errors.VT_PROCESS_YIELD_INVALID
     );
 
-    _depositYield(USDC, receivedUSDCAmount);
+    // _depositYield(USDC, receivedUSDCAmount);
   }
 
   /**
@@ -97,22 +96,25 @@ contract LidoVault is GeneralVault {
   {
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
+      // Case of ETH deposit from user, user has to send ETH
       require(msg.value > 0, Errors.VT_COLLATORAL_DEPOSIT_REQUIRE_ETH);
 
+      // Deposit ETH to Lido and receive stETH
       (bool sent, bytes memory data) = LIDO.call{value: msg.value}('');
       require(sent, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
 
       assetAmount = msg.value;
     } else {
+      // Case of stETH deposit from user, receive stETH from user
       require(_asset == LIDO, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
       IERC20(LIDO).transferFrom(msg.sender, address(this), _amount);
     }
 
-    balanceOfETH[msg.sender] = balanceOfETH[msg.sender].add(assetAmount);
-
     // stETH -> wstETH
     IERC20(LIDO).approve(WstETH, assetAmount);
     uint256 wstETHAmount = IWstETH(WstETH).wrap(assetAmount);
+
+    // Make lendingPool to transfer required amount
     IWstETH(WstETH).approve(address(lendingPool), wstETHAmount);
     return (WstETH, wstETHAmount);
   }
@@ -126,7 +128,7 @@ contract LidoVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    require(_amount <= balanceOfETH[msg.sender], Errors.VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT);
+    // In this vault, return same amount of asset.
     return (WstETH, _amount);
   }
 
@@ -138,18 +140,18 @@ contract LidoVault is GeneralVault {
     uint256 _amount,
     address _to
   ) internal override {
+    // wstETH -> stETH
     uint256 stETHAmount = IWstETH(WstETH).unwrap(_amount);
     require(stETHAmount >= _amount, Errors.VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT);
-    require(_amount <= balanceOfETH[msg.sender], Errors.VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT);
-
-    balanceOfETH[msg.sender] = balanceOfETH[msg.sender].sub(_amount);
 
     if (_asset == address(0)) {
-      // Exchange stETH -> ETH via Curve
+      // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = _convertAssetByCurve(LIDO, _amount);
+      // send ETH to user
       (bool sent, bytes memory data) = address(_to).call{value: receivedETHAmount}('');
       require(sent, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
     } else {
+      // Case of stETH withdraw request from user, so directly send
       require(_asset == LIDO, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
       IERC20(LIDO).transfer(_to, _amount);
     }
@@ -159,6 +161,7 @@ contract LidoVault is GeneralVault {
    * @dev Get yield amount based on Lido rebasing
    */
   function _getYieldFromLido() private view returns (uint256) {
+    // Vault's stETH balance
     return IERC20(LIDO).balanceOf(address(this));
   }
 
@@ -166,6 +169,7 @@ contract LidoVault is GeneralVault {
    * @dev convert asset via curve
    */
   function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount) private returns (uint256) {
+    // Exchange stETH -> ETH via curve
     IERC20(_fromAsset).approve(CurveswapLidoPool, _fromAmount);
     uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
     uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);

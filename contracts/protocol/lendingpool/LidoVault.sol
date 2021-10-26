@@ -76,7 +76,10 @@ contract LidoVault is GeneralVault {
       Errors.VT_PROCESS_YIELD_INVALID
     );
 
-    // _depositYield(USDC, receivedUSDCAmount);
+    // Make lendingPool to transfer required amount
+    IWstETH(USDC).approve(address(lendingPool), receivedUSDCAmount);
+    // Deposit Yield to pool
+    _depositYield(USDC, receivedUSDCAmount);
   }
 
   /**

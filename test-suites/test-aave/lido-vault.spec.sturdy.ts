@@ -119,17 +119,35 @@ makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
 });
 
 makeSuite('LidoVault', (testEnv: TestEnv) => {
-  it('deposit ETH for collateral', async () => {
-    const { lidoVault, usdc, lido, wstETH } = testEnv;
+  it('distribute yield to supplier', async () => {
+    const { pool, lidoVault, usdc, users, lido, wstETH, aUsdc } = testEnv;
     expect(await lidoVault.getYield()).to.be.equal(0);
 
+    const depositor = users[0];
     const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const depositUSDC = '7000';
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //Supplier  deposits 7000 USDC
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0', false);
+    expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
+
     const wstETHOwnerAddress = '0x73d1937bd68a970030b2ffda492860cfb87013c4';
     const depositWstETH = '10';
     const depositWstETHAmount = await convertToCurrencyDecimals(wstETH.address, depositWstETH);
     //Make some test stETH for lidoVault
     await impersonateAccountsHardhat([wstETHOwnerAddress]);
-    let signer = await ethers.provider.getSigner(wstETHOwnerAddress);
+    signer = await ethers.provider.getSigner(wstETHOwnerAddress);
 
     //unwrap, wstETH -> stETH
     await wstETH.connect(signer).unwrap(depositWstETHAmount);
@@ -142,7 +160,6 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
     // process yield, so all yield should be converted to usdc, estimated min price: 1ETH = 250USDC
     await lidoVault.processYield();
-    const minUSDCAmount = await convertToCurrencyDecimals(usdc.address, '2500');
-    expect((await usdc.balanceOf(lidoVault.address)).gt(minUSDCAmount)).to.be.equal(true);
+    expect((await aUsdc.balanceOf(depositor.address)).gt(amountUSDCtoDeposit)).to.be.equal(true);
   });
 });

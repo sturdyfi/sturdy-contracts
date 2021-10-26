@@ -71,6 +71,7 @@ export interface TestEnv {
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
+  aUsdc: AToken;
   aave: MintableERC20;
   wstETH: IWstETH;
   awstETH: AToken;
@@ -103,6 +104,7 @@ const testEnv: TestEnv = {
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
+  aUsdc: {} as AToken,
   aave: {} as MintableERC20,
   wstETH: {} as IWstETH,
   awstETH: {} as AToken,
@@ -167,6 +169,7 @@ export async function initializeMakeSuite() {
 
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
   const awstETHAddress = allTokens.find((aToken) => aToken.symbol === 'awstETH')?.tokenAddress;
+  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
@@ -187,6 +190,7 @@ export async function initializeMakeSuite() {
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
   testEnv.awstETH = await getAToken(awstETHAddress);
+  testEnv.aUsdc = await getAToken(aUsdcAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);

@@ -4,6 +4,8 @@ Sturdy is a DeFi lending protocol. Sturdy enables 'suppliers' to earn yield on t
 Our current launch plan is to support USDC for loans and ETH + WBTC for collateral. The staking strategy will be Lido for ETH and Yearn for WBTC. Additionally, we will have a separate pool that supports USDC loans and OHM as collateral; 'separate' means that the USDC reserve for these loans will not be the same one that supplies loans backed by ETH and WBTC. The rationale here is to have one pool that is low risk with well-established assets / strategies and one that is high risk but has a higher APY.
 
 TO DO:
+- Fix internal user balance accounting (move from balanceOfETH mapping to existing aToken balance functions)
+- Enable user to deposit or withdraw stETH for ETH-stETH vault
 - Build mechanism to distribute yield to suppliers
 - Build mechanism to distribute yield to borrowers
 - Integrate ChainLink stETH oracle 

@@ -147,11 +147,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   function depositYield(address asset, uint256 amount) external override whenNotPaused {
     require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
 
-    _vaultsYield[msg.sender] = _vaultsYield[msg.sender].add(amount);
-    _totalVaultsYield = _totalVaultsYield.add(amount);
-
     DataTypes.ReserveData storage reserve = _reserves[asset];
     IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
+
+    // update liquidityIndex based on yield amount
+    reserve.cumulateToLiquidityIndex(IERC20(reserve.aTokenAddress).totalSupply(), amount);
   }
 
   /**
@@ -179,6 +179,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address from,
     address to
   ) external override whenNotPaused returns (uint256) {
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
     return _withdraw(asset, amount, from, to);
   }
 
@@ -707,12 +708,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     override
     returns (uint256)
   {
-    uint256 income = _reserves[asset].getNormalizedIncome();
-
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-    uint256 scaledATokenSupply = IAToken(reserve.aTokenAddress).scaledTotalSupply();
-    income = income.add(_totalVaultsYield.wadToRay().rayDiv(scaledATokenSupply.wadToRay()));
-    return income;
+    return _reserves[asset].getNormalizedIncome();
   }
 
   /**

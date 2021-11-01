@@ -148,10 +148,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
-
+    
+    reserve.updateState();
+    
     // update liquidityIndex based on yield amount
     reserve.cumulateToLiquidityIndex(IERC20(reserve.aTokenAddress).totalSupply(), amount);
+    
+    reserve.updateInterestRates(asset, reserve.aTokenAddress, amount, 0);
+    
+    IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
   }
 
   /**

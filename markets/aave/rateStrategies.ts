@@ -101,9 +101,9 @@ export const rateStrategyVolatileFour: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
 }
 
-// wstETH
-export const rateStrategyWSTETH: IInterestRateStrategyParams = {
-    name: "rateStrategyWSTETH",
+// stETH
+export const rateStrategySTETH: IInterestRateStrategyParams = {
+    name: "rateStrategySTETH",
     optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
     baseVariableBorrowRate: '0',
     variableRateSlope1: '0',

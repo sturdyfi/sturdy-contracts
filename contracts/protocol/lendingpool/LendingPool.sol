@@ -148,15 +148,45 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    
+
     reserve.updateState();
-    
+
     // update liquidityIndex based on yield amount
     reserve.cumulateToLiquidityIndex(IERC20(reserve.aTokenAddress).totalSupply(), amount);
-    
+
     reserve.updateInterestRates(asset, reserve.aTokenAddress, amount, 0);
-    
+
     IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
+  }
+
+  /**
+   * @dev Grab an Yield `amount` of underlying asset into the vault
+   * @param asset The address of the underlying asset to get yield
+   * @param amount The yield amount
+   **/
+  function getYield(address asset, uint256 amount) external override whenNotPaused {
+    require(_availableVaults[msg.sender] == true, Errors.VT_PROCESS_YIELD_INVALID);
+
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    IAToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, amount);
+  }
+
+  /**
+   * @dev Get underlying asset and aToken's total balance
+   * @param asset The address of the underlying asset
+   **/
+  function getTotalBalanceOfAssetPair(address asset)
+    external
+    view
+    override
+    returns (uint256, uint256)
+  {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    // collateral assetBalance should increase overtime based on vault strategy
+    uint256 assetBalance = IERC20(asset).balanceOf(reserve.aTokenAddress);
+    // aTokenBalance should not increase overtime because of no borrower.
+    uint256 aTokenBalance = IAToken(reserve.aTokenAddress).totalSupply();
+    return (assetBalance, aTokenBalance);
   }
 
   /**

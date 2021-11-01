@@ -6,22 +6,17 @@ import 'hardhat/console.sol';
 import {GeneralVault} from './GeneralVault.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../misc/interfaces/IWETH.sol';
-import {IWstETH} from '../../interfaces/IWstETH.sol';
 import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {ISwapRouter} from '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import {TransferHelper} from '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 
 contract LidoVault is GeneralVault {
-  using SafeMath for uint256;
-
   //ToDo: need to think about using registering flow instead of constant value
   address constant LIDO = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
   address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
   address constant UniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-  address constant WstETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
   address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
@@ -43,9 +38,8 @@ contract LidoVault is GeneralVault {
    *  And convert stETH -> ETH -> USDC
    */
   function processYield() external override onlyOwner {
-    // Check the any yield stETH exist in vault
-    uint256 yieldStETH = _getYieldFromLido();
-    require(yieldStETH > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    // Get yield from lendingPool
+    uint256 yieldStETH = _getYield(LIDO);
 
     // Exchange stETH -> ETH via Curve
     uint256 receivedETHAmount = _convertAssetByCurve(LIDO, yieldStETH);
@@ -77,7 +71,7 @@ contract LidoVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IWstETH(USDC).approve(address(lendingPool), receivedUSDCAmount);
+    IERC20(USDC).approve(address(lendingPool), receivedUSDCAmount);
     // Deposit Yield to pool
     _depositYield(USDC, receivedUSDCAmount);
   }
@@ -85,8 +79,8 @@ contract LidoVault is GeneralVault {
   /**
    * @dev Get yield amount based on strategy
    */
-  function getYield() external view override returns (uint256) {
-    return _getYieldFromLido();
+  function getYieldAmount() external view returns (uint256) {
+    return _getYieldAmount(LIDO);
   }
 
   /**
@@ -113,13 +107,9 @@ contract LidoVault is GeneralVault {
       IERC20(LIDO).transferFrom(msg.sender, address(this), _amount);
     }
 
-    // stETH -> wstETH
-    IERC20(LIDO).approve(WstETH, assetAmount);
-    uint256 wstETHAmount = IWstETH(WstETH).wrap(assetAmount);
-
     // Make lendingPool to transfer required amount
-    IWstETH(WstETH).approve(address(lendingPool), wstETHAmount);
-    return (WstETH, wstETHAmount);
+    IERC20(LIDO).approve(address(lendingPool), assetAmount);
+    return (LIDO, assetAmount);
   }
 
   /**
@@ -132,7 +122,7 @@ contract LidoVault is GeneralVault {
     returns (address, uint256)
   {
     // In this vault, return same amount of asset.
-    return (WstETH, _amount);
+    return (LIDO, _amount);
   }
 
   /**
@@ -143,10 +133,6 @@ contract LidoVault is GeneralVault {
     uint256 _amount,
     address _to
   ) internal override {
-    // wstETH -> stETH
-    uint256 stETHAmount = IWstETH(WstETH).unwrap(_amount);
-    require(stETHAmount >= _amount, Errors.VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT);
-
     if (_asset == address(0)) {
       // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = _convertAssetByCurve(LIDO, _amount);
@@ -158,14 +144,6 @@ contract LidoVault is GeneralVault {
       require(_asset == LIDO, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
       IERC20(LIDO).transfer(_to, _amount);
     }
-  }
-
-  /**
-   * @dev Get yield amount based on Lido rebasing
-   */
-  function _getYieldFromLido() private view returns (uint256) {
-    // Vault's stETH balance
-    return IERC20(LIDO).balanceOf(address(this));
   }
 
   /**

@@ -46,8 +46,6 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ILido } from '../../../types/ILido';
 import { ILidoFactory } from '../../../types/ILidoFactory';
-import { IWstETHFactory } from '../../../types/IWstETHFactory';
-import { IWstETH } from '../../../types/IWstETH';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 
 chai.use(bignumberChai());
@@ -73,8 +71,7 @@ export interface TestEnv {
   usdc: MintableERC20;
   aUsdc: AToken;
   aave: MintableERC20;
-  wstETH: IWstETH;
-  awstETH: AToken;
+  aStETH: AToken;
   lido: ILido;
   addressesProvider: LendingPoolAddressesProvider;
   uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
@@ -106,8 +103,7 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   aUsdc: {} as AToken,
   aave: {} as MintableERC20,
-  wstETH: {} as IWstETH,
-  awstETH: {} as AToken,
+  aStETH: {} as AToken,
   lido: {} as ILido,
   addressesProvider: {} as LendingPoolAddressesProvider,
   uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
@@ -168,33 +164,31 @@ export async function initializeMakeSuite() {
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
   const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
-  const awstETHAddress = allTokens.find((aToken) => aToken.symbol === 'awstETH')?.tokenAddress;
+  const aStETHAddress = allTokens.find((aToken) => aToken.symbol === 'astETH')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
-  const wstethAddress = reservesTokens.find((token) => token.symbol === 'wstETH')?.tokenAddress;
   const stethAddress = reservesTokens.find((token) => token.symbol === 'stETH')?.tokenAddress;
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
   // const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
-  if (!aDaiAddress || !aWEthAddress || !awstETHAddress) {
+  if (!aDaiAddress || !aWEthAddress || !aStETHAddress) {
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress || /* !aaveAddress ||  !wethAddress || */ !wstethAddress) {
+  if (!daiAddress || !usdcAddress /*|| !aaveAddress ||  !wethAddress || */) {
     process.exit(1);
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aWETH = await getAToken(aWEthAddress);
-  testEnv.awstETH = await getAToken(awstETHAddress);
+  testEnv.aStETH = await getAToken(aStETHAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
-  testEnv.wstETH = IWstETHFactory.connect(wstethAddress, deployer.signer);
   //  testEnv.aave = await getMintableERC20(aaveAddress);
   // testEnv.weth = await getWETHMocked(wethAddress);
   // testEnv.wethGateway = await getWETHGateway();

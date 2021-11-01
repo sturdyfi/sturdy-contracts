@@ -21,32 +21,28 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
   });
 
   it('deposit ETH for collateral', async () => {
-    const { lidoVault, deployer, lido, wstETH, awstETH } = testEnv;
+    const { lidoVault, deployer, lido, aStETH } = testEnv;
     const beforePooledEther = await lido.getTotalPooledEther();
     await lidoVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1.1') });
     const currentPooledEther = await lido.getTotalPooledEther();
     expect(currentPooledEther.sub(beforePooledEther)).to.be.equal(parseEther('1.1'));
     expect(await lido.balanceOf(lidoVault.address)).to.be.equal(0);
-    expect(await wstETH.balanceOf(lidoVault.address)).to.be.equal(0);
-    expect(await awstETH.balanceOf(lidoVault.address)).to.be.equal(0);
-    expect((await awstETH.balanceOf(deployer.address)).gt(parseEther('0.9'))).to.be.equal(true);
+    expect(await aStETH.balanceOf(lidoVault.address)).to.be.equal(0);
+    expect((await aStETH.balanceOf(deployer.address)).gt(parseEther('0.9'))).to.be.equal(true);
     expect(await ethers.getDefaultProvider().getBalance(lidoVault.address)).to.be.equal(0);
   });
 
   it('stETH & aStETH balance check after deposit for collateral', async () => {
-    const { lidoVault, deployer, lido, awstETH, wstETH } = testEnv;
+    const { lidoVault, deployer, lido, aStETH } = testEnv;
     const stETHBalanceOfPool = await lido.balanceOf(lidoVault.address);
-    const wstETHBalanceOfPool = await wstETH.balanceOf(lidoVault.address);
-    const depositedWstETHBalance = await wstETH.getWstETHByStETH(parseEther('1.1'));
-    const aTokensBalance = await awstETH.balanceOf(deployer.address);
+    const aTokensBalance = await aStETH.balanceOf(deployer.address);
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
-    expect(wstETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
-    expect(aTokensBalance).to.be.equal(depositedWstETHBalance);
+    expect(aTokensBalance).to.be.equal(parseEther('1.1'));
   });
 
   it('transfering aStETH should be success after deposit ETH', async () => {
-    const { awstETH, users } = testEnv;
-    await expect(awstETH.transfer(users[0].address, parseEther('0.05'))).to.not.be.reverted;
+    const { aStETH, users } = testEnv;
+    await expect(aStETH.transfer(users[0].address, parseEther('0.05'))).to.not.be.reverted;
   });
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
@@ -56,16 +52,14 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
   });
 
   it('withdraw from collateral', async () => {
-    const { deployer, lido, wstETH, lidoVault } = testEnv;
+    const { deployer, lido, lidoVault } = testEnv;
     const stETHBalanceOfPool = await lido.balanceOf(lidoVault.address);
-    const wstETHBalanceOfPool = await wstETH.balanceOf(lidoVault.address);
     const ethBeforeBalanceOfUser = await deployer.signer.getBalance();
 
     await lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1'), deployer.address);
 
     const ethCurrentBalanceOfUser = await deployer.signer.getBalance();
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
-    expect(wstETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
     expect(ethCurrentBalanceOfUser.sub(ethBeforeBalanceOfUser).gt(parseEther('0.9'))).to.be.equal(
       true
     );
@@ -75,7 +69,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
 makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
   it('Should revert to use any of coin other than ETH, stETH as collatoral. ', async () => {
-    const { wstETH, usdc, users, lidoVault } = testEnv;
+    const { lido, usdc, users, lidoVault } = testEnv;
     const ethers = (DRE as any).ethers;
     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
     const depositor = users[0];
@@ -96,34 +90,31 @@ makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
       lidoVault.connect(depositor.signer).depositCollateral(usdc.address, amountUSDCtoDeposit)
     ).to.be.reverted;
 
-    const wstETHOwnerAddress = '0x73d1937bd68a970030b2ffda492860cfb87013c4';
-    const depositWstETH = '10';
-    //Make some test wstETH for depositor2
-    await impersonateAccountsHardhat([wstETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(wstETHOwnerAddress);
-    await wstETH
+    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const depositStETH = '10';
+    //Make some test stETH for depositor2
+    await impersonateAccountsHardhat([stETHOwnerAddress]);
+    signer = await ethers.provider.getSigner(stETHOwnerAddress);
+    await lido
       .connect(signer)
-      .transfer(depositor2.address, await convertToCurrencyDecimals(wstETH.address, depositWstETH));
+      .transfer(depositor2.address, await convertToCurrencyDecimals(lido.address, depositStETH));
 
     //approve protocol to access depositor wallet
-    await wstETH
-      .connect(depositor2.signer)
-      .approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await lido.connect(depositor2.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //deposits 5 wstETH for collateral
-    const amountWstETHtoDeposit = await convertToCurrencyDecimals(wstETH.address, '5');
+    //deposits 5 stETH for collateral
+    const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, '5');
     await expect(
-      lidoVault.connect(depositor2.signer).depositCollateral(wstETH.address, amountWstETHtoDeposit)
-    ).to.be.reverted;
+      lidoVault.connect(depositor2.signer).depositCollateral(lido.address, amountStETHtoDeposit)
+    ).to.not.be.reverted;
   });
 });
 
 makeSuite('LidoVault', (testEnv: TestEnv) => {
   it('distribute yield to supplier', async () => {
-    const { pool, lidoVault, usdc, users, lido, wstETH, aUsdc } = testEnv;
-    expect(await lidoVault.getYield()).to.be.equal(0);
-
+    const { pool, lidoVault, usdc, users, lido, aUsdc, aStETH } = testEnv;
     const depositor = users[0];
+    const borrower = users[1];
     const ethers = (DRE as any).ethers;
     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
     const depositUSDC = '7000';
@@ -140,25 +131,32 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     await pool
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0', false);
+
+    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const depositStETH = '10';
+    const depositStETHAmount = await convertToCurrencyDecimals(lido.address, depositStETH);
+    //Make some test stETH for borrower
+    await impersonateAccountsHardhat([stETHOwnerAddress]);
+    signer = await ethers.provider.getSigner(stETHOwnerAddress);
+
+    //transfer to borrower
+    await lido.connect(signer).transfer(borrower.address, depositStETHAmount);
+
+    //approve protocol to access borrower wallet
+    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    // deposit collateral to borrow
+    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, depositStETHAmount);
+    expect(await lidoVault.getYieldAmount()).to.be.equal(0);
+
+    //To simulate yield in lendingPool, deposit some stETH to aStETH contract
+    await lido.connect(signer).transfer(aStETH.address, depositStETHAmount);
+
+    expect((await lidoVault.getYieldAmount()).gt(parseEther('9.999'))).to.be.equal(true);
+    expect(await usdc.balanceOf(lidoVault.address)).to.be.equal(0);
     expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
 
-    const wstETHOwnerAddress = '0x73d1937bd68a970030b2ffda492860cfb87013c4';
-    const depositWstETH = '10';
-    const depositWstETHAmount = await convertToCurrencyDecimals(wstETH.address, depositWstETH);
-    //Make some test stETH for lidoVault
-    await impersonateAccountsHardhat([wstETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(wstETHOwnerAddress);
-
-    //unwrap, wstETH -> stETH
-    await wstETH.connect(signer).unwrap(depositWstETHAmount);
-
-    //transfer to vault
-    await lido.connect(signer).transfer(lidoVault.address, depositWstETHAmount);
-    expect((await lido.balanceOf(lidoVault.address)).gt(parseEther('9.999'))).to.be.equal(true);
-    expect((await lidoVault.getYield()).gt(parseEther('9.999'))).to.be.equal(true);
-    expect(await usdc.balanceOf(lidoVault.address)).to.be.equal(0);
-
-    // process yield, so all yield should be converted to usdc, estimated min price: 1ETH = 250USDC
+    // process yield, so all yield should be converted to usdc
     await lidoVault.processYield();
     expect((await aUsdc.balanceOf(depositor.address)).gt(amountUSDCtoDeposit)).to.be.equal(true);
   });

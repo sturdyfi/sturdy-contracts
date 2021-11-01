@@ -54,7 +54,7 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
         user: `Borrower ${borrower.address}`,
         action: 'deposited',
         amount: ETHfromWei(amountETHtoDeposit),
-        coin: 'wstETH',
+        coin: 'stETH',
         ...supplierGlobalData,
       });
     }

@@ -99,7 +99,7 @@ export const CommonsConfig: ICommonConfiguration = {
 /*      BUSD: {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },  */
-    wstETH: {
+    stETH: {
         borrowRate: oneRay.multipliedBy(0.05).toFixed(),
       },
   },
@@ -310,7 +310,7 @@ export const CommonsConfig: ICommonConfiguration = {
       UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e', */
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
-      wstETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
+      stETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
 /*       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962', */

@@ -188,6 +188,10 @@ interface ILendingPool {
 
   function depositYield(address asset, uint256 amount) external;
 
+  function getYield(address asset, uint256 amount) external;
+
+  function getTotalBalanceOfAssetPair(address asset) external view returns (uint256, uint256);
+
   function registerVault(address _vaultAddress) external;
 
   /**

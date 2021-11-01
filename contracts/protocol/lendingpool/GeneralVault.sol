@@ -5,8 +5,12 @@ pragma experimental ABIEncoderV2;
 import 'hardhat/console.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
+import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 contract GeneralVault is Ownable {
+  using SafeMath for uint256;
+
   address public immutable lendingPool;
 
   constructor(address _lendingPool) public {
@@ -21,7 +25,7 @@ contract GeneralVault is Ownable {
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
     // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100wstETH
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset
@@ -43,7 +47,7 @@ contract GeneralVault is Ownable {
     address _to
   ) external virtual {
     // Before withdraw from lending pool, get the stAsset address and withdrawal amount
-    // Ex: In Lido vault, it will return wstETH address and same amount
+    // Ex: In Lido vault, it will return stETH address and same amount
     (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
 
     // withdraw from lendingPool, it will convert user's aToken to stAsset
@@ -65,9 +69,30 @@ contract GeneralVault is Ownable {
   function processYield() external virtual {}
 
   /**
+   * @dev Get yield based on strategy and re-deposit
+   */
+  function _getYield(address _stAsset) internal returns (uint256) {
+    uint256 yieldStAsset = _getYieldAmount(_stAsset);
+    require(yieldStAsset > 0, Errors.VT_PROCESS_YIELD_INVALID);
+
+    ILendingPool(lendingPool).getYield(_stAsset, yieldStAsset);
+    return yieldStAsset;
+  }
+
+  /**
    * @dev Get yield amount based on strategy
    */
-  function getYield() external view virtual returns (uint256) {}
+  function _getYieldAmount(address _stAsset) internal view returns (uint256) {
+    (uint256 stAssetBalance, uint256 aTokenBalance) = ILendingPool(lendingPool)
+      .getTotalBalanceOfAssetPair(_stAsset);
+
+    // when deposit for collateral, stAssetBalance = aTokenBalance
+    // But stAssetBalance should increase overtime, so vault can grab yield from lendingPool.
+    // yield = stAssetBalance - aTokenBalance
+    if (stAssetBalance >= aTokenBalance) return stAssetBalance.sub(aTokenBalance);
+
+    return 0;
+  }
 
   function _depositYield(address _asset, uint256 _amount) internal {
     ILendingPool(lendingPool).depositYield(_asset, _amount);

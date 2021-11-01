@@ -24,7 +24,7 @@ import {
   strategyYFI,
   strategyXSUSHI,
   strategyENJ,
-  strategyWSTETH,
+  strategySTETH,
 } from './reservesConfigs';
 
 // ----------------
@@ -57,7 +57,7 @@ export const AaveConfig: IAaveConfiguration = {
 /*     YFI: strategyYFI,
     ZRX: strategyZRX,
     xSUSHI: strategyXSUSHI, */
-    wstETH: strategyWSTETH
+    stETH: strategySTETH
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -128,7 +128,7 @@ export const AaveConfig: IAaveConfiguration = {
       USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
    //   WBTC: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
       WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
-      wstETH: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+      stETH: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
 /*       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272', */

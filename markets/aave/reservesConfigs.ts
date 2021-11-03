@@ -205,19 +205,6 @@ export const strategySNX: IReserveParams = {
   reserveFactor: '3500'
 };
 
-// Invalid borrow rates in params currently, replaced with snx params
-export const strategyUNI: IReserveParams = {
-  strategy: rateStrategyVolatileThree,
-  baseLTVAsCollateral: '6000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
-  borrowingEnabled: false,
-  stableBorrowRateEnabled: false,
-  reserveDecimals: '18',
-  aTokenImpl: eContractid.DelegationAwareAToken,
-  reserveFactor: '2000'
-};
-
 export const strategyWBTC: IReserveParams = {
   strategy: rateStrategyVolatileTwo,
   baseLTVAsCollateral: '7000',

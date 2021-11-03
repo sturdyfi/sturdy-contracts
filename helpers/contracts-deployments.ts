@@ -22,7 +22,6 @@ import {
   ATokensAndRatesHelperFactory,
   AaveOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
-  DelegationAwareATokenFactory,
   InitializableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
@@ -33,24 +32,14 @@ import {
   MintableERC20Factory,
   MockAggregatorFactory,
   MockATokenFactory,
-  MockFlashLoanReceiverFactory,
-  MockParaSwapAugustusFactory,
-  MockParaSwapAugustusRegistryFactory,
   MockStableDebtTokenFactory,
   MockVariableDebtTokenFactory,
-  MockUniswapV2Router02Factory,
-  ParaSwapLiquiditySwapAdapterFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
   SelfdestructTransferFactory,
   StableDebtTokenFactory,
-  UniswapLiquiditySwapAdapterFactory,
-  UniswapRepayAdapterFactory,
   VariableDebtTokenFactory,
-  WalletBalanceProviderFactory,
   WETH9MockedFactory,
-  WETHGatewayFactory,
-  FlashLiquidationAdapterFactory,
   LendingPoolFactory,
   LidoVaultFactory,
 } from '../types';
@@ -67,20 +56,6 @@ import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
-import { UiPoolDataProvider } from '../types';
-
-export const deployUiPoolDataProvider = async (
-  [incentivesController, aaveOracle]: [tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) => {
-  const id = eContractid.UiPoolDataProvider;
-  const args: string[] = [incentivesController, aaveOracle];
-  const instance = await deployContract<UiPoolDataProvider>(id, args);
-  if (verify) {
-    await verifyContract(id, instance, args);
-  }
-  return instance;
-};
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -261,25 +236,6 @@ export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boole
     verify
   );
 
-export const deployMockFlashLoanReceiver = async (
-  addressesProvider: tEthereumAddress,
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new MockFlashLoanReceiverFactory(await getFirstSigner()).deploy(addressesProvider),
-    eContractid.MockFlashLoanReceiver,
-    [addressesProvider],
-    verify
-  );
-
-export const deployWalletBalancerProvider = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(),
-    eContractid.WalletBalanceProvider,
-    [],
-    verify
-  );
-
 export const deployAaveProtocolDataProvider = async (
   addressesProvider: tEthereumAddress,
   verify?: boolean
@@ -411,46 +367,6 @@ export const deployGenericATokenImpl = async (verify: boolean) =>
     verify
   );
 
-export const deployDelegationAwareAToken = async (
-  [pool, underlyingAssetAddress, treasuryAddress, incentivesController, name, symbol]: [
-    tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
-    tEthereumAddress,
-    string,
-    string
-  ],
-  verify: boolean
-) => {
-  const instance = await withSaveAndVerify(
-    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
-    eContractid.DelegationAwareAToken,
-    [],
-    verify
-  );
-
-  await instance.initialize(
-    pool,
-    treasuryAddress,
-    underlyingAssetAddress,
-    incentivesController,
-    '18',
-    name,
-    symbol,
-    '0x10'
-  );
-
-  return instance;
-};
-
-export const deployDelegationAwareATokenImpl = async (verify: boolean) =>
-  withSaveAndVerify(
-    await new DelegationAwareATokenFactory(await getFirstSigner()).deploy(),
-    eContractid.DelegationAwareAToken,
-    [],
-    verify
-  );
-
 export const deployAllMockTokens = async (verify?: boolean) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 } = {};
 
@@ -512,22 +428,6 @@ export const deployATokensAndRatesHelper = async (
     args,
     verify
   );
-
-export const deployWETHGateway = async (args: [tEthereumAddress], verify?: boolean) =>
-  withSaveAndVerify(
-    await new WETHGatewayFactory(await getFirstSigner()).deploy(...args),
-    eContractid.WETHGateway,
-    args,
-    verify
-  );
-
-export const authorizeWETHGateway = async (
-  wethGateWay: tEthereumAddress,
-  lendingPool: tEthereumAddress
-) =>
-  await new WETHGatewayFactory(await getFirstSigner())
-    .attach(wethGateWay)
-    .authorizeLendingPool(lendingPool);
 
 export const deployMockStableDebtToken = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
@@ -598,77 +498,6 @@ export const deploySelfdestructTransferMock = async (verify?: boolean) =>
     await new SelfdestructTransferFactory(await getFirstSigner()).deploy(),
     eContractid.SelfdestructTransferMock,
     [],
-    verify
-  );
-
-export const deployMockUniswapRouter = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new MockUniswapV2Router02Factory(await getFirstSigner()).deploy(),
-    eContractid.MockUniswapV2Router02,
-    [],
-    verify
-  );
-
-export const deployUniswapLiquiditySwapAdapter = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new UniswapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
-    eContractid.UniswapLiquiditySwapAdapter,
-    args,
-    verify
-  );
-
-export const deployUniswapRepayAdapter = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new UniswapRepayAdapterFactory(await getFirstSigner()).deploy(...args),
-    eContractid.UniswapRepayAdapter,
-    args,
-    verify
-  );
-
-export const deployFlashLiquidationAdapter = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new FlashLiquidationAdapterFactory(await getFirstSigner()).deploy(...args),
-    eContractid.FlashLiquidationAdapter,
-    args,
-    verify
-  );
-
-export const deployMockParaSwapAugustus = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new MockParaSwapAugustusFactory(await getFirstSigner()).deploy(),
-    eContractid.MockParaSwapAugustus,
-    [],
-    verify
-  );
-
-export const deployMockParaSwapAugustusRegistry = async (
-  args: [tEthereumAddress],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new MockParaSwapAugustusRegistryFactory(await getFirstSigner()).deploy(...args),
-    eContractid.MockParaSwapAugustusRegistry,
-    args,
-    verify
-  );
-
-export const deployParaSwapLiquiditySwapAdapter = async (
-  args: [tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new ParaSwapLiquiditySwapAdapterFactory(await getFirstSigner()).deploy(...args),
-    eContractid.ParaSwapLiquiditySwapAdapter,
-    args,
     verify
   );
 

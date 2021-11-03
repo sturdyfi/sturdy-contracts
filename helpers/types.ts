@@ -4,7 +4,7 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork | ePolygonNetwork | eXDaiNetwork;
+export type eNetwork = eEthereumNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -18,28 +18,14 @@ export enum eEthereumNetwork {
   tenderlyMain = 'tenderlyMain',
 }
 
-export enum ePolygonNetwork {
-  matic = 'matic',
-  mumbai = 'mumbai',
-}
-
-export enum eXDaiNetwork {
-  xdai = 'xdai',
-}
-
 export enum EthereumNetworkNames {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
-  matic = 'matic',
-  mumbai = 'mumbai',
-  xdai = 'xdai',
 }
 
 export enum AavePools {
   proto = 'proto',
-  matic = 'matic',
-  amm = 'amm',
 }
 
 export enum eContractid {
@@ -61,36 +47,21 @@ export enum eContractid {
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
-  MockFlashLoanReceiver = 'MockFlashLoanReceiver',
-  WalletBalanceProvider = 'WalletBalanceProvider',
   AToken = 'AToken',
   MockAToken = 'MockAToken',
-  DelegationAwareAToken = 'DelegationAwareAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
   AaveProtocolDataProvider = 'AaveProtocolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
-  FeeProvider = 'FeeProvider',
-  TokenDistributor = 'TokenDistributor',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
-  UiPoolDataProvider = 'UiPoolDataProvider',
-  WETHGateway = 'WETHGateway',
-  WETH = 'WETH',
   WETHMocked = 'WETHMocked',
   SelfdestructTransferMock = 'SelfdestructTransferMock',
   LendingPoolImpl = 'LendingPoolImpl',
   LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
   LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',
-  MockUniswapV2Router02 = 'MockUniswapV2Router02',
-  UniswapLiquiditySwapAdapter = 'UniswapLiquiditySwapAdapter',
-  UniswapRepayAdapter = 'UniswapRepayAdapter',
-  FlashLiquidationAdapter = 'FlashLiquidationAdapter',
-  MockParaSwapAugustus = 'MockParaSwapAugustus',
-  MockParaSwapAugustusRegistry = 'MockParaSwapAugustusRegistry',
-  ParaSwapLiquiditySwapAdapter = 'ParaSwapLiquiditySwapAdapter',
   LendingPool = 'LendingPool',
   LidoVault = 'LidoVault',
 }
@@ -309,16 +280,6 @@ export type iLpPoolAssets<T> = Pick<
   | 'BptBALWETH' */
 >;
 
-export type iMaticPoolAssets<T> = Pick<
-  iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' /*  | 'WBTC' */ | 'WETH' /* | 'WMATIC' */ /*| 'AAVE' */
->;
-
-export type iXDAIPoolAssets<T> = Pick<
-  iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'USDT' /* | 'WBTC' */ | 'WETH' /*  | 'STAKE' */
->;
-
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
 
 export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
@@ -412,15 +373,9 @@ export interface IMarketRates {
   borrowRate: string;
 }
 
-export type iParamsPerNetwork<T> =
-  | iEthereumParamsPerNetwork<T>
-  | iPolygonParamsPerNetwork<T>
-  | iXDaiParamsPerNetwork<T>;
+export type iParamsPerNetwork<T> = iEthereumParamsPerNetwork<T>;
 
-export interface iParamsPerNetworkAll<T>
-  extends iEthereumParamsPerNetwork<T>,
-    iPolygonParamsPerNetwork<T>,
-    iXDaiParamsPerNetwork<T> {}
+export interface iParamsPerNetworkAll<T> extends iEthereumParamsPerNetwork<T> {}
 
 export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.coverage]: T;
@@ -434,19 +389,8 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.tenderlyMain]: T;
 }
 
-export interface iPolygonParamsPerNetwork<T> {
-  [ePolygonNetwork.matic]: T;
-  [ePolygonNetwork.mumbai]: T;
-}
-
-export interface iXDaiParamsPerNetwork<T> {
-  [eXDaiNetwork.xdai]: T;
-}
-
 export interface iParamsPerPool<T> {
   [AavePools.proto]: T;
-  [AavePools.matic]: T;
-  [AavePools.amm]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -514,25 +458,12 @@ export interface ICommonConfiguration {
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
-  WethGateway: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IAaveConfiguration extends ICommonConfiguration {
   ReservesConfig: iAavePoolAssets<IReserveParams>;
-}
-
-export interface IAmmConfiguration extends ICommonConfiguration {
-  ReservesConfig: iLpPoolAssets<IReserveParams>;
-}
-
-export interface IMaticConfiguration extends ICommonConfiguration {
-  ReservesConfig: iMaticPoolAssets<IReserveParams>;
-}
-
-export interface IXDAIConfiguration extends ICommonConfiguration {
-  ReservesConfig: iXDAIPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {

@@ -1,6 +1,5 @@
 import {
   eContractid,
-  eEthereumNetwork,
   eNetwork,
   iMultiPoolsAssets,
   IReserveParams,
@@ -9,10 +8,8 @@ import {
 import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
 import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
-  getAaveProtocolDataProvider,
   getAToken,
   getATokensAndRatesHelper,
-  getFirstSigner,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
@@ -21,26 +18,16 @@ import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import {
   deployDefaultReserveInterestRateStrategy,
-  deployDelegationAwareAToken,
-  deployDelegationAwareATokenImpl,
   deployGenericAToken,
   deployGenericATokenImpl,
   deployGenericStableDebtToken,
   deployGenericVariableDebtToken,
-  deployStableDebtToken,
-  deployVariableDebtToken,
 } from './contracts-deployments';
-import { ZERO_ADDRESS } from './constants';
-import { isZeroAddress } from 'ethereumjs-util';
-import { DefaultReserveInterestRateStrategy, DelegationAwareAToken } from '../types';
-import { config } from 'process';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
     case eContractid.AToken:
       return deployGenericAToken;
-    case eContractid.DelegationAwareAToken:
-      return deployDelegationAwareAToken;
     default:
       throw Error(`Missing aToken deployment script for: ${id}`);
   }
@@ -127,22 +114,8 @@ export const initReservesByHelper = async (
   aTokenImplementationAddress = aTokenImplementation.address;
   rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
 
-  const delegatedAwareReserves = Object.entries(reservesParams).filter(
-    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.DelegationAwareAToken
-  ) as [string, IReserveParams][];
-
-  if (delegatedAwareReserves.length > 0) {
-    const delegationAwareATokenImplementation = await deployDelegationAwareATokenImpl(verify);
-    delegationAwareATokenImplementationAddress = delegationAwareATokenImplementation.address;
-    rawInsertContractAddressInDb(
-      `delegationAwareATokenImpl`,
-      delegationAwareATokenImplementationAddress
-    );
-  }
-
   const reserves = Object.entries(reservesParams).filter(
-    ([_, { aTokenImpl }]) =>
-      aTokenImpl === eContractid.DelegationAwareAToken || aTokenImpl === eContractid.AToken
+    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
   ) as [string, IReserveParams][];
 
   for (let [symbol, params] of reserves) {
@@ -182,8 +155,6 @@ export const initReservesByHelper = async (
 
     if (aTokenImpl === eContractid.AToken) {
       aTokenType[symbol] = 'generic';
-    } else if (aTokenImpl === eContractid.DelegationAwareAToken) {
-      aTokenType[symbol] = 'delegation aware';
     }
 
     reserveInitDecimals.push(reserveDecimals);

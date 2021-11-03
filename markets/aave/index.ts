@@ -18,7 +18,6 @@ import {
   strategyMKR,
   strategyREN,
   strategySNX,
-  strategyUNI,
   strategyWBTC,
   strategyWETH,
   strategyYFI,

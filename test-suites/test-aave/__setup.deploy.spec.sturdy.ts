@@ -5,7 +5,6 @@ import {
   getEthersSigners,
   registerContractInJsonDb,
   getEthersSignersAddresses,
-  getParamPerNetwork,
 } from '../../helpers/contracts-helpers';
 import {
   deployLendingPoolAddressesProvider,
@@ -16,22 +15,11 @@ import {
   deployPriceOracle,
   deployAaveOracle,
   deployLendingPoolCollateralManager,
-  deployMockFlashLoanReceiver,
-  deployWalletBalancerProvider,
   deployAaveProtocolDataProvider,
   deployLendingRateOracle,
   deployStableAndVariableTokensHelper,
   deployATokensAndRatesHelper,
-  deployWETHGateway,
   deployWETHMocked,
-  deployMockUniswapRouter,
-  deployUniswapLiquiditySwapAdapter,
-  deployUniswapRepayAdapter,
-  deployFlashLiquidationAdapter,
-  deployMockParaSwapAugustus,
-  deployMockParaSwapAugustusRegistry,
-  deployParaSwapLiquiditySwapAdapter,
-  authorizeWETHGateway,
 } from '../../helpers/contracts-deployments';
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
@@ -275,39 +263,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await waitForTx(
     await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
-  await deployMockFlashLoanReceiver(addressesProvider.address);
-
-  const mockUniswapRouter = await deployMockUniswapRouter();
-
-  const adapterParams: [string, string, string] = [
-    addressesProvider.address,
-    mockUniswapRouter.address,
-    mockTokens.WETH.address,
-  ];
-
-  await deployUniswapLiquiditySwapAdapter(adapterParams);
-  await deployUniswapRepayAdapter(adapterParams);
-  await deployFlashLiquidationAdapter(adapterParams);
-  const augustus = await deployMockParaSwapAugustus();
-
-  const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
-
-  await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
-
-  await deployWalletBalancerProvider();
-  const gateWay = await deployWETHGateway([mockTokens.WETH.address]);
-  await authorizeWETHGateway(gateWay.address, lendingPoolAddress);
 
   console.timeEnd('setup');
-};
-
-const buildMissingTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
-  if (!process.env.FORK) return;
-
-  const addressesProvider = await getLendingPoolAddressesProvider();
-  const augustus = await deployMockParaSwapAugustus();
-  const augustusRegistry = await deployMockParaSwapAugustusRegistry([augustus.address]);
-  await deployParaSwapLiquiditySwapAdapter([addressesProvider.address, augustusRegistry.address]);
 };
 
 before(async () => {
@@ -317,7 +274,6 @@ before(async () => {
 
   if (FORK) {
     await rawBRE.run('aave:dev:fork:mainnet');
-    await buildMissingTestEnv(deployer, secondaryWallet);
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

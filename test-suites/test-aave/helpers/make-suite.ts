@@ -9,16 +9,9 @@ import {
   getLendingPoolConfiguratorProxy,
   getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
-  getWETHMocked,
-  getWETHGateway,
-  getUniswapLiquiditySwapAdapter,
-  getUniswapRepayAdapter,
-  getFlashLiquidationAdapter,
-  getParaSwapLiquiditySwapAdapter,
-  getFirstSigner,
   getLidoVault,
 } from '../../../helpers/contracts-getters';
-import { eEthereumNetwork, eNetwork, tEthereumAddress } from '../../../helpers/types';
+import { eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
 import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
@@ -33,15 +26,11 @@ import { PriceOracle } from '../../../types/PriceOracle';
 import { LendingPoolAddressesProvider } from '../../../types/LendingPoolAddressesProvider';
 import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPoolAddressesProviderRegistry';
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
-import { UniswapLiquiditySwapAdapter } from '../../../types/UniswapLiquiditySwapAdapter';
-import { UniswapRepayAdapter } from '../../../types/UniswapRepayAdapter';
-import { ParaSwapLiquiditySwapAdapter } from '../../../types/ParaSwapLiquiditySwapAdapter';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { WETH9Mocked } from '../../../types/WETH9Mocked';
-import { WETHGateway } from '../../../types/WETHGateway';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../../markets/aave';
-import { FlashLiquidationAdapter, LidoVault } from '../../../types';
+import { LidoVault } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ILido } from '../../../types/ILido';
@@ -74,12 +63,7 @@ export interface TestEnv {
   aStETH: AToken;
   lido: ILido;
   addressesProvider: LendingPoolAddressesProvider;
-  uniswapLiquiditySwapAdapter: UniswapLiquiditySwapAdapter;
-  uniswapRepayAdapter: UniswapRepayAdapter;
   registry: LendingPoolAddressesProviderRegistry;
-  wethGateway: WETHGateway;
-  flashLiquidationAdapter: FlashLiquidationAdapter;
-  paraswapLiquiditySwapAdapter: ParaSwapLiquiditySwapAdapter;
   registryOwnerSigner: Signer;
 }
 
@@ -106,12 +90,7 @@ const testEnv: TestEnv = {
   aStETH: {} as AToken,
   lido: {} as ILido,
   addressesProvider: {} as LendingPoolAddressesProvider,
-  uniswapLiquiditySwapAdapter: {} as UniswapLiquiditySwapAdapter,
-  uniswapRepayAdapter: {} as UniswapRepayAdapter,
-  flashLiquidationAdapter: {} as FlashLiquidationAdapter,
-  paraswapLiquiditySwapAdapter: {} as ParaSwapLiquiditySwapAdapter,
   registry: {} as LendingPoolAddressesProviderRegistry,
-  wethGateway: {} as WETHGateway,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -193,15 +172,6 @@ export async function initializeMakeSuite() {
   // testEnv.weth = await getWETHMocked(wethAddress);
   // testEnv.wethGateway = await getWETHGateway();
 
-  testEnv.uniswapLiquiditySwapAdapter = await getUniswapLiquiditySwapAdapter(
-    uniswapLiquiditySwapAdapterAddress
-  );
-  testEnv.uniswapRepayAdapter = await getUniswapRepayAdapter(uniswapRepayAdapterAddress);
-  testEnv.flashLiquidationAdapter = await getFlashLiquidationAdapter(
-    flashLiquidationAdapterAddress
-  );
-
-  testEnv.paraswapLiquiditySwapAdapter = await getParaSwapLiquiditySwapAdapter();
   testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
 }
 

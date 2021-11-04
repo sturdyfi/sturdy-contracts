@@ -21,6 +21,7 @@ import {
   deployATokensAndRatesHelper,
   deployWETHMocked,
 } from '../../helpers/contracts-deployments';
+import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, AavePools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -43,8 +44,10 @@ import AaveConfig from '../../markets/aave';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
+  getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
+  getPriceOracle,
 } from '../../helpers/contracts-getters';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 
@@ -60,6 +63,7 @@ const deployAllMockTokens = async (deployer: Signer) => {
   const protoConfigData = getReservesConfigByPool(AavePools.proto);
 
   for (const tokenSymbol of Object.keys(TokenContractId)) {
+    console.log(tokenSymbol);
     if (tokenSymbol === 'WETH') {
       tokens[tokenSymbol] = await deployWETHMocked();
       await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
@@ -68,7 +72,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
     let decimals = 18;
 
     let configData = (<any>protoConfigData)[tokenSymbol];
-
     if (!configData) {
       decimals = 18;
     }
@@ -142,46 +145,49 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
       USDT: mockTokens.USDT.address,
-      //  SUSD: mockTokens.SUSD.address,
-      //  AAVE: mockTokens.AAVE.address,
-      //  BAT: mockTokens.BAT.address,
-      //   MKR: mockTokens.MKR.address,
-      //    LINK: mockTokens.LINK.address,
-      //    KNC: mockTokens.KNC.address,
-      // WBTC: mockTokens.WBTC.address,
-      //   MANA: mockTokens.MANA.address,
-      //   ZRX: mockTokens.ZRX.address,
-      //   SNX: mockTokens.SNX.address,
-      //  BUSD: mockTokens.BUSD.address,
-      //   YFI: mockTokens.BUSD.address,
-      //  REN: mockTokens.REN.address,
-      // UNI: mockTokens.UNI.address,
-      //   ENJ: mockTokens.ENJ.address,
-      // DAI: mockTokens.LpDAI.address,
-      // USDC: mockTokens.LpUSDC.address,
-      // USDT: mockTokens.LpUSDT.address,
-      // WBTC: mockTokens.LpWBTC.address,
-      // WETH: mockTokens.LpWETH.address,
-      // UniDAIWETH: mockTokens.UniDAIWETH.address,
-      // UniWBTCWETH: mockTokens.UniWBTCWETH.address,
-      // UniAAVEWETH: mockTokens.UniAAVEWETH.address,
-      // UniBATWETH: mockTokens.UniBATWETH.address,
-      // UniDAIUSDC: mockTokens.UniDAIUSDC.address,
-      // UniCRVWETH: mockTokens.UniCRVWETH.address,
-      // UniLINKWETH: mockTokens.UniLINKWETH.address,
-      // UniMKRWETH: mockTokens.UniMKRWETH.address,
-      // UniRENWETH: mockTokens.UniRENWETH.address,
-      // UniSNXWETH: mockTokens.UniSNXWETH.address,
-      // UniUNIWETH: mockTokens.UniUNIWETH.address,
-      // UniUSDCWETH: mockTokens.UniUSDCWETH.address,
-      // UniWBTCUSDC: mockTokens.UniWBTCUSDC.address,
-      // UniYFIWETH: mockTokens.UniYFIWETH.address,
-      // BptWBTCWETH: mockTokens.BptWBTCWETH.address,
-      // BptBALWETH: mockTokens.BptBALWETH.address,
-      // WMATIC: mockTokens.WMATIC.address,
+      /*
+      SUSD: mockTokens.SUSD.address,
+      AAVE: mockTokens.AAVE.address,
+      BAT: mockTokens.BAT.address,
+      MKR: mockTokens.MKR.address,
+      LINK: mockTokens.LINK.address,
+      KNC: mockTokens.KNC.address,
+      WBTC: mockTokens.WBTC.address,
+      MANA: mockTokens.MANA.address,
+      ZRX: mockTokens.ZRX.address,
+      SNX: mockTokens.SNX.address,
+      BUSD: mockTokens.BUSD.address,
+      YFI: mockTokens.BUSD.address,
+      REN: mockTokens.REN.address,
+      UNI: mockTokens.UNI.address,
+      ENJ: mockTokens.ENJ.address,
+       DAI: mockTokens.LpDAI.address,
+       USDC: mockTokens.LpUSDC.address,
+       USDT: mockTokens.LpUSDT.address,
+       WBTC: mockTokens.LpWBTC.address,
+       WETH: mockTokens.LpWETH.address,
+       UniDAIWETH: mockTokens.UniDAIWETH.address,
+      UniWBTCWETH: mockTokens.UniWBTCWETH.address,
+      UniAAVEWETH: mockTokens.UniAAVEWETH.address,
+      UniBATWETH: mockTokens.UniBATWETH.address,
+      UniDAIUSDC: mockTokens.UniDAIUSDC.address,
+      UniCRVWETH: mockTokens.UniCRVWETH.address,
+      UniLINKWETH: mockTokens.UniLINKWETH.address,
+      UniMKRWETH: mockTokens.UniMKRWETH.address,
+      UniRENWETH: mockTokens.UniRENWETH.address,
+      UniSNXWETH: mockTokens.UniSNXWETH.address,
+      UniUNIWETH: mockTokens.UniUNIWETH.address,
+      UniUSDCWETH: mockTokens.UniUSDCWETH.address,
+      UniWBTCUSDC: mockTokens.UniWBTCUSDC.address,
+      UniYFIWETH: mockTokens.UniYFIWETH.address,
+      BptWBTCWETH: mockTokens.BptWBTCWETH.address,
+      BptBALWETH: mockTokens.BptBALWETH.address,
+      WMATIC: mockTokens.WMATIC.address, */
       USD: USD_ADDRESS,
-      // STAKE: mockTokens.STAKE.address,
-      // xSUSHI: mockTokens.xSUSHI.address,
+      /*       
+      STAKE: mockTokens.STAKE.address,
+      xSUSHI: mockTokens.xSUSHI.address, 
+*/
       stETH: mockTokens.stETH.address,
     },
     fallbackOracle
@@ -267,7 +273,7 @@ before(async () => {
   const FORK = process.env.FORK;
 
   if (FORK) {
-    await rawBRE.run('aave:mainnet');
+    await rawBRE.run('aave:dev:fork:mainnet');
   } else {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);

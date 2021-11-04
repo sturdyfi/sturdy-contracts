@@ -16,7 +16,7 @@
     "hardhat:docker": "hardhat --network hardhatevm_docker",
     "compile": "SKIP_LOAD=true hardhat compile",
     "console:fork": "FORK=main hardhat console",
-    "test": "FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-aave/*.spec.sturdy.ts --network forked_main",
+    "test": "FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-aave/*.spec.ts --network forked_main",
     "test-scenarios": "npm run compile && npx hardhat test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/scenario.spec.ts",
     "test-subgraph:scenarios": "npm run compile && hardhat --network hardhatevm_docker test test-suites/test-aave/__setup.spec.ts test-suites/test-aave/subgraph-scenarios.spec.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",

@@ -37,10 +37,10 @@ FORK=main yarn hardhat compile
 
 - Next run the following task to deploy all smart contracts including sample contract "LendingPool"
 ```
-yarn aave:evm:dev:fork:mainnet:migration
+yarn aave:evm:fork:mainnet:migration
 ```
 
 - For test, run the following task to have a test of sample contract on the localhost.
 ```
-yarn test_sturdy:fork:mainnet
+yarn test
 ```

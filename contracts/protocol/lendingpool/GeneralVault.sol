@@ -29,7 +29,7 @@ contract GeneralVault is Ownable {
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset
-    ILendingPool(lendingPool).deposit(_stAsset, _stAssetAmount, msg.sender, 0, true);
+    ILendingPool(lendingPool).deposit(_stAsset, _stAssetAmount, msg.sender, 0);
   }
 
   /**

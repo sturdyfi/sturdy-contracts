@@ -272,6 +272,34 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /**
+   * @dev Enables collateral on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param collateralEnabled True
+   **/
+  function enableCollateralOnReserve(address asset, bool collateralEnabled) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setCollateralEnabled(true);
+
+    pool.setConfiguration(asset, currentConfig.data);
+
+    emit CollateralEnabledOnReserve(asset, collateralEnabled);
+  }
+
+  /**
+   * @dev Disables collateral on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  function disableCollateralOnReserve(address asset) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+
+    currentConfig.setCollateralEnabled(false);
+
+    pool.setConfiguration(asset, currentConfig.data);
+    emit CollateralDisabledOnReserve(asset);
+  }
+
+  /**
    * @dev Configures the reserve collateralization parameters
    * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
    * @param asset The address of the underlying asset of the reserve

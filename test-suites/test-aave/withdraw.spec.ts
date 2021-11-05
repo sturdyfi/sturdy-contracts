@@ -29,7 +29,7 @@ makeSuite('Withdraw USDC ', (testEnv) => {
     //Supplier  deposits 7000 USDC
     await pool
       .connect(depositor.signer)
-      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0', false);
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     const supplierGlobalData = await pool.getUserAccountData(depositor.address);
     printUserAccountData({

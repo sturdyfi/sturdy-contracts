@@ -259,6 +259,7 @@ export const configureReservesByHelper = async (
     reserveFactor: BigNumberish;
     stableBorrowingEnabled: boolean;
     borrowingEnabled: boolean;
+    collateralEnabled: boolean;
   }[] = [];
   for (const [
     assetSymbol,
@@ -269,6 +270,7 @@ export const configureReservesByHelper = async (
       reserveFactor,
       stableBorrowRateEnabled,
       borrowingEnabled,
+      collateralEnabled,
     },
   ] of Object.entries(reservesParams) as [string, IReserveParams][]) {
     if (!tokenAddresses[assetSymbol]) {
@@ -301,6 +303,7 @@ export const configureReservesByHelper = async (
       reserveFactor: reserveFactor,
       stableBorrowingEnabled: stableBorrowRateEnabled,
       borrowingEnabled: borrowingEnabled,
+      collateralEnabled: collateralEnabled,
     });
 
     tokens.push(tokenAddress);

@@ -30,7 +30,7 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
     //Supplier  deposits 7000 USDC
     await pool
       .connect(depositor.signer)
-      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0', false);
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     const supplierGlobalData = await pool.getUserAccountData(depositor.address);
     printUserAccountData({
@@ -111,7 +111,7 @@ makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier 
     //Supplier  deposits 7000 USDC
     await pool
       .connect(depositor.signer)
-      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0', false);
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     const supplierGlobalData = await pool.getUserAccountData(depositor.address);
     printUserAccountData({
@@ -200,8 +200,8 @@ makeSuite('borrow stETH', (testEnv) => {
     await expect(
       pool
         .connect(depositor.signer)
-        .deposit(lido.address, amountStETHtoDeposit, depositor.address, '0', false)
-    ).to.not.be.reverted;
+        .deposit(lido.address, amountStETHtoDeposit, depositor.address, '0')
+    ).to.be.reverted;
 
     //Make 5ETH deposit for collatoral
     await lidoVault

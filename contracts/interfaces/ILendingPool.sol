@@ -182,8 +182,7 @@ interface ILendingPool {
     address asset,
     uint256 amount,
     address onBehalfOf,
-    uint16 referralCode,
-    bool collatoral
+    uint16 referralCode
   ) external;
 
   function depositYield(address asset, uint256 amount) external;

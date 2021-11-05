@@ -130,7 +130,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     //Supplier  deposits 7000 USDC
     await pool
       .connect(depositor.signer)
-      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0', false);
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
     const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
     const depositStETH = '10';

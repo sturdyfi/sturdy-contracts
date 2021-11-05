@@ -3,14 +3,10 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {LendingPool} from '../protocol/lendingpool/LendingPool.sol';
-import {
-  LendingPoolAddressesProvider
-} from '../protocol/configuration/LendingPoolAddressesProvider.sol';
+import {LendingPoolAddressesProvider} from '../protocol/configuration/LendingPoolAddressesProvider.sol';
 import {LendingPoolConfigurator} from '../protocol/lendingpool/LendingPoolConfigurator.sol';
 import {AToken} from '../protocol/tokenization/AToken.sol';
-import {
-  DefaultReserveInterestRateStrategy
-} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {StringLib} from './StringLib.sol';
 
@@ -33,6 +29,7 @@ contract ATokensAndRatesHelper is Ownable {
     uint256 reserveFactor;
     bool stableBorrowingEnabled;
     bool borrowingEnabled;
+    bool collateralEnabled;
   }
 
   constructor(
@@ -78,6 +75,13 @@ contract ATokensAndRatesHelper is Ownable {
         configurator.enableBorrowingOnReserve(
           inputParams[i].asset,
           inputParams[i].stableBorrowingEnabled
+        );
+      }
+
+      if (inputParams[i].collateralEnabled) {
+        configurator.enableCollateralOnReserve(
+          inputParams[i].asset,
+          inputParams[i].collateralEnabled
         );
       }
       configurator.setReserveFactor(inputParams[i].asset, inputParams[i].reserveFactor);

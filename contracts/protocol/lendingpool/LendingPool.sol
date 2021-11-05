@@ -110,14 +110,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     uint256 amount,
     address onBehalfOf,
-    uint16 referralCode,
-    bool collatoral
+    uint16 referralCode
   ) external override whenNotPaused {
-    if (collatoral) {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+
+    if (isCollateral) {
       require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
     }
 
-    DataTypes.ReserveData storage reserve = _reserves[asset];
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
@@ -129,8 +130,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
-      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, collatoral);
-      if (collatoral) {
+      _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, isCollateral);
+      if (isCollateral) {
         emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
       }
     }

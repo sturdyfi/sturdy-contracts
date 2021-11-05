@@ -71,6 +71,19 @@ interface ILendingPoolConfigurator {
   event BorrowingDisabledOnReserve(address indexed asset);
 
   /**
+   * @dev Emitted when collateral is enabled on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param collateralEnabled True
+   **/
+  event CollateralEnabledOnReserve(address indexed asset, bool collateralEnabled);
+
+  /**
+   * @dev Emitted when collateral is disabled on a reserve
+   * @param asset The address of the underlying asset of the reserve
+   **/
+  event CollateralDisabledOnReserve(address indexed asset);
+
+  /**
    * @dev Emitted when the collateralization risk parameters for the specified asset are updated.
    * @param asset The address of the underlying asset of the reserve
    * @param ltv The loan to value of the asset when used as collateral

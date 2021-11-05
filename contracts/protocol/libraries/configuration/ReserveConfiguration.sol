@@ -19,6 +19,7 @@ library ReserveConfiguration {
   uint256 constant BORROWING_MASK =             0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFBFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
+  uint256 constant COLLATERAL_MASK =            0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFFFFFFFFF; // prettier-ignore
 
   /// @dev For the LTV, the start bit is 0 (up to 15), hence no bitshifting is needed
   uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
@@ -28,6 +29,7 @@ library ReserveConfiguration {
   uint256 constant IS_FROZEN_START_BIT_POSITION = 57;
   uint256 constant BORROWING_ENABLED_START_BIT_POSITION = 58;
   uint256 constant STABLE_BORROWING_ENABLED_START_BIT_POSITION = 59;
+  uint256 constant COLLATERAL_ENABLED_START_BIT_POSITION = 60;
   uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
 
   uint256 constant MAX_VALID_LTV = 65535;
@@ -209,6 +211,33 @@ library ReserveConfiguration {
   }
 
   /**
+   * @dev Sets the collateral state of the reserve
+   * @param self The reserve configuration
+   * @param enabled The collateral state
+   **/
+  function setCollateralEnabled(DataTypes.ReserveConfigurationMap memory self, bool enabled)
+    internal
+    pure
+  {
+    self.data =
+      (self.data & COLLATERAL_MASK) |
+      (uint256(enabled ? 1 : 0) << COLLATERAL_ENABLED_START_BIT_POSITION);
+  }
+
+  /**
+   * @dev Gets the collateral state of the reserve
+   * @param self The reserve configuration
+   * @return The collateral state
+   **/
+  function getCollateralEnabled(DataTypes.ReserveConfigurationMap storage self)
+    internal
+    view
+    returns (bool)
+  {
+    return (self.data & ~COLLATERAL_MASK) != 0;
+  }
+
+  /**
    * @dev Enables or disables stable rate borrowing on the reserve
    * @param self The reserve configuration
    * @param enabled True if the stable rate borrowing needs to be enabled, false otherwise
@@ -267,12 +296,13 @@ library ReserveConfiguration {
   /**
    * @dev Gets the configuration flags of the reserve
    * @param self The reserve configuration
-   * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
+   * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled, collateral enabled
    **/
   function getFlags(DataTypes.ReserveConfigurationMap storage self)
     internal
     view
     returns (
+      bool,
       bool,
       bool,
       bool,
@@ -285,7 +315,8 @@ library ReserveConfiguration {
       (dataLocal & ~ACTIVE_MASK) != 0,
       (dataLocal & ~FROZEN_MASK) != 0,
       (dataLocal & ~BORROWING_MASK) != 0,
-      (dataLocal & ~STABLE_BORROWING_MASK) != 0
+      (dataLocal & ~STABLE_BORROWING_MASK) != 0,
+      (dataLocal & ~COLLATERAL_MASK) != 0
     );
   }
 
@@ -344,12 +375,13 @@ library ReserveConfiguration {
   /**
    * @dev Gets the configuration flags of the reserve from a memory object
    * @param self The reserve configuration
-   * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
+   * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled, collateral enabled
    **/
   function getFlagsMemory(DataTypes.ReserveConfigurationMap memory self)
     internal
     pure
     returns (
+      bool,
       bool,
       bool,
       bool,
@@ -360,7 +392,8 @@ library ReserveConfiguration {
       (self.data & ~ACTIVE_MASK) != 0,
       (self.data & ~FROZEN_MASK) != 0,
       (self.data & ~BORROWING_MASK) != 0,
-      (self.data & ~STABLE_BORROWING_MASK) != 0
+      (self.data & ~STABLE_BORROWING_MASK) != 0,
+      (self.data & ~COLLATERAL_MASK) != 0
     );
   }
 }

@@ -28,9 +28,9 @@ export const strategyBUSD: IReserveParams = {
 
 export const strategyDAI: IReserveParams = {
   strategy: rateStrategyStableTwo,
-  baseLTVAsCollateral: '7500',
-  liquidationThreshold: '8000',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0'/*'7500'*/,
+  liquidationThreshold: '0'/*'8000'*/,
+  liquidationBonus: '0'/*'10500'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -54,9 +54,9 @@ export const strategySUSD: IReserveParams = {
 
 export const strategyTUSD: IReserveParams = {
   strategy: rateStrategyStableTwo,
-  baseLTVAsCollateral: '7500',
-  liquidationThreshold: '8000',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0'/*'7500'*/,
+  liquidationThreshold: '0'/*'8000'*/,
+  liquidationBonus: '0'/*'10500'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -67,9 +67,9 @@ export const strategyTUSD: IReserveParams = {
 
 export const strategyUSDC: IReserveParams = {
   strategy: rateStrategyStableThree,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '8500',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0'/*'7500'*/,
+  liquidationThreshold: '0'/*'8000'*/,
+  liquidationBonus: '0'/*'10500'*/,
   borrowingEnabled: true,
   stableBorrowRateEnabled: true,
   reserveDecimals: '6',
@@ -80,9 +80,9 @@ export const strategyUSDC: IReserveParams = {
 
 export const strategyUSDT: IReserveParams = {
   strategy: rateStrategyStableThree,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '8500',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0'/*'8000'*/,
+  liquidationThreshold: '0'/*'8500'*/,
+  liquidationBonus: '0'/*'10500'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '6',
@@ -93,9 +93,9 @@ export const strategyUSDT: IReserveParams = {
 
 export const strategyAAVE: IReserveParams = {
   strategy: rateStrategyAAVE,
-  baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'5000'*/,
+  liquidationThreshold: '0'/*'6500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -106,9 +106,9 @@ export const strategyAAVE: IReserveParams = {
 
 export const strategyBAT: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'7000'*/,
+  liquidationThreshold: '0'/*'7500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -119,9 +119,9 @@ export const strategyBAT: IReserveParams = {
 
 export const strategyENJ: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '5500',
-  liquidationThreshold: '6000',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'5500'*/,
+  liquidationThreshold: '0'/*'6000'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -132,9 +132,9 @@ export const strategyENJ: IReserveParams = {
 
 export const strategyWETH: IReserveParams = {
   strategy: rateStrategyWETH,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '8250',
-  liquidationBonus: '10500',
+  baseLTVAsCollateral: '0'/*'8000'*/,
+  liquidationThreshold: '0'/*'8250'*/,
+  liquidationBonus: '0'/*'10500'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -145,9 +145,9 @@ export const strategyWETH: IReserveParams = {
 
 export const strategyKNC: IReserveParams = {
   strategy: rateStrategyVolatileTwo,
-  baseLTVAsCollateral: '6000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'6000'*/,
+  liquidationThreshold: '0'/*'6500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -158,9 +158,9 @@ export const strategyKNC: IReserveParams = {
 
 export const strategyLINK: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'7000'*/,
+  liquidationThreshold: '0'/*'7500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -171,9 +171,9 @@ export const strategyLINK: IReserveParams = {
 
 export const strategyMANA: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '6000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'6000'*/,
+  liquidationThreshold: '0'/*'6500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -184,9 +184,9 @@ export const strategyMANA: IReserveParams = {
 
 export const strategyMKR: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '6000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'6000'*/,
+  liquidationThreshold: '0'/*'6500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -197,9 +197,9 @@ export const strategyMKR: IReserveParams = {
 
 export const strategyREN: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '5500',
-  liquidationThreshold: '6000',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'5500'*/,
+  liquidationThreshold: '0'/*'6000'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -210,9 +210,9 @@ export const strategyREN: IReserveParams = {
 
 export const strategySNX: IReserveParams = {
   strategy: rateStrategyVolatileThree,
-  baseLTVAsCollateral: '1500',
-  liquidationThreshold: '4000',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'1500'*/,
+  liquidationThreshold: '0'/*'4000'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -223,9 +223,9 @@ export const strategySNX: IReserveParams = {
 
 export const strategyWBTC: IReserveParams = {
   strategy: rateStrategyVolatileTwo,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'7000'*/,
+  liquidationThreshold: '0'/*'7500'*/,
+  liquidationBonus: '0'/*'11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '8',
@@ -236,9 +236,9 @@ export const strategyWBTC: IReserveParams = {
 
 export const strategyYFI: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '4000',
-  liquidationThreshold: '5500',
-  liquidationBonus: '11500',
+  baseLTVAsCollateral: '0'/*'4000'*/,
+  liquidationThreshold: '0'/*'5500'*/,
+  liquidationBonus: '0'/*'11500'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -249,9 +249,9 @@ export const strategyYFI: IReserveParams = {
 
 export const strategyZRX: IReserveParams = {
   strategy: rateStrategyVolatileOne,
-  baseLTVAsCollateral: '6000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '0'/*'6000'*/,
+  liquidationThreshold: '0'/*'6500'*/,
+  liquidationBonus: '0'/*11000'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -262,9 +262,9 @@ export const strategyZRX: IReserveParams = {
 
 export const strategyXSUSHI: IReserveParams = {
   strategy: rateStrategyVolatileFour,
-  baseLTVAsCollateral: '2500',
-  liquidationThreshold: '4500',
-  liquidationBonus: '11500',
+  baseLTVAsCollateral: '0'/*'2500'*/,
+  liquidationThreshold: '0'/*'4500'*/,
+  liquidationBonus: '0'/*'11500'*/,
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',

@@ -230,7 +230,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'DAI'
   //  | 'TUSD'
   | 'USDC'
-  | 'USDT'
+  // | 'USDT'
   /*
   | 'SUSD'
   | 'AAVE'
@@ -244,7 +244,7 @@ export type iAavePoolAssets<T> = Pick<
   | 'SNX'
   | 'BUSD' 
 */
-  | 'WETH'
+  // | 'WETH'
   /*
   | 'YFI'
   | 'UNI'
@@ -257,11 +257,10 @@ export type iAavePoolAssets<T> = Pick<
 
 export type iLpPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  | 'DAI'
-  | 'USDC'
-  | 'USDT'
+  'DAI' | 'USDC'
+  // | 'USDT'
   //  | 'WBTC'
-  | 'WETH'
+  // | 'WETH'
   /*  | 'UniDAIWETH'
   | 'UniWBTCWETH'
   | 'UniAAVEWETH'
@@ -293,9 +292,9 @@ export enum TokenContractId {
   TUSD = 'TUSD',
   BAT = 'BAT', 
 */
-  WETH = 'WETH',
+  // WETH = 'WETH',
   USDC = 'USDC',
-  USDT = 'USDT',
+  // USDT = 'USDT',
   /*   
   SUSD = 'SUSD',
   ZRX = 'ZRX',
@@ -308,7 +307,7 @@ export enum TokenContractId {
   SNX = 'SNX',
   BUSD = 'BUSD', 
 */
-  USD = 'USD',
+  // USD = 'USD',
   /*
   YFI = 'YFI',
   UNI = 'UNI',

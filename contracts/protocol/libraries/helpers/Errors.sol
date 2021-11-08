@@ -110,6 +110,7 @@ library Errors {
   string public constant VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT = '85'; //Collatoral withdraw has not enough amount
   string public constant VT_CONVERT_ASSET_BY_CURVE_INVALID = '86'; //Convert asset by curve invalid
   string public constant VT_PROCESS_YIELD_INVALID = '87'; //Processing yield is invalid
+  string public constant VT_TREASURY_INVALID = '88'; //Treasury is invalid
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -27,7 +27,6 @@ import { LendingPoolAddressesProvider } from '../../../types/LendingPoolAddresse
 import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPoolAddressesProviderRegistry';
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
-import { WETH9Mocked } from '../../../types/WETH9Mocked';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../../markets/aave';
 import { LidoVault } from '../../../types';
@@ -53,8 +52,6 @@ export interface TestEnv {
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
-  weth: WETH9Mocked;
-  aWETH: AToken;
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
@@ -80,8 +77,6 @@ const testEnv: TestEnv = {
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
-  weth: {} as WETH9Mocked,
-  aWETH: {} as AToken,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
@@ -96,9 +91,6 @@ const testEnv: TestEnv = {
 export async function initializeMakeSuite() {
   // Mainnet missing addresses
   const lidoAddress = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
-  const uniswapLiquiditySwapAdapterAddress = '0x3b9653eD3992d4339d8B6bF3379997edBbCeaA4d';
-  const uniswapRepayAdapterAddress = '0xF9807Be7bD65de8ddF59830790056A3353459feF';
-  const flashLiquidationAdapterAddress = '0x52E3a370Bad37956ec281385AFC97978d734139d';
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   const deployer: SignerWithAddress = {
@@ -142,36 +134,27 @@ export async function initializeMakeSuite() {
   const allTokens = await testEnv.helpersContract.getAllATokens();
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
 
-  const aWEthAddress = allTokens.find((aToken) => aToken.symbol === 'aWETH')?.tokenAddress;
   const aStETHAddress = allTokens.find((aToken) => aToken.symbol === 'astETH')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
-  const stethAddress = reservesTokens.find((token) => token.symbol === 'stETH')?.tokenAddress;
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
-  //const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
-  // const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
 
-  if (!aDaiAddress || !aWEthAddress || !aStETHAddress) {
+  if (!aDaiAddress || !aStETHAddress) {
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress /*|| !aaveAddress ||  !wethAddress || */) {
+  if (!daiAddress || !usdcAddress) {
     process.exit(1);
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
-  testEnv.aWETH = await getAToken(aWEthAddress);
   testEnv.aStETH = await getAToken(aStETHAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
-  //  testEnv.aave = await getMintableERC20(aaveAddress);
-  // testEnv.weth = await getWETHMocked(wethAddress);
-  // testEnv.wethGateway = await getWETHGateway();
-
   testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
 }
 

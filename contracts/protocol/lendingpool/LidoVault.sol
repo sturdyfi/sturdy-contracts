@@ -11,8 +11,13 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {ISwapRouter} from '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import {TransferHelper} from '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
 contract LidoVault is GeneralVault {
+  using SafeMath for uint256;
+  using PercentageMath for uint256;
+
   //ToDo: need to think about using registering flow instead of constant value
   address constant LIDO = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
   address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
@@ -22,9 +27,6 @@ contract LidoVault is GeneralVault {
 
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;
-
-  // asset address -> reserveIncome from yield based on strategy
-  mapping(address => uint256) reserveIncome;
 
   constructor(address _lendingPool) public GeneralVault(_lendingPool) {}
 
@@ -40,6 +42,12 @@ contract LidoVault is GeneralVault {
   function processYield() external override onlyOwner {
     // Get yield from lendingPool
     uint256 yieldStETH = _getYield(LIDO);
+
+    // move yield to treasury
+    if (_vaultFee > 0) {
+      uint256 treasuryStETH = _processTreasury(yieldStETH);
+      yieldStETH = yieldStETH.sub(treasuryStETH);
+    }
 
     // Exchange stETH -> ETH via Curve
     uint256 receivedETHAmount = _convertAssetByCurve(LIDO, yieldStETH);
@@ -155,5 +163,14 @@ contract LidoVault is GeneralVault {
     uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
     uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
     return receivedAmount;
+  }
+
+  /**
+   * @dev Move some yield to treasury
+   */
+  function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
+    uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
+    IERC20(LIDO).transfer(_treasuryAddress, treasuryAmount);
+    return treasuryAmount;
   }
 }

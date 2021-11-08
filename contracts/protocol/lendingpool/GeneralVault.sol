@@ -13,6 +13,10 @@ contract GeneralVault is Ownable {
 
   address public immutable lendingPool;
 
+  // vault fee 20%
+  uint256 internal _vaultFee;
+  address internal _treasuryAddress;
+
   constructor(address _lendingPool) public {
     lendingPool = _lendingPool;
   }
@@ -67,6 +71,17 @@ contract GeneralVault is Ownable {
    * @dev Get yield based on strategy and re-deposit
    */
   function processYield() external virtual {}
+
+  /**
+   * @dev Set treasury address and vault fee
+   * @param _treasury The treasury address
+   * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
+   */
+  function setTreasuryInfo(address _treasury, uint256 _fee) external onlyOwner {
+    require(_treasury != address(0), Errors.VT_TREASURY_INVALID);
+    _treasuryAddress = _treasury;
+    _vaultFee = _fee;
+  }
 
   /**
    * @dev Get yield based on strategy and re-deposit

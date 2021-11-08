@@ -39,24 +39,24 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   // TODO: reorg alphabetically, checking the reason of tests failing
   LendingRateOracleRatesCommon: {
-    WETH: {
-      borrowRate: oneRay.multipliedBy(0.03).toFixed(),
-    },
+    // WETH: {
+    //   borrowRate: oneRay.multipliedBy(0.03).toFixed(),
+    // },
     DAI: {
-      borrowRate: oneRay.multipliedBy(0.039).toFixed(),
+      borrowRate: '0' /* oneRay.multipliedBy(0.039).toFixed() */,
     },
 /*     TUSD: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     }, */
     USDC: {
-      borrowRate: oneRay.multipliedBy(0.039).toFixed(),
+      borrowRate: '0' /*oneRay.multipliedBy(0.039).toFixed() */,
     },
 /*     SUSD: {
       borrowRate: oneRay.multipliedBy(0.035).toFixed(),
     }, */
-    USDT: {
-      borrowRate: oneRay.multipliedBy(0.035).toFixed(),
-    },
+    // USDT: {
+    //   borrowRate: oneRay.multipliedBy(0.035).toFixed(),
+    // },
 /*     BAT: {
       borrowRate: oneRay.multipliedBy(0.03).toFixed(),
     }, */
@@ -100,7 +100,7 @@ export const CommonsConfig: ICommonConfiguration = {
       borrowRate: oneRay.multipliedBy(0.05).toFixed(),
     },  */
     stETH: {
-        borrowRate: oneRay.multipliedBy(0.05).toFixed(),
+        borrowRate: '0' /*oneRay.multipliedBy(0.05).toFixed()*/,
       },
   },
   // ----------------
@@ -254,7 +254,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x7aeCF1c19661d12E962b69eBC8f6b2E63a55C660',
       UNI: '0x17756515f112429471F86f98D5052aCB6C47f6ee', */
       USDC: '0x64EaC61A2DFda2c3Fa04eED49AA33D021AeC8838',
-      USDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
+      // USDT: '0x0bF499444525a23E7Bb61997539725cA2e928138',
 /*       WBTC: '0xF7904a295A029a3aBDFFB6F12755974a958C7C25',
       YFI: '0xC5d1B1DEb2992738C0273408ac43e1e906086B6C',
       ZRX: '0xBc3f28Ccc21E9b5856E81E6372aFf57307E2E883', */
@@ -276,7 +276,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x523ac85618df56e940534443125ef16daf785620',
       UNI: ZERO_ADDRESS, */
       USDC: '0xe1480303dde539e2c241bdc527649f37c9cbef7d',
-      USDT: '0xc08fe0c4d97ccda6b40649c6da621761b628c288',
+      // USDT: '0xc08fe0c4d97ccda6b40649c6da621761b628c288',
 /*       WBTC: '0x5b8B87A0abA4be247e660B0e0143bB30Cdf566AF',
       YFI: ZERO_ADDRESS,
       ZRX: '0x1d0052e4ae5b4ae4563cbac50edc3627ca0460d7', */
@@ -298,7 +298,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e', */
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
-      USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
+      // USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
       stETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
 /*       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
@@ -322,7 +322,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       UNI: '0xD6aA3D25116d8dA79Ea0246c4826EB951872e02e', */
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
-      USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
+      // USDT: '0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46',
 /*       WBTC: '0xdeb288F737066589598e9214E782fa5A8eD689e8',
       YFI: '0x7c5d4F8345e66f68099581Db340cd65B078C41f4',
       ZRX: '0x2Da4983a622a8498bb1a21FaE9D8F6C664939962', */

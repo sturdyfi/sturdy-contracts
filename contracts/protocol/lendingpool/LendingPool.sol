@@ -122,9 +122,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
-    reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
-
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
@@ -247,10 +244,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    reserve.updateState();
-
-    reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
-
     if (amountToWithdraw == userBalance) {
       _usersConfig[from].setUsingAsCollateral(reserve.id, false);
       emit ReserveUsedAsCollateralDisabled(asset, from);
@@ -343,8 +336,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       paybackAmount = amount;
     }
 
-    reserve.updateState();
-
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     } else {
@@ -356,7 +347,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
-    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
@@ -847,8 +837,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    reserve.updateState();
-
     uint256 currentStableRate = 0;
 
     //todo:  debt tokens USDC, USDT, DAI
@@ -874,13 +862,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (isFirstBorrowing) {
       userConfig.setBorrowing(reserve.id, true);
     }
-
-    reserve.updateInterestRates(
-      vars.asset,
-      vars.aTokenAddress,
-      0,
-      vars.releaseUnderlying ? vars.amount : 0
-    );
 
     if (vars.releaseUnderlying) {
       IAToken(vars.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);

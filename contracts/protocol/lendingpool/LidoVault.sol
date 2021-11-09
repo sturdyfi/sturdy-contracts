@@ -23,7 +23,6 @@ contract LidoVault is GeneralVault {
   address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
   address constant UniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
   address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-  address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
 
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;
@@ -37,7 +36,7 @@ contract LidoVault is GeneralVault {
 
   /**
    * @dev Grab excess stETH which was from rebasing on Lido
-   *  And convert stETH -> ETH -> USDC
+   *  And convert stETH -> ETH -> asset, deposit to pool
    */
   function processYield() external override onlyOwner {
     // Get yield from lendingPool
@@ -54,34 +53,44 @@ contract LidoVault is GeneralVault {
     // ETH -> WETH
     IWETH(WETH).deposit{value: receivedETHAmount}();
 
+    AssetYield[] memory assetYields = _getAssetYields(receivedETHAmount);
+    for (uint256 i = 0; i < assetYields.length; i++) {
+      // WETH -> Asset and Deposit to pool
+      if (assetYields[i].amount > 0) {
+        _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
+      }
+    }
+  }
+
+  function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
     // Approve the uniswapRouter to spend WETH.
-    TransferHelper.safeApprove(WETH, UniswapRouter, receivedETHAmount);
+    TransferHelper.safeApprove(WETH, UniswapRouter, _wethAmount);
 
     // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
     // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
     ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
       tokenIn: WETH,
-      tokenOut: USDC,
+      tokenOut: _tokenOut,
       fee: uniswapFee,
       recipient: address(this),
       deadline: block.timestamp,
-      amountIn: receivedETHAmount,
+      amountIn: _wethAmount,
       amountOutMinimum: 0,
       sqrtPriceLimitX96: 0
     });
 
-    // Exchange WETH -> USDC via UniswapV3
-    uint256 receivedUSDCAmount = ISwapRouter(UniswapRouter).exactInputSingle(params);
-    require(receivedUSDCAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    // Exchange WETH -> _tokenOut via UniswapV3
+    uint256 receivedAmount = ISwapRouter(UniswapRouter).exactInputSingle(params);
+    require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
-      IERC20(USDC).balanceOf(address(this)) == receivedUSDCAmount,
+      IERC20(_tokenOut).balanceOf(address(this)) == receivedAmount,
       Errors.VT_PROCESS_YIELD_INVALID
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(USDC).approve(address(lendingPool), receivedUSDCAmount);
+    IERC20(_tokenOut).approve(address(lendingPool), receivedAmount);
     // Deposit Yield to pool
-    _depositYield(USDC, receivedUSDCAmount);
+    _depositYield(_tokenOut, receivedAmount);
   }
 
   /**

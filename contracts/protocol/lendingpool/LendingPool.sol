@@ -190,6 +190,40 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
+   * @dev Get total underlying asset which is borrowable
+   *  and also list of underlying asset
+   **/
+  function getBorrowingAssetAndVolumes()
+    external
+    view
+    override
+    returns (
+      uint256,
+      uint256[] memory,
+      address[] memory,
+      uint256
+    )
+  {
+    uint256 totalVolume = 0;
+    uint256[] memory volumes = new uint256[](_reservesCount);
+    address[] memory assets = new address[](_reservesCount);
+    uint256 pos = 0;
+
+    for (uint256 i = 0; i < _reservesCount; i++) {
+      DataTypes.ReserveData storage reserve = _reserves[_reservesList[i]];
+      (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
+      if (isActive && !isFrozen && isBorrowing) {
+        volumes[pos] = IERC20(_reservesList[i]).balanceOf(reserve.aTokenAddress);
+        assets[pos] = _reservesList[i];
+        totalVolume = totalVolume.add(volumes[pos]);
+        pos = pos.add(1);
+      }
+    }
+
+    return (totalVolume, volumes, assets, pos);
+  }
+
+  /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
    * @param asset The address of the underlying asset to withdraw

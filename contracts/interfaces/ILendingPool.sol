@@ -191,6 +191,16 @@ interface ILendingPool {
 
   function getTotalBalanceOfAssetPair(address asset) external view returns (uint256, uint256);
 
+  function getBorrowingAssetAndVolumes()
+    external
+    view
+    returns (
+      uint256,
+      uint256[] memory,
+      address[] memory,
+      uint256
+    );
+
   function registerVault(address _vaultAddress) external;
 
   /**

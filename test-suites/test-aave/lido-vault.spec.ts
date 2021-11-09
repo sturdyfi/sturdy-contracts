@@ -111,7 +111,7 @@ makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
 });
 
 makeSuite('LidoVault', (testEnv: TestEnv) => {
-  it('distribute yield to supplier', async () => {
+  it('distribute yield to supplier for single asset', async () => {
     const { pool, lidoVault, usdc, users, lido, aUsdc, aStETH } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
@@ -159,6 +159,80 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     // process yield, so all yield should be converted to usdc
     await lidoVault.processYield();
     expect((await aUsdc.balanceOf(depositor.address)).gt(amountUSDCtoDeposit)).to.be.equal(true);
+  });
+});
+
+makeSuite('LidoVault', (testEnv: TestEnv) => {
+  it('distribute yield to supplier for multiple asset', async () => {
+    const { pool, lidoVault, usdc, users, lido, aUsdc, aStETH, dai, aDai } = testEnv;
+    const depositor = users[0];
+    const other_depositor = users[1];
+    const borrower = users[2];
+    const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const depositUSDC = '7000';
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //Supplier  deposits 7000 USDC
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+
+    const daiOwnerAddress = '0x1e3D6eAb4BCF24bcD04721caA11C478a2e59852D';
+    const depositDAI = '7000';
+    //Make some test DAI for depositor
+    await impersonateAccountsHardhat([daiOwnerAddress]);
+    signer = await ethers.provider.getSigner(daiOwnerAddress);
+    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, depositDAI);
+    await dai.connect(signer).transfer(other_depositor.address, amountDAItoDeposit);
+
+    //approve protocol to access depositor wallet
+    await dai.connect(other_depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //Supplier  deposits 7000 DAI
+    await pool
+      .connect(other_depositor.signer)
+      .deposit(dai.address, amountDAItoDeposit, other_depositor.address, '0');
+
+    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const depositStETH = '10';
+    const depositStETHAmount = await convertToCurrencyDecimals(lido.address, depositStETH);
+    //Make some test stETH for borrower
+    await impersonateAccountsHardhat([stETHOwnerAddress]);
+    signer = await ethers.provider.getSigner(stETHOwnerAddress);
+
+    //transfer to borrower
+    await lido.connect(signer).transfer(borrower.address, depositStETHAmount);
+
+    //approve protocol to access borrower wallet
+    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    // deposit collateral to borrow
+    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, depositStETHAmount);
+    expect(await lidoVault.getYieldAmount()).to.be.equal(0);
+
+    //To simulate yield in lendingPool, deposit some stETH to aStETH contract
+    await lido.connect(signer).transfer(aStETH.address, depositStETHAmount);
+
+    expect((await lidoVault.getYieldAmount()).gt(parseEther('9.999'))).to.be.equal(true);
+    expect(await usdc.balanceOf(lidoVault.address)).to.be.equal(0);
+    expect(await dai.balanceOf(lidoVault.address)).to.be.equal(0);
+    expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
+    expect(await aDai.balanceOf(other_depositor.address)).to.be.equal(amountDAItoDeposit);
+
+    // process yield, so all yield should be converted to usdc and dai
+    await lidoVault.processYield();
+    expect((await aUsdc.balanceOf(depositor.address)).gt(amountUSDCtoDeposit)).to.be.equal(true);
+    expect((await aDai.balanceOf(other_depositor.address)).gt(amountDAItoDeposit)).to.be.equal(
+      true
+    );
   });
 });
 

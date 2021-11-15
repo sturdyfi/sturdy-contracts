@@ -42,14 +42,13 @@ import {
   WETH9MockedFactory,
   LendingPoolFactory,
   LidoVaultFactory,
+  StakedTokenIncentivesControllerFactory,
 } from '../types';
 import {
   withSaveAndVerify,
   registerContractInJsonDb,
   linkBytecode,
   insertContractAddressInDb,
-  deployContract,
-  verifyContract,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
@@ -508,3 +507,15 @@ export const deployLidoVault = async (args: [tEthereumAddress], verify?: boolean
     args,
     verify
   );
+
+export const deployAaveIncentivesController = async (
+  args: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  withSaveAndVerify(
+    await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
+    eContractid.StakedTokenIncentivesController,
+    args,
+    verify
+  );
+};

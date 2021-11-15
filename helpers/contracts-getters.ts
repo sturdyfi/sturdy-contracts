@@ -24,6 +24,7 @@ import {
   WETH9MockedFactory,
   LendingPoolFactory,
   LidoVaultFactory,
+  StakedTokenIncentivesControllerFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
@@ -337,5 +338,16 @@ export const getLendingPool = async (address?: tEthereumAddress) =>
 export const getLidoVault = async (address?: tEthereumAddress) =>
   await LidoVaultFactory.connect(
     address || (await getDb().get(`${eContractid.LidoVault}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getAaveIncentivesController = async (address?: tEthereumAddress) =>
+  await StakedTokenIncentivesControllerFactory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.StakedTokenIncentivesController}.${DRE.network.name}`)
+          .value()
+      ).address,
     await getFirstSigner()
   );

@@ -51,6 +51,7 @@ export enum eContractid {
   MockAToken = 'MockAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
+  StakedTokenIncentivesController = 'StakedTokenIncentivesController',
   AaveProtocolDataProvider = 'AaveProtocolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',

@@ -16,7 +16,7 @@ import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController
  * @notice Distributor contract for rewards to the Aave protocol, using a staked token as rewards asset.
  * The contract stakes the rewards before redistributing them to the Aave protocol participants.
  * The reference staked token implementation is at https://github.com/aave/aave-stake-v2
- * @author Aave
+ * @author Sturdy
  **/
 contract StakedTokenIncentivesController is
   IAaveIncentivesController,
@@ -252,7 +252,9 @@ contract StakedTokenIncentivesController is
     _usersUnclaimedRewards[user] = unclaimedRewards - amountToClaim; // Safe due to the previous line
 
     // STAKE_TOKEN.stake(to, amountToClaim);
-    STAKE_TOKEN.safeTransfer(to, amountToClaim);
+    if (STAKE_TOKEN.balanceOf(address(this)) >= amountToClaim) {
+      STAKE_TOKEN.safeTransfer(to, amountToClaim);
+    }
 
     emit RewardsClaimed(user, to, claimer, amountToClaim);
 

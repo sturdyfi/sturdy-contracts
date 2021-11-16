@@ -9,6 +9,12 @@ import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
+/**
+ * @title GeneralVault
+ * @notice Basic feature of vault
+ * @author Sturdy
+ **/
+
 contract GeneralVault is Ownable {
   using SafeMath for uint256;
   using PercentageMath for uint256;

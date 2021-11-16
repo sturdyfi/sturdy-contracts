@@ -10,6 +10,8 @@ import {
   getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
   getLidoVault,
+  getSturdyIncentivesController,
+  getSturdyToken,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -29,7 +31,7 @@ import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
 import { AaveConfig } from '../../../markets/aave';
-import { LidoVault } from '../../../types';
+import { LidoVault, StakedTokenIncentivesController, SturdyToken } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ILido } from '../../../types/ILido';
@@ -49,6 +51,7 @@ export interface TestEnv {
   users: SignerWithAddress[];
   pool: LendingPool;
   lidoVault: LidoVault;
+  incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
   helpersContract: AaveProtocolDataProvider;
@@ -58,6 +61,7 @@ export interface TestEnv {
   aUsdc: AToken;
   aave: MintableERC20;
   aStETH: AToken;
+  brick: SturdyToken;
   lido: ILido;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
@@ -74,6 +78,7 @@ const testEnv: TestEnv = {
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   lidoVault: {} as LidoVault,
+  incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as AaveProtocolDataProvider,
   oracle: {} as PriceOracle,
@@ -83,6 +88,7 @@ const testEnv: TestEnv = {
   aUsdc: {} as AToken,
   aave: {} as MintableERC20,
   aStETH: {} as AToken,
+  brick: {} as SturdyToken,
   lido: {} as ILido,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
@@ -107,6 +113,7 @@ export async function initializeMakeSuite() {
   testEnv.deployer = deployer;
   testEnv.pool = await getLendingPool();
   testEnv.lidoVault = await getLidoVault();
+  testEnv.incentiveController = await getSturdyIncentivesController();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
@@ -155,6 +162,7 @@ export async function initializeMakeSuite() {
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
+  testEnv.brick = await getSturdyToken();
   testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
 }
 

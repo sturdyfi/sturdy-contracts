@@ -110,14 +110,14 @@
       "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test-suites/test-aave/**/*.ts' --pattern 'tasks/**/*.ts'"
     }
   },
-  "author": "Aave",
+  "author": "Sturdy",
   "contributors": [
-    "Ernesto Boado <ernesto@aave.com>",
-    "Emilio Frangella <emilio@aave.com>",
-    "Andrey Kozlov <andrey@aave.com>",
-    "David Racero <david.k@aave.com>",
-    "Pol Sendra <pol@aave.com>",
-    "David Truong <david@aave.com>"
+    "Ernesto Boado <ernesto@sturdy.com>",
+    "Emilio Frangella <emilio@sturdy.com>",
+    "Andrey Kozlov <andrey@sturdy.com>",
+    "David Racero <david.k@sturdy.com>",
+    "Pol Sendra <pol@sturdy.com>",
+    "David Truong <david@sturdy.com>"
   ],
   "license": "AGPLv3",
   "dependencies": {

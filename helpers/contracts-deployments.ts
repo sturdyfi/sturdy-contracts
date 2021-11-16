@@ -43,6 +43,7 @@ import {
   LendingPoolFactory,
   LidoVaultFactory,
   StakedTokenIncentivesControllerFactory,
+  SturdyTokenFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -508,7 +509,7 @@ export const deployLidoVault = async (args: [tEthereumAddress], verify?: boolean
     verify
   );
 
-export const deployAaveIncentivesController = async (
+export const deploySturdyIncentivesController = async (
   args: [tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) => {
@@ -516,6 +517,15 @@ export const deployAaveIncentivesController = async (
     await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
     eContractid.StakedTokenIncentivesController,
     args,
+    verify
+  );
+};
+
+export const deploySturdyToken = async (verify?: boolean) => {
+  withSaveAndVerify(
+    await new SturdyTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.SturdyToken,
+    [],
     verify
   );
 };

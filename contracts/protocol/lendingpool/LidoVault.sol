@@ -14,6 +14,12 @@ import {TransferHelper} from '@uniswap/v3-periphery/contracts/libraries/Transfer
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
+/**
+ * @title LidoVault
+ * @notice stETH/ETH Vault by using Lido, Uniswap, Curve
+ * @author Sturdy
+ **/
+
 contract LidoVault is GeneralVault {
   using SafeMath for uint256;
   using PercentageMath for uint256;

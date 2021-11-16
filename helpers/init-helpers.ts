@@ -13,6 +13,7 @@ import {
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
+  getSturdyIncentivesController,
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
@@ -110,6 +111,8 @@ export const initReservesByHelper = async (
   stableDebtTokenImplementationAddress = await (await deployGenericStableDebtToken()).address;
   variableDebtTokenImplementationAddress = await (await deployGenericVariableDebtToken()).address;
 
+  const incentives = await getSturdyIncentivesController();
+
   const aTokenImplementation = await deployGenericATokenImpl(verify);
   aTokenImplementationAddress = aTokenImplementation.address;
   rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
@@ -178,7 +181,7 @@ export const initReservesByHelper = async (
       interestRateStrategyAddress: strategyAddressPerAsset[reserveSymbols[i]],
       underlyingAsset: reserveTokens[i],
       treasury: treasuryAddress,
-      incentivesController,
+      incentivesController: incentives.address,
       underlyingAssetName: reserveSymbols[i],
       aTokenName: `${aTokenNamePrefix} ${reserveSymbols[i]}`,
       aTokenSymbol: `a${symbolPrefix}${reserveSymbols[i]}`,

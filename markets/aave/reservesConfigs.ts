@@ -24,6 +24,7 @@ export const strategyBUSD: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyDAI: IReserveParams = {
@@ -37,6 +38,7 @@ export const strategyDAI: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   collateralEnabled: false,
+  emissionPerSecond: '10',
 };
 
 export const strategySUSD: IReserveParams = {
@@ -50,6 +52,7 @@ export const strategySUSD: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyTUSD: IReserveParams = {
@@ -63,6 +66,7 @@ export const strategyTUSD: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyUSDC: IReserveParams = {
@@ -76,6 +80,7 @@ export const strategyUSDC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   collateralEnabled: false,
+  emissionPerSecond: '10',
 };
 
 export const strategyUSDT: IReserveParams = {
@@ -89,6 +94,7 @@ export const strategyUSDT: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyAAVE: IReserveParams = {
@@ -102,6 +108,7 @@ export const strategyAAVE: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '0',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyBAT: IReserveParams = {
@@ -115,6 +122,7 @@ export const strategyBAT: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyENJ: IReserveParams = {
@@ -128,6 +136,7 @@ export const strategyENJ: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyWETH: IReserveParams = {
@@ -141,6 +150,7 @@ export const strategyWETH: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '1000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyKNC: IReserveParams = {
@@ -154,6 +164,7 @@ export const strategyKNC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyLINK: IReserveParams = {
@@ -167,6 +178,7 @@ export const strategyLINK: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyMANA: IReserveParams = {
@@ -180,6 +192,7 @@ export const strategyMANA: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyMKR: IReserveParams = {
@@ -193,6 +206,7 @@ export const strategyMKR: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyREN: IReserveParams = {
@@ -206,6 +220,7 @@ export const strategyREN: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategySNX: IReserveParams = {
@@ -219,6 +234,7 @@ export const strategySNX: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyWBTC: IReserveParams = {
@@ -232,6 +248,7 @@ export const strategyWBTC: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyYFI: IReserveParams = {
@@ -245,6 +262,7 @@ export const strategyYFI: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyZRX: IReserveParams = {
@@ -258,6 +276,7 @@ export const strategyZRX: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '2000',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategyXSUSHI: IReserveParams = {
@@ -271,6 +290,7 @@ export const strategyXSUSHI: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '3500',
   collateralEnabled: false,
+  emissionPerSecond: '0',
 };
 
 export const strategySTETH: IReserveParams = {
@@ -284,4 +304,5 @@ export const strategySTETH: IReserveParams = {
   aTokenImpl: eContractid.AToken,
   reserveFactor: '0',
   collateralEnabled: true,
+  emissionPerSecond: '0',
   };

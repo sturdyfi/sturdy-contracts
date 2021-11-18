@@ -10,6 +10,7 @@ import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
@@ -58,6 +59,7 @@ export const initReservesByHelper = async (
   let reserveTokens: string[] = [];
   let reserveInitDecimals: string[] = [];
   let reserveSymbols: string[] = [];
+  let emissionsPerSecond: string[] = [];
 
   let initInputParams: {
     aTokenImpl: string;
@@ -77,6 +79,9 @@ export const initReservesByHelper = async (
     stableDebtTokenSymbol: string;
     params: string;
   }[] = [];
+
+  let tokensForIncentive: string[] = [];
+  let emissionPerSeconds: string[] = [];
 
   let strategyRates: [
     string, // addresses provider
@@ -126,7 +131,7 @@ export const initReservesByHelper = async (
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
       continue;
     }
-    const { strategy, aTokenImpl, reserveDecimals } = params;
+    const { strategy, aTokenImpl, reserveDecimals, emissionPerSecond } = params;
     const {
       optimalUtilizationRate,
       baseVariableBorrowRate,
@@ -163,6 +168,7 @@ export const initReservesByHelper = async (
     reserveInitDecimals.push(reserveDecimals);
     reserveTokens.push(tokenAddresses[symbol]);
     reserveSymbols.push(symbol);
+    emissionPerSeconds.push(emissionPerSecond);
   }
 
   for (let i = 0; i < reserveSymbols.length; i++) {
@@ -198,6 +204,7 @@ export const initReservesByHelper = async (
   const chunkedInitInputParams = chunk(initInputParams, initChunks);
 
   const configurator = await getLendingPoolConfiguratorProxy();
+  const pool = await getLendingPool();
   //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
@@ -212,8 +219,24 @@ export const initReservesByHelper = async (
     console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
     console.log('    * gasUsed', tx3.gasUsed.toString());
     //gasUsage = gasUsage.add(tx3.gasUsed);
+
+    for (let tokenIndex = 0; tokenIndex < chunkedInitInputParams[chunkIndex].length; tokenIndex++) {
+      const response = await pool.getReserveData(
+        chunkedInitInputParams[chunkIndex][tokenIndex].underlyingAsset
+      );
+
+      tokensForIncentive = tokensForIncentive.concat([
+        response.aTokenAddress,
+        response.variableDebtTokenAddress,
+      ]);
+      emissionsPerSecond = emissionsPerSecond.concat([
+        emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
+        emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
+      ]);
+    }
   }
 
+  await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
   return gasUsage; // Deprecated
 };
 

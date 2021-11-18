@@ -30,6 +30,9 @@ task('aave:mainnet', 'Deploy development enviroment')
     console.log('4. Deploy Data Provider');
     await DRE.run('full:data-provider', { pool: POOL_NAME });
 
+    console.log('5. Deploy Incentives impl');
+    await DRE.run('full:deploy-incentives-impl', { pool: POOL_NAME });
+
     console.log('6. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 

@@ -512,20 +512,18 @@ export const deployLidoVault = async (args: [tEthereumAddress], verify?: boolean
 export const deploySturdyIncentivesController = async (
   args: [tEthereumAddress, tEthereumAddress],
   verify?: boolean
-) => {
+) =>
   withSaveAndVerify(
     await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
     eContractid.StakedTokenIncentivesController,
     args,
     verify
   );
-};
 
-export const deploySturdyToken = async (verify?: boolean) => {
+export const deploySturdyToken = async (verify?: boolean) =>
   withSaveAndVerify(
     await new SturdyTokenFactory(await getFirstSigner()).deploy(),
     eContractid.SturdyToken,
     [],
     verify
   );
-};

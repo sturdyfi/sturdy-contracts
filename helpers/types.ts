@@ -340,6 +340,7 @@ export enum TokenContractId {
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
   aTokenImpl: eContractid;
   reserveFactor: string;
+  emissionPerSecond: string;
   strategy: IInterestRateStrategyParams;
 }
 

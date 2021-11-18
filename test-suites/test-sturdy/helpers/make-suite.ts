@@ -3,7 +3,7 @@ import { Signer } from 'ethers';
 import {
   getLendingPool,
   getLendingPoolAddressesProvider,
-  getAaveProtocolDataProvider,
+  getSturdyProtocolDataProvider,
   getAToken,
   getMintableERC20,
   getLendingPoolConfiguratorProxy,
@@ -15,7 +15,7 @@ import {
 } from '../../../helpers/contracts-getters';
 import { eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
-import { AaveProtocolDataProvider } from '../../../types/AaveProtocolDataProvider';
+import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
 import { AToken } from '../../../types/AToken';
 import { LendingPoolConfigurator } from '../../../types/LendingPoolConfigurator';
@@ -30,7 +30,7 @@ import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPool
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
-import { AaveConfig } from '../../../markets/aave';
+import { SturdyConfig } from '../../../markets/sturdy';
 import { LidoVault, StakedTokenIncentivesController, SturdyToken } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -54,7 +54,7 @@ export interface TestEnv {
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
-  helpersContract: AaveProtocolDataProvider;
+  helpersContract: SturdyProtocolDataProvider;
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
@@ -80,7 +80,7 @@ const testEnv: TestEnv = {
   lidoVault: {} as LidoVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
-  helpersContract: {} as AaveProtocolDataProvider,
+  helpersContract: {} as SturdyProtocolDataProvider,
   oracle: {} as PriceOracle,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
@@ -121,11 +121,11 @@ export async function initializeMakeSuite() {
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
-      getParamPerNetwork(AaveConfig.ProviderRegistry, process.env.FORK as eNetwork)
+      getParamPerNetwork(SturdyConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
     testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
 
-    const poolConfig = loadPoolConfig(ConfigNames.Aave);
+    const poolConfig = loadPoolConfig(ConfigNames.Sturdy);
     const providerRegistryOwner = getParamPerNetwork(
       poolConfig.ProviderRegistryOwner,
       process.env.FORK as eNetwork
@@ -136,7 +136,7 @@ export async function initializeMakeSuite() {
     testEnv.oracle = await getPriceOracle();
   }
 
-  testEnv.helpersContract = await getAaveProtocolDataProvider();
+  testEnv.helpersContract = await getSturdyProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
   const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;

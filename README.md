@@ -25,7 +25,7 @@ FORK=main yarn hardhat compile
 
 - Next run the following task to deploy all smart contracts
 ```
-yarn aave:evm:fork:mainnet:migration
+yarn sturdy:evm:fork:mainnet:migration
 ```
 
 - For test, run the following task to have a test of sample contract on the localhost.

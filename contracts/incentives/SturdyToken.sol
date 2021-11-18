@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ERC20} from '../dependencies/openzeppelin/contracts/ERC20.sol';
-import {VersionedInitializable} from '../protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 
 /**
  * @notice implementation of the BRICK token contract

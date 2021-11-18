@@ -349,7 +349,7 @@ export const borrow = async (
   );
 
   const amountToBorrow = await convertToCurrencyDecimals(reserve, amount);
-  
+
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
       await pool

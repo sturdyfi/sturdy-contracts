@@ -6,7 +6,7 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title UserConfiguration library
- * @author Aave
+ * @author Sturdy
  * @notice Implements the bitmap logic to handle the user configuration
  */
 library UserConfiguration {

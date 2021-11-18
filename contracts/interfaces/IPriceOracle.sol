@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 /************
 @title IPriceOracle interface
-@notice Interface for the Aave price oracle.*/
+@notice Interface for the Sturdy price oracle.*/
 interface IPriceOracle {
   /***********
     @dev returns the asset price in ETH

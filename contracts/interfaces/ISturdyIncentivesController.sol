@@ -2,7 +2,7 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-interface IAaveIncentivesController {
+interface ISturdyIncentivesController {
   event RewardsAccrued(address indexed user, uint256 amount);
 
   event RewardsClaimed(address indexed user, address indexed to, uint256 amount);

@@ -5,10 +5,10 @@
 // import BigNumber from 'bignumber.js';
 // import { makeSuite } from './helpers/make-suite';
 // import { getReservesConfigByPool } from '../../helpers/configuration';
-// import { AavePools, iAavePoolAssets, IReserveParams } from '../../helpers/types';
+// import { SturdyPools, iSturdyPoolAssets, IReserveParams } from '../../helpers/types';
 // import { executeStory } from './helpers/scenario-engine';
 
-// const scenarioFolder = './test-suites/test-aave/helpers/scenarios/';
+// const scenarioFolder = './test-suites/test-sturdy/helpers/scenarios/';
 
 // const selectedScenarios: string[] = [];
 
@@ -24,8 +24,8 @@
 
 //       actionsConfiguration.skipIntegrityCheck = false; //set this to true to execute solidity-coverage
 
-//       calculationsConfiguration.reservesParams = <iAavePoolAssets<IReserveParams>>(
-//         getReservesConfigByPool(AavePools.proto)
+//       calculationsConfiguration.reservesParams = <iSturdyPoolAssets<IReserveParams>>(
+//         getReservesConfigByPool(SturdyPools.proto)
 //       );
 //     });
 //     after('Reset', () => {

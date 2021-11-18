@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import 'hardhat/console.sol';
-import {IAaveDistributionManager} from '../interfaces/IAaveDistributionManager.sol';
+import {ISturdyDistributionManager} from '../interfaces/ISturdyDistributionManager.sol';
 import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {DistributionTypes} from '../lib/DistributionTypes.sol';
 
@@ -12,7 +12,7 @@ import {DistributionTypes} from '../lib/DistributionTypes.sol';
  * @notice Accounting contract to manage multiple staking distributions
  * @author Sturdy
  **/
-contract DistributionManager is IAaveDistributionManager {
+contract DistributionManager is ISturdyDistributionManager {
   using SafeMath for uint256;
 
   struct AssetData {
@@ -39,23 +39,23 @@ contract DistributionManager is IAaveDistributionManager {
     EMISSION_MANAGER = emissionManager;
   }
 
-  /// @inheritdoc IAaveDistributionManager
+  /// @inheritdoc ISturdyDistributionManager
   function setDistributionEnd(uint256 distributionEnd) external override onlyEmissionManager {
     _distributionEnd = distributionEnd;
     emit DistributionEndUpdated(distributionEnd);
   }
 
-  /// @inheritdoc IAaveDistributionManager
+  /// @inheritdoc ISturdyDistributionManager
   function getDistributionEnd() external view override returns (uint256) {
     return _distributionEnd;
   }
 
-  /// @inheritdoc IAaveDistributionManager
+  /// @inheritdoc ISturdyDistributionManager
   function DISTRIBUTION_END() external view virtual override returns (uint256) {
     return _distributionEnd;
   }
 
-  /// @inheritdoc IAaveDistributionManager
+  /// @inheritdoc ISturdyDistributionManager
   function getUserAssetData(address user, address asset)
     public
     view
@@ -66,7 +66,7 @@ contract DistributionManager is IAaveDistributionManager {
     return assets[asset].users[user];
   }
 
-  /// @inheritdoc IAaveDistributionManager
+  /// @inheritdoc ISturdyDistributionManager
   function getAssetData(address asset)
     public
     view

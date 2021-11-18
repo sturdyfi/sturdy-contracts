@@ -2,18 +2,16 @@
 pragma solidity 0.6.12;
 
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
-import {
-  ILendingPoolAddressesProviderRegistry
-} from '../../interfaces/ILendingPoolAddressesProviderRegistry.sol';
+import {ILendingPoolAddressesProviderRegistry} from '../../interfaces/ILendingPoolAddressesProviderRegistry.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title LendingPoolAddressesProviderRegistry contract
- * @dev Main registry of LendingPoolAddressesProvider of multiple Aave protocol's markets
- * - Used for indexing purposes of Aave protocol's markets
+ * @dev Main registry of LendingPoolAddressesProvider of multiple Sturdy protocol's markets
+ * - Used for indexing purposes of Sturdy protocol's markets
  * - The id assigned to a LendingPoolAddressesProvider refers to the market it is connected with,
- *   for example with `0` for the Aave main market and `1` for the next created
- * @author Aave
+ *   for example with `0` for the Sturdy main market and `1` for the next created
+ * @author Sturdy
  **/
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
   mapping(address => uint256) private _addressesProviders;

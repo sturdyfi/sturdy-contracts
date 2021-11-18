@@ -14,9 +14,9 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
  * @notice Implements the calculation of the interest rates depending on the reserve state
  * @dev The model of interest rate is based on 2 slopes, one before the `OPTIMAL_UTILIZATION_RATE`
  * point of utilization and another from that one to 100%
- * - An instance of this same contract, can't be used across different Aave markets, due to the caching
+ * - An instance of this same contract, can't be used across different Sturdy markets, due to the caching
  *   of the LendingPoolAddressesProvider
- * @author Aave
+ * @author Sturdy
  **/
 contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   using WadRayMath for uint256;
@@ -194,8 +194,10 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       .getMarketBorrowRate(reserve);
 
     if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
-      uint256 excessUtilizationRateRatio =
-        vars.utilizationRate.sub(OPTIMAL_UTILIZATION_RATE).rayDiv(EXCESS_UTILIZATION_RATE);
+      uint256 excessUtilizationRateRatio = vars
+        .utilizationRate
+        .sub(OPTIMAL_UTILIZATION_RATE)
+        .rayDiv(EXCESS_UTILIZATION_RATE);
 
       vars.currentStableBorrowRate = vars.currentStableBorrowRate.add(_stableRateSlope1).add(
         _stableRateSlope2.rayMul(excessUtilizationRateRatio)
@@ -216,12 +218,9 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.currentLiquidityRate = _getOverallBorrowRate(
       totalStableDebt,
       totalVariableDebt,
-      vars
-        .currentVariableBorrowRate,
+      vars.currentVariableBorrowRate,
       averageStableBorrowRate
-    )
-      .rayMul(vars.utilizationRate)
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(reserveFactor));
+    ).rayMul(vars.utilizationRate).percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(reserveFactor));
 
     return (
       vars.currentLiquidityRate,
@@ -252,8 +251,9 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
     uint256 weightedStableRate = totalStableDebt.wadToRay().rayMul(currentAverageStableBorrowRate);
 
-    uint256 overallBorrowRate =
-      weightedVariableRate.add(weightedStableRate).rayDiv(totalDebt.wadToRay());
+    uint256 overallBorrowRate = weightedVariableRate.add(weightedStableRate).rayDiv(
+      totalDebt.wadToRay()
+    );
 
     return overallBorrowRate;
   }

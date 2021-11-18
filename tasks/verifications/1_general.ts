@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import { loadPoolConfig, ConfigNames, getWethAddress } from '../../helpers/configuration';
 import {
-  getAaveProtocolDataProvider,
+  getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
   getLendingPoolAddressesProviderRegistry,
   getLendingPoolCollateralManagerImpl,
@@ -65,7 +65,7 @@ task('verify:general', 'Verify contracts at Etherscan')
         ? await getLendingPoolCollateralManagerImpl(lendingPoolCollateralManagerImplAddress)
         : await getLendingPoolCollateralManagerImpl();
 
-      const dataProvider = await getAaveProtocolDataProvider();
+      const dataProvider = await getSturdyProtocolDataProvider();
 
       // Address Provider
       console.log('\n- Verifying address provider...\n');
@@ -96,8 +96,8 @@ task('verify:general', 'Verify contracts at Etherscan')
       );
 
       // Test helpers
-      console.log('\n- Verifying  Aave  Provider Helpers...\n');
-      await verifyContract(eContractid.AaveProtocolDataProvider, dataProvider, [
+      console.log('\n- Verifying  Sturdy  Provider Helpers...\n');
+      await verifyContract(eContractid.SturdyProtocolDataProvider, dataProvider, [
         addressesProvider.address,
       ]);
     }

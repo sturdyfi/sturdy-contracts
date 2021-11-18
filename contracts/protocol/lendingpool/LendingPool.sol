@@ -13,7 +13,7 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -28,7 +28,7 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
 
 /**
  * @title LendingPool contract
- * @dev Main point of interaction with an Aave protocol's market
+ * @dev Main point of interaction with an Sturdy protocol's market
  * - Users can:
  *   # Deposit
  *   # Withdraw
@@ -41,7 +41,7 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  * - To be covered by a proxy contract, owned by the LendingPoolAddressesProvider of the specific market
  * - All admin functions are callable by the LendingPoolConfigurator contract defined also in the
  *   LendingPoolAddressesProvider
- * @author Sturdy & Aave
+ * @author Sturdy
  **/
 contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage {
   using SafeMath for uint256;

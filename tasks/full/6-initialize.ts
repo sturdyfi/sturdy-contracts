@@ -7,7 +7,7 @@ import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
 import { exit } from 'process';
 import {
-  getAaveProtocolDataProvider,
+  getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
 } from '../../helpers/contracts-getters';
 
@@ -34,7 +34,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const incentivesController = await getParamPerNetwork(IncentivesController, network);
       const addressesProvider = await getLendingPoolAddressesProvider();
 
-      const testHelpers = await getAaveProtocolDataProvider();
+      const testHelpers = await getSturdyProtocolDataProvider();
 
       const admin = await addressesProvider.getPoolAdmin();
       if (!reserveAssets) {
@@ -76,14 +76,14 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       );
 
       console.log(
-        '\tSetting AaveProtocolDataProvider at AddressesProvider at id: 0x01',
+        '\tSetting SturdyProtocolDataProvider at AddressesProvider at id: 0x01',
         collateralManagerAddress
       );
-      const aaveProtocolDataProvider = await getAaveProtocolDataProvider();
+      const sturdyProtocolDataProvider = await getSturdyProtocolDataProvider();
       await waitForTx(
         await addressesProvider.setAddress(
           '0x0100000000000000000000000000000000000000000000000000000000000000',
-          aaveProtocolDataProvider.address
+          sturdyProtocolDataProvider.address
         )
       );
     } catch (err) {

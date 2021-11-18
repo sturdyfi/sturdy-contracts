@@ -1,8 +1,8 @@
 import { task } from 'hardhat/config';
 import { eEthereumNetwork } from '../../helpers/types';
 import { getTreasuryAddress } from '../../helpers/configuration';
-import * as marketConfigs from '../../markets/aave';
-import * as reserveConfigs from '../../markets/aave/reservesConfigs';
+import * as marketConfigs from '../../markets/sturdy';
+import * as reserveConfigs from '../../markets/sturdy/reservesConfigs';
 import { chooseATokenDeployment } from '../../helpers/init-helpers';
 import { getLendingPoolAddressesProvider } from './../../helpers/contracts-getters';
 import {
@@ -20,8 +20,8 @@ const LENDING_POOL_ADDRESS_PROVIDER = {
 
 const isSymbolValid = (symbol: string, network: eEthereumNetwork) =>
   Object.keys(reserveConfigs).includes('strategy' + symbol) &&
-  marketConfigs.AaveConfig.ReserveAssets[network][symbol] &&
-  marketConfigs.AaveConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol];
+  marketConfigs.SturdyConfig.ReserveAssets[network][symbol] &&
+  marketConfigs.SturdyConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol];
 
 task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
@@ -33,28 +33,28 @@ task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters'
         `
 WRONG RESERVE ASSET SETUP:
         The symbol ${symbol} has no reserve Config and/or reserve Asset setup.
-        update /markets/aave/index.ts and add the asset address for ${network} network
-        update /markets/aave/reservesConfigs.ts and add parameters for ${symbol}
+        update /markets/sturdy/index.ts and add the asset address for ${network} network
+        update /markets/sturdy/reservesConfigs.ts and add parameters for ${symbol}
         `
       );
     }
     setDRE(localBRE);
     const strategyParams = reserveConfigs['strategy' + symbol];
     const reserveAssetAddress =
-      marketConfigs.AaveConfig.ReserveAssets[localBRE.network.name][symbol];
+      marketConfigs.SturdyConfig.ReserveAssets[localBRE.network.name][symbol];
     const deployCustomAToken = chooseATokenDeployment(strategyParams.aTokenImpl);
     const addressProvider = await getLendingPoolAddressesProvider(
       LENDING_POOL_ADDRESS_PROVIDER[network]
     );
     const poolAddress = await addressProvider.getLendingPool();
-    const treasuryAddress = await getTreasuryAddress(marketConfigs.AaveConfig);
+    const treasuryAddress = await getTreasuryAddress(marketConfigs.SturdyConfig);
     const aToken = await deployCustomAToken(
       [
         poolAddress,
         reserveAssetAddress,
         treasuryAddress,
         ZERO_ADDRESS, // Incentives Controller
-        `Aave interest bearing ${symbol}`,
+        `Sturdy interest bearing ${symbol}`,
         `a${symbol}`,
       ],
       verify
@@ -64,7 +64,7 @@ WRONG RESERVE ASSET SETUP:
         poolAddress,
         reserveAssetAddress,
         ZERO_ADDRESS, // Incentives Controller
-        `Aave stable debt bearing ${symbol}`,
+        `Sturdy stable debt bearing ${symbol}`,
         `stableDebt${symbol}`,
       ],
       verify
@@ -74,7 +74,7 @@ WRONG RESERVE ASSET SETUP:
         poolAddress,
         reserveAssetAddress,
         ZERO_ADDRESS, // Incentives Controller
-        `Aave variable debt bearing ${symbol}`,
+        `Sturdy variable debt bearing ${symbol}`,
         `variableDebt${symbol}`,
       ],
       verify

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity >=0.6.12;
+pragma solidity 0.6.12;
 
 /**
  * @title Errors library
- * @author Aave
- * @notice Defines the error messages emitted by the different contracts of the Aave protocol
+ * @author Sturdy
+ * @notice Defines the error messages emitted by the different contracts of the Sturdy protocol
  * @dev Error messages prefix glossary:
  *  - VL = ValidationLogic
  *  - MATH = Math libraries

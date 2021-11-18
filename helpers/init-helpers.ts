@@ -5,7 +5,7 @@ import {
   IReserveParams,
   tEthereumAddress,
 } from './types';
-import { AaveProtocolDataProvider } from '../types/AaveProtocolDataProvider';
+import { SturdyProtocolDataProvider } from '../types/SturdyProtocolDataProvider';
 import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
@@ -269,7 +269,7 @@ export const getPairsTokenAggregator = (
 export const configureReservesByHelper = async (
   reservesParams: iMultiPoolsAssets<IReserveParams>,
   tokenAddresses: { [symbol: string]: tEthereumAddress },
-  helpers: AaveProtocolDataProvider,
+  helpers: SturdyProtocolDataProvider,
   admin: tEthereumAddress
 ) => {
   const addressProvider = await getLendingPoolAddressesProvider();

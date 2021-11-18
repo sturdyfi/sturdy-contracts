@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {DistributionTypes} from '../lib/DistributionTypes.sol';
 
-interface IAaveDistributionManager {
+interface ISturdyDistributionManager {
   event AssetConfigUpdated(address indexed asset, uint256 emission);
   event AssetIndexUpdated(address indexed asset, uint256 index);
   event UserIndexUpdated(address indexed user, address indexed asset, uint256 index);

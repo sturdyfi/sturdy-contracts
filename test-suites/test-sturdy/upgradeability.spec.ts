@@ -32,7 +32,7 @@
 //       dai.address,
 //       ZERO_ADDRESS,
 //       ZERO_ADDRESS,
-//       'Aave Interest bearing DAI updated',
+//       'Sturdy Interest bearing DAI updated',
 //       'aDAI',
 //       '0x10'
 //     ]);
@@ -41,7 +41,7 @@
 //       pool.address,
 //       dai.address,
 //       ZERO_ADDRESS,
-//       'Aave stable debt bearing DAI updated',
+//       'Sturdy stable debt bearing DAI updated',
 //       'stableDebtDAI',
 //       '0x10'
 //     ]);
@@ -50,7 +50,7 @@
 //       pool.address,
 //       dai.address,
 //       ZERO_ADDRESS,
-//       'Aave variable debt bearing DAI updated',
+//       'Sturdy variable debt bearing DAI updated',
 //       'variableDebtDAI',
 //       '0x10'
 //     ]);
@@ -115,7 +115,7 @@
 
 //     const tokenName = await aDai.name();
 
-//     expect(tokenName).to.be.eq('Aave Interest bearing DAI updated', 'Invalid token name');
+//     expect(tokenName).to.be.eq('Sturdy Interest bearing DAI updated', 'Invalid token name');
 //   });
 
 //   it('Tries to update the DAI Stable debt token implementation with a different address than the lendingPoolManager', async () => {
@@ -177,7 +177,7 @@
 
 //     const tokenName = await debtToken.name();
 
-//     expect(tokenName).to.be.eq('Aave stable debt bearing DAI updated', 'Invalid token name');
+//     expect(tokenName).to.be.eq('Sturdy stable debt bearing DAI updated', 'Invalid token name');
 //   });
 
 //   it('Tries to update the DAI variable debt token implementation with a different address than the lendingPoolManager', async () => {
@@ -242,6 +242,6 @@
 
 //     const tokenName = await debtToken.name();
 
-//     expect(tokenName).to.be.eq('Aave variable debt bearing DAI updated', 'Invalid token name');
+//     expect(tokenName).to.be.eq('Sturdy variable debt bearing DAI updated', 'Invalid token name');
 //   });
 // });

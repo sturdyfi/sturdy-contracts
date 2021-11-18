@@ -7,7 +7,7 @@
 // import { ProtocolErrors, RateMode } from '../../helpers/types';
 // import { calcExpectedStableDebtTokenBalance } from './helpers/utils/calculations';
 // import { getUserData } from './helpers/utils/helpers';
-// import { CommonsConfig } from '../../markets/aave/commons';
+// import { CommonsConfig } from '../../markets/sturdy/commons';
 
 // import { parseEther } from 'ethers/lib/utils';
 

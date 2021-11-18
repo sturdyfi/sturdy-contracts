@@ -5,7 +5,7 @@ import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
 // Prettier ignore to prevent buidler flatter bug
 // prettier-ignore
-import {InitializableImmutableAdminUpgradeabilityProxy} from '../libraries/aave-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
+import {InitializableImmutableAdminUpgradeabilityProxy} from '../libraries/sturdy-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 
@@ -13,8 +13,8 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
  * @title LendingPoolAddressesProvider contract
  * @dev Main registry of addresses part of or connected to the protocol, including permissioned roles
  * - Acting also as factory of proxies and admin of those, so with right to change its implementations
- * - Owned by the Aave Governance
- * @author Aave
+ * - Owned by the Sturdy Governance
+ * @author Sturdy
  **/
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
   string private _marketId;
@@ -33,7 +33,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   /**
-   * @dev Returns the id of the Aave market to which this contracts points to
+   * @dev Returns the id of the Sturdy market to which this contracts points to
    * @return The market id
    **/
   function getMarketId() external view override returns (string memory) {
@@ -194,8 +194,9 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function _updateImpl(bytes32 id, address newAddress) internal {
     address payable proxyAddress = payable(_addresses[id]);
 
-    InitializableImmutableAdminUpgradeabilityProxy proxy =
-      InitializableImmutableAdminUpgradeabilityProxy(proxyAddress);
+    InitializableImmutableAdminUpgradeabilityProxy proxy = InitializableImmutableAdminUpgradeabilityProxy(
+        proxyAddress
+      );
     bytes memory params = abi.encodeWithSignature('initialize(address)', address(this));
 
     if (proxyAddress == address(0)) {

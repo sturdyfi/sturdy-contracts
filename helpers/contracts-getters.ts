@@ -1,8 +1,8 @@
 import {
-  AaveProtocolDataProviderFactory,
+  SturdyProtocolDataProviderFactory,
   ATokenFactory,
   ATokensAndRatesHelperFactory,
-  AaveOracleFactory,
+  SturdyOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   GenericLogicFactory,
   InitializableAdminUpgradeabilityProxyFactory,
@@ -104,11 +104,11 @@ export const getIErc20Detailed = async (address: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getAaveProtocolDataProvider = async (address?: tEthereumAddress) =>
-  await AaveProtocolDataProviderFactory.connect(
+export const getSturdyProtocolDataProvider = async (address?: tEthereumAddress) =>
+  await SturdyProtocolDataProviderFactory.connect(
     address ||
       (
-        await getDb().get(`${eContractid.AaveProtocolDataProvider}.${DRE.network.name}`).value()
+        await getDb().get(`${eContractid.SturdyProtocolDataProvider}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );
@@ -321,9 +321,12 @@ export const getLendingPoolCollateralManager = async (address?: tEthereumAddress
 export const getAddressById = async (id: string): Promise<tEthereumAddress | undefined> =>
   (await getDb().get(`${id}.${DRE.network.name}`).value())?.address || undefined;
 
-export const getAaveOracle = async (address?: tEthereumAddress) =>
-  await AaveOracleFactory.connect(
-    address || (await getDb().get(`${eContractid.AaveOracle}.${DRE.network.name}`).value()).address,
+export const getSturdyOracle = async (address?: tEthereumAddress) =>
+  await SturdyOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.SturdyOracle}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 

@@ -11,13 +11,13 @@ import {
 import { tEthereumAddress } from '../../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import { getDb, DRE } from '../../../../helpers/misc-utils';
-import { AaveProtocolDataProvider } from '../../../../types/AaveProtocolDataProvider';
-import web3  from "web3";
+import { SturdyProtocolDataProvider } from '../../../../types/SturdyProtocolDataProvider';
+import web3 from 'web3';
 
-export const ETHfromWei = (value) => web3.utils.fromWei(value + "", "ether");
+export const ETHfromWei = (value) => web3.utils.fromWei(value + '', 'ether');
 
 export const getReserveData = async (
-  helper: AaveProtocolDataProvider,
+  helper: SturdyProtocolDataProvider,
   reserve: tEthereumAddress
 ): Promise<ReserveData> => {
   const [reserveData, tokenAddresses, rateOracle, token] = await Promise.all([
@@ -77,7 +77,7 @@ export const getReserveData = async (
 
 export const getUserData = async (
   pool: LendingPool,
-  helper: AaveProtocolDataProvider,
+  helper: SturdyProtocolDataProvider,
   reserve: string,
   user: tEthereumAddress,
   sender?: tEthereumAddress
@@ -107,7 +107,9 @@ export const getUserData = async (
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
   const token = await getMintableERC20(
-    (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
+    (
+      await getDb().get(`${symbol}.${DRE.network.name}`).value()
+    ).address
   );
 
   if (!token) {
@@ -119,7 +121,7 @@ export const getReserveAddressFromSymbol = async (symbol: string) => {
 const getATokenUserData = async (
   reserve: string,
   user: string,
-  helpersContract: AaveProtocolDataProvider
+  helpersContract: SturdyProtocolDataProvider
 ) => {
   const aTokenAddress: string = (await helpersContract.getReserveTokensAddresses(reserve))
     .aTokenAddress;
@@ -131,19 +133,16 @@ const getATokenUserData = async (
 };
 
 export const printUserAccountData = async (state: any) => {
-    console.log(`${state?.user} ${state?.action}: ${state?.amount} ${state?.coin}`)
-    console.log(`totalDebtETH: `, ETHfromWei(state?.totalDebtETH.toString()));
-    console.log(
-        `availableBorrowsETH: `,
-        ETHfromWei(state?.availableBorrowsETH.toString())
-    );
-    console.log(
-        `currentLiquidationThreshold: `,
-        ETHfromWei(state?.currentLiquidationThreshold.toString())
-    );
-    console.log('\n\n')
-  };
+  console.log(`${state?.user} ${state?.action}: ${state?.amount} ${state?.coin}`);
+  console.log(`totalDebtETH: `, ETHfromWei(state?.totalDebtETH.toString()));
+  console.log(`availableBorrowsETH: `, ETHfromWei(state?.availableBorrowsETH.toString()));
+  console.log(
+    `currentLiquidationThreshold: `,
+    ETHfromWei(state?.currentLiquidationThreshold.toString())
+  );
+  console.log('\n\n');
+};
 
-  export const printDivider =  () => {
-    console.log('=================================================')
-  };
+export const printDivider = () => {
+  console.log('=================================================');
+};

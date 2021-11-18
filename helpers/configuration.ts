@@ -1,5 +1,5 @@
 import {
-  AavePools,
+  SturdyPools,
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
@@ -7,8 +7,8 @@ import {
   eNetwork,
 } from './types';
 import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
-import AaveConfig from '../markets/aave';
-import { CommonsConfig } from '../markets/aave/commons';
+import SturdyConfig from '../markets/sturdy';
+import { CommonsConfig } from '../markets/sturdy/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
@@ -16,7 +16,7 @@ import { deployWETHMocked } from './contracts-deployments';
 
 export enum ConfigNames {
   Commons = 'Commons',
-  Aave = 'Aave',
+  Sturdy = 'Sturdy',
   Matic = 'Matic',
   Amm = 'Amm',
   STURDY = 'Sturdy',
@@ -24,8 +24,8 @@ export enum ConfigNames {
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
-    case ConfigNames.Aave:
-      return AaveConfig;
+    case ConfigNames.Sturdy:
+      return SturdyConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -37,11 +37,11 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
 // PROTOCOL PARAMS PER POOL
 // ----------------
 
-export const getReservesConfigByPool = (pool: AavePools): iMultiPoolsAssets<IReserveParams> =>
+export const getReservesConfigByPool = (pool: SturdyPools): iMultiPoolsAssets<IReserveParams> =>
   getParamPerPool<iMultiPoolsAssets<IReserveParams>>(
     {
-      [AavePools.proto]: {
-        ...AaveConfig.ReservesConfig,
+      [SturdyPools.proto]: {
+        ...SturdyConfig.ReservesConfig,
       },
     },
     pool

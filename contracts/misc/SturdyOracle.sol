@@ -8,14 +8,14 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
-/// @title AaveOracle
-/// @author Aave
+/// @title SturdyOracle
+/// @author Sturdy
 /// @notice Proxy smart contract to get the price of an asset from a price source, with Chainlink Aggregator
 ///         smart contracts as primary option
 /// - If the returned price by a Chainlink aggregator is <= 0, the call is forwarded to a fallbackOracle
-/// - Owned by the Aave governance system, allowed to add sources for assets, replace them
+/// - Owned by the Sturdy governance system, allowed to add sources for assets, replace them
 ///   and change the fallbackOracle
-contract AaveOracle is IPriceOracleGetter, Ownable {
+contract SturdyOracle is IPriceOracleGetter, Ownable {
   using SafeERC20 for IERC20;
 
   event WethSet(address indexed weth);
@@ -43,7 +43,7 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
     emit WethSet(weth);
   }
 
-  /// @notice External function called by the Aave governance to set or replace sources of assets
+  /// @notice External function called by the Sturdy governance to set or replace sources of assets
   /// @param assets The addresses of the assets
   /// @param sources The address of the source of each asset
   function setAssetSources(address[] calldata assets, address[] calldata sources)
@@ -54,7 +54,7 @@ contract AaveOracle is IPriceOracleGetter, Ownable {
   }
 
   /// @notice Sets the fallbackOracle
-  /// - Callable only by the Aave governance
+  /// - Callable only by the Sturdy governance
   /// @param fallbackOracle The address of the fallbackOracle
   function setFallbackOracle(address fallbackOracle) external onlyOwner {
     _setFallbackOracle(fallbackOracle);

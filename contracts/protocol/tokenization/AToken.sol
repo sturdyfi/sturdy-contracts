@@ -7,14 +7,14 @@ import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
 
 /**
- * @title Aave ERC20 AToken
- * @dev Implementation of the interest bearing token for the Aave protocol
- * @author Aave
+ * @title Sturdy ERC20 AToken
+ * @dev Implementation of the interest bearing token for the Sturdy protocol
+ * @author Sturdy
  */
 contract AToken is
   VersionedInitializable,
@@ -40,9 +40,9 @@ contract AToken is
   ILendingPool internal _pool;
   address internal _treasury;
   address internal _underlyingAsset;
-  IAaveIncentivesController internal _incentivesController;
+  ISturdyIncentivesController internal _incentivesController;
 
-  modifier onlyLendingPool {
+  modifier onlyLendingPool() {
     require(_msgSender() == address(_pool), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
@@ -54,7 +54,7 @@ contract AToken is
   /**
    * @dev Initializes the aToken
    * @param pool The address of the lending pool where this aToken will be used
-   * @param treasury The address of the Aave treasury, receiving the fees on this aToken
+   * @param treasury The address of the Sturdy treasury, receiving the fees on this aToken
    * @param underlyingAsset The address of the underlying asset of this aToken (E.g. WETH for aWETH)
    * @param incentivesController The smart contract managing potential incentives distribution
    * @param aTokenDecimals The decimals of the aToken, same as the underlying asset's
@@ -65,7 +65,7 @@ contract AToken is
     ILendingPool pool,
     address treasury,
     address underlyingAsset,
-    IAaveIncentivesController incentivesController,
+    ISturdyIncentivesController incentivesController,
     uint8 aTokenDecimals,
     string calldata aTokenName,
     string calldata aTokenSymbol,
@@ -264,7 +264,7 @@ contract AToken is
   }
 
   /**
-   * @dev Returns the address of the Aave treasury, receiving the fees on this aToken
+   * @dev Returns the address of the Sturdy treasury, receiving the fees on this aToken
    **/
   function RESERVE_TREASURY_ADDRESS() public view returns (address) {
     return _treasury;
@@ -273,7 +273,7 @@ contract AToken is
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
    **/
-  function UNDERLYING_ASSET_ADDRESS() public override view returns (address) {
+  function UNDERLYING_ASSET_ADDRESS() public view override returns (address) {
     return _underlyingAsset;
   }
 
@@ -287,14 +287,14 @@ contract AToken is
   /**
    * @dev For internal usage in the logic of the parent contract IncentivizedERC20
    **/
-  function _getIncentivesController() internal view override returns (IAaveIncentivesController) {
+  function _getIncentivesController() internal view override returns (ISturdyIncentivesController) {
     return _incentivesController;
   }
 
   /**
    * @dev Returns the address of the incentives controller contract
    **/
-  function getIncentivesController() external view override returns (IAaveIncentivesController) {
+  function getIncentivesController() external view override returns (ISturdyIncentivesController) {
     return _getIncentivesController();
   }
 
@@ -346,14 +346,13 @@ contract AToken is
     //solium-disable-next-line
     require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
     uint256 currentValidNonce = _nonces[owner];
-    bytes32 digest =
-      keccak256(
-        abi.encodePacked(
-          '\x19\x01',
-          DOMAIN_SEPARATOR,
-          keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
-        )
-      );
+    bytes32 digest = keccak256(
+      abi.encodePacked(
+        '\x19\x01',
+        DOMAIN_SEPARATOR,
+        keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
+      )
+    );
     require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
     _nonces[owner] = currentValidNonce.add(1);
     _approve(owner, spender, value);

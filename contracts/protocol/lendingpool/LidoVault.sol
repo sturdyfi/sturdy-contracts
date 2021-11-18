@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.7.6;
+pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import 'hardhat/console.sol';
@@ -9,8 +9,8 @@ import {IWETH} from '../../misc/interfaces/IWETH.sol';
 import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
-import {ISwapRouter} from '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import {TransferHelper} from '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+import {ISwapRouter} from '../../interfaces/ISwapRouter.sol';
+import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 

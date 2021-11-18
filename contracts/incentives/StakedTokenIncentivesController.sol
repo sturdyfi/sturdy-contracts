@@ -6,21 +6,20 @@ import 'hardhat/console.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {DistributionTypes} from '../lib/DistributionTypes.sol';
-import {VersionedInitializable} from '../protocol/libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {DistributionManager} from './DistributionManager.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from '../interfaces/IScaledBalanceToken.sol';
-import {IAaveIncentivesController} from '../interfaces/IAaveIncentivesController.sol';
+import {ISturdyIncentivesController} from '../interfaces/ISturdyIncentivesController.sol';
 
 /**
  * @title StakedTokenIncentivesController
- * @notice Distributor contract for rewards to the Aave protocol, using a staked token as rewards asset.
- * The contract stakes the rewards before redistributing them to the Aave protocol participants.
- * The reference staked token implementation is at https://github.com/aave/aave-stake-v2
+ * @notice Distributor contract for rewards to the Sturdy protocol, using a staked token as rewards asset.
+ * The contract stakes the rewards before redistributing them to the Sturdy protocol participants.
  * @author Sturdy
  **/
 contract StakedTokenIncentivesController is
-  IAaveIncentivesController,
+  ISturdyIncentivesController,
   VersionedInitializable,
   DistributionManager
 {
@@ -55,7 +54,7 @@ contract StakedTokenIncentivesController is
    **/
   function initialize(address addressesProvider) external initializer {}
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
     external
     override
@@ -77,7 +76,7 @@ contract StakedTokenIncentivesController is
     _configureAssets(assetsConfig);
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function handleAction(
     address user,
     uint256 totalSupply,
@@ -90,7 +89,7 @@ contract StakedTokenIncentivesController is
     }
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function getRewardsBalance(address[] calldata assets, address user)
     external
     view
@@ -111,7 +110,7 @@ contract StakedTokenIncentivesController is
     return unclaimedRewards;
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function claimRewards(
     address[] calldata assets,
     uint256 amount,
@@ -121,7 +120,7 @@ contract StakedTokenIncentivesController is
     return _claimRewards(assets, amount, msg.sender, msg.sender, to);
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function claimRewardsOnBehalf(
     address[] calldata assets,
     uint256 amount,
@@ -141,42 +140,42 @@ contract StakedTokenIncentivesController is
    * @return Rewards claimed
    **/
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function setClaimer(address user, address caller) external override onlyEmissionManager {
     _authorizedClaimers[user] = caller;
     emit ClaimerSet(user, caller);
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function getClaimer(address user) external view override returns (address) {
     return _authorizedClaimers[user];
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function getUserUnclaimedRewards(address _user) external view override returns (uint256) {
     return _usersUnclaimedRewards[_user];
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function REWARD_TOKEN() external view override returns (address) {
     return address(STAKE_TOKEN);
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function DISTRIBUTION_END()
     external
     view
-    override(DistributionManager, IAaveIncentivesController)
+    override(DistributionManager, ISturdyIncentivesController)
     returns (uint256)
   {
     return _distributionEnd;
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function getAssetData(address asset)
     public
     view
-    override(DistributionManager, IAaveIncentivesController)
+    override(DistributionManager, ISturdyIncentivesController)
     returns (
       uint256,
       uint256,
@@ -190,11 +189,11 @@ contract StakedTokenIncentivesController is
     );
   }
 
-  /// @inheritdoc IAaveIncentivesController
+  /// @inheritdoc ISturdyIncentivesController
   function getUserAssetData(address user, address asset)
     public
     view
-    override(DistributionManager, IAaveIncentivesController)
+    override(DistributionManager, ISturdyIncentivesController)
     returns (uint256)
   {
     return assets[asset].users[user];

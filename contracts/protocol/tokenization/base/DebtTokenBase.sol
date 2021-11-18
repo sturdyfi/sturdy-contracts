@@ -3,16 +3,14 @@ pragma solidity 0.6.12;
 
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
 import {ICreditDelegationToken} from '../../../interfaces/ICreditDelegationToken.sol';
-import {
-  VersionedInitializable
-} from '../../libraries/aave-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from '../IncentivizedERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 /**
  * @title DebtTokenBase
  * @notice Base contract for different types of debt tokens, like StableDebtToken or VariableDebtToken
- * @author Aave
+ * @author Sturdy
  */
 
 abstract contract DebtTokenBase is
@@ -25,7 +23,7 @@ abstract contract DebtTokenBase is
   /**
    * @dev Only lending pool can call functions marked by this modifier
    **/
-  modifier onlyLendingPool {
+  modifier onlyLendingPool() {
     require(_msgSender() == address(_getLendingPool()), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
@@ -123,8 +121,10 @@ abstract contract DebtTokenBase is
     address delegatee,
     uint256 amount
   ) internal {
-    uint256 newAllowance =
-      _borrowAllowances[delegator][delegatee].sub(amount, Errors.BORROW_ALLOWANCE_NOT_ENOUGH);
+    uint256 newAllowance = _borrowAllowances[delegator][delegatee].sub(
+      amount,
+      Errors.BORROW_ALLOWANCE_NOT_ENOUGH
+    );
 
     _borrowAllowances[delegator][delegatee] = newAllowance;
 

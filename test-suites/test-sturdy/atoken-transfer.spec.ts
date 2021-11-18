@@ -4,9 +4,9 @@
 // import { ethers } from 'ethers';
 // import { RateMode, ProtocolErrors } from '../../helpers/types';
 // import { makeSuite, TestEnv } from './helpers/make-suite';
-// import { CommonsConfig } from '../../markets/aave/commons';
+// import { CommonsConfig } from '../../markets/sturdy/commons';
 
-// const AAVE_REFERRAL = CommonsConfig.ProtocolGlobalParams.AaveReferral;
+// const STURDY_REFERRAL = CommonsConfig.ProtocolGlobalParams.SturdyReferral;
 
 // makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
 //   const {
@@ -33,7 +33,7 @@
 
 //     const name = await aDai.name();
 
-//     expect(name).to.be.equal('Aave interest bearing DAI');
+//     expect(name).to.be.equal('Sturdy interest bearing DAI');
 
 //     const fromBalance = await aDai.balanceOf(users[0].address);
 //     const toBalance = await aDai.balanceOf(users[1].address);
@@ -62,7 +62,7 @@
 //         weth.address,
 //         ethers.utils.parseEther('0.1'),
 //         RateMode.Stable,
-//         AAVE_REFERRAL,
+//         STURDY_REFERRAL,
 //         users[1].address
 //       );
 

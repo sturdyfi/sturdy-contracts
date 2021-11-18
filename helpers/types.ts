@@ -24,7 +24,7 @@ export enum EthereumNetworkNames {
   main = 'main',
 }
 
-export enum AavePools {
+export enum SturdyPools {
   proto = 'proto',
 }
 
@@ -43,7 +43,7 @@ export enum eContractid {
   Proxy = 'Proxy',
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
-  AaveOracle = 'AaveOracle',
+  SturdyOracle = 'SturdyOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableAdminUpgradeabilityProxy = 'InitializableAdminUpgradeabilityProxy',
@@ -53,7 +53,7 @@ export enum eContractid {
   MockVariableDebtToken = 'MockVariableDebtToken',
   StakedTokenIncentivesController = 'StakedTokenIncentivesController',
   SturdyToken = 'SturdyToken',
-  AaveProtocolDataProvider = 'AaveProtocolDataProvider',
+  SturdyProtocolDataProvider = 'SturdyProtocolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
@@ -227,7 +227,7 @@ export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
 
 export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
-export type iAavePoolAssets<T> = Pick<
+export type iSturdyPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
   //  | 'TUSD'
@@ -281,9 +281,9 @@ export type iLpPoolAssets<T> = Pick<
   | 'BptBALWETH' */
 >;
 
-export type iMultiPoolsAssets<T> = iAssetCommon<T> | iAavePoolAssets<T>;
+export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
 
-export type iAavePoolTokens<T> = Omit<iAavePoolAssets<T>, 'ETH'>;
+export type iSturdyPoolTokens<T> = Omit<iSturdyPoolAssets<T>, 'ETH'>;
 
 export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
@@ -393,7 +393,7 @@ export interface iEthereumParamsPerNetwork<T> {
 }
 
 export interface iParamsPerPool<T> {
-  [AavePools.proto]: T;
+  [SturdyPools.proto]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -417,7 +417,7 @@ export interface IProtocolGlobalConfig {
   UsdAddress: tEthereumAddress;
   NilAddress: tEthereumAddress;
   OneAddress: tEthereumAddress;
-  AaveReferral: string;
+  SturdyReferral: string;
 }
 
 export interface IMocksConfig {
@@ -449,7 +449,7 @@ export interface ICommonConfiguration {
   LendingRateOracleRatesCommon: iMultiPoolsAssets<IMarketRates>;
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
-  AaveOracle: iParamsPerNetwork<tEthereumAddress>;
+  SturdyOracle: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
@@ -465,12 +465,12 @@ export interface ICommonConfiguration {
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
 }
 
-export interface IAaveConfiguration extends ICommonConfiguration {
-  ReservesConfig: iAavePoolAssets<IReserveParams>;
+export interface ISturdyConfiguration extends ICommonConfiguration {
+  ReservesConfig: iSturdyPoolAssets<IReserveParams>;
 }
 
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | IAaveConfiguration;
+export type PoolConfiguration = ICommonConfiguration | ISturdyConfiguration;

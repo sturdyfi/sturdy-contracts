@@ -1,5 +1,5 @@
 import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
-import { IAaveConfiguration, eEthereumNetwork } from '../../helpers/types';
+import { ISturdyConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
@@ -30,9 +30,9 @@ import {
 // POOL--SPECIFIC PARAMS
 // ----------------
 
-export const AaveConfig: IAaveConfiguration = {
+export const SturdyConfig: ISturdyConfiguration = {
   ...CommonsConfig,
-  MarketId: 'Aave genesis market',
+  MarketId: 'Sturdy genesis market',
   ProviderId: 1,
   ReservesConfig: {
 /*     AAVE: strategyAAVE,
@@ -158,4 +158,4 @@ export const AaveConfig: IAaveConfiguration = {
   },
 };
 
-export default AaveConfig;
+export default SturdyConfig;

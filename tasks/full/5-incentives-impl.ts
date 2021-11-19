@@ -20,16 +20,11 @@ task('full:deploy-incentives-impl', 'Incentives controller implementation deploy
       const signer = await getFirstSigner();
       const EMISSION_EXECUTOR = await signer.getAddress();
 
+      const incentives = await deploySturdyIncentivesController([EMISSION_EXECUTOR], verify);
+      console.log(`- Incentives proxy address ${incentives.address}`);
+
       const sturdyToken = await deploySturdyToken();
-      console.log(`- Incentives sturdy token address ${sturdyToken.address}`);
-
-      const incentives = await deploySturdyIncentivesController(
-        [sturdyToken.address, EMISSION_EXECUTOR],
-        verify
-      );
-      console.log(`- Incentives implementation address ${incentives.address}`);
-
-      await sturdyToken.initialize(incentives.address);
+      console.log(`- Incentives sturdy token proxy address ${sturdyToken.address}`);
     } catch (err) {
       console.error(err);
       exit(1);

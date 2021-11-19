@@ -11,6 +11,7 @@ import {DistributionManager} from './DistributionManager.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from '../interfaces/IScaledBalanceToken.sol';
 import {ISturdyIncentivesController} from '../interfaces/ISturdyIncentivesController.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title StakedTokenIncentivesController
@@ -28,9 +29,8 @@ contract StakedTokenIncentivesController is
 
   uint256 public constant REVISION = 1;
 
-  IERC20 public immutable STAKE_TOKEN;
-
   mapping(address => uint256) internal _usersUnclaimedRewards;
+  ILendingPoolAddressesProvider internal _addressProvider;
 
   // this mapping allows whitelisted addresses to claim on behalf of others
   // useful for contracts that hold tokens to be rewarded but don't have any native logic to claim Liquidity Mining rewards
@@ -41,18 +41,15 @@ contract StakedTokenIncentivesController is
     _;
   }
 
-  constructor(IERC20 stakeToken, address emissionManager)
-    public
-    DistributionManager(emissionManager)
-  {
-    STAKE_TOKEN = stakeToken;
-  }
+  constructor(address emissionManager) public DistributionManager(emissionManager) {}
 
   /**
    * @dev Initialize IStakedTokenIncentivesController
-   * @param addressesProvider the address of the corresponding addresses provider
+   * @param _provider the address of the corresponding addresses provider
    **/
-  function initialize(address addressesProvider) external initializer {}
+  function initialize(ILendingPoolAddressesProvider _provider) external initializer {
+    _addressProvider = _provider;
+  }
 
   /// @inheritdoc ISturdyIncentivesController
   function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
@@ -158,7 +155,7 @@ contract StakedTokenIncentivesController is
 
   /// @inheritdoc ISturdyIncentivesController
   function REWARD_TOKEN() external view override returns (address) {
-    return address(STAKE_TOKEN);
+    return _addressProvider.getIncentiveToken();
   }
 
   /// @inheritdoc ISturdyIncentivesController
@@ -252,8 +249,9 @@ contract StakedTokenIncentivesController is
     _usersUnclaimedRewards[user] = unclaimedRewards - amountToClaim; // Safe due to the previous line
 
     // STAKE_TOKEN.stake(to, amountToClaim);
-    if (STAKE_TOKEN.balanceOf(address(this)) >= amountToClaim) {
-      STAKE_TOKEN.safeTransfer(to, amountToClaim);
+    IERC20 stakeToken = IERC20(_addressProvider.getIncentiveToken());
+    if (stakeToken.balanceOf(address(this)) >= amountToClaim) {
+      stakeToken.safeTransfer(to, amountToClaim);
     }
 
     emit RewardsClaimed(user, to, claimer, amountToClaim);

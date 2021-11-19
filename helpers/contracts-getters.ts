@@ -339,6 +339,15 @@ export const getLendingPool = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getLidoVaultImpl = async (address?: tEthereumAddress) =>
+  await LidoVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.LidoVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getLidoVault = async (address?: tEthereumAddress) =>
   await LidoVaultFactory.connect(
     address || (await getDb().get(`${eContractid.LidoVault}.${DRE.network.name}`).value()).address,

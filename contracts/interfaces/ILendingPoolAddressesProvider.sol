@@ -11,6 +11,8 @@ pragma solidity 0.6.12;
 interface ILendingPoolAddressesProvider {
   event MarketIdSet(string newMarketId);
   event LendingPoolUpdated(address indexed newAddress);
+  event IncentiveControllerUpdated(address indexed newAddress);
+  event IncentiveTokenUpdated(address indexed newAddress);
   event ConfigurationAdminUpdated(address indexed newAddress);
   event EmergencyAdminUpdated(address indexed newAddress);
   event LendingPoolConfiguratorUpdated(address indexed newAddress);
@@ -33,6 +35,14 @@ interface ILendingPoolAddressesProvider {
   function getLendingPool() external view returns (address);
 
   function setLendingPoolImpl(address pool) external;
+
+  function getIncentiveController() external view returns (address);
+
+  function setIncentiveControllerImpl(address incentiveController) external;
+
+  function getIncentiveToken() external view returns (address);
+
+  function setIncentiveTokenImpl(address incentiveToken) external;
 
   function getLendingPoolConfigurator() external view returns (address);
 

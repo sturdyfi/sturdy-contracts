@@ -8,10 +8,10 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../misc/interfaces/IWETH.sol';
 import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
-import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {ISwapRouter} from '../../interfaces/ISwapRouter.sol';
 import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
 /**
@@ -22,6 +22,7 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 
 contract LidoVault is GeneralVault {
   using SafeMath for uint256;
+  using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
   //ToDo: need to think about using registering flow instead of constant value
@@ -33,8 +34,6 @@ contract LidoVault is GeneralVault {
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;
 
-  constructor(address _lendingPool) public GeneralVault(_lendingPool) {}
-
   /**
    * @dev Receive Ether
    */
@@ -44,7 +43,7 @@ contract LidoVault is GeneralVault {
    * @dev Grab excess stETH which was from rebasing on Lido
    *  And convert stETH -> ETH -> asset, deposit to pool
    */
-  function processYield() external override onlyOwner {
+  function processYield() external override onlyAdmin {
     // Get yield from lendingPool
     uint256 yieldStETH = _getYield(LIDO);
 
@@ -94,7 +93,7 @@ contract LidoVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).approve(address(lendingPool), receivedAmount);
+    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
     // Deposit Yield to pool
     _depositYield(_tokenOut, receivedAmount);
   }
@@ -127,11 +126,11 @@ contract LidoVault is GeneralVault {
     } else {
       // Case of stETH deposit from user, receive stETH from user
       require(_asset == LIDO, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
-      IERC20(LIDO).transferFrom(msg.sender, address(this), _amount);
+      IERC20(LIDO).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     // Make lendingPool to transfer required amount
-    IERC20(LIDO).approve(address(lendingPool), assetAmount);
+    IERC20(LIDO).safeApprove(address(_addressesProvider.getLendingPool()), assetAmount);
     return (LIDO, assetAmount);
   }
 
@@ -165,7 +164,7 @@ contract LidoVault is GeneralVault {
     } else {
       // Case of stETH withdraw request from user, so directly send
       require(_asset == LIDO, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
-      IERC20(LIDO).transfer(_to, _amount);
+      IERC20(LIDO).safeTransfer(_to, _amount);
     }
   }
 
@@ -174,7 +173,7 @@ contract LidoVault is GeneralVault {
    */
   function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount) private returns (uint256) {
     // Exchange stETH -> ETH via curve
-    IERC20(_fromAsset).approve(CurveswapLidoPool, _fromAmount);
+    IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
     uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
     uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
     return receivedAmount;
@@ -185,7 +184,7 @@ contract LidoVault is GeneralVault {
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(LIDO).transfer(_treasuryAddress, treasuryAmount);
+    IERC20(LIDO).safeTransfer(_treasuryAddress, treasuryAmount);
     return treasuryAmount;
   }
 }

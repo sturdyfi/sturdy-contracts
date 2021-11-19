@@ -14,7 +14,14 @@ import {
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
 import { getReservesConfigByPool } from './configuration';
-import { getFirstSigner } from './contracts-getters';
+import {
+  getFirstSigner,
+  getLendingPool,
+  getLendingPoolAddressesProvider,
+  getLidoVault,
+  getSturdyIncentivesController,
+  getSturdyToken,
+} from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
   SturdyProtocolDataProviderFactory,
@@ -23,6 +30,7 @@ import {
   SturdyOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   InitializableAdminUpgradeabilityProxyFactory,
+  InitializableImmutableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
@@ -501,29 +509,62 @@ export const deploySelfdestructTransferMock = async (verify?: boolean) =>
     verify
   );
 
-export const deployLidoVault = async (args: [tEthereumAddress], verify?: boolean) =>
-  withSaveAndVerify(
-    await new LidoVaultFactory(await getFirstSigner()).deploy(...args),
-    eContractid.LidoVault,
-    args,
-    verify
+export const deployLidoVault = async (verify?: boolean) => {
+  const lidoVaultImpl = await new LidoVaultFactory(await getFirstSigner()).deploy();
+  await insertContractAddressInDb(eContractid.LidoVaultImpl, lidoVaultImpl.address);
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await addressesProvider.setAddressAsProxy(
+    DRE.ethers.utils.keccak256(DRE.ethers.utils.toUtf8Bytes('LIDO_VAULT')),
+    lidoVaultImpl.address
   );
+
+  const lidoVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.keccak256(DRE.ethers.utils.toUtf8Bytes('LIDO_VAULT'))
+  );
+  await insertContractAddressInDb(eContractid.LidoVault, lidoVaultProxyAddress);
+
+  return await getLidoVault();
+};
 
 export const deploySturdyIncentivesController = async (
-  args: [tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress],
   verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
-    eContractid.StakedTokenIncentivesController,
-    args,
-    verify
+) => {
+  const incentiveControllerImpl = await new StakedTokenIncentivesControllerFactory(
+    await getFirstSigner()
+  ).deploy(...args);
+  await insertContractAddressInDb(
+    eContractid.StakedTokenIncentivesControllerImpl,
+    incentiveControllerImpl.address
   );
 
-export const deploySturdyToken = async (verify?: boolean) =>
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await addressesProvider.setIncentiveControllerImpl(incentiveControllerImpl.address);
+  const incentiveControllerProxyAddress = await addressesProvider.getIncentiveController();
+  await insertContractAddressInDb(
+    eContractid.StakedTokenIncentivesController,
+    incentiveControllerProxyAddress
+  );
+
+  return await getSturdyIncentivesController();
+};
+
+export const deploySturdyToken = async (verify?: boolean) => {
   withSaveAndVerify(
     await new SturdyTokenFactory(await getFirstSigner()).deploy(),
     eContractid.SturdyToken,
     [],
     verify
   );
+
+  const incentiveTokenImpl = await new SturdyTokenFactory(await getFirstSigner()).deploy();
+  await insertContractAddressInDb(eContractid.SturdyTokenImpl, incentiveTokenImpl.address);
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await addressesProvider.setIncentiveTokenImpl(incentiveTokenImpl.address);
+  const incentiveTokenProxyAddress = await addressesProvider.getIncentiveToken();
+  await insertContractAddressInDb(eContractid.SturdyToken, incentiveTokenProxyAddress);
+
+  return await getSturdyToken();
+};

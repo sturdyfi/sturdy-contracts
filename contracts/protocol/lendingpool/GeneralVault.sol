@@ -4,10 +4,11 @@ pragma experimental ABIEncoderV2;
 
 import 'hardhat/console.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
+import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
+import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title GeneralVault
@@ -15,23 +16,38 @@ import {Errors} from '../libraries/helpers/Errors.sol';
  * @author Sturdy
  **/
 
-contract GeneralVault is Ownable {
+contract GeneralVault is VersionedInitializable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
+
+  modifier onlyAdmin() {
+    require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+    _;
+  }
 
   struct AssetYield {
     address asset;
     uint256 amount;
   }
 
-  address public immutable lendingPool;
+  ILendingPoolAddressesProvider internal _addressesProvider;
 
   // vault fee 20%
   uint256 internal _vaultFee;
   address internal _treasuryAddress;
 
-  constructor(address _lendingPool) public {
-    lendingPool = _lendingPool;
+  uint256 public constant VAULT_REVISION = 0x1;
+
+  /**
+   * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
+   * @param _provider The address of the provider
+   **/
+  function initialize(ILendingPoolAddressesProvider _provider) public initializer {
+    _addressesProvider = _provider;
+  }
+
+  function getRevision() internal pure override returns (uint256) {
+    return VAULT_REVISION;
   }
 
   /**
@@ -46,7 +62,12 @@ contract GeneralVault is Ownable {
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset
-    ILendingPool(lendingPool).deposit(_stAsset, _stAssetAmount, msg.sender, 0);
+    ILendingPool(_addressesProvider.getLendingPool()).deposit(
+      _stAsset,
+      _stAssetAmount,
+      msg.sender,
+      0
+    );
   }
 
   /**
@@ -68,7 +89,7 @@ contract GeneralVault is Ownable {
     (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
 
     // withdraw from lendingPool, it will convert user's aToken to stAsset
-    uint256 _amountToWithdraw = ILendingPool(lendingPool).withdrawFrom(
+    uint256 _amountToWithdraw = ILendingPool(_addressesProvider.getLendingPool()).withdrawFrom(
       _stAsset,
       _stAssetAmount,
       msg.sender,
@@ -90,7 +111,7 @@ contract GeneralVault is Ownable {
    * @param _treasury The treasury address
    * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
    */
-  function setTreasuryInfo(address _treasury, uint256 _fee) external onlyOwner {
+  function setTreasuryInfo(address _treasury, uint256 _fee) external onlyAdmin {
     require(_treasury != address(0), Errors.VT_TREASURY_INVALID);
     _treasuryAddress = _treasury;
     _vaultFee = _fee;
@@ -103,7 +124,7 @@ contract GeneralVault is Ownable {
     uint256 yieldStAsset = _getYieldAmount(_stAsset);
     require(yieldStAsset > 0, Errors.VT_PROCESS_YIELD_INVALID);
 
-    ILendingPool(lendingPool).getYield(_stAsset, yieldStAsset);
+    ILendingPool(_addressesProvider.getLendingPool()).getYield(_stAsset, yieldStAsset);
     return yieldStAsset;
   }
 
@@ -111,8 +132,9 @@ contract GeneralVault is Ownable {
    * @dev Get yield amount based on strategy
    */
   function _getYieldAmount(address _stAsset) internal view returns (uint256) {
-    (uint256 stAssetBalance, uint256 aTokenBalance) = ILendingPool(lendingPool)
-      .getTotalBalanceOfAssetPair(_stAsset);
+    (uint256 stAssetBalance, uint256 aTokenBalance) = ILendingPool(
+      _addressesProvider.getLendingPool()
+    ).getTotalBalanceOfAssetPair(_stAsset);
 
     // when deposit for collateral, stAssetBalance = aTokenBalance
     // But stAssetBalance should increase overtime, so vault can grab yield from lendingPool.
@@ -132,7 +154,7 @@ contract GeneralVault is Ownable {
       uint256[] memory volumes,
       address[] memory assets,
       uint256 length
-    ) = ILendingPool(lendingPool).getBorrowingAssetAndVolumes();
+    ) = ILendingPool(_addressesProvider.getLendingPool()).getBorrowingAssetAndVolumes();
 
     if (totalVolume == 0) return new AssetYield[](0);
 
@@ -157,7 +179,7 @@ contract GeneralVault is Ownable {
   }
 
   function _depositYield(address _asset, uint256 _amount) internal {
-    ILendingPool(lendingPool).depositYield(_asset, _amount);
+    ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
   }
 
   /**

@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {ERC20} from '../dependencies/openzeppelin/contracts/ERC20.sol';
 import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @notice implementation of the BRICK token contract
@@ -26,11 +27,11 @@ contract SturdyToken is ERC20, VersionedInitializable {
 
   /**
    * @dev initializes the contract upon assignment to the InitializableAdminUpgradeabilityProxy
-   * @param distributor the address of the BRICK distribution contract
+   * @param _provider the address of the provider
    */
-  function initialize(address distributor) external initializer {
+  function initialize(ILendingPoolAddressesProvider _provider) external initializer {
     _setupDecimals(DECIMALS);
-    _mint(distributor, DISTRIBUTION_AMOUNT);
+    _mint(_provider.getIncentiveController(), DISTRIBUTION_AMOUNT);
   }
 
   /**

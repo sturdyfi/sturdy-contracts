@@ -27,6 +27,8 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant LENDING_POOL_COLLATERAL_MANAGER = 'COLLATERAL_MANAGER';
   bytes32 private constant PRICE_ORACLE = 'PRICE_ORACLE';
   bytes32 private constant LENDING_RATE_ORACLE = 'LENDING_RATE_ORACLE';
+  bytes32 private constant INCENTIVE_CONTROLLER = 'INCENTIVE_CONTROLLER';
+  bytes32 private constant INCENTIVE_TOKEN = 'INCENTIVE_TOKEN';
 
   constructor(string memory marketId) public {
     _setMarketId(marketId);
@@ -101,6 +103,42 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   function setLendingPoolImpl(address pool) external override onlyOwner {
     _updateImpl(LENDING_POOL, pool);
     emit LendingPoolUpdated(pool);
+  }
+
+  /**
+   * @dev Returns the address of the IncentiveController proxy
+   * @return The IncentiveController proxy address
+   **/
+  function getIncentiveController() external view override returns (address) {
+    return getAddress(INCENTIVE_CONTROLLER);
+  }
+
+  /**
+   * @dev Updates the implementation of the IncentiveController, or creates the proxy
+   * setting the new `incentiveController` implementation on the first time calling it
+   * @param incentiveController The new IncentiveController implementation
+   **/
+  function setIncentiveControllerImpl(address incentiveController) external override onlyOwner {
+    _updateImpl(INCENTIVE_CONTROLLER, incentiveController);
+    emit IncentiveControllerUpdated(incentiveController);
+  }
+
+  /**
+   * @dev Returns the address of the IncentiveToken proxy
+   * @return The IncentiveToken proxy address
+   **/
+  function getIncentiveToken() external view override returns (address) {
+    return getAddress(INCENTIVE_TOKEN);
+  }
+
+  /**
+   * @dev Updates the implementation of the IncentiveToken, or creates the proxy
+   * setting the new `incentiveToken` implementation on the first time calling it
+   * @param incentiveToken The new IncentiveToken implementation
+   **/
+  function setIncentiveTokenImpl(address incentiveToken) external override onlyOwner {
+    _updateImpl(INCENTIVE_TOKEN, incentiveToken);
+    emit IncentiveTokenUpdated(incentiveToken);
   }
 
   /**

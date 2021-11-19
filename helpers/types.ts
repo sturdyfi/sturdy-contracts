@@ -51,7 +51,9 @@ export enum eContractid {
   MockAToken = 'MockAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
+  StakedTokenIncentivesControllerImpl = 'StakedTokenIncentivesControllerImpl',
   StakedTokenIncentivesController = 'StakedTokenIncentivesController',
+  SturdyTokenImpl = 'SturdyTokenImpl',
   SturdyToken = 'SturdyToken',
   SturdyProtocolDataProvider = 'SturdyProtocolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
@@ -65,6 +67,7 @@ export enum eContractid {
   LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
   LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',
   LendingPool = 'LendingPool',
+  LidoVaultImpl = 'LidoVaultImpl',
   LidoVault = 'LidoVault',
 }
 

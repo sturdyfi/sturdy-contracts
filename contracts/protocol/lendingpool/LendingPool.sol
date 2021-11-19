@@ -13,7 +13,9 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
+import {
+  VersionedInitializable
+} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -312,7 +314,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode,
     address onBehalfOf
   ) external override whenNotPaused {
-    //todo: asset - possible addresses for: USDT, USDC, DAI
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     _executeBorrow(
@@ -362,9 +363,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
-      ? stableDebt
-      : variableDebt;
+    uint256 paybackAmount =
+      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -538,16 +538,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) = collateralManager.delegatecall(
-      abi.encodeWithSignature(
-        'liquidationCall(address,address,address,uint256,bool)',
-        collateralAsset,
-        debtAsset,
-        user,
-        debtToCover,
-        receiveAToken
-      )
-    );
+    (bool success, bytes memory result) =
+      collateralManager.delegatecall(
+        abi.encodeWithSignature(
+          'liquidationCall(address,address,address,uint256,bool)',
+          collateralAsset,
+          debtAsset,
+          user,
+          debtToCover,
+          receiveAToken
+        )
+      );
 
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
@@ -846,15 +847,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
-    //todo: asset should be addresses for : USDC, USDT, DAI
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-      10**reserve.configuration.getDecimals()
-    );
+    uint256 amountInETH =
+      IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
+        10**reserve.configuration.getDecimals()
+      );
 
     ValidationLogic.validateBorrow(
       vars.asset,
@@ -873,7 +874,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     uint256 currentStableRate = 0;
 
-    //todo:  debt tokens USDC, USDT, DAI
     bool isFirstBorrowing = false;
     if (DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE) {
       currentStableRate = reserve.currentStableBorrowRate;

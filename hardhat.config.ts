@@ -53,6 +53,7 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
   url: NETWORKS_RPC_URL[networkName],
   hardfork: HARDFORK,
   blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+  gas: DEFAULT_BLOCK_GAS_LIMIT,
   gasMultiplier: DEFAULT_GAS_MUL,
   gasPrice: NETWORKS_DEFAULT_GAS[networkName],
   chainId: networkId,
@@ -103,6 +104,7 @@ const buidlerConfig: HardhatUserConfig = {
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
     geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
+    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

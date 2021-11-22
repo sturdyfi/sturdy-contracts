@@ -19,7 +19,7 @@ import {
   strategyREN,
   strategySNX,
   strategyWBTC,
-  // strategyWETH,
+  strategyWETH,
   strategyYFI,
   strategyXSUSHI,
   strategyENJ,
@@ -52,7 +52,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     USDC: strategyUSDC,
     // USDT: strategyUSDT,
   //  WBTC: strategyWBTC,
-    // WETH: strategyWETH,
+    WETH: strategyWETH,
 /*     YFI: strategyYFI,
     ZRX: strategyZRX,
     xSUSHI: strategyXSUSHI, */
@@ -154,6 +154,12 @@ export const SturdyConfig: ISturdyConfiguration = {
 /*       YFI: '0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e',
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272', */
+    },
+    [eEthereumNetwork.goerli]: {
+      DAI: '',
+      USDC: '',
+      WETH: '',
+      stETH: '',
     },
   },
 };

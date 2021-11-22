@@ -96,7 +96,9 @@ const testEnv: TestEnv = {
 
 export async function initializeMakeSuite() {
   // Mainnet missing addresses
-  const lidoAddress = '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84';
+  const poolConfig = loadPoolConfig(ConfigNames.Sturdy);
+  const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
+  const lidoAddress = getParamPerNetwork(poolConfig.Lido, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   const deployer: SignerWithAddress = {
@@ -125,7 +127,6 @@ export async function initializeMakeSuite() {
     );
     testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
 
-    const poolConfig = loadPoolConfig(ConfigNames.Sturdy);
     const providerRegistryOwner = getParamPerNetwork(
       poolConfig.ProviderRegistryOwner,
       process.env.FORK as eNetwork
@@ -187,11 +188,11 @@ const revertHead = async () => {
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
     before(async () => {
-      await setSnapshot();
+      if (DRE.network.name != 'goerli') await setSnapshot();
     });
     tests(testEnv);
     after(async () => {
-      await revertHead();
+      if (DRE.network.name != 'goerli') await revertHead();
     });
   });
 }

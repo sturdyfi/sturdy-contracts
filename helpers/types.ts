@@ -16,6 +16,7 @@ export enum eEthereumNetwork {
   geth = 'geth',
   localhost = 'localhost',
   tenderlyMain = 'tenderlyMain',
+  goerli = 'goerli',
 }
 
 export enum EthereumNetworkNames {
@@ -185,7 +186,7 @@ export interface iAssetBase<T> {
   DAI: T;
   //  TUSD: T;
   USDC: T;
-  USDT: T;
+  // USDT: T;
   /*   SUSD: T;
   AAVE: T;
   BAT: T;
@@ -249,7 +250,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'SNX'
   | 'BUSD' 
 */
-  // | 'WETH'
+  | 'WETH'
   /*
   | 'YFI'
   | 'UNI'
@@ -297,7 +298,7 @@ export enum TokenContractId {
   TUSD = 'TUSD',
   BAT = 'BAT', 
 */
-  // WETH = 'WETH',
+  WETH = 'WETH',
   USDC = 'USDC',
   // USDT = 'USDT',
   /*   
@@ -393,6 +394,7 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.geth]: T;
   [eEthereumNetwork.localhost]: T;
   [eEthereumNetwork.tenderlyMain]: T;
+  [eEthereumNetwork.goerli]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -453,6 +455,7 @@ export interface ICommonConfiguration {
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
   SturdyOracle: iParamsPerNetwork<tEthereumAddress>;
+  Lido: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;

@@ -20,6 +20,9 @@ import {
   deployStableAndVariableTokensHelper,
   deployATokensAndRatesHelper,
   deployWETHMocked,
+  deploySturdyIncentivesController,
+  deploySturdyToken,
+  deployLidoVault,
 } from '../../helpers/contracts-deployments';
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
@@ -144,7 +147,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       DAI: mockTokens.DAI.address,
       //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
-      USDT: mockTokens.USDT.address,
+      // USDT: mockTokens.USDT.address,
       /*
       SUSD: mockTokens.SUSD.address,
       AAVE: mockTokens.AAVE.address,
@@ -236,6 +239,15 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await insertContractAddressInDb(eContractid.SturdyProtocolDataProvider, testHelpers.address);
   const admin = await deployer.getAddress();
 
+  console.log('Incentive controller and token');
+
+  const EMISSION_EXECUTOR = await deployer.getAddress();
+  const incentives = await deploySturdyIncentivesController([EMISSION_EXECUTOR]);
+  console.log(`- Incentives proxy address ${incentives.address}`);
+
+  const sturdyToken = await deploySturdyToken();
+  console.log(`- Incentives sturdy token proxy address ${sturdyToken.address}`);
+
   console.log('Initialize configuration');
 
   const config = loadPoolConfig(ConfigNames.Sturdy);
@@ -264,6 +276,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
+  console.log('Lido Vault');
+  const lidoVault = await deployLidoVault();
+  const configurator = await getLendingPoolConfiguratorProxy();
+  await configurator.registerVault(lidoVault.address);
+  console.log('Lido Vault', lidoVault.address);
+  console.log(`\tFinished Lido Vault deployment`);
+
   console.timeEnd('setup');
 };
 
@@ -271,10 +290,11 @@ before(async () => {
   await rawBRE.run('set-DRE');
   const [deployer, secondaryWallet] = await getEthersSigners();
   const FORK = process.env.FORK;
+  const SKIP_DEPLOY = process.env.SKIP_DEPLOY;
 
   if (FORK) {
     await rawBRE.run('sturdy:mainnet');
-  } else {
+  } else if (!SKIP_DEPLOY) {
     console.log('-> Deploying test environment...');
     await buildTestEnv(deployer, secondaryWallet);
   }

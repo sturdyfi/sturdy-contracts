@@ -1,5 +1,5 @@
 import { Contract } from 'ethers';
-import { DRE } from './misc-utils';
+import { DRE, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -510,13 +510,19 @@ export const deploySelfdestructTransferMock = async (verify?: boolean) =>
   );
 
 export const deployLidoVault = async (verify?: boolean) => {
-  const lidoVaultImpl = await new LidoVaultFactory(await getFirstSigner()).deploy();
-  await insertContractAddressInDb(eContractid.LidoVaultImpl, lidoVaultImpl.address);
+  const lidoVaultImpl = await withSaveAndVerify(
+    await new LidoVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.LidoVaultImpl,
+    [],
+    verify
+  );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
-  await addressesProvider.setAddressAsProxy(
-    DRE.ethers.utils.keccak256(DRE.ethers.utils.toUtf8Bytes('LIDO_VAULT')),
-    lidoVaultImpl.address
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.keccak256(DRE.ethers.utils.toUtf8Bytes('LIDO_VAULT')),
+      lidoVaultImpl.address
+    )
   );
 
   const lidoVaultProxyAddress = await addressesProvider.getAddress(
@@ -531,16 +537,17 @@ export const deploySturdyIncentivesController = async (
   args: [tEthereumAddress],
   verify?: boolean
 ) => {
-  const incentiveControllerImpl = await new StakedTokenIncentivesControllerFactory(
-    await getFirstSigner()
-  ).deploy(...args);
-  await insertContractAddressInDb(
+  const incentiveControllerImpl = await withSaveAndVerify(
+    await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
     eContractid.StakedTokenIncentivesControllerImpl,
-    incentiveControllerImpl.address
+    args,
+    verify
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
-  await addressesProvider.setIncentiveControllerImpl(incentiveControllerImpl.address);
+  await waitForTx(
+    await addressesProvider.setIncentiveControllerImpl(incentiveControllerImpl.address)
+  );
   const incentiveControllerProxyAddress = await addressesProvider.getIncentiveController();
   await insertContractAddressInDb(
     eContractid.StakedTokenIncentivesController,
@@ -551,18 +558,15 @@ export const deploySturdyIncentivesController = async (
 };
 
 export const deploySturdyToken = async (verify?: boolean) => {
-  withSaveAndVerify(
+  const incentiveTokenImpl = await withSaveAndVerify(
     await new SturdyTokenFactory(await getFirstSigner()).deploy(),
-    eContractid.SturdyToken,
+    eContractid.SturdyTokenImpl,
     [],
     verify
   );
 
-  const incentiveTokenImpl = await new SturdyTokenFactory(await getFirstSigner()).deploy();
-  await insertContractAddressInDb(eContractid.SturdyTokenImpl, incentiveTokenImpl.address);
-
   const addressesProvider = await getLendingPoolAddressesProvider();
-  await addressesProvider.setIncentiveTokenImpl(incentiveTokenImpl.address);
+  await waitForTx(await addressesProvider.setIncentiveTokenImpl(incentiveTokenImpl.address));
   const incentiveTokenProxyAddress = await addressesProvider.getIncentiveToken();
   await insertContractAddressInDb(eContractid.SturdyToken, incentiveTokenProxyAddress);
 

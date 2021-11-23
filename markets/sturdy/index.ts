@@ -156,10 +156,10 @@ export const SturdyConfig: ISturdyConfiguration = {
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272', */
     },
     [eEthereumNetwork.goerli]: {
-      DAI: '',
-      USDC: '',
-      WETH: '',
-      stETH: '',
+      DAI: '0x73967c6a0904aA032C103b4104747E88c566B1A2',
+      USDC: '0x2f3A40A3db8a7e3D09B0adfEfbCe4f6F81927557',
+      WETH: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
+      stETH: '0xA0cA1c13721BAB3371E0609FFBdB6A6B8e155CC0',
     },
   },
 };

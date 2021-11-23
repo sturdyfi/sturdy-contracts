@@ -7,7 +7,7 @@ import { ConfigNames } from '../../helpers/configuration';
 import { exit } from 'process';
 import { getFirstSigner } from '../../helpers/contracts-getters';
 
-task('full:deploy-incentives-impl', 'Incentives controller implementation deployment')
+task('testnet:deploy-incentives-impl', 'Incentives controller implementation deployment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, localBRE) => {

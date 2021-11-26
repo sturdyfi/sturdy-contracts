@@ -26,10 +26,10 @@ contract LidoVault is GeneralVault {
   using PercentageMath for uint256;
 
   //ToDo: need to think about using registering flow instead of constant value
-  address constant LIDO = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+  address constant LIDO = 0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F;
   address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
   address constant UniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-  address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  address constant WETH = 0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6;
 
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;

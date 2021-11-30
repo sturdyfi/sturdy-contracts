@@ -1,5 +1,5 @@
 import { Contract } from 'ethers';
-import { DRE, waitForTx } from './misc-utils';
+import { DRE, impersonateAccountsHardhat, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -10,10 +10,11 @@ import {
   IReserveParams,
   PoolConfiguration,
   eEthereumNetwork,
+  eNetwork,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
-import { getReservesConfigByPool } from './configuration';
+import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
   getFirstSigner,
   getLendingPool,
@@ -52,12 +53,18 @@ import {
   LidoVaultFactory,
   StakedTokenIncentivesControllerFactory,
   SturdyTokenFactory,
+  UiPoolDataProvider,
+  WalletBalanceProviderFactory,
+  UiIncentiveDataProviderFactory,
 } from '../types';
 import {
   withSaveAndVerify,
   registerContractInJsonDb,
   linkBytecode,
   insertContractAddressInDb,
+  getParamPerNetwork,
+  deployContract,
+  verifyContract,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
@@ -509,6 +516,35 @@ export const deploySelfdestructTransferMock = async (verify?: boolean) =>
     verify
   );
 
+export const deployWalletBalancerProvider = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(),
+    eContractid.WalletBalanceProvider,
+    [],
+    verify
+  );
+
+export const deployUiPoolDataProvider = async (
+  [incentivesController, sturdyOracle]: [tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const id = eContractid.UiPoolDataProvider;
+  const args: string[] = [incentivesController, sturdyOracle];
+  const instance = await deployContract<UiPoolDataProvider>(id, args);
+  if (verify) {
+    await verifyContract(id, instance, args);
+  }
+  return instance;
+};
+
+export const deployUiIncentiveDataProvider = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new UiIncentiveDataProviderFactory(await getFirstSigner()).deploy(),
+    eContractid.UiIncentiveDataProvider,
+    [],
+    verify
+  );
+
 export const deployLidoVault = async (verify?: boolean) => {
   const lidoVaultImpl = await withSaveAndVerify(
     await new LidoVaultFactory(await getFirstSigner()).deploy(),
@@ -520,13 +556,43 @@ export const deployLidoVault = async (verify?: boolean) => {
   const addressesProvider = await getLendingPoolAddressesProvider();
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
-      DRE.ethers.utils.keccak256(DRE.ethers.utils.toUtf8Bytes('LIDO_VAULT')),
+      DRE.ethers.utils.formatBytes32String('LIDO_VAULT'),
       lidoVaultImpl.address
     )
   );
 
+  const config = loadPoolConfig(ConfigNames.Sturdy);
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('LIDO'),
+      getParamPerNetwork(config.Lido, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CurveswapLidoPool'),
+      getParamPerNetwork(config.CurveswapLidoPool, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('uniswapRouter'),
+      getParamPerNetwork(config.UniswapRouter, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WETH'),
+      getParamPerNetwork(config.WETH, network)
+    )
+  );
+
   const lidoVaultProxyAddress = await addressesProvider.getAddress(
-    DRE.ethers.utils.keccak256(DRE.ethers.utils.toUtf8Bytes('LIDO_VAULT'))
+    DRE.ethers.utils.formatBytes32String('LIDO_VAULT')
   );
   await insertContractAddressInDb(eContractid.LidoVault, lidoVaultProxyAddress);
 

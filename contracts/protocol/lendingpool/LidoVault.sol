@@ -26,10 +26,10 @@ contract LidoVault is GeneralVault {
   using PercentageMath for uint256;
 
   //ToDo: need to think about using registering flow instead of constant value
-  address constant LIDO = 0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F;
-  address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
-  address constant UniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
-  address constant WETH = 0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6;
+  // address constant LIDO = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+  // address constant CurveswapLidoPool = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
+  // address constant UniswapRouter = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+  // address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;
@@ -45,6 +45,7 @@ contract LidoVault is GeneralVault {
    */
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
+    address LIDO = _addressesProvider.getAddress('LIDO');
     uint256 yieldStETH = _getYield(LIDO);
 
     // move yield to treasury
@@ -56,7 +57,7 @@ contract LidoVault is GeneralVault {
     // Exchange stETH -> ETH via Curve
     uint256 receivedETHAmount = _convertAssetByCurve(LIDO, yieldStETH);
     // ETH -> WETH
-    IWETH(WETH).deposit{value: receivedETHAmount}();
+    IWETH(_addressesProvider.getAddress('WETH')).deposit{value: receivedETHAmount}();
 
     AssetYield[] memory assetYields = _getAssetYields(receivedETHAmount);
     for (uint256 i = 0; i < assetYields.length; i++) {
@@ -69,7 +70,9 @@ contract LidoVault is GeneralVault {
 
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
     // Approve the uniswapRouter to spend WETH.
-    TransferHelper.safeApprove(WETH, UniswapRouter, _wethAmount);
+    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
+    address WETH = _addressesProvider.getAddress('WETH');
+    TransferHelper.safeApprove(WETH, uniswapRouter, _wethAmount);
 
     // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
     // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
@@ -85,7 +88,7 @@ contract LidoVault is GeneralVault {
     });
 
     // Exchange WETH -> _tokenOut via UniswapV3
-    uint256 receivedAmount = ISwapRouter(UniswapRouter).exactInputSingle(params);
+    uint256 receivedAmount = ISwapRouter(uniswapRouter).exactInputSingle(params);
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) == receivedAmount,
@@ -102,7 +105,7 @@ contract LidoVault is GeneralVault {
    * @dev Get yield amount based on strategy
    */
   function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(LIDO);
+    return _getYieldAmount(_addressesProvider.getAddress('LIDO'));
   }
 
   /**
@@ -113,6 +116,7 @@ contract LidoVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    address LIDO = _addressesProvider.getAddress('LIDO');
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of ETH deposit from user, user has to send ETH
@@ -144,7 +148,7 @@ contract LidoVault is GeneralVault {
     returns (address, uint256)
   {
     // In this vault, return same amount of asset.
-    return (LIDO, _amount);
+    return (_addressesProvider.getAddress('LIDO'), _amount);
   }
 
   /**
@@ -155,6 +159,7 @@ contract LidoVault is GeneralVault {
     uint256 _amount,
     address _to
   ) internal override {
+    address LIDO = _addressesProvider.getAddress('LIDO');
     if (_asset == address(0)) {
       // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = _convertAssetByCurve(LIDO, _amount);
@@ -173,6 +178,7 @@ contract LidoVault is GeneralVault {
    */
   function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount) private returns (uint256) {
     // Exchange stETH -> ETH via curve
+    address CurveswapLidoPool = _addressesProvider.getAddress('CurveswapLidoPool');
     IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
     uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
     uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
@@ -184,7 +190,7 @@ contract LidoVault is GeneralVault {
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(LIDO).safeTransfer(_treasuryAddress, treasuryAmount);
+    IERC20(_addressesProvider.getAddress('LIDO')).safeTransfer(_treasuryAddress, treasuryAmount);
     return treasuryAmount;
   }
 }

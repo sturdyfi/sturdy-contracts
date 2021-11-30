@@ -57,6 +57,9 @@ export enum eContractid {
   SturdyTokenImpl = 'SturdyTokenImpl',
   SturdyToken = 'SturdyToken',
   SturdyProtocolDataProvider = 'SturdyProtocolDataProvider',
+  WalletBalanceProvider = 'WalletBalanceProvider',
+  UiIncentiveDataProvider = 'UiIncentiveDataProvider',
+  UiPoolDataProvider = 'UiPoolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
@@ -469,6 +472,8 @@ export interface ICommonConfiguration {
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
+  CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
+  UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ISturdyConfiguration extends ICommonConfiguration {

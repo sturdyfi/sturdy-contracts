@@ -18,23 +18,23 @@ task('sturdy:testnet', 'Deploy development enviroment')
 
     console.log('Migration started\n');
 
-    console.log('1. Deploy address provider');
-    await DRE.run('testnet:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
+    // console.log('1. Deploy address provider');
+    // await DRE.run('testnet:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
 
-    console.log('2. Deploy lending pool');
-    await DRE.run('testnet:deploy-lending-pool', { pool: POOL_NAME });
+    // console.log('2. Deploy lending pool');
+    // await DRE.run('testnet:deploy-lending-pool', { pool: POOL_NAME });
 
-    console.log('3. Deploy oracles');
-    await DRE.run('testnet:deploy-oracles', { pool: POOL_NAME });
+    // console.log('3. Deploy oracles');
+    // await DRE.run('testnet:deploy-oracles', { pool: POOL_NAME });
 
-    console.log('4. Deploy Data Provider');
-    await DRE.run('testnet:data-provider', { pool: POOL_NAME });
+    // console.log('4. Deploy Data Provider');
+    // await DRE.run('testnet:data-provider', { pool: POOL_NAME });
 
-    console.log('5. Deploy Incentives impl');
-    await DRE.run('testnet:deploy-incentives-impl', { pool: POOL_NAME });
+    // console.log('5. Deploy Incentives impl');
+    // await DRE.run('testnet:deploy-incentives-impl', { pool: POOL_NAME });
 
-    console.log('6. Initialize lending pool');
-    await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
+    // console.log('6. Initialize lending pool');
+    // await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
 
     console.log('7. Deploy Lido vault');
     await DRE.run('testnet:deploy-lido-vault', { pool: POOL_NAME });

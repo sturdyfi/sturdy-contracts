@@ -11,11 +11,11 @@ const { utils } = ethers;
 
 makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
   it('Test the accessibility of the LendingPoolAddressesProvider', async () => {
-    const { addressesProvider, users } = testEnv;
+    const { addressesProvider, users, deployer } = testEnv;
     const mockAddress = createRandomAddress();
     const { INVALID_OWNER_REVERT_MSG } = ProtocolErrors;
 
-    await addressesProvider.transferOwnership(users[1].address);
+    await addressesProvider.connect(deployer.signer).transferOwnership(users[1].address);
 
     for (const contractFunction of [
       addressesProvider.setMarketId,
@@ -42,7 +42,7 @@ makeSuite('LendingPoolAddressesProvider', (testEnv: TestEnv) => {
   });
 
   it('Tests adding  a proxied address with `setAddressAsProxy()`', async () => {
-    const { addressesProvider, users } = testEnv;
+    const { addressesProvider, users, deployer } = testEnv;
     const { INVALID_OWNER_REVERT_MSG } = ProtocolErrors;
 
     const currentAddressesProviderOwner = users[1];

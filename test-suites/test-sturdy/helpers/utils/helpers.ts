@@ -12,6 +12,7 @@ import { tEthereumAddress } from '../../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import { getDb, DRE } from '../../../../helpers/misc-utils';
 import { SturdyProtocolDataProvider } from '../../../../types/SturdyProtocolDataProvider';
+import './math';
 import web3 from 'web3';
 
 export const ETHfromWei = (value) => web3.utils.fromWei(value + '', 'ether');
@@ -43,12 +44,12 @@ export const getReserveData = async (
     .plus(reserveData.totalStableDebt.toString())
     .plus(reserveData.totalVariableDebt.toString());
 
+  const totalDebt = new BigNumber(reserveData.totalStableDebt.toString()).plus(
+    reserveData.totalVariableDebt.toString()
+  );
+
   const utilizationRate = new BigNumber(
-    totalLiquidity.eq(0)
-      ? 0
-      : new BigNumber(reserveData.totalStableDebt.toString())
-          .plus(reserveData.totalVariableDebt.toString())
-          .rayDiv(totalLiquidity)
+    totalLiquidity.eq(0) ? 0 : totalDebt.rayDiv(totalLiquidity)
   );
 
   return {

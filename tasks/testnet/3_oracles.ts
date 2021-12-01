@@ -98,7 +98,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
       console.log('Lending Rate Oracle: %s', lendingRateOracle.address);
 
       // Register the proxy price provider on the addressesProvider
-      await waitForTx(await addressesProvider.setPriceOracle(sturdyOracle.address));
+      await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
       await waitForTx(await addressesProvider.setLendingRateOracle(lendingRateOracle.address));
     } catch (error) {
       if (DRE.network.name.includes('tenderly')) {

@@ -88,7 +88,7 @@ contract LidoVault is GeneralVault {
     uint256 receivedAmount = ISwapRouter(UniswapRouter).exactInputSingle(params);
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
-      IERC20(_tokenOut).balanceOf(address(this)) == receivedAmount,
+      IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmount,
       Errors.VT_PROCESS_YIELD_INVALID
     );
 

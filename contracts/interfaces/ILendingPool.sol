@@ -67,14 +67,6 @@ interface ILendingPool {
   );
 
   /**
-   * @dev Emitted on swapBorrowRateMode()
-   * @param reserve The address of the underlying asset of the reserve
-   * @param user The address of the user swapping his rate mode
-   * @param rateMode The rate mode that the user wants to swap to
-   **/
-  event Swap(address indexed reserve, address indexed user, uint256 rateMode);
-
-  /**
    * @dev Emitted on setUserUseReserveAsCollateral()
    * @param reserve The address of the underlying asset of the reserve
    * @param user The address of the user enabling the usage as collateral
@@ -87,13 +79,6 @@ interface ILendingPool {
    * @param user The address of the user enabling the usage as collateral
    **/
   event ReserveUsedAsCollateralDisabled(address indexed reserve, address indexed user);
-
-  /**
-   * @dev Emitted on rebalanceStableBorrowRate()
-   * @param reserve The address of the underlying asset of the reserve
-   * @param user The address of the user for which the rebalance has been executed
-   **/
-  event RebalanceStableBorrowRate(address indexed reserve, address indexed user);
 
   /**
    * @dev Emitted on flashLoan()
@@ -268,24 +253,6 @@ interface ILendingPool {
     uint256 rateMode,
     address onBehalfOf
   ) external returns (uint256);
-
-  /**
-   * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
-   * @param asset The address of the underlying asset borrowed
-   * @param rateMode The rate mode that the user wants to swap to
-   **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external;
-
-  /**
-   * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
-   * - Users can be rebalanced if the following conditions are satisfied:
-   *     1. Usage ratio is above 95%
-   *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
-   *        borrowed at a stable rate and depositors are not earning enough
-   * @param asset The address of the underlying asset borrowed
-   * @param user The address of the user to be rebalanced
-   **/
-  function rebalanceStableBorrowRate(address asset, address user) external;
 
   /**
    * @dev Allows depositors to enable/disable a specific deposited asset as collateral

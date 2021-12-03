@@ -11,7 +11,7 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
     const providers = await registry.getAddressesProvidersList();
 
     expect(providers.length).to.be.equal(3, 'Invalid length of the addresses providers list');
-    expect(providers[0].toString()).to.be.equal(
+    expect(providers[2].toString()).to.be.equal(
       addressesProvider.address,
       ' Invalid addresses provider added to the list'
     );

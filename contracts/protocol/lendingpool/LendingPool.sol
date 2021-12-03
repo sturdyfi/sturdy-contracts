@@ -269,6 +269,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     ValidationLogic.validateWithdraw(
       asset,
+      from,
       amountToWithdraw,
       userBalance,
       _reserves,

@@ -43,12 +43,12 @@
       ]
     },
     {
-      "description": "User 1 Deposits 2 WETH, disables WETH as collateral, borrows 400 DAI (revert expected)",
+      "description": "User 1 Deposits 2 stETH, disables stETH as collateral, borrows 400 DAI (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "2",
             "user": "1"
           },
@@ -57,7 +57,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1"
           },
           "expected": "success"
@@ -65,20 +65,22 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "2",
             "user": "1"
           },
-          "expected": "success"
+          "expected": "revert",
+          "revertMessage": "82"
         },
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1",
             "useAsCollateral": "false"
           },
-          "expected": "success"
+          "expected": "revert",
+          "revertMessage": "19"
         },
         {
           "name": "borrow",
@@ -90,145 +92,6 @@
           },
           "expected": "revert",
           "revertMessage": "The collateral balance is 0"
-        }
-      ]
-    },
-    {
-      "description": "User 1 enables WETH as collateral, borrows 400 DAI",
-      "actions": [
-        {
-          "name": "setUseAsCollateral",
-          "args": {
-            "reserve": "WETH",
-            "user": "1",
-            "useAsCollateral": "true"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "borrow",
-          "args": {
-            "reserve": "DAI",
-            "amount": "400",
-            "borrowRateMode": "variable",
-            "user": "1"
-          },
-          "expected": "success"
-        }
-      ]
-    },
-    {
-      "description": "User 1 disables WETH as collateral (revert expected)",
-      "actions": [
-        {
-          "name": "setUseAsCollateral",
-          "args": {
-            "reserve": "WETH",
-            "user": "1",
-            "useAsCollateral": "false"
-          },
-          "expected": "revert",
-          "revertMessage": "User deposit is already being used as collateral"
-        }
-      ]
-    },
-    {
-      "description": "User 1 Deposits 10 AAVE, disables WETH as collateral. Should revert as 10 AAVE are not enough to cover the debt (revert expected)",
-      "actions": [
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "AAVE",
-            "amount": "10",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "approve",
-          "args": {
-            "reserve": "AAVE",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "AAVE",
-            "amount": "10",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "setUseAsCollateral",
-          "args": {
-            "reserve": "WETH",
-            "user": "1",
-            "useAsCollateral": "false"
-          },
-          "expected": "revert"
-        }
-      ]
-    },
-    {
-      "description": "User 1 Deposits 640 more AAVE (enough to cover the DAI debt), disables WETH as collateral",
-      "actions": [
-        {
-          "name": "mint",
-          "args": {
-            "reserve": "AAVE",
-            "amount": "640",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "deposit",
-          "args": {
-            "reserve": "AAVE",
-            "amount": "640",
-            "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "setUseAsCollateral",
-          "args": {
-            "reserve": "WETH",
-            "user": "1",
-            "useAsCollateral": "false"
-          },
-          "expected": "success"
-        }
-      ]
-    },
-    {
-      "description": "User 1 disables AAVE as collateral (revert expected)",
-      "actions": [
-        {
-          "name": "setUseAsCollateral",
-          "args": {
-            "reserve": "AAVE",
-            "user": "1",
-            "useAsCollateral": "false"
-          },
-          "expected": "revert"
-        }
-      ]
-    },
-    {
-      "description": "User 1 reenables WETH as collateral",
-      "actions": [
-        {
-          "name": "setUseAsCollateral",
-          "args": {
-            "reserve": "WETH",
-            "user": "1",
-            "useAsCollateral": "true"
-          },
-          "expected": "success"
         }
       ]
     }

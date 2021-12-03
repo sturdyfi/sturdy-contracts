@@ -166,7 +166,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     borrowerBrickBefore = await brick.balanceOf(borrower.address);
     expect(unclaimedDepositorRewardsBefore.toString()).to.be.bignumber.equal('1928');
     expect(depositorBrickBefore.toString()).to.be.bignumber.equal('100');
-    expect(unclaimedBorrowerRewardsBefore.toString()).to.be.bignumber.equal('1000');
+    expect(unclaimedBorrowerRewardsBefore.toString()).to.be.bignumber.equal('999');
     expect(borrowerBrickBefore.toString()).to.be.bignumber.equal('0');
 
     //claim rewards of borrower
@@ -179,7 +179,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
       borrower.address
     );
     let borrowerBrickAfter = await brick.balanceOf(borrower.address);
-    expect(unclaimedBorrowerRewardsAfter.toString()).to.be.bignumber.equal('910');
+    expect(unclaimedBorrowerRewardsAfter.toString()).to.be.bignumber.equal('909');
     expect(borrowerBrickAfter.toString()).to.be.bignumber.equal('100');
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(

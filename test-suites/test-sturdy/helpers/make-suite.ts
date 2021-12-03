@@ -54,6 +54,7 @@ export interface SignerWithAddress {
 }
 export interface TestEnv {
   deployer: SignerWithAddress;
+  emergencyUser: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
   lidoVault: LidoVault;
@@ -81,6 +82,7 @@ const setBuidlerevmSnapshotId = (id: string) => {
 
 const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
+  emergencyUser: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   lidoVault: {} as LidoVault,
@@ -112,17 +114,33 @@ export async function initializeMakeSuite() {
     signer: _deployer,
   };
 
+  let emergencyUser: SignerWithAddress = {
+    address: await restSigners[0].getAddress(),
+    signer: restSigners[0],
+  };
+
   if (network == 'goerli') {
     const deployerAddress = '0x661fB502E24Deb30e927E39A38Bd2CC44D67339F';
     const ethers = (DRE as any).ethers;
     await impersonateAccountsHardhat([deployerAddress]);
-    const signer = await ethers.provider.getSigner(deployerAddress);
+    let signer = await ethers.provider.getSigner(deployerAddress);
     deployer = {
       address: deployerAddress,
       signer: signer,
     };
 
     await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+
+    const emergencyAddress = '0x05d75FB9db95AfC448d9F79c016ab027320acEc7';
+    await impersonateAccountsHardhat([emergencyAddress]);
+    signer = await ethers.provider.getSigner(emergencyAddress);
+
+    emergencyUser = {
+      address: emergencyAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
   }
 
   for (const signer of restSigners) {
@@ -132,6 +150,7 @@ export async function initializeMakeSuite() {
     });
   }
   testEnv.deployer = deployer;
+  testEnv.emergencyUser = emergencyUser;
   testEnv.pool = await getLendingPool();
   testEnv.lidoVault = await getLidoVault();
   testEnv.incentiveController = await getSturdyIncentivesController();

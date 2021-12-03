@@ -3,7 +3,7 @@
   "description": "Test cases for the borrow function, stable mode.",
   "stories": [
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 WETH as collateral and borrows 100 DAI at stable rate",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 stETH as collateral and borrows 100 DAI at stable rate",
       "actions": [
         {
           "name": "mint",
@@ -34,24 +34,24 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
 
             "amount": "1",
             "user": "1"
@@ -78,7 +78,7 @@
           "name": "borrow",
           "args": {
             "reserve": "DAI",
-            "amount": "900",
+            "amount": "910",
             "borrowRateMode": "stable",
             "user": "1"
           },
@@ -221,7 +221,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 WETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 withdraws",
+      "description": "User 0 deposits 1000 DAI, user 1,2,3,4 deposit 1 stETH each and borrow 100 DAI at stable rate. Everything is repaid, user 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -252,24 +252,24 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
@@ -289,24 +289,24 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "2"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "2"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "2"
           },
@@ -326,24 +326,24 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "3"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "3"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "3"
           },
@@ -363,24 +363,24 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "4"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "4"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "4"
           },
@@ -525,7 +525,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 2 WETH and borrow 100 DAI at stable rate first, then 100 DAI at variable rate, repays everything. User 0 withdraws",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 2 stETH and borrow 100 DAI at stable rate first, then 100 DAI at variable rate, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -556,37 +556,26 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "2",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "2",
             "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "borrow",
-          "args": {
-            "reserve": "DAI",
-            "amount": "100",
-            "borrowRateMode": "stable",
-            "user": "1",
-            "timeTravel": "365"
           },
           "expected": "success"
         },
@@ -616,17 +605,6 @@
           "args": {
             "reserve": "DAI",
             "user": "1"
-          },
-          "expected": "success"
-        },
-        {
-          "name": "repay",
-          "args": {
-            "reserve": "DAI",
-            "amount": "-1",
-            "user": "1",
-            "onBehalfOf": "1",
-            "borrowRateMode": "stable"
           },
           "expected": "success"
         },

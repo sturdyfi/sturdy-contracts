@@ -13,9 +13,7 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {
-  VersionedInitializable
-} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
+import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
@@ -363,8 +361,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       variableDebt
     );
 
-    uint256 paybackAmount =
-      interestRateMode == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
+    uint256 paybackAmount = interestRateMode == DataTypes.InterestRateMode.STABLE
+      ? stableDebt
+      : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
@@ -538,17 +537,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receiveAToken
-        )
-      );
+    (bool success, bytes memory result) = collateralManager.delegatecall(
+      abi.encodeWithSignature(
+        'liquidationCall(address,address,address,uint256,bool)',
+        collateralAsset,
+        debtAsset,
+        user,
+        debtToCover,
+        receiveAToken
+      )
+    );
 
     require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
@@ -773,7 +771,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
-   * @param aTokenAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function initReserve(
@@ -852,10 +850,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH =
-      IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-        10**reserve.configuration.getDecimals()
-      );
+    uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
+      10**reserve.configuration.getDecimals()
+    );
 
     ValidationLogic.validateBorrow(
       vars.asset,

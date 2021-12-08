@@ -8,11 +8,14 @@ import {
   getStableDebtToken,
   getVariableDebtToken,
 } from '../../../../helpers/contracts-getters';
-import { tEthereumAddress } from '../../../../helpers/types';
+import { eNetwork, tEthereumAddress } from '../../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import { getDb, DRE } from '../../../../helpers/misc-utils';
 import { SturdyProtocolDataProvider } from '../../../../types/SturdyProtocolDataProvider';
+import './math';
 import web3 from 'web3';
+import { ConfigNames, loadPoolConfig } from '../../../../helpers/configuration';
+import { getParamPerNetwork } from '../../../../helpers/contracts-helpers';
 
 export const ETHfromWei = (value) => web3.utils.fromWei(value + '', 'ether');
 
@@ -43,12 +46,12 @@ export const getReserveData = async (
     .plus(reserveData.totalStableDebt.toString())
     .plus(reserveData.totalVariableDebt.toString());
 
+  const totalDebt = new BigNumber(reserveData.totalStableDebt.toString()).plus(
+    reserveData.totalVariableDebt.toString()
+  );
+
   const utilizationRate = new BigNumber(
-    totalLiquidity.eq(0)
-      ? 0
-      : new BigNumber(reserveData.totalStableDebt.toString())
-          .plus(reserveData.totalVariableDebt.toString())
-          .rayDiv(totalLiquidity)
+    totalLiquidity.eq(0) ? 0 : totalDebt.rayDiv(totalLiquidity)
   );
 
   return {
@@ -106,10 +109,12 @@ export const getUserData = async (
 };
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
+  const config = loadPoolConfig(ConfigNames.Sturdy);
+  const network = <eNetwork>DRE.network.name;
+  const reserveAssets = getParamPerNetwork(config.ReserveAssets, network);
+
   const token = await getMintableERC20(
-    (
-      await getDb().get(`${symbol}.${DRE.network.name}`).value()
-    ).address
+    reserveAssets[symbol] || (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
   );
 
   if (!token) {

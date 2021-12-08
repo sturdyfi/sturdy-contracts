@@ -127,12 +127,12 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 WETH in an empty reserve",
+      "description": "User 0 deposits 1 stETH in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "0"
           },
@@ -141,7 +141,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "0"
           },
           "expected": "success"
@@ -149,21 +149,22 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "0"
           },
-          "expected": "success"
+          "expected": "revert",
+          "revertMessage": "82"
         }
       ]
     },
     {
-      "description": "User 1 deposits 1 WETH after user 0",
+      "description": "User 1 deposits 1 stETH after user 0",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
@@ -173,7 +174,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1"
           },
           "expected": "success"
@@ -181,21 +182,22 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
-          "expected": "success"
+          "expected": "revert",
+          "revertMessage": "82"
         }
       ]
     },
     {
-      "description": "User 1 deposits 0 WETH (revert expected)",
+      "description": "User 1 deposits 0 stETH (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "0"
           },
@@ -204,7 +206,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "0",
             "user": "1"
           },
@@ -229,34 +231,42 @@
       ]
     },
     {
-      "description": "User 1 deposits 100 DAI on behalf of user 2, user 2 tries to borrow 0.1 WETH",
+      "description": "User 1 deposits 1 stETH on behalf of user 2, user 2 tries to borrow 2000 USDC",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "DAI",
-            "amount": "100",
+            "reserve": "stETH",
+            "amount": "1",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "approveVault",
           "args": {
-            "reserve": "DAI",
-            "amount": "100",
+            "reserve": "stETH",
+            "user": "1"
+          },
+          "expected": "success"
+        },
+        {
+          "name": "depositCollateral",
+          "args": {
+            "reserve": "stETH",
+            "amount": "1",
             "user": "1",
-            "onBehalfOf": "2"
+            "onBehalfOf": "1"
           },
           "expected": "success"
         },
         {
           "name": "borrow",
           "args": {
-            "reserve": "WETH",
-            "amount": "0.1",
+            "reserve": "USDC",
+            "amount": "1000",
             "borrowRateMode": "variable",
-            "user": "2"
+            "user": "1"
           },
           "expected": "success"
         }

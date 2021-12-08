@@ -26,6 +26,9 @@ import {
   LidoVaultFactory,
   StakedTokenIncentivesControllerFactory,
   SturdyTokenFactory,
+  WalletBalanceProviderFactory,
+  UiPoolDataProviderFactory,
+  UiIncentiveDataProviderFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
@@ -354,6 +357,44 @@ export const getLidoVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getWalletProvider = async (address?: tEthereumAddress) =>
+  await WalletBalanceProviderFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.WalletBalanceProvider}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getUiPoolDataProvider = async (address?: tEthereumAddress) =>
+  await UiPoolDataProviderFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.UiPoolDataProvider}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getUiIncentiveDataProvider = async (address?: tEthereumAddress) =>
+  await UiIncentiveDataProviderFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.UiIncentiveDataProvider}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getSturdyIncentivesControllerImpl = async (address?: tEthereumAddress) =>
+  await StakedTokenIncentivesControllerFactory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.StakedTokenIncentivesControllerImpl}.${DRE.network.name}`)
+          .value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getSturdyIncentivesController = async (address?: tEthereumAddress) =>
   await StakedTokenIncentivesControllerFactory.connect(
     address ||
@@ -361,6 +402,15 @@ export const getSturdyIncentivesController = async (address?: tEthereumAddress) 
         await getDb()
           .get(`${eContractid.StakedTokenIncentivesController}.${DRE.network.name}`)
           .value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getSturdyTokenImpl = async (address?: tEthereumAddress) =>
+  await SturdyTokenFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.SturdyTokenImpl}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

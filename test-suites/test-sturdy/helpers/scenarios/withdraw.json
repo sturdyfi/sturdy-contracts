@@ -121,12 +121,12 @@
       ]
     },
     {
-      "description": "User 0 Deposits 1 WETH in an empty reserve",
+      "description": "User 0 Deposits 1 stETH in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "0"
           },
@@ -135,7 +135,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "0"
           },
           "expected": "success"
@@ -143,39 +143,12 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "0"
           },
-          "expected": "success"
-        }
-      ]
-    },
-    {
-      "description": "User 0 withdraws half of the deposited WETH",
-      "actions": [
-        {
-          "name": "withdraw",
-          "args": {
-            "reserve": "WETH",
-            "amount": "0.5",
-            "user": "0"
-          },
-          "expected": "success"
-        }
-      ]
-    },
-    {
-      "description": "User 0 withdraws remaining half of the deposited WETH",
-      "actions": [
-        {
-          "name": "withdraw",
-          "args": {
-            "reserve": "WETH",
-            "amount": "-1",
-            "user": "0"
-          },
-          "expected": "success"
+          "expected": "revert",
+          "revertMessage": "82"
         }
       ]
     },
@@ -238,7 +211,7 @@
       ]
     },
     {
-      "description": "Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 WETH, borrows 100 DAI. User 1 tries to withdraw all the USDC",
+      "description": "Users 0 deposits 1000 DAI, user 1 Deposit 1000 USDC and 1 stETH, borrows 100 DAI. User 1 tries to withdraw all the USDC",
       "actions": [
         {
           "name": "deposit",
@@ -278,24 +251,24 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "approve",
+          "name": "approveVault",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "user": "1"
           },
           "expected": "success"
         },
         {
-          "name": "deposit",
+          "name": "depositCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "1",
             "user": "1"
           },
@@ -323,12 +296,12 @@
       ]
     },
     {
-      "description": "Users 1 tries to withdraw 0.05 WETH, which does not bring the HF below 1",
+      "description": "Users 1 tries to withdraw 0.05 stETH, which does not bring the HF below 1",
       "actions": [
         {
-          "name": "withdraw",
+          "name": "withdrawCollateral",
           "args": {
-            "reserve": "WETH",
+            "reserve": "stETH",
             "amount": "0.05",
             "user": "1"
           },

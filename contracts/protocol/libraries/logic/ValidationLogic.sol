@@ -60,6 +60,7 @@ library ValidationLogic {
    */
   function validateWithdraw(
     address reserveAddress,
+    address from,
     uint256 amount,
     uint256 userBalance,
     mapping(address => DataTypes.ReserveData) storage reservesData,
@@ -77,7 +78,7 @@ library ValidationLogic {
     require(
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
-        msg.sender,
+        from,
         amount,
         reservesData,
         userConfig,

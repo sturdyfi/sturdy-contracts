@@ -653,6 +653,19 @@
   resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-ethers/-/hardhat-ethers-2.0.2.tgz#c472abcba0c5185aaa4ad4070146e95213c68511"
   integrity sha512-6quxWe8wwS4X5v3Au8q1jOvXYEPkS1Fh+cME5u6AwNdnI4uERvPlVjlgRWzpnb+Rrt1l/cEqiNRH9GlsBMSDQg==
 
+"@nomiclabs/hardhat-etherscan@^2.1.8":
+  version "2.1.8"
+  resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-etherscan/-/hardhat-etherscan-2.1.8.tgz#e206275e96962cd15e5ba9148b44388bc922d8c2"
+  integrity sha512-0+rj0SsZotVOcTLyDOxnOc3Gulo8upo0rsw/h+gBPcmtj91YqYJNhdARHoBxOhhE8z+5IUQPx+Dii04lXT14PA==
+  dependencies:
+    "@ethersproject/abi" "^5.1.2"
+    "@ethersproject/address" "^5.0.2"
+    cbor "^5.0.2"
+    debug "^4.1.1"
+    fs-extra "^7.0.1"
+    node-fetch "^2.6.0"
+    semver "^6.3.0"
+
 "@nomiclabs/hardhat-waffle@^2.0.0":
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/@nomiclabs/hardhat-waffle/-/hardhat-waffle-2.0.1.tgz#5d43654fba780720c5033dea240fe14f70ef4bd2"
@@ -8969,19 +8982,6 @@ tar@^4.0.2:
     mkdirp "^0.5.5"
     safe-buffer "^5.2.1"
     yallist "^3.1.1"
-
-temp-hardhat-etherscan@^2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/temp-hardhat-etherscan/-/temp-hardhat-etherscan-2.0.2.tgz#bcfe735b59757b936eb5184d514c14431a70effb"
-  integrity sha512-q9+OMPXlsXZ+2fnF+Xmvv0J9vNJChwOXVGJIATiDJr7Qe8LzTwgs55C4l4NKMWPLe4PE9UjcQMVntRfXGTF9vA==
-  dependencies:
-    "@ethersproject/abi" "^5.0.2"
-    "@ethersproject/address" "^5.0.2"
-    cbor "^5.0.2"
-    fs-extra "^7.0.1"
-    lodash "^4.17.11"
-    node-fetch "^2.6.0"
-    semver "^6.3.0"
 
 test-value@^2.1.0:
   version "2.1.0"

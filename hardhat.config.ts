@@ -16,7 +16,7 @@ require('dotenv').config();
 
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
-import 'temp-hardhat-etherscan';
+import '@nomiclabs/hardhat-etherscan';
 import 'hardhat-gas-reporter';
 import 'hardhat-typechain';
 import '@tenderly/hardhat-tenderly';
@@ -129,6 +129,18 @@ const buidlerConfig: HardhatUserConfig = {
     },
 
     forked_main: {
+      chainId: 31337,
+      throwOnTransactionFailures: true,
+      throwOnCallFailures: true,
+      url: 'http://localhost:8545',
+      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
+      gas: DEFAULT_BLOCK_GAS_LIMIT,
+      gasPrice: 8000000000,
+      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
+      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
+    },
+
+    forked_goerli: {
       chainId: 31337,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,

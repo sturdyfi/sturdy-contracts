@@ -10,6 +10,9 @@ import {
   swapBorrowRateMode,
   rebalanceStableBorrowRate,
   delegateBorrowAllowance,
+  approveVault,
+  withdrawCollateral,
+  depositCollateral,
 } from './actions';
 import { RateMode } from '../../../helpers/types';
 
@@ -62,7 +65,7 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
     if (borrowRateMode === 'none') {
       rateMode = RateMode.None;
     } else if (borrowRateMode === 'stable') {
-      rateMode = RateMode.Stable;
+      rateMode = RateMode.Variable;
     } else if (borrowRateMode === 'variable') {
       rateMode = RateMode.Variable;
     } else {
@@ -81,11 +84,39 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
         throw `Invalid amount of ${reserve} to mint`;
       }
 
-      await mint(reserve, amount, user);
+      await mint(reserve, amount, user, testEnv);
       break;
 
     case 'approve':
       await approve(reserve, user, testEnv);
+      break;
+
+    case 'approveVault':
+      await approveVault(reserve, user, testEnv);
+      break;
+
+    case 'depositCollateral':
+      {
+        const { amount, sendValue, onBehalfOf: onBehalfOfIndex } = action.args;
+        const onBehalfOf = onBehalfOfIndex
+          ? users[parseInt(onBehalfOfIndex)].address
+          : user.address;
+
+        if (!amount || amount === '') {
+          throw `Invalid amount to deposit into the ${reserve} reserve`;
+        }
+
+        await depositCollateral(
+          reserve,
+          amount,
+          user,
+          onBehalfOf,
+          sendValue,
+          expected,
+          testEnv,
+          revertMessage
+        );
+      }
       break;
 
     case 'deposit':
@@ -144,6 +175,19 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
         await withdraw(reserve, amount, user, expected, testEnv, revertMessage);
       }
       break;
+
+    case 'withdrawCollateral':
+      {
+        const { amount } = action.args;
+
+        if (!amount || amount === '') {
+          throw `Invalid amount to withdraw from the ${reserve} reserve`;
+        }
+
+        await withdrawCollateral(reserve, amount, user, expected, testEnv, revertMessage);
+      }
+      break;
+
     case 'borrow':
       {
         const { amount, timeTravel, onBehalfOf: onBehalfOfIndex } = action.args;

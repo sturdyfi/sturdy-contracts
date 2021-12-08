@@ -19,25 +19,25 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   } = ProtocolErrors;
 
   it('Reverts trying to set an invalid reserve factor', async () => {
-    const { configurator, lido } = testEnv;
+    const { configurator, lido, deployer } = testEnv;
 
     const invalidReserveFactor = 65536;
 
     await expect(
-      configurator.setReserveFactor(lido.address, invalidReserveFactor)
+      configurator.connect(deployer.signer).setReserveFactor(lido.address, invalidReserveFactor)
     ).to.be.revertedWith(RC_INVALID_RESERVE_FACTOR);
   });
 
   it('Deactivates the ETH reserve', async () => {
-    const { configurator, lido, helpersContract } = testEnv;
-    await configurator.deactivateReserve(lido.address);
+    const { configurator, lido, helpersContract, deployer } = testEnv;
+    await configurator.connect(deployer.signer).deactivateReserve(lido.address);
     const { isActive } = await helpersContract.getReserveConfigurationData(lido.address);
     expect(isActive).to.be.equal(false);
   });
 
   it('Rectivates the ETH reserve', async () => {
-    const { configurator, lido, helpersContract } = testEnv;
-    await configurator.activateReserve(lido.address);
+    const { configurator, lido, helpersContract, deployer } = testEnv;
+    await configurator.connect(deployer.signer).activateReserve(lido.address);
 
     const { isActive } = await helpersContract.getReserveConfigurationData(lido.address);
     expect(isActive).to.be.equal(true);
@@ -60,9 +60,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Freezes the ETH reserve', async () => {
-    const { configurator, lido, helpersContract } = testEnv;
+    const { configurator, lido, helpersContract, deployer } = testEnv;
 
-    await configurator.freezeReserve(lido.address);
+    await configurator.connect(deployer.signer).freezeReserve(lido.address);
     const {
       decimals,
       ltv,
@@ -87,8 +87,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Unfreezes the ETH reserve', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.unfreezeReserve(lido.address);
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator.connect(deployer.signer).unfreezeReserve(lido.address);
 
     const {
       decimals,
@@ -130,8 +130,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Deactivates the ETH reserve for borrowing', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.disableBorrowingOnReserve(lido.address);
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator.connect(deployer.signer).disableBorrowingOnReserve(lido.address);
     const {
       decimals,
       ltv,
@@ -156,8 +156,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Activates the ETH reserve for borrowing', async () => {
-    const { configurator, lido, helpersContract } = testEnv;
-    await configurator.enableBorrowingOnReserve(lido.address, true);
+    const { configurator, lido, helpersContract, deployer } = testEnv;
+    await configurator.connect(deployer.signer).enableBorrowingOnReserve(lido.address, true);
     const { variableBorrowIndex } = await helpersContract.getReserveData(lido.address);
 
     const {
@@ -202,8 +202,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Deactivates the ETH reserve as collateral', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.configureReserveAsCollateral(lido.address, 0, 0, 0);
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator.connect(deployer.signer).configureReserveAsCollateral(lido.address, 0, 0, 0);
 
     const {
       decimals,
@@ -229,8 +229,10 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Activates the ETH reserve as collateral', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.configureReserveAsCollateral(lido.address, '5000', '6500', '11000');
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator
+      .connect(deployer.signer)
+      .configureReserveAsCollateral(lido.address, '5000', '6500', '11000');
 
     const {
       decimals,
@@ -266,8 +268,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Disable stable borrow rate on the ETH reserve', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.disableReserveStableRate(lido.address);
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator.connect(deployer.signer).disableReserveStableRate(lido.address);
     const {
       decimals,
       ltv,
@@ -292,8 +294,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Enables stable borrow rate on the ETH reserve', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.enableReserveStableRate(lido.address);
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator.connect(deployer.signer).enableReserveStableRate(lido.address);
     const {
       decimals,
       ltv,
@@ -334,8 +336,8 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Changes the reserve factor of stETH', async () => {
-    const { configurator, helpersContract, lido } = testEnv;
-    await configurator.setReserveFactor(lido.address, '1000');
+    const { configurator, helpersContract, lido, deployer } = testEnv;
+    await configurator.connect(deployer.signer).setReserveFactor(lido.address, '1000');
     const {
       decimals,
       ltv,
@@ -368,9 +370,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   });
 
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
-    const { dai, pool, configurator, deployer } = testEnv;
+    const { dai, pool, configurator, deployer, aDai } = testEnv;
     const userAddress = await pool.signer.getAddress();
-    const daiOwnerAddress = '0xC2c7D100d234D23cd7233066a5FEE97f56DB171C';
+    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
     const ethers = (DRE as any).ethers;
 
     await impersonateAccountsHardhat([daiOwnerAddress]);
@@ -380,13 +382,13 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     await dai.connect(signer).transfer(deployer.address, amountDAItoDeposit);
 
     //approve protocol to access depositor wallet
-    await dai.approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await dai.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     //user 1 deposits 1000 DAI
-    await pool.deposit(dai.address, amountDAItoDeposit, userAddress, '0');
+    await pool.connect(deployer.signer).deposit(dai.address, amountDAItoDeposit, userAddress, '0');
 
     await expect(
-      configurator.deactivateReserve(dai.address),
+      configurator.connect(deployer.signer).deactivateReserve(dai.address),
       LPC_RESERVE_LIQUIDITY_NOT_0
     ).to.be.revertedWith(LPC_RESERVE_LIQUIDITY_NOT_0);
   });

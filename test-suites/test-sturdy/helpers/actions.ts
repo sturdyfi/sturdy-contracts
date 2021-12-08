@@ -26,7 +26,13 @@ import {
 } from '../../../helpers/contracts-getters';
 import { MAX_UINT_AMOUNT, ONE_YEAR } from '../../../helpers/constants';
 import { SignerWithAddress, TestEnv } from './make-suite';
-import { advanceTimeAndBlock, DRE, timeLatest, waitForTx } from '../../../helpers/misc-utils';
+import {
+  advanceTimeAndBlock,
+  DRE,
+  impersonateAccountsHardhat,
+  timeLatest,
+  waitForTx,
+} from '../../../helpers/misc-utils';
 
 import chai from 'chai';
 import { ReserveData, UserReserveData } from './utils/interfaces';
@@ -112,14 +118,33 @@ interface ActionsConfig {
 
 export const configuration: ActionsConfig = <ActionsConfig>{};
 
-export const mint = async (reserveSymbol: string, amount: string, user: SignerWithAddress) => {
-  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+export const mint = async (
+  reserveSymbol: string,
+  amount: string,
+  user: SignerWithAddress,
+  testEnv: TestEnv
+) => {
+  const { usdc, dai, lido } = testEnv;
+  const ethers = (DRE as any).ethers;
+  let ownerAddress;
+  let depositAmount;
+  let token;
 
-  const token = await getMintableERC20(reserve);
+  if (reserveSymbol == 'USDC') {
+    ownerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    token = usdc;
+  } else if (reserveSymbol == 'DAI') {
+    ownerAddress = '0x1e3D6eAb4BCF24bcD04721caA11C478a2e59852D';
+    token = dai;
+  } else if (reserveSymbol == 'stETH') {
+    ownerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    token = lido;
+  }
 
-  await waitForTx(
-    await token.connect(user.signer).mint(await convertToCurrencyDecimals(reserve, amount))
-  );
+  depositAmount = await convertToCurrencyDecimals(token.address, amount);
+  await impersonateAccountsHardhat([ownerAddress]);
+  const signer = await ethers.provider.getSigner(ownerAddress);
+  await waitForTx(await token.connect(signer).transfer(user.address, depositAmount));
 };
 
 export const approve = async (reserveSymbol: string, user: SignerWithAddress, testEnv: TestEnv) => {
@@ -130,6 +155,21 @@ export const approve = async (reserveSymbol: string, user: SignerWithAddress, te
 
   await waitForTx(
     await token.connect(user.signer).approve(pool.address, '100000000000000000000000000000')
+  );
+};
+
+export const approveVault = async (
+  reserveSymbol: string,
+  user: SignerWithAddress,
+  testEnv: TestEnv
+) => {
+  const { lidoVault } = testEnv;
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+
+  const token = await getMintableERC20(reserve);
+
+  await waitForTx(
+    await token.connect(user.signer).approve(lidoVault.address, '100000000000000000000000000000')
   );
 };
 
@@ -190,7 +230,8 @@ export const deposit = async (
       userDataBefore,
       txTimestamp,
       timestamp,
-      txCost
+      txCost,
+      reserveSymbol
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);
@@ -207,6 +248,84 @@ export const deposit = async (
   } else if (expectedResult === 'revert') {
     await expect(
       pool.connect(sender.signer).deposit(reserve, amountToDeposit, onBehalfOf, '0', txOptions),
+      revertMessage
+    ).to.be.reverted;
+  }
+};
+
+export const depositCollateral = async (
+  reserveSymbol: string,
+  amount: string,
+  sender: SignerWithAddress,
+  onBehalfOf: tEthereumAddress,
+  sendValue: string,
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
+) => {
+  const { lidoVault } = testEnv;
+
+  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+
+  const amountToDeposit = await convertToCurrencyDecimals(reserve, amount);
+
+  const txOptions: any = {};
+
+  const { reserveData: reserveDataBefore, userData: userDataBefore } = await getContractsData(
+    reserve,
+    onBehalfOf,
+    testEnv,
+    sender.address
+  );
+
+  if (sendValue) {
+    txOptions.value = await convertToCurrencyDecimals(reserve, sendValue);
+  }
+
+  if (expectedResult === 'success') {
+    const txResult = await waitForTx(
+      await lidoVault.connect(sender.signer).depositCollateral(reserve, amountToDeposit, txOptions)
+    );
+
+    const {
+      reserveData: reserveDataAfter,
+      userData: userDataAfter,
+      timestamp,
+    } = await getContractsData(reserve, onBehalfOf, testEnv, sender.address);
+
+    const { txCost, txTimestamp } = await getTxCostAndTimestamp(txResult);
+
+    const expectedReserveData = calcExpectedReserveDataAfterDeposit(
+      amountToDeposit.toString(),
+      reserveDataBefore,
+      txTimestamp
+    );
+
+    const expectedUserReserveData = calcExpectedUserDataAfterDeposit(
+      amountToDeposit.toString(),
+      reserveDataBefore,
+      expectedReserveData,
+      userDataBefore,
+      txTimestamp,
+      timestamp,
+      txCost,
+      reserveSymbol
+    );
+
+    expectEqual(reserveDataAfter, expectedReserveData);
+    expectEqual(userDataAfter, expectedUserReserveData);
+
+    // truffleAssert.eventEmitted(txResult, "Deposit", (ev: any) => {
+    //   const {_reserve, _user, _amount} = ev;
+    //   return (
+    //     _reserve === reserve &&
+    //     _user === user &&
+    //     new BigNumber(_amount).isEqualTo(new BigNumber(amountToDeposit))
+    //   );
+    // });
+  } else if (expectedResult === 'revert') {
+    await expect(
+      lidoVault.connect(sender.signer).depositCollateral(reserve, amountToDeposit, txOptions),
       revertMessage
     ).to.be.reverted;
   }
@@ -279,6 +398,80 @@ export const withdraw = async (
   } else if (expectedResult === 'revert') {
     await expect(
       pool.connect(user.signer).withdraw(reserve, amountToWithdraw, user.address),
+      revertMessage
+    ).to.be.reverted;
+  }
+};
+
+export const withdrawCollateral = async (
+  reserveSymbol: string,
+  amount: string,
+  user: SignerWithAddress,
+  expectedResult: string,
+  testEnv: TestEnv,
+  revertMessage?: string
+) => {
+  const { lidoVault } = testEnv;
+
+  const {
+    aTokenInstance,
+    reserve,
+    userData: userDataBefore,
+    reserveData: reserveDataBefore,
+  } = await getDataBeforeAction(reserveSymbol, user.address, testEnv);
+
+  let amountToWithdraw = '0';
+
+  if (amount !== '-1') {
+    amountToWithdraw = (await convertToCurrencyDecimals(reserve, amount)).toString();
+  } else {
+    amountToWithdraw = MAX_UINT_AMOUNT;
+  }
+
+  if (expectedResult === 'success') {
+    const txResult = await waitForTx(
+      await lidoVault
+        .connect(user.signer)
+        .withdrawCollateral(reserve, amountToWithdraw, user.address)
+    );
+
+    const {
+      reserveData: reserveDataAfter,
+      userData: userDataAfter,
+      timestamp,
+    } = await getContractsData(reserve, user.address, testEnv);
+
+    const { txCost, txTimestamp } = await getTxCostAndTimestamp(txResult);
+
+    const expectedReserveData = calcExpectedReserveDataAfterWithdraw(
+      amountToWithdraw,
+      reserveDataBefore,
+      userDataBefore,
+      txTimestamp
+    );
+
+    const expectedUserData = calcExpectedUserDataAfterWithdraw(
+      amountToWithdraw,
+      reserveDataBefore,
+      expectedReserveData,
+      userDataBefore,
+      txTimestamp,
+      timestamp,
+      txCost
+    );
+
+    expectEqual(reserveDataAfter, expectedReserveData);
+    expectEqual(userDataAfter, expectedUserData);
+
+    // truffleAssert.eventEmitted(txResult, "Redeem", (ev: any) => {
+    //   const {_from, _value} = ev;
+    //   return (
+    //     _from === user && new BigNumber(_value).isEqualTo(actualAmountRedeemed)
+    //   );
+    // });
+  } else if (expectedResult === 'revert') {
+    await expect(
+      lidoVault.connect(user.signer).withdrawCollateral(reserve, amountToWithdraw, user.address),
       revertMessage
     ).to.be.reverted;
   }

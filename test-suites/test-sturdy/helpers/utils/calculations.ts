@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { ONE_YEAR, RAY, MAX_UINT_AMOUNT, PERCENTAGE_FACTOR } from '../../../../helpers/constants';
 import {
+  eNetwork,
   IReserveParams,
   iSturdyPoolAssets,
   RateMode,
@@ -9,6 +10,8 @@ import {
 import './math';
 import { ReserveData, UserReserveData } from './interfaces';
 import { expect } from 'chai';
+import { ConfigNames, loadPoolConfig } from '../../../../helpers/configuration';
+import { DRE } from '../../../../helpers/misc-utils';
 
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
@@ -25,7 +28,8 @@ export const calcExpectedUserDataAfterDeposit = (
   userDataBeforeAction: UserReserveData,
   txTimestamp: BigNumber,
   currentTimestamp: BigNumber,
-  txCost: BigNumber
+  txCost: BigNumber,
+  reserveSymbol: string
 ): UserReserveData => {
   const expectedUserData = <UserReserveData>{};
 
@@ -62,7 +66,11 @@ export const calcExpectedUserDataAfterDeposit = (
     txTimestamp
   ).plus(amountDeposited);
 
-  if (userDataBeforeAction.currentATokenBalance.eq(0)) {
+  const config = loadPoolConfig(ConfigNames.Sturdy);
+  if (
+    config.ReservesConfig[reserveSymbol]?.collateralEnabled &&
+    userDataBeforeAction.currentATokenBalance.eq(0)
+  ) {
     expectedUserData.usageAsCollateralEnabled = true;
   } else {
     expectedUserData.usageAsCollateralEnabled = userDataBeforeAction.usageAsCollateralEnabled;
@@ -637,9 +645,9 @@ export const calcExpectedUserDataAfterBorrow = (
 
     expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
   } else {
-    expectedUserData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt.plus(
-      amountBorrowedBN.rayDiv(expectedDataAfterAction.variableBorrowIndex)
-    );
+    expectedUserData.scaledVariableDebt =
+      userDataBeforeAction.scaledVariableDebt /*reserveDataBeforeAction.scaledVariableDebt*/
+        .plus(amountBorrowedBN.rayDiv(expectedDataAfterAction.variableBorrowIndex));
 
     expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
 

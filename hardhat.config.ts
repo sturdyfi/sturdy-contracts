@@ -129,7 +129,7 @@ const buidlerConfig: HardhatUserConfig = {
     },
 
     forked_main: {
-      chainId: 31337,
+      chainId: 1337,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',

@@ -53,7 +53,7 @@ contract GeneralVault is VersionedInitializable {
   /**
    * @dev Deposits an `amount` of asset as collateral to borrow other asset.
    * @param _asset The asset address for collateral
-   *  _asset = 0x000000000000000000000000000000000000000 means to use ETH as collateral
+   *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The deposit amount
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
@@ -73,7 +73,7 @@ contract GeneralVault is VersionedInitializable {
   /**
    * @dev Withdraw an `amount` of asset used as collateral to user.
    * @param _asset The asset address for collateral
-   *  _asset = 0x000000000000000000000000000000000000000 means to use ETH as collateral
+   *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The amount to be withdrawn
    * @param _to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a

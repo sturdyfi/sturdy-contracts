@@ -32,3 +32,8 @@ yarn sturdy:evm:fork:mainnet:migration
 ```
 yarn test
 ```
+
+- To get test tokens in your local forked wallet, open the console by running below command, and run [this script](./impersonating-account.js) in console.
+```
+FORK=main yarn hardhat console --network forked_main
+```

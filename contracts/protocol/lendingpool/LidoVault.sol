@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import 'hardhat/console.sol';
 import {GeneralVault} from './GeneralVault.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IWETH} from '../../misc/interfaces/IWETH.sol';
 import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
@@ -13,6 +14,7 @@ import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title LidoVault
@@ -71,6 +73,14 @@ contract LidoVault is GeneralVault {
     // Approve the uniswapRouter to spend WETH.
     TransferHelper.safeApprove(WETH, UniswapRouter, _wethAmount);
 
+    // Calculate minAmount from price with 1% slippage
+    uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
+    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    uint256 assetPrice = oracle.getAssetPrice(_tokenOut);
+    uint256 minAmountFromPrice = _wethAmount.div(assetPrice).percentMul(99_00).mul(
+      10**assetDecimal
+    );
+
     // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
     // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
     ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
@@ -80,7 +90,7 @@ contract LidoVault is GeneralVault {
       recipient: address(this),
       deadline: block.timestamp,
       amountIn: _wethAmount,
-      amountOutMinimum: 0,
+      amountOutMinimum: minAmountFromPrice,
       sqrtPriceLimitX96: 0
     });
 
@@ -175,6 +185,14 @@ contract LidoVault is GeneralVault {
     // Exchange stETH -> ETH via curve
     IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
     uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
+
+    // Calculate minAmount from price with 1% slippage
+    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
+    uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
+
+    if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
+
     uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
     return receivedAmount;
   }

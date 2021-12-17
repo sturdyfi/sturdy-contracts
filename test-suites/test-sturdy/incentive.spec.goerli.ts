@@ -117,7 +117,6 @@ makeSuite('Check incentive token growing ', (testEnv) => {
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
     {
-      console.log(pool.address);
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({
         user: `Borrower ${borrower.address}`,

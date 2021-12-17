@@ -43,7 +43,6 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
 
     //user 2 deposits 4 ETH
     const amountETHtoDeposit = ethers.utils.parseEther('4');
-    console.log(lidoVault.address);
     await lidoVault
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });

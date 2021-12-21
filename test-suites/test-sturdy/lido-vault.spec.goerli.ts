@@ -79,7 +79,7 @@ makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
   it('Should revert to use any of coin other than ETH, stETH as collatoral. ', async () => {
     const { lido, usdc, users, lidoVault } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     const depositor2 = users[1];
     printDivider();
@@ -124,7 +124,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     const depositor = users[0];
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositUSDC = '7000';
     const uniswapRouter = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
     //Make some test USDC for depositor
@@ -179,7 +179,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     const other_depositor = users[1];
     const borrower = users[2];
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositUSDC = '7000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -195,13 +195,10 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
     const depositDAI = '7000';
     //Make some test DAI for depositor
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    signer = await ethers.provider.getSigner(daiOwnerAddress);
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, depositDAI);
-    await dai.connect(signer).transfer(other_depositor.address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).transfer(other_depositor.address, amountDAItoDeposit);
 
     //approve protocol to access depositor wallet
     await dai.connect(other_depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -253,7 +250,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     const borrower = users[1];
     const treasury = users[2];
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositUSDC = '7000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);

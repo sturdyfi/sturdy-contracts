@@ -21,7 +21,7 @@ export const CommonsConfig: ICommonConfiguration = {
   ProviderId: 0, // Overriden in index.ts
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
-    MockUsdPriceInWei: '5848466240000000',
+    MockUsdPriceInWei: '373068412860',
     UsdAddress: '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96',
     NilAddress: '0x0000000000000000000000000000000000000000',
     OneAddress: '0x0000000000000000000000000000000000000001',
@@ -145,7 +145,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.localhost]: '',
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.tenderlyMain]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
-    [eEthereumNetwork.goerli]: '0xd428824e8ca1bfAD0265d3F9666f3c782e072378',
+    [eEthereumNetwork.goerli]: '0x5a3aE44704D95CcAffe608c808308c850bDec94d',
   },
   ProviderRegistryOwner: {
     [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
@@ -169,7 +169,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
     [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
     [eEthereumNetwork.tenderlyMain]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
-    [eEthereumNetwork.goerli]: '0xC0319B90dc54332c27684101D0276bB08c84A4eC',
+    [eEthereumNetwork.goerli]: '0x54f550a7798541F8469636EA94Fd7564ea6e9027',
   },
   LendingPoolCollateralManager: {
     [eEthereumNetwork.coverage]: '',
@@ -181,7 +181,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
     [eEthereumNetwork.tenderlyMain]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
-    [eEthereumNetwork.goerli]: '0xE449d0ed1757f68f442ea145a17811022a1FDaA5',
+    [eEthereumNetwork.goerli]: '0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655',
   },
   LendingPoolConfigurator: {
     [eEthereumNetwork.coverage]: '',
@@ -193,7 +193,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderlyMain]: '',
-    [eEthereumNetwork.goerli]: '0x9ce1e0Adc925f727970B89056f224dF2E4F59EEa',
+    [eEthereumNetwork.goerli]: '0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd',
   },
   LendingPool: {
     [eEthereumNetwork.coverage]: '',
@@ -205,7 +205,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderlyMain]: '',
-    [eEthereumNetwork.goerli]: '0xCB52d58615757F9Af055c6d5e076164e325b5C69',
+    [eEthereumNetwork.goerli]: '0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c',
   },
   TokenDistributor: {
     [eEthereumNetwork.coverage]: '',
@@ -229,7 +229,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
     [eEthereumNetwork.main]: '', //'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
     [eEthereumNetwork.tenderlyMain]: '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
-    [eEthereumNetwork.goerli]: '0x36824301E301e73641b9624FA5eaFdA02706f2Be',
+    [eEthereumNetwork.goerli]: '',
   },
   Lido: {
     [eEthereumNetwork.coverage]: '',
@@ -277,7 +277,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: '0xAD1a978cdbb8175b2eaeC47B01404f8AEC5f4F0d',
     [eEthereumNetwork.main]: ZERO_ADDRESS,
     [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
-    [eEthereumNetwork.goerli]: '0xa3A46b7f2215b8C1b77Abeb8a35e62Bdf31c93BF',
+    [eEthereumNetwork.goerli]: '0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6',
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.coverage]: {},
@@ -459,6 +459,6 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
     [eEthereumNetwork.main]: ZERO_ADDRESS,
     [eEthereumNetwork.tenderlyMain]: ZERO_ADDRESS,
-    [eEthereumNetwork.goerli]: '0xD5F34C2Fc6e533e409Dc06B9fE5a6D4130CE9ACf',
+    [eEthereumNetwork.goerli]: '0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E',
   },
 };

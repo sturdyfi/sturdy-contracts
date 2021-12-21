@@ -14,6 +14,7 @@ import { exit } from 'process';
 import {
   getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
+  getSturdyIncentivesController,
 } from '../../helpers/contracts-getters';
 
 task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -36,7 +37,9 @@ task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.'
       } = poolConfig as ICommonConfiguration;
 
       const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
-      const incentivesController = await getParamPerNetwork(IncentivesController, network);
+      let incentivesController = await getParamPerNetwork(IncentivesController, network);
+      if (!incentivesController)
+        incentivesController = (await getSturdyIncentivesController()).address;
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       const testHelpers = await getSturdyProtocolDataProvider();

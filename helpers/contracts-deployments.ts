@@ -30,8 +30,6 @@ import {
   ATokensAndRatesHelperFactory,
   SturdyOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
-  InitializableAdminUpgradeabilityProxyFactory,
-  InitializableImmutableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
@@ -56,6 +54,7 @@ import {
   UiPoolDataProvider,
   WalletBalanceProviderFactory,
   UiIncentiveDataProviderFactory,
+  DaiFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -71,6 +70,7 @@ import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
+import BigNumber from 'bignumber.js';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -265,14 +265,6 @@ export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
     verify
   );
 };
-
-export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new InitializableAdminUpgradeabilityProxyFactory(await getFirstSigner()).deploy(),
-    eContractid.InitializableAdminUpgradeabilityProxy,
-    [],
-    verify
-  );
 
 export const deploySturdyProtocolDataProvider = async (
   addressesProvider: tEthereumAddress,
@@ -688,3 +680,11 @@ export const deploySturdyToken = async (verify?: boolean) => {
 
   return await getSturdyToken();
 };
+
+export const deployMockDai = async (chainId: any, verify?: boolean) =>
+  withSaveAndVerify(
+    await new DaiFactory(await getFirstSigner()).deploy(chainId),
+    eContractid.DAIToken,
+    [chainId],
+    verify
+  );

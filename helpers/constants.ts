@@ -25,7 +25,7 @@ export const OPTIMAL_UTILIZATION_RATE = new BigNumber(0.8).times(RAY);
 export const EXCESS_UTILIZATION_RATE = new BigNumber(0.2).times(RAY);
 export const APPROVAL_AMOUNT_LENDING_POOL = '1000000000000000000000000000';
 export const TOKEN_DISTRIBUTOR_PERCENTAGE_BASE = '10000';
-export const MOCK_USD_PRICE_IN_WEI = '5848466240000000';
+export const MOCK_USD_PRICE_IN_WEI = '373068412860';
 export const USD_ADDRESS = '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96';
 export const STURDY_REFERRAL = '0';
 
@@ -35,7 +35,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   BAT: oneEther.multipliedBy('0.00137893825230').toFixed(),
   BUSD: oneEther.multipliedBy('0.00736484').toFixed(), 
 */
-  DAI: oneEther.multipliedBy('0.00369068412860').toFixed(),
+  DAI: oneEther.multipliedBy('0.000268047349837').toFixed(),
   /*   
   ENJ: oneEther.multipliedBy('0.00029560').toFixed(),
   KNC: oneEther.multipliedBy('0.001072').toFixed(),
@@ -48,7 +48,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   TUSD: oneEther.multipliedBy('0.00364714136416').toFixed(),
   UNI: oneEther.multipliedBy('0.00536479').toFixed(), 
 */
-  USDC: oneEther.multipliedBy('0.00367714136416').toFixed(),
+  USDC: oneEther.multipliedBy('0.000267347358572').toFixed(),
   // USDT: oneEther.multipliedBy('0.00369068412860').toFixed(),
   stETH: oneEther.toFixed(),
   WETH: oneEther.toFixed(),
@@ -76,5 +76,5 @@ ZRX: oneEther.multipliedBy('0.001151').toFixed(),
   STAKE: oneEther.multipliedBy('0.003620948469').toFixed(), 
   xSUSHI: oneEther.multipliedBy('0.00913428586').toFixed(),
   */
-  USD: '5848466240000000',
+  USD: '3730684128600000',
 };

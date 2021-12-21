@@ -21,19 +21,15 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   } = ProtocolErrors;
 
   it('Deposits stETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
-    const { dai, users, lido, pool, oracle, lidoVault } = testEnv;
+    const { dai, users, lido, pool, oracle, lidoVault, deployer } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
     const ethers = (DRE as any).ethers;
-
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    let signer = await ethers.provider.getSigner(daiOwnerAddress);
 
     //user 1 deposits 7000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
-    await dai.connect(signer).transfer(depositor.address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).transfer(depositor.address, amountDAItoDeposit);
 
     //approve protocol to access depositor wallet
     await dai.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -44,7 +40,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
     const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
     await impersonateAccountsHardhat([stETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(stETHOwnerAddress);
+    let signer = await ethers.provider.getSigner(stETHOwnerAddress);
 
     await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);
 
@@ -121,17 +117,9 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('Liquidates the borrow', async () => {
-    const { pool, dai, lido, aStETH, aDai, users, oracle, helpersContract, deployer } = testEnv;
+    const { pool, dai, lido, users, oracle, helpersContract, deployer } = testEnv;
     const borrower = users[1];
-
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
     const ethers = (DRE as any).ethers;
-
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    let signer = await ethers.provider.getSigner(daiOwnerAddress);
-
-    const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
-    await dai.connect(signer).transfer(deployer.address, amountDAItoDeposit);
 
     //approve protocol to access depositor wallet
     await dai.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -239,7 +227,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const borrower = users[4];
 
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     await impersonateAccountsHardhat([usdcOwnerAddress]);
     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc

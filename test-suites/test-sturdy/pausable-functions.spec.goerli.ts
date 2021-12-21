@@ -13,16 +13,11 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     ProtocolErrors;
 
   it('User 0 deposits 7000 DAI. Configurator pauses pool. Transfers to user 1 reverts. Configurator unpauses the network and next transfer succees', async () => {
-    const { users, pool, dai, aDai, configurator, emergencyUser } = testEnv;
+    const { users, pool, dai, aDai, configurator, emergencyUser, deployer } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
-    const ethers = (DRE as any).ethers;
 
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    let signer = await ethers.provider.getSigner(daiOwnerAddress);
-
-    await dai.connect(signer).transfer(users[0].address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).transfer(users[0].address, amountDAItoDeposit);
 
     // user 0 deposits 7000 DAI
     await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -73,16 +68,12 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Deposit', async () => {
-    const { users, pool, dai, aDai, configurator, emergencyUser } = testEnv;
+    const { users, pool, dai, aDai, configurator, emergencyUser, deployer } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
     const ethers = (DRE as any).ethers;
 
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    let signer = await ethers.provider.getSigner(daiOwnerAddress);
-
-    await dai.connect(signer).transfer(users[0].address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).transfer(users[0].address, amountDAItoDeposit);
 
     // user 0 deposits 7000 DAI
     await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -98,16 +89,12 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   });
 
   it('Withdraw', async () => {
-    const { users, pool, dai, aDai, configurator, emergencyUser } = testEnv;
+    const { users, pool, dai, aDai, configurator, emergencyUser, deployer } = testEnv;
 
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
     const ethers = (DRE as any).ethers;
 
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    let signer = await ethers.provider.getSigner(daiOwnerAddress);
-
-    await dai.connect(signer).transfer(users[0].address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).transfer(users[0].address, amountDAItoDeposit);
 
     // user 0 deposits 7000 DAI
     await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -176,7 +163,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     const borrower = users[4];
 
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     await impersonateAccountsHardhat([usdcOwnerAddress]);
     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc
@@ -230,7 +217,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
         new BigNumber(usdcPrice.toString()).multipliedBy(1.2).toFixed(0)
       );
 
-    //mints dai to the liquidator
+    //mints usdc to the liquidator
     await impersonateAccountsHardhat([usdcOwnerAddress]);
     signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc

@@ -21,17 +21,11 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   } = ProtocolErrors;
 
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
-    const { users, pool, dai, aDai } = testEnv;
-
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
-    const ethers = (DRE as any).ethers;
-
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    const signer = await ethers.provider.getSigner(daiOwnerAddress);
+    const { users, pool, dai, aDai, deployer } = testEnv;
 
     //user 1 deposits 1000 DAI
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
-    await dai.connect(signer).transfer(users[0].address, amountDAItoDeposit);
+    await dai.connect(deployer.signer).transfer(users[0].address, amountDAItoDeposit);
     await dai.connect(users[0].signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     await pool

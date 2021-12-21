@@ -31,7 +31,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
       deployer,
     } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();

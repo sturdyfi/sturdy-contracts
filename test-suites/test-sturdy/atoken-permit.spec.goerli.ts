@@ -32,13 +32,8 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
 
   it('Get aDAI for tests', async () => {
     const { dai, pool, deployer } = testEnv;
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
-    const ethers = (DRE as any).ethers;
 
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    const signer = await ethers.provider.getSigner(daiOwnerAddress);
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '7000');
-    await dai.connect(signer).transfer(deployer.address, amountDAItoDeposit);
     await dai.connect(deployer.signer).approve(pool.address, amountDAItoDeposit);
 
     await pool

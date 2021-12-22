@@ -15,6 +15,8 @@ import {
   getWalletProvider,
   getUiPoolDataProvider,
   getUiIncentiveDataProvider,
+  getPriceOracle,
+  getSturdyOracle,
 } from '../../helpers/contracts-getters';
 import { verifyContract, getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { DRE, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
@@ -50,7 +52,8 @@ task('verify:general', 'Verify contracts at Etherscan')
     );
     const incentiveControllerAddress = await addressesProvider.getIncentiveController();
     const incentiveTokenAddress = await addressesProvider.getIncentiveToken();
-    const oracle = await addressesProvider.getPriceOracle();
+    const oracleAddress = await addressesProvider.getPriceOracle();
+    const oracle = await getPriceOracle();
 
     const lendingPoolProxy = await getProxy(lendingPoolAddress);
     const lendingPoolConfiguratorProxy = await getProxy(lendingPoolConfiguratorAddress);
@@ -95,6 +98,12 @@ task('verify:general', 'Verify contracts at Etherscan')
       // Address Provider
       console.log('\n- Verifying address provider...\n');
       await verifyContract(eContractid.LendingPoolAddressesProvider, addressesProvider, [MarketId]);
+
+      if (network != 'main') {
+        // Price Oracle
+        console.log('\n- Verifying address provider...\n');
+        await verifyContract(eContractid.PriceOracle, oracle, []);
+      }
 
       // Address Provider Registry
       console.log('\n- Verifying address provider registry...\n');
@@ -148,7 +157,7 @@ task('verify:general', 'Verify contracts at Etherscan')
       console.log('\n- Verifying  UiPoolDataProvider Implementation...\n');
       await verifyContract(eContractid.UiPoolDataProvider, uiPoolDataProvider, [
         incentiveControllerAddress,
-        oracle,
+        oracleAddress,
       ]);
 
       // UiIncentiveDataProvider implementation
@@ -157,14 +166,16 @@ task('verify:general', 'Verify contracts at Etherscan')
     }
     // Lending Pool proxy
     console.log('\n- Verifying  Lending Pool Proxy...\n');
-    await verifyContract(eContractid.InitializableAdminUpgradeabilityProxy, lendingPoolProxy, [
-      addressesProvider.address,
-    ]);
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      lendingPoolProxy,
+      [addressesProvider.address]
+    );
 
     // LendingPool Conf proxy
     console.log('\n- Verifying  Lending Pool Configurator Proxy...\n');
     await verifyContract(
-      eContractid.InitializableAdminUpgradeabilityProxy,
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
       lendingPoolConfiguratorProxy,
       [addressesProvider.address]
     );
@@ -172,30 +183,34 @@ task('verify:general', 'Verify contracts at Etherscan')
     // Proxy collateral manager
     console.log('\n- Verifying  Lending Pool Collateral Manager Proxy...\n');
     await verifyContract(
-      eContractid.InitializableAdminUpgradeabilityProxy,
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
       lendingPoolCollateralManagerProxy,
       []
     );
 
     // LidoVault proxy
     console.log('\n- Verifying  LidoVault Proxy...\n');
-    await verifyContract(eContractid.InitializableAdminUpgradeabilityProxy, lidoVaultProxy, [
-      addressesProvider.address,
-    ]);
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      lidoVaultProxy,
+      [addressesProvider.address]
+    );
 
     // IncentiveController proxy
     console.log('\n- Verifying  IncentiveController Proxy...\n');
     await verifyContract(
-      eContractid.InitializableAdminUpgradeabilityProxy,
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
       incentiveControllerProxy,
       [addressesProvider.address]
     );
 
     // IncentiveToken proxy
     console.log('\n- Verifying  IncentiveToken Proxy...\n');
-    await verifyContract(eContractid.InitializableAdminUpgradeabilityProxy, incentiveTokenProxy, [
-      addressesProvider.address,
-    ]);
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      incentiveTokenProxy,
+      [addressesProvider.address]
+    );
 
     console.log('Finished verifications.');
   });

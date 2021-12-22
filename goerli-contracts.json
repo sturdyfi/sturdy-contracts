@@ -1,336 +1,336 @@
 {
   "LendingPoolAddressesProvider": {
     "goerli": {
-      "address": "0x295214fa15dF1b45C7dF9E458C0ceeca845f12EB",
+      "address": "0xf7895a2be7082980E60C427E3E5F32067c9ED333",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x295214fa15dF1b45C7dF9E458C0ceeca845f12EB",
+      "address": "0xf7895a2be7082980E60C427E3E5F32067c9ED333",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "LendingPoolAddressesProviderRegistry": {
     "goerli": {
-      "address": "0xd428824e8ca1bfAD0265d3F9666f3c782e072378",
+      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xd428824e8ca1bfAD0265d3F9666f3c782e072378",
+      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "ReserveLogic": {
     "goerli": {
-      "address": "0x16cC160088731A09051ed491A06431261474C635",
+      "address": "0x3Bdf1225bd3e7e70fe5399349c5AE7E8bC3dAA89",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x16cC160088731A09051ed491A06431261474C635",
+      "address": "0x3Bdf1225bd3e7e70fe5399349c5AE7E8bC3dAA89",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "GenericLogic": {
     "goerli": {
-      "address": "0xBc8cd112236730B8fA19D8B3CAA34335a44B7dC3",
+      "address": "0x1F164A927B5558F46f1471aB43B673b6d776CC13",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xBc8cd112236730B8fA19D8B3CAA34335a44B7dC3",
+      "address": "0x1F164A927B5558F46f1471aB43B673b6d776CC13",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "ValidationLogic": {
     "goerli": {
-      "address": "0x0CaA755B0Ce650337df1b86B3833308B28C2C616",
+      "address": "0x881Ae53CC59BC8BD70Cf7CE2F7C0A6Bd16Adce04",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x0CaA755B0Ce650337df1b86B3833308B28C2C616",
+      "address": "0x881Ae53CC59BC8BD70Cf7CE2F7C0A6Bd16Adce04",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "LendingPoolImpl": {
     "goerli": {
-      "address": "0x5721BA9D3813D3D1Ad6a52afB3fcF09D7215eE75"
+      "address": "0xF4a451Ff50dc150c47F2c4968b8ec45DBCcc306A"
     },
     "forked_goerli": {
-      "address": "0x5721BA9D3813D3D1Ad6a52afB3fcF09D7215eE75"
+      "address": "0xF4a451Ff50dc150c47F2c4968b8ec45DBCcc306A"
     }
   },
   "LendingPool": {
     "goerli": {
-      "address": "0xCB52d58615757F9Af055c6d5e076164e325b5C69"
+      "address": "0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c"
     },
     "forked_goerli": {
-      "address": "0xCB52d58615757F9Af055c6d5e076164e325b5C69"
+      "address": "0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c"
     }
   },
   "LendingPoolConfiguratorImpl": {
     "goerli": {
-      "address": "0x03dB62Ae85E013db3D90a9d12d5DcCcDB4cF352e"
+      "address": "0x52Ab0779090a1C0bB6d6EBb17f6e632d370AfFCd"
     },
     "forked_goerli": {
-      "address": "0x03dB62Ae85E013db3D90a9d12d5DcCcDB4cF352e"
+      "address": "0x52Ab0779090a1C0bB6d6EBb17f6e632d370AfFCd"
     }
   },
   "LendingPoolConfigurator": {
     "goerli": {
-      "address": "0x9ce1e0Adc925f727970B89056f224dF2E4F59EEa"
+      "address": "0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd"
     },
     "forked_goerli": {
-      "address": "0x9ce1e0Adc925f727970B89056f224dF2E4F59EEa"
+      "address": "0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd"
     }
   },
   "StableAndVariableTokensHelper": {
     "goerli": {
-      "address": "0x2eda8e159742A9f13B5d2dEc9475bF05f08b41CE",
+      "address": "0xF23dD2aa2e26a0521d44773DbCbEE125d0Ac8BE0",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x2eda8e159742A9f13B5d2dEc9475bF05f08b41CE",
+      "address": "0xF23dD2aa2e26a0521d44773DbCbEE125d0Ac8BE0",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "ATokensAndRatesHelper": {
     "goerli": {
-      "address": "0x5b31069e0e1d5873eE6442B17b26F24e3981204E",
+      "address": "0x189fC75c01c6587C7505Fc0E55f3F8A6a27BB520",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x5b31069e0e1d5873eE6442B17b26F24e3981204E",
+      "address": "0x189fC75c01c6587C7505Fc0E55f3F8A6a27BB520",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "PriceOracle": {
     "goerli": {
-      "address": "0xa3A46b7f2215b8C1b77Abeb8a35e62Bdf31c93BF",
+      "address": "0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xa3A46b7f2215b8C1b77Abeb8a35e62Bdf31c93BF",
+      "address": "0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "MockAggregator": {
     "goerli": {
-      "address": "0x1310E6721777321553F993E4cc4470037ac03C08",
+      "address": "0xe7FA5eeEfEef078A44663504b6342210346601fF",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x1310E6721777321553F993E4cc4470037ac03C08",
+      "address": "0xe7FA5eeEfEef078A44663504b6342210346601fF",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "SturdyOracle": {
     "goerli": {
-      "address": "0x36824301E301e73641b9624FA5eaFdA02706f2Be",
+      "address": "0x46D33E339bDAB4a5C2301Bc136aAD5177f6b819a",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x36824301E301e73641b9624FA5eaFdA02706f2Be",
+      "address": "0x46D33E339bDAB4a5C2301Bc136aAD5177f6b819a",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "LendingRateOracle": {
     "goerli": {
-      "address": "0xC0319B90dc54332c27684101D0276bB08c84A4eC",
+      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xC0319B90dc54332c27684101D0276bB08c84A4eC",
+      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "SturdyProtocolDataProvider": {
     "goerli": {
-      "address": "0x57458c0f3517a4a769BB2A7A583a9D7579c6a48F",
+      "address": "0x8f99b93A3b5EFD437dD1F298acC0Cddb7d89C979",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x57458c0f3517a4a769BB2A7A583a9D7579c6a48F",
+      "address": "0x8f99b93A3b5EFD437dD1F298acC0Cddb7d89C979",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "StakedTokenIncentivesControllerImpl": {
     "goerli": {
-      "address": "0x667E3a10C6FE36824fEF71170da83865D07b547D",
+      "address": "0xB1e7dEC831d9432095a331dAA25839d806128d29",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x667E3a10C6FE36824fEF71170da83865D07b547D",
+      "address": "0xB1e7dEC831d9432095a331dAA25839d806128d29",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "StakedTokenIncentivesController": {
     "goerli": {
-      "address": "0xD5F34C2Fc6e533e409Dc06B9fE5a6D4130CE9ACf"
+      "address": "0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E"
     },
     "forked_goerli": {
-      "address": "0xD5F34C2Fc6e533e409Dc06B9fE5a6D4130CE9ACf"
+      "address": "0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E"
     }
   },
   "SturdyTokenImpl": {
     "goerli": {
-      "address": "0x192c8932b22DBF80B0861AfE240132663BB4feCF",
+      "address": "0x600Fd47A378068F36aa579cCeE9De2E8a0daf394",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x192c8932b22DBF80B0861AfE240132663BB4feCF",
+      "address": "0x600Fd47A378068F36aa579cCeE9De2E8a0daf394",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "SturdyToken": {
     "goerli": {
-      "address": "0x9d0fae54966301F9A6590cD870EAd34bA388Dd45"
+      "address": "0xa8f6fCCc603254fdeF8c222BC02F7BcD5d5ee1c4"
     },
     "forked_goerli": {
-      "address": "0x9d0fae54966301F9A6590cD870EAd34bA388Dd45"
+      "address": "0xa8f6fCCc603254fdeF8c222BC02F7BcD5d5ee1c4"
     }
   },
   "StableDebtToken": {
     "goerli": {
-      "address": "0xD6878F8d46Af433449c2154898574f6EF073AEDC",
+      "address": "0x86C2a4878da5e4F848fFa2B2B47E1cfbfE6d45dC",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xD6878F8d46Af433449c2154898574f6EF073AEDC",
+      "address": "0x86C2a4878da5e4F848fFa2B2B47E1cfbfE6d45dC",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "VariableDebtToken": {
     "goerli": {
-      "address": "0x5a18d89Ad063C1AEd5B3c30741333c1a1116CFE3",
+      "address": "0x5C41F6fC0c32B823E8889D87EFf940fF202180c2",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x5a18d89Ad063C1AEd5B3c30741333c1a1116CFE3",
+      "address": "0x5C41F6fC0c32B823E8889D87EFf940fF202180c2",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "AToken": {
     "goerli": {
-      "address": "0x0d9AA1850B25B569B70e49857062F73FDe2fEAbc",
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x0d9AA1850B25B569B70e49857062F73FDe2fEAbc",
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "aTokenImpl": {
     "goerli": {
-      "address": "0x0d9AA1850B25B569B70e49857062F73FDe2fEAbc"
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7"
     },
     "forked_goerli": {
-      "address": "0x0d9AA1850B25B569B70e49857062F73FDe2fEAbc"
+      "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7"
     }
   },
   "DefaultReserveInterestRateStrategy": {
     "goerli": {
-      "address": "0x2f1f4045Be9A8cc209bF3fDF4f4fBbF5B75D079d",
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x2f1f4045Be9A8cc209bF3fDF4f4fBbF5B75D079d",
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "rateStrategyStableTwo": {
     "goerli": {
-      "address": "0x7f7854F5d03aF20DC2ffCDC71935549E078C3b4A"
+      "address": "0x475A1E28D2D4275fba0f1B59B2706C86c950D9C5"
     },
     "forked_goerli": {
-      "address": "0x7f7854F5d03aF20DC2ffCDC71935549E078C3b4A"
+      "address": "0x475A1E28D2D4275fba0f1B59B2706C86c950D9C5"
     }
   },
   "rateStrategyStableThree": {
     "goerli": {
-      "address": "0x9caAbf215a0879a8F1a9994e76607aC9758e37a8"
+      "address": "0x916189e5de8e647022251e228705AA33c1B1D548"
     },
     "forked_goerli": {
-      "address": "0x9caAbf215a0879a8F1a9994e76607aC9758e37a8"
+      "address": "0x916189e5de8e647022251e228705AA33c1B1D548"
     }
   },
   "rateStrategyWETH": {
     "goerli": {
-      "address": "0x2b93648CbF6f1a2573342d32Eb04a33316F243ED"
+      "address": "0x3C3879aE989A24Aa7da440b261893ea6a7629847"
     },
     "forked_goerli": {
-      "address": "0x2b93648CbF6f1a2573342d32Eb04a33316F243ED"
+      "address": "0x3C3879aE989A24Aa7da440b261893ea6a7629847"
     }
   },
   "rateStrategySTETH": {
     "goerli": {
-      "address": "0x2f1f4045Be9A8cc209bF3fDF4f4fBbF5B75D079d"
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f"
     },
     "forked_goerli": {
-      "address": "0x2f1f4045Be9A8cc209bF3fDF4f4fBbF5B75D079d"
+      "address": "0x864506a3749df2805d15E2156858EB965C1f726f"
     }
   },
   "LendingPoolCollateralManagerImpl": {
     "goerli": {
-      "address": "0xE449d0ed1757f68f442ea145a17811022a1FDaA5"
+      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655"
     },
     "forked_goerli": {
-      "address": "0xE449d0ed1757f68f442ea145a17811022a1FDaA5"
+      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655"
     }
   },
   "LendingPoolCollateralManager": {
     "goerli": {
-      "address": "0xE449d0ed1757f68f442ea145a17811022a1FDaA5",
+      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xE449d0ed1757f68f442ea145a17811022a1FDaA5",
+      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
-    }
-  },
-  "LidoVaultImpl": {
-    "goerli": {
-      "address": "0x46B7442F1B0034e9b232736A8606C41CAE13c202",
-      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
-    },
-    "forked_goerli": {
-      "address": "0x46B7442F1B0034e9b232736A8606C41CAE13c202",
-      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
-    }
-  },
-  "LidoVault": {
-    "goerli": {
-      "address": "0xA5549d49E9EC0ffe786F7259985B06c69606c408"
-    },
-    "forked_goerli": {
-      "address": "0xA5549d49E9EC0ffe786F7259985B06c69606c408"
     }
   },
   "WalletBalanceProvider": {
     "goerli": {
-      "address": "0x1e7bFB37DFE7279AD215014e0CF37fF11d975D27",
+      "address": "0x085c4AcAA09A0561385A2d937e766059683Bd594",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0x1e7bFB37DFE7279AD215014e0CF37fF11d975D27",
+      "address": "0x085c4AcAA09A0561385A2d937e766059683Bd594",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "UiPoolDataProvider": {
     "goerli": {
-      "address": "0xbA8ca58cC6EeDa7517478C6aF439F5C2E7E6AA60",
+      "address": "0x4976E4C7F61124747F7f7496d157B538C8DbeD63",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "forked_goerli": {
-      "address": "0xbA8ca58cC6EeDa7517478C6aF439F5C2E7E6AA60",
+      "address": "0x4976E4C7F61124747F7f7496d157B538C8DbeD63",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "UiIncentiveDataProvider": {
     "goerli": {
-      "address": "0x9b3f364f5b0933c9834936970234B84C28Bb9989",
+      "address": "0x1917a39241cc1bEEa1e503DDC5B94fDBbfBE2731",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forekd_goerli": {
-      "address": "0x9b3f364f5b0933c9834936970234B84C28Bb9989",
+    "forked_goerli": {
+      "address": "0x1917a39241cc1bEEa1e503DDC5B94fDBbfBE2731",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LidoVaultImpl": {
+    "goerli": {
+      "address": "0x019D8174D62F843be3e4f08a7B161fD04d2c871c",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "forked_goerli": {
+      "address": "0x019D8174D62F843be3e4f08a7B161fD04d2c871c",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "LidoVault": {
+    "goerli": {
+      "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
+    },
+    "forked_goerli": {
+      "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
     }
   }
 }

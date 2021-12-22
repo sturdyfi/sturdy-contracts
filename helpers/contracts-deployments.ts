@@ -30,8 +30,6 @@ import {
   ATokensAndRatesHelperFactory,
   SturdyOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
-  InitializableAdminUpgradeabilityProxyFactory,
-  InitializableImmutableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
@@ -56,6 +54,7 @@ import {
   UiPoolDataProvider,
   WalletBalanceProviderFactory,
   UiIncentiveDataProviderFactory,
+  DaiFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -71,6 +70,7 @@ import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
+import BigNumber from 'bignumber.js';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -91,6 +91,14 @@ export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolea
   withSaveAndVerify(
     await new LendingPoolAddressesProviderRegistryFactory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolAddressesProviderRegistry,
+    [],
+    verify
+  );
+
+export const deployLendingPoolConfiguratorImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LendingPoolConfiguratorFactory(await getFirstSigner()).deploy(),
+    eContractid.LendingPoolConfiguratorImpl,
     [],
     verify
   );
@@ -185,6 +193,13 @@ export const deploySturdyLibraries = async (
   };
 };
 
+export const deployLendingPoolImpl = async (verify?: boolean) => {
+  const libraries = await deploySturdyLibraries(verify);
+  const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
+  await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
+  return lendingPoolImpl;
+};
+
 export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deploySturdyLibraries(verify);
   const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
@@ -227,6 +242,14 @@ export const deploySturdyOracle = async (
     verify
   );
 
+export const deployLendingPoolCollateralManagerImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LendingPoolCollateralManagerFactory(await getFirstSigner()).deploy(),
+    eContractid.LendingPoolCollateralManagerImpl,
+    [],
+    verify
+  );
+
 export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
   const collateralManagerImpl = await new LendingPoolCollateralManagerFactory(
     await getFirstSigner()
@@ -242,14 +265,6 @@ export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
     verify
   );
 };
-
-export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new InitializableAdminUpgradeabilityProxyFactory(await getFirstSigner()).deploy(),
-    eContractid.InitializableAdminUpgradeabilityProxy,
-    [],
-    verify
-  );
 
 export const deploySturdyProtocolDataProvider = async (
   addressesProvider: tEthereumAddress,
@@ -545,6 +560,14 @@ export const deployUiIncentiveDataProvider = async (verify?: boolean) =>
     verify
   );
 
+export const deployLidoVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new LidoVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.LidoVaultImpl,
+    [],
+    verify
+  );
+
 export const deployLidoVault = async (verify?: boolean) => {
   const lidoVaultImpl = await withSaveAndVerify(
     await new LidoVaultFactory(await getFirstSigner()).deploy(),
@@ -599,6 +622,17 @@ export const deployLidoVault = async (verify?: boolean) => {
   return await getLidoVault();
 };
 
+export const deploySturdyIncentivesControllerImpl = async (
+  args: [tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
+    eContractid.StakedTokenIncentivesControllerImpl,
+    args,
+    verify
+  );
+
 export const deploySturdyIncentivesController = async (
   args: [tEthereumAddress],
   verify?: boolean
@@ -623,6 +657,14 @@ export const deploySturdyIncentivesController = async (
   return await getSturdyIncentivesController();
 };
 
+export const deploySturdyTokenImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new SturdyTokenFactory(await getFirstSigner()).deploy(),
+    eContractid.SturdyTokenImpl,
+    [],
+    verify
+  );
+
 export const deploySturdyToken = async (verify?: boolean) => {
   const incentiveTokenImpl = await withSaveAndVerify(
     await new SturdyTokenFactory(await getFirstSigner()).deploy(),
@@ -638,3 +680,11 @@ export const deploySturdyToken = async (verify?: boolean) => {
 
   return await getSturdyToken();
 };
+
+export const deployMockDai = async (chainId: any, verify?: boolean) =>
+  withSaveAndVerify(
+    await new DaiFactory(await getFirstSigner()).deploy(chainId),
+    eContractid.DAIToken,
+    [chainId],
+    verify
+  );

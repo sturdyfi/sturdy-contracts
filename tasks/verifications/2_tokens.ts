@@ -69,7 +69,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       // Proxy Stable Debt
       console.log(`\n- Verifying Stable Debt Token proxy...\n`);
       await verifyContract(
-        eContractid.InitializableAdminUpgradeabilityProxy,
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
         await getProxy(stableDebtTokenAddress),
         [lendingPoolConfigurator.address]
       );
@@ -77,7 +77,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       // Proxy Variable Debt
       console.log(`\n- Verifying  Debt Token proxy...\n`);
       await verifyContract(
-        eContractid.InitializableAdminUpgradeabilityProxy,
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
         await getProxy(variableDebtTokenAddress),
         [lendingPoolConfigurator.address]
       );
@@ -85,7 +85,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       // Proxy aToken
       console.log('\n- Verifying aToken proxy...\n');
       await verifyContract(
-        eContractid.InitializableAdminUpgradeabilityProxy,
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
         await getProxy(aTokenAddress),
         [lendingPoolConfigurator.address]
       );

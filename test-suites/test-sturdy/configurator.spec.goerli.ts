@@ -372,14 +372,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
   it('Reverts when trying to disable the DAI reserve with liquidity on it', async () => {
     const { dai, pool, configurator, deployer, aDai } = testEnv;
     const userAddress = await pool.signer.getAddress();
-    const daiOwnerAddress = '0x00ba938Cc0df182C25108d7BF2ee3d37Bce07513';
-    const ethers = (DRE as any).ethers;
-
-    await impersonateAccountsHardhat([daiOwnerAddress]);
-    const signer = await ethers.provider.getSigner(daiOwnerAddress);
-
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
-    await dai.connect(signer).transfer(deployer.address, amountDAItoDeposit);
 
     //approve protocol to access depositor wallet
     await dai.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);

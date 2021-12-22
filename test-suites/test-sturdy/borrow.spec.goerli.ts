@@ -13,7 +13,7 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
   it('User1 deposits USDC, User deposits ETH as collatoral and borrows USDC', async () => {
     const { usdc, users, pool, lidoVault, oracle, addressesProvider } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
@@ -43,7 +43,6 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
 
     //user 2 deposits 4 ETH
     const amountETHtoDeposit = ethers.utils.parseEther('4');
-    console.log(lidoVault.address);
     await lidoVault
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
@@ -94,7 +93,7 @@ makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier 
   it('User1 deposits USDC, User deposits stETH as collatoral and borrows USDC', async () => {
     const { usdc, users, pool, lidoVault, lido, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x7e85BA59147ac3616938d680Ab988E3d30834765';
+    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();

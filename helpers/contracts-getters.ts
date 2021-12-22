@@ -5,7 +5,7 @@ import {
   SturdyOracleFactory,
   DefaultReserveInterestRateStrategyFactory,
   GenericLogicFactory,
-  InitializableAdminUpgradeabilityProxyFactory,
+  InitializableImmutableAdminUpgradeabilityProxyFactory,
   LendingPoolAddressesProviderFactory,
   LendingPoolAddressesProviderRegistryFactory,
   LendingPoolCollateralManagerFactory,
@@ -281,7 +281,10 @@ export const getSelfdestructTransferMock = async (address?: tEthereumAddress) =>
   );
 
 export const getProxy = async (address: tEthereumAddress) =>
-  await InitializableAdminUpgradeabilityProxyFactory.connect(address, await getFirstSigner());
+  await InitializableImmutableAdminUpgradeabilityProxyFactory.connect(
+    address,
+    await getFirstSigner()
+  );
 
 export const getLendingPoolImpl = async (address?: tEthereumAddress) =>
   await LendingPoolFactory.connect(

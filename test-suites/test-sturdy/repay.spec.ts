@@ -48,7 +48,6 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
     {
-      console.log(pool.address);
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({
         user: `Borrower ${borrower.address}`,

@@ -313,7 +313,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint16 referralCode,
     address onBehalfOf
   ) external override whenNotPaused {
-    //todo: asset - possible addresses for: USDT, USDC, DAI
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     _executeBorrow(
@@ -394,96 +393,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
 
     return paybackAmount;
-  }
-
-  /**
-   * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
-   * @param asset The address of the underlying asset borrowed
-   * @param rateMode The rate mode that the user wants to swap to
-   **/
-  function swapBorrowRateMode(address asset, uint256 rateMode) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(msg.sender, reserve);
-
-    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
-
-    ValidationLogic.validateSwapRateMode(
-      reserve,
-      _usersConfig[msg.sender],
-      stableDebt,
-      variableDebt,
-      interestRateMode
-    );
-
-    reserve.updateState();
-
-    if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
-      IStableDebtToken(reserve.stableDebtTokenAddress).burn(msg.sender, stableDebt);
-      IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
-        msg.sender,
-        msg.sender,
-        stableDebt,
-        reserve.variableBorrowIndex
-      );
-    } else {
-      IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
-        msg.sender,
-        variableDebt,
-        reserve.variableBorrowIndex
-      );
-      IStableDebtToken(reserve.stableDebtTokenAddress).mint(
-        msg.sender,
-        msg.sender,
-        variableDebt,
-        reserve.currentStableBorrowRate
-      );
-    }
-
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, 0);
-
-    emit Swap(asset, msg.sender, rateMode);
-  }
-
-  /**
-   * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
-   * - Users can be rebalanced if the following conditions are satisfied:
-   *     1. Usage ratio is above 95%
-   *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
-   *        borrowed at a stable rate and depositors are not earning enough
-   * @param asset The address of the underlying asset borrowed
-   * @param user The address of the user to be rebalanced
-   **/
-  function rebalanceStableBorrowRate(address asset, address user) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    IERC20 stableDebtToken = IERC20(reserve.stableDebtTokenAddress);
-    IERC20 variableDebtToken = IERC20(reserve.variableDebtTokenAddress);
-    address aTokenAddress = reserve.aTokenAddress;
-
-    uint256 stableDebt = IERC20(stableDebtToken).balanceOf(user);
-
-    ValidationLogic.validateRebalanceStableBorrowRate(
-      reserve,
-      asset,
-      stableDebtToken,
-      variableDebtToken,
-      aTokenAddress
-    );
-
-    reserve.updateState();
-
-    IStableDebtToken(address(stableDebtToken)).burn(user, stableDebt);
-    IStableDebtToken(address(stableDebtToken)).mint(
-      user,
-      user,
-      stableDebt,
-      reserve.currentStableBorrowRate
-    );
-
-    reserve.updateInterestRates(asset, aTokenAddress, 0, 0);
-
-    emit RebalanceStableBorrowRate(asset, user);
   }
 
   /**
@@ -773,7 +682,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
-   * @param aTokenAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function initReserve(
@@ -784,6 +693,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address interestRateStrategyAddress
   ) external override onlyLendingPoolConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
+    require(IERC20(aTokenAddress).totalSupply() == 0, Errors.LP_ATOKEN_INIT_INVALID);
     _reserves[asset].init(
       aTokenAddress,
       stableDebtAddress,
@@ -847,7 +757,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
-    //todo: asset should be addresses for : USDC, USDT, DAI
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
@@ -874,7 +783,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     uint256 currentStableRate = 0;
 
-    //todo:  debt tokens USDC, USDT, DAI
     bool isFirstBorrowing = false;
     if (DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE) {
       currentStableRate = reserve.currentStableBorrowRate;

@@ -111,6 +111,8 @@ library Errors {
   string public constant VT_CONVERT_ASSET_BY_CURVE_INVALID = '86'; //Convert asset by curve invalid
   string public constant VT_PROCESS_YIELD_INVALID = '87'; //Processing yield is invalid
   string public constant VT_TREASURY_INVALID = '88'; //Treasury is invalid
+  string public constant LP_ATOKEN_INIT_INVALID = '89'; //aToken invalid init
+  string public constant VT_FEE_TOO_BIG = '90'; //Fee is too big
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -113,6 +113,7 @@ contract GeneralVault is VersionedInitializable {
    */
   function setTreasuryInfo(address _treasury, uint256 _fee) external onlyAdmin {
     require(_treasury != address(0), Errors.VT_TREASURY_INVALID);
+    require(_fee <= 30_00, Errors.VT_FEE_TOO_BIG);
     _treasuryAddress = _treasury;
     _vaultFee = _fee;
   }

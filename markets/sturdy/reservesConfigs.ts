@@ -295,9 +295,9 @@ export const strategyXSUSHI: IReserveParams = {
 
 export const strategySTETH: IReserveParams = {
   strategy: rateStrategySTETH,
-  baseLTVAsCollateral: '5000',
-  liquidationThreshold: '6500',
-  liquidationBonus: '11000',
+  baseLTVAsCollateral: '7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',

@@ -64,10 +64,10 @@ export const rawInsertContractAddressInDb = async (id: string, address: tEthereu
 export const getEthersSigners = async (): Promise<Signer[]> => {
   const ethersSigners = await Promise.all(await DRE.ethers.getSigners());
 
-  if (usingDefender()) {
-    const [, ...users] = ethersSigners;
-    return [await getDefenderRelaySigner(), ...users];
-  }
+  // if (usingDefender()) {
+  //   const [, ...users] = ethersSigners;
+  //   return [await getDefenderRelaySigner(), ...users];
+  // }
   return ethersSigners;
 };
 
@@ -136,7 +136,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const { main, ropsten, kovan, coverage, buidlerevm, tenderlyMain, goerli } =
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderlyMain, tenderlyFTM, goerli } =
     param as iEthereumParamsPerNetwork<T>;
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
@@ -161,6 +161,8 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return main;
     case eEthereumNetwork.tenderlyMain:
       return tenderlyMain;
+    case eEthereumNetwork.tenderlyFTM:
+      return tenderlyFTM;
     case eEthereumNetwork.goerli:
       return goerli;
   }

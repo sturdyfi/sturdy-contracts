@@ -16,6 +16,7 @@ export enum eEthereumNetwork {
   geth = 'geth',
   localhost = 'localhost',
   tenderlyMain = 'tenderlyMain',
+  tenderlyFTM = 'tenderlyFTM',
   goerli = 'goerli',
 }
 
@@ -398,6 +399,7 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.geth]: T;
   [eEthereumNetwork.localhost]: T;
   [eEthereumNetwork.tenderlyMain]: T;
+  [eEthereumNetwork.tenderlyFTM]: T;
   [eEthereumNetwork.goerli]: T;
 }
 

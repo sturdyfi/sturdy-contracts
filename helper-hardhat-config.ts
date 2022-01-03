@@ -48,6 +48,7 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.geth]: 'http://localhost:8545',
   [eEthereumNetwork.buidlerevm]: 'http://localhost:8545',
   [eEthereumNetwork.tenderlyMain]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
+  [eEthereumNetwork.tenderlyFTM]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
   [eEthereumNetwork.localhost]: 'http://localhost:8545',
 };
 
@@ -61,6 +62,7 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.localhost]: 65 * GWEI,
   [eEthereumNetwork.buidlerevm]: 65 * GWEI,
   [eEthereumNetwork.tenderlyMain]: 0.01 * GWEI,
+  [eEthereumNetwork.tenderlyFTM]: 0.01 * GWEI,
   [eEthereumNetwork.goerli]: 65 * GWEI,
 };
 
@@ -74,5 +76,6 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eEthereumNetwork.localhost]: undefined,
   [eEthereumNetwork.buidlerevm]: undefined,
   [eEthereumNetwork.tenderlyMain]: 12406069,
+  [eEthereumNetwork.tenderlyFTM]: 6251903,
   [eEthereumNetwork.goerli]: 6055821,
 };

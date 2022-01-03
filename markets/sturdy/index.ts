@@ -155,6 +155,11 @@ export const SturdyConfig: ISturdyConfiguration = {
       ZRX: '0xE41d2489571d322189246DaFA5ebDe1F4699F498',
       xSUSHI: '0x8798249c2E607446EfB7Ad49eC89dD1865Ff4272', */
     },
+    [eEthereumNetwork.tenderlyFTM]: {
+      DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
+      USDC: '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75',
+      WETH: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83'
+    },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',
       USDC: '0x07865c6E87B9F70255377e024ace6630C1Eaa37F',

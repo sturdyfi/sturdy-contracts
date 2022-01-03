@@ -92,7 +92,7 @@ const buidlerConfig: HardhatUserConfig = {
   tenderly: {
     project: process.env.TENDERLY_PROJECT || '',
     username: process.env.TENDERLY_USERNAME || '',
-    forkNetwork: '1', //Network id of the network we want to fork
+    forkNetwork: '250', //Network id of the network we want to fork
   },
   networks: {
     coverage: {
@@ -103,6 +103,7 @@ const buidlerConfig: HardhatUserConfig = {
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
+    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderlyFTM, 250),
     geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
     hardhat: {

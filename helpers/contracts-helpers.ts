@@ -64,10 +64,10 @@ export const rawInsertContractAddressInDb = async (id: string, address: tEthereu
 export const getEthersSigners = async (): Promise<Signer[]> => {
   const ethersSigners = await Promise.all(await DRE.ethers.getSigners());
 
-  // if (usingDefender()) {
-  //   const [, ...users] = ethersSigners;
-  //   return [await getDefenderRelaySigner(), ...users];
-  // }
+  if (usingDefender()) {
+    const [, ...users] = ethersSigners;
+    return [await getDefenderRelaySigner(), ...users];
+  }
   return ethersSigners;
 };
 

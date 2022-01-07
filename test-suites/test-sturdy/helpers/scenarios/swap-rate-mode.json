@@ -3,36 +3,6 @@
   "description": "Test cases for the swapBorrowRateMode() function.",
   "stories": [
     {
-      "description": "User 0 tries to swap rate mode without any variable rate loan in progress (revert expected)",
-      "actions": [
-        {
-          "name": "swapBorrowRateMode",
-          "args": {
-            "reserve": "DAI",
-            "user": "1",
-            "borrowRateMode": "variable"
-          },
-          "expected": "revert",
-          "revertMessage": "User does not have a variable rate loan in progress on this reserve"
-        }
-      ]
-    },
-    {
-      "description": "User 0 tries to swap rate mode without any stable rate loan in progress (revert expected)",
-      "actions": [
-        {
-          "name": "swapBorrowRateMode",
-          "args": {
-            "reserve": "DAI",
-            "user": "1",
-            "borrowRateMode": "stable"
-          },
-          "expected": "revert",
-          "revertMessage": "User does not have a stable rate loan in progress on this reserve"
-        }
-      ]
-    },
-    {
       "description": "User 0 deposits 1000 DAI, user 1 deposits 2 stETH as collateral, borrows 100 DAI at variable rate and swaps to stable after one year",
       "actions": [
         {
@@ -97,16 +67,6 @@
             "timeTravel": "365"
           },
           "expected": "success"
-        },
-        {
-          "name": "swapBorrowRateMode",
-          "args": {
-            "reserve": "DAI",
-            "user": "1",
-            "borrowRateMode": "variable"
-          },
-          "expected": "revert",
-          "revertMessage": "12"
         }
       ]
     },
@@ -123,16 +83,6 @@
             "timeTravel": "365"
           },
           "expected": "success"
-        },
-        {
-          "name": "swapBorrowRateMode",
-          "args": {
-            "reserve": "DAI",
-            "user": "1",
-            "borrowRateMode": "stable"
-          },
-          "expected": "revert",
-          "revertMessage": "12"
         },
         {
           "name": "mint",

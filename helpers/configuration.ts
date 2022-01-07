@@ -8,6 +8,7 @@ import {
 } from './types';
 import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
 import SturdyConfig from '../markets/sturdy';
+import FantomConfig from '../markets/ftm';
 import { CommonsConfig } from '../markets/sturdy/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
@@ -17,15 +18,15 @@ import { deployWETHMocked } from './contracts-deployments';
 export enum ConfigNames {
   Commons = 'Commons',
   Sturdy = 'Sturdy',
-  Matic = 'Matic',
-  Amm = 'Amm',
-  STURDY = 'Sturdy',
+  Fantom = 'Fantom',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
     case ConfigNames.Sturdy:
       return SturdyConfig;
+    case ConfigNames.Fantom:
+      return FantomConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:

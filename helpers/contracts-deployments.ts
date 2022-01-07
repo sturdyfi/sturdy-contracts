@@ -9,6 +9,7 @@ import {
   iMultiPoolsAssets,
   IReserveParams,
   PoolConfiguration,
+  ISturdyConfiguration,
   eEthereumNetwork,
   eNetwork,
 } from './types';
@@ -584,7 +585,7 @@ export const deployLidoVault = async (verify?: boolean) => {
     )
   );
 
-  const config = loadPoolConfig(ConfigNames.Sturdy);
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
   const network = <eNetwork>DRE.network.name;
   await waitForTx(
     await addressesProvider.setAddress(

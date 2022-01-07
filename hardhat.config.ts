@@ -3,7 +3,7 @@ import fs from 'fs';
 import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork, eNetwork } from './helpers/types';
+import { eEthereumNetwork, eFantomNetwork, eNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 import {
   NETWORKS_RPC_URL,
@@ -102,8 +102,8 @@ const buidlerConfig: HardhatUserConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    tenderlyMain: getCommonNetworkConfig(eEthereumNetwork.tenderlyMain, 3030),
-    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderlyFTM, 250),
+    // tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),   //Mainnet
+    tenderly: getCommonNetworkConfig(eFantomNetwork.tenderlyFTM, 250),   // Fantom
     geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
     hardhat: {
@@ -142,7 +142,7 @@ const buidlerConfig: HardhatUserConfig = {
     },
 
     forked_goerli: {
-      chainId: 31337,
+      chainId: 1337,
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',

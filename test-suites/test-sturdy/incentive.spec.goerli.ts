@@ -111,8 +111,8 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.equal('909');
     expect(depositorBrickAfter.toString()).to.be.bignumber.equal('100');
 
-    //user 2 deposits 4 ETH
-    const amountETHtoDeposit = ethers.utils.parseEther('4');
+    //user 2 deposits 1 ETH
+    const amountETHtoDeposit = ethers.utils.parseEther('1');
     await lidoVault
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
@@ -182,7 +182,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     expect(borrowerBrickAfter.toString()).to.be.bignumber.equal('100');
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-      '6500',
+      '7500',
       'Invalid liquidation threshold'
     );
   });

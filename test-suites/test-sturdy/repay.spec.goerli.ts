@@ -42,8 +42,8 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
       ...supplierGlobalData,
     });
 
-    //user 2 deposits 4 ETH
-    const amountETHtoDeposit = ethers.utils.parseEther('4');
+    //user 2 deposits 1 ETH
+    const amountETHtoDeposit = ethers.utils.parseEther('1');
     await lidoVault
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
@@ -84,7 +84,7 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
     });
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-      '6500',
+      '7500',
       'Invalid liquidation threshold'
     );
 
@@ -131,9 +131,9 @@ makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier 
       ...supplierGlobalData,
     });
 
-    //user 2 deposits 4 stETH
+    //user 2 deposits 1 stETH
     const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    const depositStETH = '4';
+    const depositStETH = '1';
     const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, depositStETH);
     //Make some test stETH for borrower
     await impersonateAccountsHardhat([stETHOwnerAddress]);
@@ -180,7 +180,7 @@ makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier 
     });
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-      '6500',
+      '7500',
       'Invalid liquidation threshold'
     );
 

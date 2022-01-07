@@ -7,8 +7,8 @@ import {
   withdraw,
   repay,
   setUseAsCollateral,
-  swapBorrowRateMode,
-  rebalanceStableBorrowRate,
+  // swapBorrowRateMode,
+  // rebalanceStableBorrowRate,
   delegateBorrowAllowance,
   approveVault,
   withdrawCollateral,
@@ -258,22 +258,22 @@ const executeAction = async (action: Action, users: SignerWithAddress[], testEnv
       }
       break;
 
-    case 'swapBorrowRateMode':
-      await swapBorrowRateMode(reserve, user, rateMode, expected, testEnv, revertMessage);
-      break;
+    // case 'swapBorrowRateMode':
+    //   await swapBorrowRateMode(reserve, user, rateMode, expected, testEnv, revertMessage);
+    //   break;
 
-    case 'rebalanceStableBorrowRate':
-      {
-        const { target: targetIndex } = action.args;
+    // case 'rebalanceStableBorrowRate':
+    //   {
+    //     const { target: targetIndex } = action.args;
 
-        if (!targetIndex || targetIndex === '') {
-          throw `A target must be selected when trying to rebalance a stable rate`;
-        }
-        const target = users[parseInt(targetIndex)];
+    //     if (!targetIndex || targetIndex === '') {
+    //       throw `A target must be selected when trying to rebalance a stable rate`;
+    //     }
+    //     const target = users[parseInt(targetIndex)];
 
-        await rebalanceStableBorrowRate(reserve, user, target, expected, testEnv, revertMessage);
-      }
-      break;
+    //     await rebalanceStableBorrowRate(reserve, user, target, expected, testEnv, revertMessage);
+    //   }
+    //   break;
 
     default:
       throw `Invalid action requested: ${name}`;

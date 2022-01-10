@@ -34,7 +34,6 @@ contract ATokenForCollateral is
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
-  uint256 public totalShare;
 
   bytes32 public DOMAIN_SEPARATOR;
 
@@ -125,8 +124,7 @@ contract ATokenForCollateral is
     uint256 index
   ) external override onlyLendingPool {
     uint256 share = amount.rayDiv(index);
-    require(share != 0, Errors.CT_INVALID_MINT_AMOUNT);
-    totalShare = totalShare.sub(share);
+    require(share != 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     _burn(user, amount);
 
@@ -151,9 +149,8 @@ contract ATokenForCollateral is
   ) external override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
 
-    uint256 share = amount.rayDiv(index);
-    require(share != 0, Errors.CT_INVALID_MINT_AMOUNT);
-    totalShare = totalShare.add(share);
+    require(amount != 0, Errors.CT_INVALID_MINT_AMOUNT);
+
     _mint(user, amount);
 
     emit Transfer(address(0), user, amount);
@@ -174,8 +171,6 @@ contract ATokenForCollateral is
     }
 
     address treasury = _treasury;
-    uint256 share = amount.rayDiv(index);
-    totalShare = totalShare.add(share);
 
     // Compared to the normal mint, we don't check for rounding errors.
     // The amount to mint can easily be very small since it is a fraction of the interest ccrued.

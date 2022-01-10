@@ -69,7 +69,7 @@ library ReserveLogic {
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
-      newLiquidityIndex = uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
+      newLiquidityIndex = reserve.getIndexFromPricePerShare();
     }
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
@@ -385,10 +385,14 @@ library ReserveLogic {
   }
 
   /**
-   * @dev Updates the reserve indexes from the pricePerShare of yield contract
+   * @dev Get the reserve indexes from the pricePerShare of yield contract
    * @param reserve The reserve reserve to be updated
    **/
-  function updateIndexFromPricePerShare(DataTypes.ReserveData storage reserve) internal {
-    reserve.liquidityIndex = uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
+  function getIndexFromPricePerShare(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint128)
+  {
+    return uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 }

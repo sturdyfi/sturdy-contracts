@@ -17,6 +17,7 @@ import {
   getLidoVault,
   getSturdyIncentivesController,
   getSturdyToken,
+  getFirstSigner,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -169,7 +170,8 @@ export async function initializeMakeSuite() {
       poolConfig.ProviderRegistryOwner,
       process.env.FORK as eNetwork
     );
-    testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
+    if (!providerRegistryOwner) testEnv.registryOwnerSigner = await getFirstSigner();
+    else testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     testEnv.oracle = await getPriceOracle();

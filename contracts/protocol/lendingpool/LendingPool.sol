@@ -126,11 +126,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
-      reserve.updateIndexFromPricePerShare();
       isFirstDeposit = IAToken(aToken).mint(
         onBehalfOf,
-        amount.rayMul(reserve.liquidityIndex),
-        reserve.liquidityIndex
+        amount.rayMul(reserve.getIndexFromPricePerShare()),
+        reserve.getIndexFromPricePerShare()
       );
     } else {
       isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
@@ -293,12 +292,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
-      reserve.updateIndexFromPricePerShare();
       IAToken(reserve.aTokenAddress).burn(
         from,
         to,
-        amountToWithdraw.rayMul(reserve.liquidityIndex),
-        reserve.liquidityIndex
+        amountToWithdraw.rayMul(reserve.getIndexFromPricePerShare()),
+        reserve.getIndexFromPricePerShare()
       );
     } else {
       IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);

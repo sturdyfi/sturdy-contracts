@@ -81,6 +81,11 @@ export const getTreasuryAddress = async (
   return getParamPerNetwork(config.ReserveFactorTreasuryAddress, <eNetwork>currentNetwork);
 };
 
+export const getYieldAddress = async (config: ICommonConfiguration): Promise<tEthereumAddress> => {
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
+  return getParamPerNetwork(config.YieldAddress, <eNetwork>currentNetwork);
+};
+
 export const getATokenDomainSeparatorPerNetwork = (
   network: eNetwork,
   config: ICommonConfiguration

@@ -124,6 +124,10 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.ftm]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
     [eFantomNetwork.tenderlyFTM]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
   },
+  YieldAddress: {
+    [eFantomNetwork.ftm]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
+    [eFantomNetwork.tenderlyFTM]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
+  },
   IncentivesController: {
     [eFantomNetwork.ftm]: ZERO_ADDRESS,
     [eFantomNetwork.tenderlyFTM]: ZERO_ADDRESS,

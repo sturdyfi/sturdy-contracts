@@ -7,6 +7,7 @@ import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.
 import {IAToken} from '../../../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
+import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {MathUtils} from '../math/MathUtils.sol';
@@ -64,17 +65,23 @@ library ReserveLogic {
     view
     returns (uint256)
   {
+    uint128 newLiquidityIndex = reserve.liquidityIndex;
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      newLiquidityIndex = uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
+    }
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.liquidityIndex;
+      return newLiquidityIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateLinearInterest(reserve.currentLiquidityRate, timestamp)
-      .rayMul(reserve.liquidityIndex);
+      .rayMul(newLiquidityIndex);
 
     return cumulated;
   }
@@ -375,5 +382,13 @@ library ReserveLogic {
     //solium-disable-next-line
     reserve.lastUpdateTimestamp = uint40(block.timestamp);
     return (newLiquidityIndex, newVariableBorrowIndex);
+  }
+
+  /**
+   * @dev Updates the reserve indexes from the pricePerShare of yield contract
+   * @param reserve The reserve reserve to be updated
+   **/
+  function updateIndexFromPricePerShare(DataTypes.ReserveData storage reserve) internal {
+    reserve.liquidityIndex = uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 }

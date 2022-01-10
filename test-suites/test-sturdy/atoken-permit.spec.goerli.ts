@@ -1,5 +1,4 @@
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../helpers/constants';
-import { BUIDLEREVM_CHAINID } from '../../helpers/buidler-constants';
 import {
   buildPermitParams,
   convertToCurrencyDecimals,
@@ -8,7 +7,6 @@ import {
 import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { makeSuite, TestEnv } from './helpers/make-suite';
-import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { waitForTx } from '../../helpers/misc-utils';
 import { _TypedDataEncoder } from 'ethers/lib/utils';
 

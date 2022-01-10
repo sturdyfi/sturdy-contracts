@@ -6,7 +6,12 @@ import {
   deployUiPoolDataProvider,
   deployWalletBalancerProvider,
 } from '../../helpers/contracts-deployments';
-import { loadPoolConfig, ConfigNames, getTreasuryAddress } from '../../helpers/configuration';
+import {
+  loadPoolConfig,
+  ConfigNames,
+  getTreasuryAddress,
+  getYieldAddress,
+} from '../../helpers/configuration';
 import { eNetwork, ICommonConfiguration } from '../../helpers/types';
 import { notFalsyOrZeroAddress, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
@@ -49,6 +54,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       }
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
+      const yieldAddress = await getYieldAddress(poolConfig);
 
       await initReservesByHelper(
         ReservesConfig,
@@ -59,6 +65,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         SymbolPrefix,
         admin,
         treasuryAddress,
+        yieldAddress,
         incentivesController,
         verify
       );

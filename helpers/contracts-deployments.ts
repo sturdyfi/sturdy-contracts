@@ -56,6 +56,7 @@ import {
   WalletBalanceProviderFactory,
   UiIncentiveDataProviderFactory,
   DaiFactory,
+  ATokenForCollateralFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -394,6 +395,14 @@ export const deployGenericATokenImpl = async (verify: boolean) =>
   withSaveAndVerify(
     await new ATokenFactory(await getFirstSigner()).deploy(),
     eContractid.AToken,
+    [],
+    verify
+  );
+
+export const deployCollateralATokenImpl = async (verify: boolean) =>
+  withSaveAndVerify(
+    await new ATokenForCollateralFactory(await getFirstSigner()).deploy(),
+    eContractid.ATokenForCollateral,
     [],
     verify
   );

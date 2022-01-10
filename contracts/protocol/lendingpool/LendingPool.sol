@@ -114,6 +114,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    bool isFirstDeposit = false;
 
     if (isCollateral) {
       require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
@@ -124,7 +125,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
-    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      reserve.updateIndexFromPricePerShare();
+      isFirstDeposit = IAToken(aToken).mint(
+        onBehalfOf,
+        amount.rayMul(reserve.liquidityIndex),
+        reserve.liquidityIndex
+      );
+    } else {
+      isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    }
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, isCollateral);
@@ -256,10 +266,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    address aToken = reserve.aTokenAddress;
-
-    uint256 userBalance = IAToken(aToken).balanceOf(from);
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    uint256 userBalance = IAToken(reserve.aTokenAddress).balanceOf(from);
 
     uint256 amountToWithdraw = amount;
 
@@ -284,7 +292,17 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       emit ReserveUsedAsCollateralDisabled(asset, from);
     }
 
-    IAToken(aToken).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      reserve.updateIndexFromPricePerShare();
+      IAToken(reserve.aTokenAddress).burn(
+        from,
+        to,
+        amountToWithdraw.rayMul(reserve.liquidityIndex),
+        reserve.liquidityIndex
+      );
+    } else {
+      IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
+    }
 
     emit Withdraw(asset, from, to, amountToWithdraw);
 

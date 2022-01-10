@@ -19,6 +19,7 @@ import {
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import {
+  deployCollateralATokenImpl,
   deployDefaultReserveInterestRateStrategy,
   deployGenericAToken,
   deployGenericATokenImpl,
@@ -44,6 +45,7 @@ export const initReservesByHelper = async (
   symbolPrefix: string,
   admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
+  yieldAddress: tEthereumAddress,
   incentivesController: tEthereumAddress,
   verify: boolean
 ): Promise<BigNumber> => {
@@ -67,6 +69,7 @@ export const initReservesByHelper = async (
     variableDebtTokenImpl: string;
     underlyingAssetDecimals: BigNumberish;
     interestRateStrategyAddress: string;
+    yieldAddress: string;
     underlyingAsset: string;
     treasury: string;
     incentivesController: string;
@@ -96,7 +99,7 @@ export const initReservesByHelper = async (
   let strategyAddresses: Record<string, tEthereumAddress> = {};
   let strategyAddressPerAsset: Record<string, string> = {};
   let aTokenType: Record<string, string> = {};
-  let delegationAwareATokenImplementationAddress = '';
+  let collateralATokenImplementationAddress = '';
   let aTokenImplementationAddress = '';
   let stableDebtTokenImplementationAddress = '';
   let variableDebtTokenImplementationAddress = '';
@@ -122,8 +125,13 @@ export const initReservesByHelper = async (
   aTokenImplementationAddress = aTokenImplementation.address;
   rawInsertContractAddressInDb(`aTokenImpl`, aTokenImplementationAddress);
 
+  const collateralATokenImplementation = await deployCollateralATokenImpl(verify);
+  collateralATokenImplementationAddress = collateralATokenImplementation.address;
+  rawInsertContractAddressInDb(`aTokenForCollateralImpl`, collateralATokenImplementationAddress);
+
   const reserves = Object.entries(reservesParams).filter(
-    ([_, { aTokenImpl }]) => aTokenImpl === eContractid.AToken
+    ([_, { aTokenImpl }]) =>
+      aTokenImpl === eContractid.AToken || aTokenImpl === eContractid.ATokenForCollateral
   ) as [string, IReserveParams][];
 
   for (let [symbol, params] of reserves) {
@@ -163,6 +171,8 @@ export const initReservesByHelper = async (
 
     if (aTokenImpl === eContractid.AToken) {
       aTokenType[symbol] = 'generic';
+    } else if (aTokenImpl === eContractid.ATokenForCollateral) {
+      aTokenType[symbol] = 'collateral';
     }
 
     reserveInitDecimals.push(reserveDecimals);
@@ -176,7 +186,7 @@ export const initReservesByHelper = async (
     if (aTokenType[reserveSymbols[i]] === 'generic') {
       aTokenToUse = aTokenImplementationAddress;
     } else {
-      aTokenToUse = delegationAwareATokenImplementationAddress;
+      aTokenToUse = collateralATokenImplementationAddress;
     }
 
     initInputParams.push({
@@ -185,6 +195,7 @@ export const initReservesByHelper = async (
       variableDebtTokenImpl: variableDebtTokenImplementationAddress,
       underlyingAssetDecimals: reserveInitDecimals[i],
       interestRateStrategyAddress: strategyAddressPerAsset[reserveSymbols[i]],
+      yieldAddress,
       underlyingAsset: reserveTokens[i],
       treasury: treasuryAddress,
       incentivesController: incentives.address,

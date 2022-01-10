@@ -24,6 +24,7 @@
     "test-subgraph:scenarios": "npm run compile && hardhat --network hardhatevm_docker test test-suites/test-sturdy/__setup.spec.ts test-suites/test-sturdy/subgraph-scenarios.spec.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",
     "sturdy:evm:fork:mainnet:migration": "FORK=main hardhat sturdy:mainnet --network forked_main",
+    "sturdy:evm:fork:ftm:migration": "FORK=tenderlyFTM hardhat sturdy:mainnet --network forked_fantom",
     "sturdy:docker:full:migration": "npm run compile && npm run hardhat:docker -- sturdy:mainnet --skip-registry",
     "sturdy:kovan:full:migration": "npm run compile && npm run hardhat:kovan -- sturdy:mainnet --skip-registry",
     "sturdy:docker:full:migration:add-registry": "npm run compile && npm run hardhat:docker -- sturdy:mainnet",

@@ -4,7 +4,7 @@ export interface SymbolMap<T> {
   [symbol: string]: T;
 }
 
-export type eNetwork = eEthereumNetwork;
+export type eNetwork = eEthereumNetwork | eFantomNetwork;
 
 export enum eEthereumNetwork {
   buidlerevm = 'buidlerevm',
@@ -15,18 +15,25 @@ export enum eEthereumNetwork {
   hardhat = 'hardhat',
   geth = 'geth',
   localhost = 'localhost',
-  tenderlyMain = 'tenderlyMain',
+  tenderly = 'tenderly',
   goerli = 'goerli',
+}
+
+export enum eFantomNetwork {
+  ftm = 'ftm',
+  tenderlyFTM = 'tenderlyFTM',
 }
 
 export enum EthereumNetworkNames {
   kovan = 'kovan',
   ropsten = 'ropsten',
   main = 'main',
+  fantom = 'fantom',
 }
 
 export enum SturdyPools {
   proto = 'proto',
+  fantom = 'fantom',
 }
 
 export enum eContractid {
@@ -188,106 +195,19 @@ export interface iAssetCommon<T> {
 export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
-  //  TUSD: T;
   USDC: T;
-  // USDT: T;
-  /*   SUSD: T;
-  AAVE: T;
-  BAT: T;
-  MKR: T;
-  LINK: T;
-  KNC: T;
-  WBTC: T;
-  MANA: T;
-  ZRX: T;
-  SNX: T;
-  BUSD: T;
-  YFI: T;
-  UNI: T; */
   USD: T;
-  /*
-  REN: T;
-  ENJ: T;
-  UniDAIWETH: T;
-  UniWBTCWETH: T;
-  UniAAVEWETH: T;
-  UniBATWETH: T;
-  UniDAIUSDC: T;
-  UniCRVWETH: T;
-  UniLINKWETH: T;
-  UniMKRWETH: T;
-  UniRENWETH: T;
-  UniSNXWETH: T;
-  UniUNIWETH: T;
-  UniUSDCWETH: T;
-  UniWBTCUSDC: T;
-  UniYFIWETH: T;
-  BptWBTCWETH: T;
-  BptBALWETH: T;
-  WMATIC: T;
-  STAKE: T; 
-  xSUSHI: T;
-*/
   stETH: T;
+  yvWFTM: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
 
 export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
-export type iSturdyPoolAssets<T> = Pick<
-  iAssetsWithoutUSD<T>,
-  | 'DAI'
-  //  | 'TUSD'
-  | 'USDC'
-  // | 'USDT'
-  /*
-  | 'SUSD'
-  | 'AAVE'
-  | 'BAT'
-  | 'MKR'
-  | 'LINK'
-  | 'KNC'
-  | 'WBTC'
-  | 'MANA'
-  | 'ZRX'
-  | 'SNX'
-  | 'BUSD' 
-*/
-  | 'WETH'
-  /*
-  | 'YFI'
-  | 'UNI'
-  | 'REN'
-  | 'ENJ'
-  | 'xSUSHI'
-*/
-  | 'stETH'
->;
+export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'stETH'>;
 
-export type iLpPoolAssets<T> = Pick<
-  iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC'
-  // | 'USDT'
-  //  | 'WBTC'
-  // | 'WETH'
-  /*  | 'UniDAIWETH'
-  | 'UniWBTCWETH'
-  | 'UniAAVEWETH'
-  | 'UniBATWETH'
-  | 'UniDAIUSDC'
-  | 'UniCRVWETH'
-  | 'UniLINKWETH'
-  | 'UniMKRWETH'
-  | 'UniRENWETH'
-  | 'UniSNXWETH'
-  | 'UniUNIWETH'
-  | 'UniUSDCWETH'
-  | 'UniWBTCUSDC'
-  | 'UniYFIWETH'
-  | 'BptWBTCWETH'
-  | 'BptBALWETH' */
->;
+export type iFantomPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'yvWFTM'>;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
 
@@ -297,52 +217,10 @@ export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
 export enum TokenContractId {
   DAI = 'DAI',
-  /*   
-  AAVE = 'AAVE',
-  TUSD = 'TUSD',
-  BAT = 'BAT', 
-*/
   WETH = 'WETH',
   USDC = 'USDC',
-  // USDT = 'USDT',
-  /*   
-  SUSD = 'SUSD',
-  ZRX = 'ZRX',
-  MKR = 'MKR',
-  WBTC = 'WBTC',
-  LINK = 'LINK',
-  KNC = 'KNC',
-  MANA = 'MANA',
-  REN = 'REN',
-  SNX = 'SNX',
-  BUSD = 'BUSD', 
-*/
-  // USD = 'USD',
-  /*
-  YFI = 'YFI',
-  UNI = 'UNI',
-  ENJ = 'ENJ',
-  UniDAIWETH = 'UniDAIWETH',
-  UniWBTCWETH = 'UniWBTCWETH',
-  UniAAVEWETH = 'UniAAVEWETH',
-  UniBATWETH = 'UniBATWETH',
-  UniDAIUSDC = 'UniDAIUSDC',
-  UniCRVWETH = 'UniCRVWETH',
-  UniLINKWETH = 'UniLINKWETH',
-  UniMKRWETH = 'UniMKRWETH',
-  UniRENWETH = 'UniRENWETH',
-  UniSNXWETH = 'UniSNXWETH',
-  UniUNIWETH = 'UniUNIWETH',
-  UniUSDCWETH = 'UniUSDCWETH',
-  UniWBTCUSDC = 'UniWBTCUSDC',
-  UniYFIWETH = 'UniYFIWETH',
-  BptWBTCWETH = 'BptWBTCWETH',
-  BptBALWETH = 'BptBALWETH',
-  WMATIC = 'WMATIC',
-  STAKE = 'STAKE', 
-  xSUSHI = 'xSUSHI',
-*/
   stETH = 'stETH',
+  yvWFTM = 'yvWFTM',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -363,12 +241,6 @@ export interface IInterestRateStrategyParams {
 }
 
 export interface IReserveBorrowParams {
-  // optimalUtilizationRate: string;
-  // baseVariableBorrowRate: string;
-  // variableRateSlope1: string;
-  // variableRateSlope2: string;
-  // stableRateSlope1: string;
-  // stableRateSlope2: string;
   borrowingEnabled: boolean;
   stableBorrowRateEnabled: boolean;
   reserveDecimals: string;
@@ -384,7 +256,7 @@ export interface IMarketRates {
   borrowRate: string;
 }
 
-export type iParamsPerNetwork<T> = iEthereumParamsPerNetwork<T>;
+export type iParamsPerNetwork<T> = iEthereumParamsPerNetwork<T> | iFantomParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T> extends iEthereumParamsPerNetwork<T> {}
 
@@ -397,8 +269,13 @@ export interface iEthereumParamsPerNetwork<T> {
   [eEthereumNetwork.hardhat]: T;
   [eEthereumNetwork.geth]: T;
   [eEthereumNetwork.localhost]: T;
-  [eEthereumNetwork.tenderlyMain]: T;
+  [eEthereumNetwork.tenderly]: T;
   [eEthereumNetwork.goerli]: T;
+}
+
+export interface iFantomParamsPerNetwork<T> {
+  [eFantomNetwork.ftm]: T;
+  [eFantomNetwork.tenderlyFTM]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -441,7 +318,7 @@ export interface ILendingRate {
   borrowRate: string;
 }
 
-export interface ICommonConfiguration {
+export interface IBaseConfiguration {
   MarketId: string;
   ATokenNamePrefix: string;
   StableDebtTokenNamePrefix: string;
@@ -459,7 +336,6 @@ export interface ICommonConfiguration {
   LendingRateOracle: iParamsPerNetwork<tEthereumAddress>;
   TokenDistributor: iParamsPerNetwork<tEthereumAddress>;
   SturdyOracle: iParamsPerNetwork<tEthereumAddress>;
-  Lido: iParamsPerNetwork<tEthereumAddress>;
   FallbackOracle: iParamsPerNetwork<tEthereumAddress>;
   ChainlinkAggregator: iParamsPerNetwork<ITokenAddress>;
   PoolAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
@@ -467,18 +343,27 @@ export interface ICommonConfiguration {
   EmergencyAdmin: iParamsPerNetwork<tEthereumAddress | undefined>;
   EmergencyAdminIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
-  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
-  CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
-  UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
+}
+
+export interface ICommonConfiguration extends IBaseConfiguration {
+  ReservesConfig: iMultiPoolsAssets<IReserveParams>;
 }
 
 export interface ISturdyConfiguration extends ICommonConfiguration {
   ReservesConfig: iSturdyPoolAssets<IReserveParams>;
+  Lido: iParamsPerNetwork<tEthereumAddress>;
+  CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
+  UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
+}
+
+export interface IFantomConfiguration extends ICommonConfiguration {
+  ReservesConfig: iFantomPoolAssets<IReserveParams>;
+  YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ITokenAddress {

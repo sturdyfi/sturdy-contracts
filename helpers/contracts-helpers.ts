@@ -13,6 +13,8 @@ import {
   iParamsPerPool,
   eNetwork,
   iEthereumParamsPerNetwork,
+  iFantomParamsPerNetwork,
+  eFantomNetwork,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
@@ -136,8 +138,9 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const { main, ropsten, kovan, coverage, buidlerevm, tenderlyMain, goerli } =
+  const { main, ropsten, kovan, coverage, buidlerevm, tenderly, goerli } =
     param as iEthereumParamsPerNetwork<T>;
+  const { ftm, tenderlyFTM } = param as iFantomParamsPerNetwork<T>;
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
   }
@@ -159,10 +162,14 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return ropsten;
     case eEthereumNetwork.main:
       return main;
-    case eEthereumNetwork.tenderlyMain:
-      return tenderlyMain;
+    case eEthereumNetwork.tenderly:
+      return tenderly;
     case eEthereumNetwork.goerli:
       return goerli;
+    case eFantomNetwork.ftm:
+      return ftm;
+    case eFantomNetwork.tenderlyFTM:
+      return tenderlyFTM;
   }
 };
 

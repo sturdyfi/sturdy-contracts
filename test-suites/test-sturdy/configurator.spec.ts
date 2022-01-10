@@ -230,7 +230,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
 
   it('Activates the ETH reserve as collateral', async () => {
     const { configurator, helpersContract, lido } = testEnv;
-    await configurator.configureReserveAsCollateral(lido.address, '5000', '6500', '11000');
+    await configurator.configureReserveAsCollateral(lido.address, '7000', '7500', '10750');
 
     const {
       decimals,

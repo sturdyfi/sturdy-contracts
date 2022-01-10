@@ -24,14 +24,14 @@ export const rateStrategyStableThree: IInterestRateStrategyParams = {
   stableRateSlope2: '0' /* new BigNumber(0.60).multipliedBy(oneRay).toFixed() */,
 }
 
-// stETH
-export const rateStrategySTETH: IInterestRateStrategyParams = {
-    name: "rateStrategySTETH",
-    optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-    baseVariableBorrowRate: '0',
-    variableRateSlope1: '0',
-    variableRateSlope2: '0',
-    stableRateSlope1: '0',
-    stableRateSlope2: '0',
-  }
+// yvWFTM
+export const rateStrategyYVWFTM: IInterestRateStrategyParams = {
+  name: "rateStrategyYVWFTM",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+}
 

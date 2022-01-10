@@ -232,7 +232,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     const { configurator, helpersContract, lido, deployer } = testEnv;
     await configurator
       .connect(deployer.signer)
-      .configureReserveAsCollateral(lido.address, '5000', '6500', '11000');
+      .configureReserveAsCollateral(lido.address, '7000', '7500', '10750');
 
     const {
       decimals,

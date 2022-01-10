@@ -98,7 +98,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-      '6500',
+      '7500',
       INVALID_HF
     );
   });

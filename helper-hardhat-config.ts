@@ -2,6 +2,7 @@
 import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 import {
   eEthereumNetwork,
+  eFantomNetwork,
   iParamsPerNetwork,
 } from './helpers/types';
 
@@ -47,8 +48,9 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.hardhat]: 'http://localhost:8545',
   [eEthereumNetwork.geth]: 'http://localhost:8545',
   [eEthereumNetwork.buidlerevm]: 'http://localhost:8545',
-  [eEthereumNetwork.tenderlyMain]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
+  [eEthereumNetwork.tenderly]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
   [eEthereumNetwork.localhost]: 'http://localhost:8545',
+  [eFantomNetwork.ftm]: 'https://rpc.ftm.tools/',
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
@@ -60,8 +62,9 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.geth]: 65 * GWEI,
   [eEthereumNetwork.localhost]: 65 * GWEI,
   [eEthereumNetwork.buidlerevm]: 65 * GWEI,
-  [eEthereumNetwork.tenderlyMain]: 0.01 * GWEI,
+  [eEthereumNetwork.tenderly]: 0.01 * GWEI,
   [eEthereumNetwork.goerli]: 65 * GWEI,
+  [eFantomNetwork.ftm]: 0.01 * GWEI,
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
@@ -73,6 +76,7 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eEthereumNetwork.geth]: undefined,
   [eEthereumNetwork.localhost]: undefined,
   [eEthereumNetwork.buidlerevm]: undefined,
-  [eEthereumNetwork.tenderlyMain]: 12406069,
+  [eEthereumNetwork.tenderly]: 12406069,
   [eEthereumNetwork.goerli]: 6055821,
+  [eFantomNetwork.ftm]: 26893669,
 };

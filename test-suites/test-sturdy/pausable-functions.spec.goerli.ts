@@ -277,19 +277,19 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
   //     await configurator.connect(emergencyUser.signer).setPoolPause(false);
   //   });
 
-  it('RebalanceStableBorrowRate', async () => {
-    const { pool, dai, users, configurator, emergencyUser } = testEnv;
-    const user = emergencyUser;
-    // Pause pool
-    await configurator.connect(emergencyUser.signer).setPoolPause(true);
+  // it('RebalanceStableBorrowRate', async () => {
+  //   const { pool, dai, users, configurator, emergencyUser } = testEnv;
+  //   const user = emergencyUser;
+  //   // Pause pool
+  //   await configurator.connect(emergencyUser.signer).setPoolPause(true);
 
-    await expect(
-      pool.connect(user.signer).rebalanceStableBorrowRate(dai.address, user.address)
-    ).revertedWith(LP_IS_PAUSED);
+  //   await expect(
+  //     pool.connect(user.signer).rebalanceStableBorrowRate(dai.address, user.address)
+  //   ).revertedWith(LP_IS_PAUSED);
 
-    // Unpause pool
-    await configurator.connect(emergencyUser.signer).setPoolPause(false);
-  });
+  //   // Unpause pool
+  //   await configurator.connect(emergencyUser.signer).setPoolPause(false);
+  // });
 
   //   it('setUserUseReserveAsCollateral', async () => {
   //     const { pool, weth, users, configurator, emergencyUser } = testEnv;

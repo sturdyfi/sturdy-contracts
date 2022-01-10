@@ -102,8 +102,8 @@ const buidlerConfig: HardhatUserConfig = {
     kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
     ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
-    // tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),   //Mainnet
-    tenderly: getCommonNetworkConfig(eFantomNetwork.tenderlyFTM, 250),   // Fantom
+    tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 3030),   //Mainnet
+    // tenderly: getCommonNetworkConfig(eFantomNetwork.tenderlyFTM, 250),   // Fantom
     geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
     hardhat: {

@@ -65,23 +65,17 @@ library ReserveLogic {
     view
     returns (uint256)
   {
-    uint128 newLiquidityIndex = reserve.liquidityIndex;
-    (, , , , bool isCollateral) = reserve.configuration.getFlags();
-
-    if (isCollateral && reserve.yieldAddress != address(0)) {
-      newLiquidityIndex = reserve.getIndexFromPricePerShare();
-    }
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return newLiquidityIndex;
+      return reserve.liquidityIndex;
     }
 
     uint256 cumulated = MathUtils
       .calculateLinearInterest(reserve.currentLiquidityRate, timestamp)
-      .rayMul(newLiquidityIndex);
+      .rayMul(reserve.liquidityIndex);
 
     return cumulated;
   }

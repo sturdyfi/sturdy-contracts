@@ -295,9 +295,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       IAToken(reserve.aTokenAddress).burn(
         from,
         to,
-        amountToWithdraw.rayMul(reserve.getIndexFromPricePerShare()),
+        amountToWithdraw,
         reserve.getIndexFromPricePerShare()
       );
+      amountToWithdraw = amountToWithdraw.rayDiv(reserve.getIndexFromPricePerShare());
     } else {
       IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
     }

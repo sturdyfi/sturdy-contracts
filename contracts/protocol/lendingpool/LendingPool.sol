@@ -34,7 +34,6 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  *   # Withdraw
  *   # Borrow
  *   # Repay
- *   # Swap their loans between variable and stable rate
  *   # Enable/disable their deposits as collateral rebalance stable rate borrow positions
  *   # Liquidate positions
  *   # Execute Flash Loans

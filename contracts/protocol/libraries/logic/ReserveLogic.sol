@@ -162,11 +162,13 @@ library ReserveLogic {
    * @dev Initializes a reserve
    * @param reserve The reserve object
    * @param aTokenAddress The address of the overlying atoken contract
+   * @param yieldAddress The address of the underlying asset's yield contract of the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function init(
     DataTypes.ReserveData storage reserve,
     address aTokenAddress,
+    address yieldAddress,
     address stableDebtTokenAddress,
     address variableDebtTokenAddress,
     address interestRateStrategyAddress
@@ -176,6 +178,7 @@ library ReserveLogic {
     reserve.liquidityIndex = uint128(WadRayMath.ray());
     reserve.variableBorrowIndex = uint128(WadRayMath.ray());
     reserve.aTokenAddress = aTokenAddress;
+    reserve.yieldAddress = yieldAddress;
     reserve.stableDebtTokenAddress = stableDebtTokenAddress;
     reserve.variableDebtTokenAddress = variableDebtTokenAddress;
     reserve.interestRateStrategyAddress = interestRateStrategyAddress;

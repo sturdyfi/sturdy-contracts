@@ -11,6 +11,7 @@ interface ILendingPoolConfigurator {
     address interestRateStrategyAddress;
     address underlyingAsset;
     address treasury;
+    address yieldAddress;
     address incentivesController;
     string underlyingAssetName;
     string aTokenName;

@@ -304,6 +304,7 @@ interface ILendingPool {
 
   function initReserve(
     address reserve,
+    address yieldAddress,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,

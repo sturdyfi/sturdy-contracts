@@ -66,6 +66,7 @@ export interface TestEnv {
   usdc: MintableERC20;
   aUsdc: AToken;
   aYVWFTM: AToken;
+  WFTM: MintableERC20;
   brick: SturdyToken;
   yvwftm: IERC20Detailed;
   addressesProvider: LendingPoolAddressesProvider;
@@ -93,6 +94,7 @@ const testEnv: TestEnv = {
   usdc: {} as MintableERC20,
   aUsdc: {} as AToken,
   aYVWFTM: {} as AToken,
+  WFTM: {} as MintableERC20,
   brick: {} as SturdyToken,
   yvwftm: {} as IERC20Detailed,
   addressesProvider: {} as LendingPoolAddressesProvider,
@@ -104,6 +106,7 @@ export async function initializeMakeSuite() {
   const poolConfig = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const yvwftmAddress = getParamPerNetwork(poolConfig.YearnVaultFTM, network);
+  const wftmAddress = getParamPerNetwork(poolConfig.WETH, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -175,6 +178,7 @@ export async function initializeMakeSuite() {
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
+  testEnv.WFTM = await getMintableERC20(wftmAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);
 }

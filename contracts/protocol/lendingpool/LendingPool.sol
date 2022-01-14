@@ -5,6 +5,7 @@ import 'hardhat/console.sol';
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
@@ -225,7 +226,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       DataTypes.ReserveData storage reserve = _reserves[_reservesList[i]];
       (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
       if (isActive && !isFrozen && isBorrowing) {
-        volumes[pos] = IERC20(_reservesList[i]).balanceOf(reserve.aTokenAddress);
+        volumes[pos] = IERC20(_reservesList[i]).balanceOf(reserve.aTokenAddress).div(
+          10**reserve.configuration.getDecimals()
+        );
         assets[pos] = _reservesList[i];
         totalVolume = totalVolume.add(volumes[pos]);
         pos = pos.add(1);
@@ -703,6 +706,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * interest rate strategy
    * - Only callable by the LendingPoolConfigurator contract
    * @param asset The address of the underlying asset of the reserve
+   * @param yieldAddress The address of the underlying asset's yield contract of the reserve
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
    * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
@@ -710,6 +714,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function initReserve(
     address asset,
+    address yieldAddress,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
@@ -719,6 +724,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(IERC20(aTokenAddress).totalSupply() == 0, Errors.LP_ATOKEN_INIT_INVALID);
     _reserves[asset].init(
       aTokenAddress,
+      yieldAddress,
       stableDebtAddress,
       variableDebtAddress,
       interestRateStrategyAddress

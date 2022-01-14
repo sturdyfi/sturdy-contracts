@@ -71,7 +71,7 @@ contract YearnVault is GeneralVault {
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = _ftmAmount
-      .mul(oracle.getAssetPrice(WFTM))
+      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
       .div(10**18)
       .mul(10**assetDecimal)
       .div(oracle.getAssetPrice(_tokenOut))
@@ -85,16 +85,16 @@ contract YearnVault is GeneralVault {
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactETHForTokens{
       value: _ftmAmount
     }(minAmountFromPrice, path, address(this), block.timestamp);
-    require(receivedAmounts[0] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[1] > 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
-      IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[0],
+      IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[1],
       Errors.VT_PROCESS_YIELD_INVALID
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[0]);
+    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[1]);
     // Deposit Yield to pool
-    _depositYield(_tokenOut, receivedAmounts[0]);
+    _depositYield(_tokenOut, receivedAmounts[1]);
   }
 
   /**
@@ -130,7 +130,8 @@ contract YearnVault is GeneralVault {
     }
 
     // Deposit WFTM to Yearn Vault and receive yvWFTM
-    assetAmount = IYearnVault(YVWFTM).deposit(assetAmount, msg.sender);
+    IERC20(WFTM).approve(YVWFTM, assetAmount);
+    assetAmount = IYearnVault(YVWFTM).deposit(assetAmount, address(this));
 
     // Make lendingPool to transfer required amount
     IERC20(YVWFTM).approve(address(_addressesProvider.getLendingPool()), assetAmount);

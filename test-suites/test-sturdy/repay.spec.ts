@@ -10,8 +10,8 @@ import { printUserAccountData, ETHfromWei, printDivider } from './helpers/utils/
 const chai = require('chai');
 const { expect } = chai;
 
-makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ', (testEnv) => {
-  it('User1 deposits USDC, User deposits ETH as collatoral and borrows USDC', async () => {
+makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDC, User deposits ETH as collateral and borrows USDC', async () => {
     const { usdc, users, pool, lidoVault, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
@@ -99,8 +99,8 @@ makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ',
   });
 });
 
-makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier ', (testEnv) => {
-  it('User1 deposits USDC, User deposits stETH as collatoral and borrows USDC', async () => {
+makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDC, User deposits stETH as collateral and borrows USDC', async () => {
     const { usdc, users, pool, lidoVault, lido, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';

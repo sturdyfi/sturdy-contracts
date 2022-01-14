@@ -116,7 +116,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
 
     if (isCollateral) {
-      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     }
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -142,7 +142,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param amount The amount to be deposited
    **/
   function depositYield(address asset, uint256 amount) external override whenNotPaused {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
@@ -245,7 +245,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address from,
     address to
   ) external override whenNotPaused returns (uint256) {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     return _withdraw(asset, amount, from, to);
   }
 

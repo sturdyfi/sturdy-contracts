@@ -124,16 +124,16 @@ contract LidoVault is GeneralVault {
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of ETH deposit from user, user has to send ETH
-      require(msg.value > 0, Errors.VT_COLLATORAL_DEPOSIT_REQUIRE_ETH);
+      require(msg.value > 0, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
 
       // Deposit ETH to Lido and receive stETH
       (bool sent, bytes memory data) = LIDO.call{value: msg.value}('');
-      require(sent, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+      require(sent, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
 
       assetAmount = msg.value;
     } else {
       // Case of stETH deposit from user, receive stETH from user
-      require(_asset == LIDO, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+      require(_asset == LIDO, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
       IERC20(LIDO).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
@@ -169,10 +169,10 @@ contract LidoVault is GeneralVault {
       uint256 receivedETHAmount = _convertAssetByCurve(LIDO, _amount);
       // send ETH to user
       (bool sent, bytes memory data) = address(_to).call{value: receivedETHAmount}('');
-      require(sent, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+      require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     } else {
       // Case of stETH withdraw request from user, so directly send
-      require(_asset == LIDO, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+      require(_asset == LIDO, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
       IERC20(LIDO).safeTransfer(_to, _amount);
     }
   }

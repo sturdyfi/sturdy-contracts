@@ -36,7 +36,7 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  *   # Repay
  *   # Enable/disable their deposits as collateral rebalance stable rate borrow positions
  *   # Liquidate positions
- *   # Execute Flash Loans
+ *   # TODO Execute Flash Loans
  * - To be covered by a proxy contract, owned by the LendingPoolAddressesProvider of the specific market
  * - All admin functions are callable by the LendingPoolConfigurator contract defined also in the
  *   LendingPoolAddressesProvider

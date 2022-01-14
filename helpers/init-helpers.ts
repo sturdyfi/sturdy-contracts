@@ -46,7 +46,6 @@ export const initReservesByHelper = async (
   admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
   yieldAddress: tEthereumAddress,
-  incentivesController: tEthereumAddress,
   verify: boolean
 ): Promise<BigNumber> => {
   let gasUsage = BigNumber.from('0');

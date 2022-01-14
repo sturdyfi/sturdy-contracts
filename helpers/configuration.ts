@@ -129,3 +129,15 @@ export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
     Object.keys(ReserveAssets[network]).includes(key)
   );
 };
+
+export const getQuoteCurrency = async (config: ICommonConfiguration) => {
+  switch (config.OracleQuoteCurrency) {
+    case 'ETH':
+    case 'WETH':
+      return getWethAddress(config);
+    case 'USD':
+      return config.ProtocolGlobalParams.UsdAddress;
+    default:
+      throw `Quote ${config.OracleQuoteCurrency} currency not set. Add a new case to getQuoteCurrency switch`;
+  }
+};

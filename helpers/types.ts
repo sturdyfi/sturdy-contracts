@@ -82,6 +82,8 @@ export enum eContractid {
   LendingPool = 'LendingPool',
   LidoVaultImpl = 'LidoVaultImpl',
   LidoVault = 'LidoVault',
+  YearnVaultImpl = 'YearnVaultImpl',
+  YearnVault = 'YearnVault',
 }
 
 /*
@@ -354,6 +356,8 @@ export interface IBaseConfiguration {
 
 export interface ICommonConfiguration extends IBaseConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  OracleQuoteCurrency: string;
+  OracleQuoteUnit: string;
 }
 
 export interface ISturdyConfiguration extends ICommonConfiguration {
@@ -366,10 +370,11 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
 export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | ISturdyConfiguration;
+export type PoolConfiguration = ICommonConfiguration | ISturdyConfiguration | IFantomConfiguration;

@@ -1,6 +1,7 @@
 import {
   ZERO_ADDRESS,
   MOCK_CHAINLINK_AGGREGATORS_PRICES,
+  oneUsd,
 } from '../../helpers/constants';
 import { ICommonConfiguration, eFantomNetwork } from '../../helpers/types';
 
@@ -15,6 +16,8 @@ export const CommonsConfig: ICommonConfiguration = {
   VariableDebtTokenNamePrefix: 'Sturdy variable debt bearing',
   SymbolPrefix: '',
   ProviderId: 0, // Overriden in index.ts
+  OracleQuoteCurrency: 'USD',
+  OracleQuoteUnit: oneUsd.toString(),
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '373068412860',
@@ -97,10 +100,12 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.ftm]: {
       DAI: '0x91d5DEFAFfE2854C7D02F50c80FA1fdc8A721e52',
       USDC: '0x2553f4eeb82d5A26427b8d1106C51499CBa5D99c',
+      yvWFTM: '0xf4766552D15AE4d256Ad41B6cf2933482B0680dc',
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x91d5DEFAFfE2854C7D02F50c80FA1fdc8A721e52',
       USDC: '0x2553f4eeb82d5A26427b8d1106C51499CBa5D99c',
+      yvWFTM: '0xf4766552D15AE4d256Ad41B6cf2933482B0680dc',
     },
   },
   ReserveAssets: {
@@ -121,8 +126,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
   },
   ReserveFactorTreasuryAddress: {
-    [eFantomNetwork.ftm]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eFantomNetwork.tenderlyFTM]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
+    [eFantomNetwork.ftm]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eFantomNetwork.tenderlyFTM]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
   },
   YieldAddress: {
     [eFantomNetwork.ftm]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',

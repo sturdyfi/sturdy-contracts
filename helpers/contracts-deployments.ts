@@ -12,6 +12,7 @@ import {
   ISturdyConfiguration,
   eEthereumNetwork,
   eNetwork,
+  IFantomConfiguration,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
@@ -23,6 +24,7 @@ import {
   getLidoVault,
   getSturdyIncentivesController,
   getSturdyToken,
+  getYearnVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -57,6 +59,7 @@ import {
   UiIncentiveDataProviderFactory,
   DaiFactory,
   ATokenForCollateralFactory,
+  YearnVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -234,7 +237,7 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deploySturdyOracle = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
   verify?: boolean
 ) =>
   withSaveAndVerify(
@@ -630,6 +633,61 @@ export const deployLidoVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.LidoVault, lidoVaultProxyAddress);
 
   return await getLidoVault();
+};
+
+export const deployYearnVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnVault = async (verify?: boolean) => {
+  const yearnVaultImpl = await withSaveAndVerify(
+    await new YearnVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_VAULT'),
+      yearnVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVWFTM'),
+      getParamPerNetwork(config.YearnVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('uniswapRouter'),
+      getParamPerNetwork(config.UniswapRouter, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WETH'),
+      getParamPerNetwork(config.WETH, network)
+    )
+  );
+
+  const yearnVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnVault, yearnVaultProxyAddress);
+
+  return await getYearnVault();
 };
 
 export const deploySturdyIncentivesControllerImpl = async (

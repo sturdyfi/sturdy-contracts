@@ -128,7 +128,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (isCollateral && reserve.yieldAddress != address(0)) {
       isFirstDeposit = IAToken(aToken).mint(
         onBehalfOf,
-        amount.rayMul(reserve.getIndexFromPricePerShare()),
+        amount,
         reserve.getIndexFromPricePerShare()
       );
     } else {
@@ -188,10 +188,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     returns (uint256, uint256)
   {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
     // collateral assetBalance should increase overtime based on vault strategy
     uint256 assetBalance = IERC20(asset).balanceOf(reserve.aTokenAddress);
     // aTokenBalance should not increase overtime because of no borrower.
     uint256 aTokenBalance = IAToken(reserve.aTokenAddress).totalSupply();
+
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
+    }
+
     return (assetBalance, aTokenBalance);
   }
 

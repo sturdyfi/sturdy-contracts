@@ -12,7 +12,12 @@ import {
 } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eNetwork, tEthereumAddress } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
-import { ConfigNames, loadPoolConfig, getGenesisPoolAdmin } from '../../helpers/configuration';
+import {
+  ConfigNames,
+  loadPoolConfig,
+  getGenesisPoolAdmin,
+  getQuoteCurrency,
+} from '../../helpers/configuration';
 import {
   getSturdyOracle,
   getLendingPoolAddressesProvider,
@@ -34,6 +39,8 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         ReserveAssets,
         LendingRateOracleRatesCommon,
         Mocks: { AllAssetsInitialPrices },
+        OracleQuoteCurrency,
+        OracleQuoteUnit,
       } = poolConfig as ICommonConfiguration;
       const addressesProvider = await getLendingPoolAddressesProvider();
       const admin = await getGenesisPoolAdmin(poolConfig);
@@ -68,7 +75,11 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         {}
       );
 
-      const [tokens, aggregators] = getPairsTokenAggregator(reserveAssets, allAggregatorsAddresses);
+      const [tokens, aggregators] = getPairsTokenAggregator(
+        reserveAssets,
+        allAggregatorsAddresses,
+        OracleQuoteCurrency
+      );
 
       let sturdyOracle: SturdyOracle;
       let lendingRateOracle: LendingRateOracle;
@@ -77,7 +88,13 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         sturdyOracle = await await getSturdyOracle(sturdyOracleAddress);
       } else {
         sturdyOracle = await deploySturdyOracle(
-          [tokens, aggregators, fallbackOracle.address, reserveAssets.WETH],
+          [
+            tokens,
+            aggregators,
+            fallbackOracle.address,
+            await getQuoteCurrency(poolConfig),
+            OracleQuoteUnit,
+          ],
           verify
         );
         await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));

@@ -66,7 +66,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         admin,
         treasuryAddress,
         yieldAddress,
-        incentivesController,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);

@@ -124,38 +124,7 @@ const buidlerConfig: HardhatUserConfig = {
     },
 
     localhost: {
-      chainId: 1337,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
-    },
-
-    forked_main: {
-      chainId: 1337,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
-      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-      gas: DEFAULT_BLOCK_GAS_LIMIT,
-      gasPrice: 8000000000,
-      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
-      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
-    },
-
-    forked_goerli: {
-      chainId: 1337,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
-      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-      gas: DEFAULT_BLOCK_GAS_LIMIT,
-      gasPrice: 8000000000,
-      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
-      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
-    },
-
-    forked_fantom: {
-      chainId: 250,
+      chainId: BUIDLEREVM_CHAINID[FORK],
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',

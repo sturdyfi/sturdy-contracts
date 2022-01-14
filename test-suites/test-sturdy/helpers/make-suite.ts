@@ -19,7 +19,7 @@ import {
   getSturdyToken,
   getFirstSigner,
 } from '../../../helpers/contracts-getters';
-import { eNetwork, tEthereumAddress } from '../../../helpers/types';
+import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
 import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
@@ -105,7 +105,7 @@ const testEnv: TestEnv = {
 
 export async function initializeMakeSuite() {
   // Mainnet missing addresses
-  const poolConfig = loadPoolConfig(ConfigNames.Sturdy);
+  const poolConfig = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const lidoAddress = getParamPerNetwork(poolConfig.Lido, network);
 

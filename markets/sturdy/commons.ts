@@ -1,6 +1,7 @@
 import {
   ZERO_ADDRESS,
   MOCK_CHAINLINK_AGGREGATORS_PRICES,
+  oneEther,
 } from '../../helpers/constants';
 import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 
@@ -15,6 +16,8 @@ export const CommonsConfig: ICommonConfiguration = {
   VariableDebtTokenNamePrefix: 'Sturdy variable debt bearing',
   SymbolPrefix: '',
   ProviderId: 0, // Overriden in index.ts
+  OracleQuoteCurrency: 'ETH',
+  OracleQuoteUnit: oneEther.toString(),
   ProtocolGlobalParams: {
     TokenDistributorPercentageBase: '10000',
     MockUsdPriceInWei: '373068412860',
@@ -271,16 +274,16 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.goerli]: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
   },
   ReserveFactorTreasuryAddress: {
-    [eEthereumNetwork.coverage]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.hardhat]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.geth]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.localhost]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.buidlerevm]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.kovan]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.ropsten]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.main]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.tenderly]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
-    [eEthereumNetwork.goerli]: '0x464c71f6c2f760dda6093dcb91c24c39e5d6e18c',
+    [eEthereumNetwork.coverage]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.hardhat]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.geth]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.localhost]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.buidlerevm]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.kovan]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.ropsten]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.main]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.tenderly]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eEthereumNetwork.goerli]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
   },
   YieldAddress: {
     [eEthereumNetwork.coverage]: ZERO_ADDRESS,

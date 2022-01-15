@@ -34,7 +34,7 @@ contract YearnVault is GeneralVault {
     address WFTM = _addressesProvider.getAddress('WFTM');
 
     // Transfer WFTM from user to vault
-    require(_asset == WFTM, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+    require(_asset == WFTM, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(WFTM).transferFrom(msg.sender, address(this), _amount);
 
     // Deposit WFTM to Yearn Vault and receive yvWFTM
@@ -69,7 +69,7 @@ contract YearnVault is GeneralVault {
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
 
     // Withdraw from Yearn Vault and receive WFTM
-    require(_asset == YVWFTM, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+    require(_asset == YVWFTM, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     uint256 assetAmount = IYearnVault(YVWFTM).withdraw(_amount, address(this), 1);
 
     // Deliver WFTM to user

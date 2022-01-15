@@ -17,7 +17,7 @@ const { expect } = chai;
 const DISTRIBUTION_DURATION = 86400; //1day
 
 makeSuite('Check incentive token growing ', (testEnv) => {
-  it('User1 deposits USDC, User deposits ETH as collatoral and borrows USDC', async () => {
+  it('User1 deposits USDC, User deposits ETH as collateral and borrows USDC', async () => {
     const {
       usdc,
       aUsdc,

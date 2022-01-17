@@ -107,6 +107,11 @@ contract GeneralVault is VersionedInitializable {
   function processYield() external virtual {}
 
   /**
+   * @dev Get price per share based on yield strategy
+   */
+  function pricePerShare() external view virtual returns (uint256) {}
+
+  /**
    * @dev Set treasury address and vault fee
    * @param _treasury The treasury address
    * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00

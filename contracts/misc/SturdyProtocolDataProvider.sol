@@ -5,15 +5,18 @@ pragma experimental ABIEncoderV2;
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {IGeneralVault} from '../interfaces/IGeneralVault.sol';
 import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../interfaces/IVariableDebtToken.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {WadRayMath} from '../protocol/libraries/math/WadRayMath.sol';
 
 contract SturdyProtocolDataProvider {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
+  using WadRayMath for uint256;
 
   // address constant MKR = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -111,6 +114,15 @@ contract SturdyProtocolDataProvider {
   {
     DataTypes.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
       .getReserveData(asset);
+    DataTypes.ReserveConfigurationMap memory configuration = ILendingPool(
+      ADDRESSES_PROVIDER.getLendingPool()
+    ).getConfiguration(asset);
+    (, , , , bool isCollateral) = configuration.getFlagsMemory();
+    liquidityIndex = reserve.liquidityIndex;
+
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      liquidityIndex = IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay();
+    }
 
     return (
       IERC20Detailed(asset).balanceOf(reserve.aTokenAddress),
@@ -120,7 +132,7 @@ contract SturdyProtocolDataProvider {
       reserve.currentVariableBorrowRate,
       reserve.currentStableBorrowRate,
       IStableDebtToken(reserve.stableDebtTokenAddress).getAverageStableRate(),
-      reserve.liquidityIndex,
+      liquidityIndex,
       reserve.variableBorrowIndex,
       reserve.lastUpdateTimestamp
     );

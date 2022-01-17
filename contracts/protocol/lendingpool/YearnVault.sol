@@ -105,6 +105,13 @@ contract YearnVault is GeneralVault {
   }
 
   /**
+   * @dev Get price per share based on yield strategy
+   */
+  function pricePerShare() external view override returns (uint256) {
+    return IYearnVault(_addressesProvider.getAddress('YVWFTM')).pricePerShare();
+  }
+
+  /**
    * @dev Deposit to yield pool based on strategy and receive yvWFTM
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
@@ -172,7 +179,7 @@ contract YearnVault is GeneralVault {
       (bool sent, bytes memory data) = address(_to).call{value: assetAmount}('');
       require(sent, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
     } else {
-      require(_asset == YVWFTM, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+      require(_asset == WFTM, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
 
       // Deliver WFTM to user
       TransferHelper.safeTransfer(WFTM, _to, assetAmount);

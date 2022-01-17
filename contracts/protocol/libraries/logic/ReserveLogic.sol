@@ -7,7 +7,7 @@ import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.
 import {IAToken} from '../../../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
-import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
+import {IGeneralVault} from '../../../interfaces/IGeneralVault.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {MathUtils} from '../math/MathUtils.sol';
@@ -390,6 +390,6 @@ library ReserveLogic {
     view
     returns (uint128)
   {
-    return uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
+    return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 }

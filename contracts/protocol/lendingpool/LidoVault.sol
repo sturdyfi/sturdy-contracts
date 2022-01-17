@@ -21,7 +21,6 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
  * @notice stETH/ETH Vault by using Lido, Uniswap, Curve
  * @author Sturdy
  **/
-
 contract LidoVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;

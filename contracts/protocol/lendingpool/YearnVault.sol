@@ -21,7 +21,6 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
  * @notice yvWFTM/WFTM Vault by using Yearn on Fantom
  * @author Sturdy
  **/
-
 contract YearnVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
@@ -32,10 +31,6 @@ contract YearnVault is GeneralVault {
    */
   receive() external payable {}
 
-  /**
-   * @dev Grab excess stETH which was from rebasing on Lido
-   *  And convert stETH -> ETH -> asset, deposit to pool
-   */
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
@@ -63,7 +58,6 @@ contract YearnVault is GeneralVault {
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _ftmAmount) internal {
-    // Approve the uniswapRouter to spend WETH.
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
     address WFTM = _addressesProvider.getAddress('WETH');
 
@@ -93,7 +87,7 @@ contract YearnVault is GeneralVault {
 
     // Make lendingPool to transfer required amount
     IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[1]);
-    // Deposit Yield to pool
+    // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
 
@@ -113,7 +107,7 @@ contract YearnVault is GeneralVault {
     returns (address, uint256)
   {
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
-    address WFTM = _addressesProvider.getAddress('WETH');
+    address WFTM = _addressesProvider.getAddress('WETH'); // TODO @bshevchenko: WFTM != WETH
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM

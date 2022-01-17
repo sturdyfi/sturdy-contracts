@@ -16,7 +16,7 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
-//todo:to block collatoral to be borrowed
+//todo:to block collateral to be borrowed
 //todo:how the aToken ~==~ stETH calculated for balance
 
 //todo:new reserve logic - maybe
@@ -138,10 +138,10 @@ library ReserveLogic {
 
   /**
    * @dev Accumulates a predefined amount of asset to the reserve as a fixed, instantaneous income. Used for example to accumulate
-   * the flashloan fee to the reserve, and spread it between all the depositors
+   * the flash loan fee to the reserve, and spread it between all the depositors
    * @param reserve The reserve object
    * @param totalLiquidity The total liquidity available in the reserve
-   * @param amount The amount to accomulate
+   * @param amount The amount to accumulate
    **/
   function cumulateToLiquidityIndex(
     DataTypes.ReserveData storage reserve,
@@ -390,6 +390,7 @@ library ReserveLogic {
     view
     returns (uint128)
   {
+    // TODO @bshevchenko: IBeefyVault?
     return uint128(IYearnVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 }

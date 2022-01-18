@@ -71,7 +71,11 @@ contract BeefyVault is GeneralVault {
     path[1] = _tokenOut;
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
-      _wethAmount, minAmountFromPrice, path, address(this), block.timestamp
+      _wethAmount,
+      minAmountFromPrice,
+      path,
+      address(this),
+      block.timestamp
     );
     require(receivedAmounts[1] > 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
@@ -109,7 +113,7 @@ contract BeefyVault is GeneralVault {
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
     IERC20(WETH).approve(MOOWETH, _amount);
-    IBeefyVault(MOOWETH).deposit(_amount, address(this));
+    IBeefyVault(MOOWETH).deposit(_amount);
 
     // Make lendingPool to transfer required amount
     IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), _amount);
@@ -119,7 +123,7 @@ contract BeefyVault is GeneralVault {
   /**
    * @dev Get Withdrawal amount of mooScreamETH based on strategy
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
+  function _getWithdrawalAmount(address, uint256 _amount)
     internal
     view
     override
@@ -148,8 +152,8 @@ contract BeefyVault is GeneralVault {
     // noinspection SpellCheckingInspection TODO COLLATORAL
     require(_asset == MOOWETH, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
 
-    // Deliver WFTM to user
-    TransferHelper.safeTransfer(WFTM, _to, assetAmount);
+    // Deliver WETH to user
+    TransferHelper.safeTransfer(WETH, _to, assetAmount);
   }
 
   /**

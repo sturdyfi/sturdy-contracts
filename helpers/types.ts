@@ -283,6 +283,7 @@ export interface iFantomParamsPerNetwork<T> {
 
 export interface iParamsPerPool<T> {
   [SturdyPools.proto]: T;
+  [SturdyPools.fantom]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -350,7 +351,6 @@ export interface IBaseConfiguration {
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
-  YieldAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
 }
 

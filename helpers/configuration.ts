@@ -14,6 +14,8 @@ import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
 import { deployWETHMocked } from './contracts-deployments';
+import { getYearnVault } from './contracts-getters';
+import { ZERO_ADDRESS } from './constants';
 
 export enum ConfigNames {
   Commons = 'Commons',
@@ -43,6 +45,9 @@ export const getReservesConfigByPool = (pool: SturdyPools): iMultiPoolsAssets<IR
     {
       [SturdyPools.proto]: {
         ...SturdyConfig.ReservesConfig,
+      },
+      [SturdyPools.fantom]: {
+        ...FantomConfig.ReservesConfig,
       },
     },
     pool
@@ -83,7 +88,9 @@ export const getTreasuryAddress = async (
 
 export const getYieldAddress = async (config: ICommonConfiguration): Promise<tEthereumAddress> => {
   const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
-  return getParamPerNetwork(config.YieldAddress, <eNetwork>currentNetwork);
+  if (currentNetwork == 'ftm') return (await getYearnVault()).address;
+
+  return ZERO_ADDRESS;
 };
 
 export const getATokenDomainSeparatorPerNetwork = (

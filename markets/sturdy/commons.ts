@@ -285,18 +285,6 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.tenderly]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
     [eEthereumNetwork.goerli]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
   },
-  YieldAddress: {
-    [eEthereumNetwork.coverage]: ZERO_ADDRESS,
-    [eEthereumNetwork.hardhat]: ZERO_ADDRESS,
-    [eEthereumNetwork.geth]: ZERO_ADDRESS,
-    [eEthereumNetwork.localhost]: ZERO_ADDRESS,
-    [eEthereumNetwork.buidlerevm]: ZERO_ADDRESS,
-    [eEthereumNetwork.kovan]: ZERO_ADDRESS,
-    [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
-    [eEthereumNetwork.main]: ZERO_ADDRESS,
-    [eEthereumNetwork.tenderly]: ZERO_ADDRESS,
-    [eEthereumNetwork.goerli]: ZERO_ADDRESS,
-  },
   IncentivesController: {
     [eEthereumNetwork.coverage]: ZERO_ADDRESS,
     [eEthereumNetwork.hardhat]: ZERO_ADDRESS,

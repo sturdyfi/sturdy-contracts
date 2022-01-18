@@ -127,13 +127,13 @@
       ]
     },
     {
-      "description": "User 0 deposits 1 stETH in an empty reserve",
+      "description": "User 0 deposits 1000 WFTM in an empty reserve",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "0"
           },
           "expected": "success"
@@ -141,7 +141,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "0"
           },
           "expected": "success"
@@ -149,8 +149,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "0"
           },
           "expected": "revert",
@@ -159,13 +159,13 @@
       ]
     },
     {
-      "description": "User 1 deposits 1 stETH after user 0",
+      "description": "User 1 deposits 1000 WFTM after user 0",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "success"
@@ -174,7 +174,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1"
           },
           "expected": "success"
@@ -182,8 +182,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "revert",
@@ -192,13 +192,13 @@
       ]
     },
     {
-      "description": "User 1 deposits 0 stETH (revert expected)",
+      "description": "User 1 deposits 0 WFTM (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "0"
           },
           "expected": "success"
@@ -206,7 +206,7 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "amount": "0",
             "user": "1"
           },
@@ -231,13 +231,13 @@
       ]
     },
     {
-      "description": "User 1 deposits 1 stETH on behalf of user 2, user 2 tries to borrow 2000 USDC",
+      "description": "User 1 deposits 1000 WFTM on behalf of user 2, user 2 tries to borrow 2000 USDC",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "success"
@@ -245,7 +245,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1"
           },
           "expected": "success"
@@ -253,8 +253,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1",
             "onBehalfOf": "1"
           },

@@ -3,7 +3,7 @@
   "description": "Test cases for the swapBorrowRateMode() function.",
   "stories": [
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 2 stETH as collateral, borrows 100 DAI at variable rate and swaps to stable after one year",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 2000 WFTM as collateral, borrows 100 DAI at variable rate and swaps to stable after one year",
       "actions": [
         {
           "name": "mint",
@@ -34,8 +34,8 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "2",
+            "reserve": "yvWFTM",
+            "amount": "2000",
             "user": "1"
           },
           "expected": "success"
@@ -43,7 +43,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1"
           },
           "expected": "success"
@@ -51,8 +51,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "2",
+            "reserve": "yvWFTM",
+            "amount": "2000",
             "user": "1"
           },
           "expected": "success"

@@ -1,236 +1,245 @@
-// import BigNumber from 'bignumber.js';
-// import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
-// import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
-// import { makeSuite } from './helpers/make-suite';
-// import { RateMode } from '../../helpers/types';
-// import { printUserAccountData, ETHfromWei, printDivider } from './helpers/utils/helpers';
-// import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
+import BigNumber from 'bignumber.js';
+import { APPROVAL_AMOUNT_LENDING_POOL, oneUsd, ZERO_ADDRESS } from '../../helpers/constants';
+import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
+import { makeSuite } from './helpers/make-suite';
+import { RateMode } from '../../helpers/types';
+import { printUserAccountData, ETHfromWei, printDivider } from './helpers/utils/helpers';
+import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 
-// const chai = require('chai');
-// const { expect } = chai;
+const chai = require('chai');
+const { expect } = chai;
 
-// makeSuite('Deposit ETH as collatoral and other as for pool liquidity supplier ', (testEnv) => {
-//   it('User1 deposits USDC, User deposits ETH as collatoral and borrows USDC', async () => {
-//     const { usdc, users, pool, lidoVault, oracle } = testEnv;
-//     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
-//     const depositor = users[0];
-//     const borrower = users[1];
-//     printDivider();
-//     const depositUSDC = '7000';
-//     //Make some test USDC for depositor
-//     await impersonateAccountsHardhat([usdcOwnerAddress]);
-//     const signer = await ethers.provider.getSigner(usdcOwnerAddress);
-//     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-//     await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+makeSuite('Deposit FTM as collatoral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDC, User deposits FTM as collatoral and borrows USDC', async () => {
+    const { usdc, users, pool, yearnVault, oracle, WFTM } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const depositor = users[0];
+    const borrower = users[1];
+    printDivider();
+    const depositUSDC = '7000';
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
 
-//     //approve protocol to access depositor wallet
-//     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     //Supplier  deposits 7000 USDC
-//     await pool
-//       .connect(depositor.signer)
-//       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+    //Supplier  deposits 7000 USDC
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-//     const supplierGlobalData = await pool.getUserAccountData(depositor.address);
-//     printUserAccountData({
-//       user: `Supplier ${depositor.address}`,
-//       action: 'deposited',
-//       amount: depositUSDC,
-//       coin: 'USDC',
-//       ...supplierGlobalData,
-//     });
+    const supplierGlobalData = await pool.getUserAccountData(depositor.address);
+    printUserAccountData({
+      user: `Supplier ${depositor.address}`,
+      action: 'deposited',
+      amount: depositUSDC,
+      coin: 'USDC',
+      unit: 'USD',
+      ...supplierGlobalData,
+    });
 
-//     //user 2 deposits 1 ETH
-//     const amountETHtoDeposit = ethers.utils.parseEther('1');
-//     await lidoVault
-//       .connect(borrower.signer)
-//       .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
-//     {
-//       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
-//       printUserAccountData({
-//         user: `Borrower ${borrower.address}`,
-//         action: 'deposited',
-//         amount: ETHfromWei(amountETHtoDeposit),
-//         coin: 'stETH',
-//         ...supplierGlobalData,
-//       });
-//     }
+    //user 2 deposits 1000 FTM
+    const amountFTMtoDeposit = ethers.utils.parseEther('1000');
+    await yearnVault
+      .connect(borrower.signer)
+      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
+    {
+      const supplierGlobalData = await pool.getUserAccountData(borrower.address);
+      printUserAccountData({
+        user: `Borrower ${borrower.address}`,
+        action: 'deposited',
+        amount: ETHfromWei(amountFTMtoDeposit),
+        coin: 'WFTM',
+        unit: 'USD',
+        ...supplierGlobalData,
+      });
+    }
 
-//     //user 2 borrows
-//     const userGlobalData = await pool.getUserAccountData(borrower.address);
-//     const usdcPrice = await oracle.getAssetPrice(usdc.address);
+    //user 2 borrows
+    const userGlobalData = await pool.getUserAccountData(borrower.address);
+    const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
-//     const amountUSDCToBorrow = await convertToCurrencyDecimals(
-//       usdc.address,
-//       new BigNumber(userGlobalData.availableBorrowsETH.toString())
-//         .div(usdcPrice.toString())
-//         .multipliedBy(0.95)
-//         .toFixed(0)
-//     );
+    const amountUSDCToBorrow = await convertToCurrencyDecimals(
+      usdc.address,
+      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+        .div(usdcPrice.toString())
+        .multipliedBy(0.95)
+        .toFixed(0)
+    );
 
-//     await pool
-//       .connect(borrower.signer)
-//       .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
+    await pool
+      .connect(borrower.signer)
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
-//     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
-//     printUserAccountData({
-//       user: `Borrower ${borrower.address}`,
-//       action: 'borrowed',
-//       amount: amountUSDCToBorrow,
-//       coin: 'USDC',
-//       ...userGlobalDataAfter,
-//     });
+    const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+    printUserAccountData({
+      user: `Borrower ${borrower.address}`,
+      action: 'borrowed',
+      amount: amountUSDCToBorrow,
+      coin: 'USDC',
+      unit: 'USD',
+      ...userGlobalDataAfter,
+    });
 
-//     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-//       '7500',
-//       'Invalid liquidation threshold'
-//     );
-//   });
-// });
+    expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
+      '7500',
+      'Invalid liquidation threshold'
+    );
+  });
+});
 
-// makeSuite('Deposit stETH as collatoral and other as for pool liquidity supplier ', (testEnv) => {
-//   it('User1 deposits USDC, User deposits stETH as collatoral and borrows USDC', async () => {
-//     const { usdc, users, pool, lidoVault, lido, oracle } = testEnv;
-//     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
-//     const depositor = users[0];
-//     const borrower = users[1];
-//     printDivider();
-//     const depositUSDC = '7000';
-//     //Make some test USDC for depositor
-//     await impersonateAccountsHardhat([usdcOwnerAddress]);
-//     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
-//     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-//     await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+makeSuite('Deposit WFTM as collatoral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDC, User deposits FTM as collatoral and borrows USDC', async () => {
+    const { usdc, users, pool, yearnVault, yvwftm, oracle, WFTM } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const depositor = users[0];
+    const borrower = users[1];
+    printDivider();
+    const depositUSDC = '7000';
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
 
-//     //approve protocol to access depositor wallet
-//     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     //Supplier  deposits 7000 USDC
-//     await pool
-//       .connect(depositor.signer)
-//       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+    //Supplier  deposits 7000 USDC
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-//     const supplierGlobalData = await pool.getUserAccountData(depositor.address);
-//     printUserAccountData({
-//       user: `Supplier ${depositor.address}`,
-//       action: 'deposited',
-//       amount: depositUSDC,
-//       coin: 'USDC',
-//       ...supplierGlobalData,
-//     });
+    const supplierGlobalData = await pool.getUserAccountData(depositor.address);
+    printUserAccountData({
+      user: `Supplier ${depositor.address}`,
+      action: 'deposited',
+      amount: depositUSDC,
+      coin: 'USDC',
+      unit: 'USD',
+      ...supplierGlobalData,
+    });
 
-//     //user 2 deposits 1 stETH
-//     const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
-//     const depositStETH = '1';
-//     const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, depositStETH);
-//     //Make some test stETH for borrower
-//     await impersonateAccountsHardhat([stETHOwnerAddress]);
-//     signer = await ethers.provider.getSigner(stETHOwnerAddress);
-//     await lido.connect(signer).transfer(borrower.address, amountStETHtoDeposit);
-//     //approve protocol to access depositor wallet
-//     await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    // user 2 deposits 1000 FTM
+    const WFTMOwnerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
+    const depositWFTM = '1000';
+    const depositWFTMAmount = await convertToCurrencyDecimals(WFTM.address, depositWFTM);
+    //Make some test WFTM for borrower
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    signer = await ethers.provider.getSigner(WFTMOwnerAddress);
 
-//     await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountStETHtoDeposit);
-//     {
-//       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
-//       printUserAccountData({
-//         user: `Borrower ${borrower.address}`,
-//         action: 'deposited',
-//         amount: ETHfromWei(amountStETHtoDeposit),
-//         coin: 'stETH',
-//         ...supplierGlobalData,
-//       });
-//     }
+    //transfer to borrower
+    await WFTM.connect(signer).transfer(borrower.address, depositWFTMAmount);
 
-//     //user 2 borrows
-//     const userGlobalData = await pool.getUserAccountData(borrower.address);
-//     const usdcPrice = await oracle.getAssetPrice(usdc.address);
+    //approve protocol to access borrower wallet
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     const amountUSDCToBorrow = await convertToCurrencyDecimals(
-//       usdc.address,
-//       new BigNumber(userGlobalData.availableBorrowsETH.toString())
-//         .div(usdcPrice.toString())
-//         .multipliedBy(0.95)
-//         .toFixed(0)
-//     );
+    // deposit collateral to borrow
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
+    {
+      const supplierGlobalData = await pool.getUserAccountData(borrower.address);
+      printUserAccountData({
+        user: `Borrower ${borrower.address}`,
+        action: 'deposited',
+        amount: ETHfromWei(depositWFTMAmount),
+        coin: 'WFTM',
+        unit: 'USD',
+        ...supplierGlobalData,
+      });
+    }
 
-//     await pool
-//       .connect(borrower.signer)
-//       .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
+    //user 2 borrows
+    const userGlobalData = await pool.getUserAccountData(borrower.address);
+    const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
-//     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
-//     printUserAccountData({
-//       user: `Borrower ${borrower.address}`,
-//       action: 'borrowed',
-//       amount: amountUSDCToBorrow,
-//       coin: 'USDC',
-//       ...userGlobalDataAfter,
-//     });
+    const amountUSDCToBorrow = await convertToCurrencyDecimals(
+      usdc.address,
+      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+        .div(usdcPrice.toString())
+        .multipliedBy(0.95)
+        .toFixed(0)
+    );
 
-//     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
-//       '7500',
-//       'Invalid liquidation threshold'
-//     );
-//   });
-// });
+    await pool
+      .connect(borrower.signer)
+      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
-// makeSuite('borrow stETH', (testEnv) => {
-//   it('Should revert if borrow stETH. User1 deposits stETH, User2 deposits ETH as collatoral and borrows stETH', async () => {
-//     const { lido, users, pool, lidoVault, oracle } = testEnv;
-//     const ethers = (DRE as any).ethers;
-//     const depositor = users[0];
-//     const borrower = users[1];
-//     printDivider();
-//     const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
-//     const depositStETH = '10';
-//     //Make some test stETH for depositor
-//     await impersonateAccountsHardhat([stETHOwnerAddress]);
-//     const signer = await ethers.provider.getSigner(stETHOwnerAddress);
-//     await lido.connect(signer).transfer(depositor.address, ethers.utils.parseEther(depositStETH));
+    const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+    printUserAccountData({
+      user: `Borrower ${borrower.address}`,
+      action: 'borrowed',
+      amount: amountUSDCToBorrow,
+      coin: 'USDC',
+      unit: 'USD',
+      ...userGlobalDataAfter,
+    });
 
-//     //approve protocol to access depositor wallet
-//     await lido.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
+      '7500',
+      'Invalid liquidation threshold'
+    );
+  });
+});
 
-//     //user 1 deposits 5 stETH
-//     const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, '5');
+makeSuite('borrow yvWFTM', (testEnv) => {
+  it('Should revert if borrow yvWFTM. User1 deposits yvWFTM, User2 deposits FTM as collatoral and borrows yvWFTM', async () => {
+    const { yvwftm, users, pool, yearnVault, oracle } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const depositor = users[0];
+    const borrower = users[1];
+    printDivider();
+    const yvWFTMOwnerAddress = '0x41fB1251bd68796Ff7fdF51Fb312529F81817913';
+    const deposityvWFTM = '1000';
+    const deposityvWFTMAmount = await convertToCurrencyDecimals(yvwftm.address, deposityvWFTM);
+    //Make some test WFTM for depositor
+    await impersonateAccountsHardhat([yvWFTMOwnerAddress]);
+    let signer = await ethers.provider.getSigner(yvWFTMOwnerAddress);
+    await yvwftm.connect(signer).transfer(depositor.address, deposityvWFTMAmount);
 
-//     await expect(
-//       pool
-//         .connect(depositor.signer)
-//         .deposit(lido.address, amountStETHtoDeposit, depositor.address, '0')
-//     ).to.be.reverted;
+    //approve protocol to access depositor wallet
+    await yvwftm.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     //Make 5ETH deposit for collatoral
-//     await lidoVault
-//       .connect(borrower.signer)
-//       .depositCollateral(ZERO_ADDRESS, 0, { value: ethers.utils.parseEther('5') });
+    await expect(
+      pool
+        .connect(depositor.signer)
+        .deposit(yvwftm.address, deposityvWFTMAmount, depositor.address, '0')
+    ).to.be.reverted;
 
-//     const borrowerGlobalData = await pool.getUserAccountData(borrower.address);
-//     printUserAccountData({
-//       user: `Borrower ${borrower.address}`,
-//       action: 'deposits',
-//       amount: 5,
-//       coin: 'stETH',
-//       ...borrowerGlobalData,
-//     });
-//     //user 2 borrows
+    //Make 1000ETH deposit for collatoral
+    await yearnVault
+      .connect(borrower.signer)
+      .depositCollateral(ZERO_ADDRESS, 0, { value: ethers.utils.parseEther('1000') });
 
-//     const userGlobalData = await pool.getUserAccountData(borrower.address);
-//     const stETHPrice = await oracle.getAssetPrice(lido.address);
+    const borrowerGlobalData = await pool.getUserAccountData(borrower.address);
+    printUserAccountData({
+      user: `Borrower ${borrower.address}`,
+      action: 'deposits',
+      amount: 1000,
+      coin: 'FTM',
+      unit: 'USD',
+      ...borrowerGlobalData,
+    });
+    //user 2 borrows
 
-//     const amountStETHToBorrow = await convertToCurrencyDecimals(
-//       lido.address,
-//       new BigNumber(userGlobalData.availableBorrowsETH.toString())
-//         .div(stETHPrice.toString())
-//         .multipliedBy(0.95)
-//         .toFixed(0)
-//     );
-//     await expect(
-//       pool
-//         .connect(borrower.signer)
-//         .borrow(lido.address, amountStETHToBorrow, RateMode.Stable, '0', borrower.address)
-//     ).to.be.reverted;
-//   });
-// });
+    const userGlobalData = await pool.getUserAccountData(borrower.address);
+    const FTMPrice = await oracle.getAssetPrice(yvwftm.address);
+
+    const amountyvWFTMToBorrow = await convertToCurrencyDecimals(
+      yvwftm.address,
+      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+        .div(FTMPrice.toString())
+        .multipliedBy(0.95)
+        .toFixed(0)
+    );
+    await expect(
+      pool
+        .connect(borrower.signer)
+        .borrow(yvwftm.address, amountyvWFTMToBorrow, RateMode.Stable, '0', borrower.address)
+    ).to.be.reverted;
+  });
+});

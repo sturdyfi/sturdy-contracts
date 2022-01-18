@@ -3,7 +3,7 @@ import { ONE_YEAR, RAY, MAX_UINT_AMOUNT, PERCENTAGE_FACTOR } from '../../../../h
 import {
   eNetwork,
   IReserveParams,
-  iSturdyPoolAssets,
+  iFantomPoolAssets,
   RateMode,
   tEthereumAddress,
 } from '../../../../helpers/types';
@@ -16,7 +16,7 @@ import { DRE } from '../../../../helpers/misc-utils';
 export const strToBN = (amount: string): BigNumber => new BigNumber(amount);
 
 interface Configuration {
-  reservesParams: iSturdyPoolAssets<IReserveParams>;
+  reservesParams: iFantomPoolAssets<IReserveParams>;
 }
 
 export const configuration: Configuration = <Configuration>{};
@@ -66,7 +66,79 @@ export const calcExpectedUserDataAfterDeposit = (
     txTimestamp
   ).plus(amountDeposited);
 
-  const config = loadPoolConfig(ConfigNames.Sturdy);
+  const config = loadPoolConfig(ConfigNames.Fantom);
+  if (
+    config.ReservesConfig[reserveSymbol]?.collateralEnabled &&
+    userDataBeforeAction.currentATokenBalance.eq(0)
+  ) {
+    expectedUserData.usageAsCollateralEnabled = true;
+  } else {
+    expectedUserData.usageAsCollateralEnabled = userDataBeforeAction.usageAsCollateralEnabled;
+  }
+
+  expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.minus(amountDeposited);
+
+  expectedUserData.currentStableDebt = expectedUserData.principalStableDebt =
+    calcExpectedStableDebtTokenBalance(
+      userDataBeforeAction.principalStableDebt,
+      userDataBeforeAction.stableBorrowRate,
+      userDataBeforeAction.stableRateLastUpdated,
+      txTimestamp
+    );
+
+  expectedUserData.currentVariableDebt = expectedUserData.principalStableDebt =
+    calcExpectedVariableDebtTokenBalance(
+      reserveDataBeforeAction,
+      userDataBeforeAction,
+      txTimestamp
+    );
+
+  return expectedUserData;
+};
+
+export const calcExpectedUserDataAfterDepositCollateral = (
+  amountDeposited: string,
+  reserveDataBeforeAction: ReserveData,
+  reserveDataAfterAction: ReserveData,
+  userDataBeforeAction: UserReserveData,
+  txTimestamp: BigNumber,
+  currentTimestamp: BigNumber,
+  txCost: BigNumber,
+  reserveSymbol: string
+): UserReserveData => {
+  const expectedUserData = <UserReserveData>{};
+
+  expectedUserData.currentStableDebt = calcExpectedStableDebtTokenBalance(
+    userDataBeforeAction.principalStableDebt,
+    userDataBeforeAction.stableBorrowRate,
+    userDataBeforeAction.stableRateLastUpdated,
+    txTimestamp
+  );
+
+  expectedUserData.currentVariableDebt = calcExpectedVariableDebtTokenBalance(
+    reserveDataBeforeAction,
+    userDataBeforeAction,
+    txTimestamp
+  );
+
+  expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
+  expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
+  expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
+  expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
+  expectedUserData.stableRateLastUpdated = userDataBeforeAction.stableRateLastUpdated;
+
+  expectedUserData.liquidityRate = reserveDataAfterAction.liquidityRate;
+
+  expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(
+    userDataBeforeAction,
+    new BigNumber(10).exponentiatedBy(27),
+    new BigNumber(amountDeposited),
+    new BigNumber(0)
+  );
+  expectedUserData.currentATokenBalance = expectedUserData.scaledATokenBalance;
+
+  const config = loadPoolConfig(ConfigNames.Fantom);
   if (
     config.ReservesConfig[reserveSymbol]?.collateralEnabled &&
     userDataBeforeAction.currentATokenBalance.eq(0)
@@ -126,6 +198,70 @@ export const calcExpectedUserDataAfterWithdraw = (
   );
 
   expectedUserData.currentATokenBalance = aTokenBalance.minus(amountWithdrawn);
+
+  expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
+  expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
+
+  expectedUserData.currentStableDebt = calcExpectedStableDebtTokenBalance(
+    userDataBeforeAction.principalStableDebt,
+    userDataBeforeAction.stableBorrowRate,
+    userDataBeforeAction.stableRateLastUpdated,
+    txTimestamp
+  );
+
+  expectedUserData.currentVariableDebt = calcExpectedVariableDebtTokenBalance(
+    reserveDataBeforeAction,
+    userDataBeforeAction,
+    txTimestamp
+  );
+
+  expectedUserData.variableBorrowIndex = userDataBeforeAction.variableBorrowIndex;
+  expectedUserData.stableBorrowRate = userDataBeforeAction.stableBorrowRate;
+  expectedUserData.stableRateLastUpdated = userDataBeforeAction.stableRateLastUpdated;
+
+  expectedUserData.liquidityRate = reserveDataAfterAction.liquidityRate;
+
+  if (userDataBeforeAction.currentATokenBalance.eq(0)) {
+    expectedUserData.usageAsCollateralEnabled = true;
+  } else {
+    //if the user is withdrawing everything, usageAsCollateralEnabled must be false
+    if (expectedUserData.currentATokenBalance.eq(0)) {
+      expectedUserData.usageAsCollateralEnabled = false;
+    } else {
+      expectedUserData.usageAsCollateralEnabled = userDataBeforeAction.usageAsCollateralEnabled;
+    }
+  }
+
+  expectedUserData.walletBalance = userDataBeforeAction.walletBalance.plus(amountWithdrawn);
+
+  return expectedUserData;
+};
+
+export const calcExpectedUserDataAfterWithdrawCollateral = (
+  amountWithdrawn: string,
+  reserveDataBeforeAction: ReserveData,
+  reserveDataAfterAction: ReserveData,
+  userDataBeforeAction: UserReserveData,
+  txTimestamp: BigNumber,
+  currentTimestamp: BigNumber,
+  txCost: BigNumber
+): UserReserveData => {
+  const expectedUserData = <UserReserveData>{};
+
+  const aTokenBalance = userDataBeforeAction.scaledATokenBalance;
+
+  if (amountWithdrawn == MAX_UINT_AMOUNT) {
+    amountWithdrawn = aTokenBalance.toFixed(0);
+  }
+
+  expectedUserData.scaledATokenBalance = calcExpectedScaledATokenBalance(
+    userDataBeforeAction,
+    new BigNumber(10).exponentiatedBy(27),
+    new BigNumber(0),
+    new BigNumber(amountWithdrawn)
+  );
+
+  expectedUserData.currentATokenBalance = expectedUserData.scaledATokenBalance;
 
   expectedUserData.principalStableDebt = userDataBeforeAction.principalStableDebt;
   expectedUserData.scaledVariableDebt = userDataBeforeAction.scaledVariableDebt;
@@ -225,6 +361,67 @@ export const calcExpectedReserveDataAfterDeposit = (
   return expectedReserveData;
 };
 
+export const calcExpectedReserveDataAfterDepositCollateral = (
+  amountDeposited: string,
+  reserveDataBeforeAction: ReserveData,
+  reserveDataAfterAction: ReserveData,
+  txTimestamp: BigNumber
+): ReserveData => {
+  const expectedReserveData: ReserveData = <ReserveData>{};
+
+  expectedReserveData.address = reserveDataBeforeAction.address;
+
+  expectedReserveData.totalLiquidity = new BigNumber(reserveDataBeforeAction.totalLiquidity).plus(
+    new BigNumber(amountDeposited).rayDiv(reserveDataAfterAction.liquidityIndex)
+  );
+  expectedReserveData.availableLiquidity = new BigNumber(
+    reserveDataBeforeAction.availableLiquidity
+  ).plus(new BigNumber(amountDeposited).rayDiv(reserveDataAfterAction.liquidityIndex));
+
+  expectedReserveData.averageStableBorrowRate = reserveDataBeforeAction.averageStableBorrowRate;
+  expectedReserveData.liquidityIndex = calcExpectedLiquidityIndex(
+    reserveDataAfterAction,
+    txTimestamp
+  );
+  expectedReserveData.variableBorrowIndex = calcExpectedVariableBorrowIndex(
+    reserveDataBeforeAction,
+    txTimestamp
+  );
+
+  expectedReserveData.totalStableDebt = calcExpectedTotalStableDebt(
+    reserveDataBeforeAction.principalStableDebt,
+    reserveDataBeforeAction.averageStableBorrowRate,
+    reserveDataBeforeAction.totalStableDebtLastUpdated,
+    txTimestamp
+  );
+  expectedReserveData.totalVariableDebt = calcExpectedTotalVariableDebt(
+    reserveDataBeforeAction,
+    expectedReserveData.variableBorrowIndex
+  );
+
+  expectedReserveData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt;
+  expectedReserveData.principalStableDebt = reserveDataBeforeAction.principalStableDebt;
+
+  expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
+    expectedReserveData.totalLiquidity
+  );
+  const rates = calcExpectedInterestRates(
+    reserveDataBeforeAction.symbol,
+    reserveDataBeforeAction.marketStableRate,
+    expectedReserveData.utilizationRate,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
+    expectedReserveData.averageStableBorrowRate
+  );
+  expectedReserveData.liquidityRate = rates[0];
+  expectedReserveData.stableBorrowRate = rates[1];
+  expectedReserveData.variableBorrowRate = rates[2];
+
+  return expectedReserveData;
+};
+
 export const calcExpectedReserveDataAfterWithdraw = (
   amountWithdrawn: string,
   reserveDataBeforeAction: ReserveData,
@@ -273,6 +470,74 @@ export const calcExpectedReserveDataAfterWithdraw = (
 
   expectedReserveData.totalLiquidity = new BigNumber(reserveDataBeforeAction.availableLiquidity)
     .minus(amountWithdrawn)
+    .plus(expectedReserveData.totalVariableDebt)
+    .plus(expectedReserveData.totalStableDebt);
+
+  expectedReserveData.utilizationRate = calcExpectedUtilizationRate(
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
+    expectedReserveData.totalLiquidity
+  );
+  const rates = calcExpectedInterestRates(
+    reserveDataBeforeAction.symbol,
+    reserveDataBeforeAction.marketStableRate,
+    expectedReserveData.utilizationRate,
+    expectedReserveData.totalStableDebt,
+    expectedReserveData.totalVariableDebt,
+    expectedReserveData.averageStableBorrowRate
+  );
+  expectedReserveData.liquidityRate = rates[0];
+  expectedReserveData.stableBorrowRate = rates[1];
+  expectedReserveData.variableBorrowRate = rates[2];
+
+  return expectedReserveData;
+};
+
+export const calcExpectedReserveDataAfterWithdrawCollateral = (
+  amountWithdrawn: string,
+  reserveDataBeforeAction: ReserveData,
+  reserveDataAfterAction: ReserveData,
+  userDataBeforeAction: UserReserveData,
+  txTimestamp: BigNumber
+): ReserveData => {
+  const expectedReserveData: ReserveData = <ReserveData>{};
+
+  expectedReserveData.address = reserveDataBeforeAction.address;
+
+  if (amountWithdrawn == MAX_UINT_AMOUNT) {
+    amountWithdrawn = userDataBeforeAction.scaledATokenBalance.toString();
+  }
+
+  expectedReserveData.availableLiquidity = new BigNumber(
+    reserveDataBeforeAction.availableLiquidity
+  ).minus(new BigNumber(amountWithdrawn).rayDiv(reserveDataAfterAction.liquidityIndex));
+
+  expectedReserveData.principalStableDebt = reserveDataBeforeAction.principalStableDebt;
+  expectedReserveData.scaledVariableDebt = reserveDataBeforeAction.scaledVariableDebt;
+
+  expectedReserveData.liquidityIndex = calcExpectedLiquidityIndex(
+    reserveDataAfterAction,
+    txTimestamp
+  );
+  expectedReserveData.variableBorrowIndex = calcExpectedVariableBorrowIndex(
+    reserveDataBeforeAction,
+    txTimestamp
+  );
+
+  expectedReserveData.totalStableDebt = calcExpectedTotalStableDebt(
+    reserveDataBeforeAction.principalStableDebt,
+    reserveDataBeforeAction.averageStableBorrowRate,
+    reserveDataBeforeAction.totalStableDebtLastUpdated,
+    txTimestamp
+  );
+  expectedReserveData.totalVariableDebt = expectedReserveData.scaledVariableDebt.rayMul(
+    expectedReserveData.variableBorrowIndex
+  );
+
+  expectedReserveData.averageStableBorrowRate = reserveDataBeforeAction.averageStableBorrowRate;
+
+  expectedReserveData.totalLiquidity = new BigNumber(reserveDataBeforeAction.availableLiquidity)
+    .minus(new BigNumber(amountWithdrawn).rayDiv(reserveDataAfterAction.liquidityIndex))
     .plus(expectedReserveData.totalVariableDebt)
     .plus(expectedReserveData.totalStableDebt);
 

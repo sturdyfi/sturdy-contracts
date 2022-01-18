@@ -51,7 +51,7 @@ contract YearnVault is GeneralVault {
     uint256 yieldWFTM = IYearnVault(YVWFTM).withdraw(yieldYVWFTM, address(this), 1);
 
     // WFTM -> FTM
-    IWETH(_addressesProvider.getAddress('WETH')).withdraw(yieldWFTM);
+    IWETH(_addressesProvider.getAddress('WFTM')).withdraw(yieldWFTM);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWFTM);
     for (uint256 i = 0; i < assetYields.length; i++) {
@@ -63,9 +63,9 @@ contract YearnVault is GeneralVault {
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _ftmAmount) internal {
-    // Approve the uniswapRouter to spend WETH.
+    // Approve the uniswapRouter to spend WFTM.
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WFTM = _addressesProvider.getAddress('WETH');
+    address WFTM = _addressesProvider.getAddress('WFTM');
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -120,7 +120,7 @@ contract YearnVault is GeneralVault {
     returns (address, uint256)
   {
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
-    address WFTM = _addressesProvider.getAddress('WETH');
+    address WFTM = _addressesProvider.getAddress('WFTM');
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM
@@ -167,7 +167,7 @@ contract YearnVault is GeneralVault {
     address _to
   ) internal override {
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
-    address WFTM = _addressesProvider.getAddress('WETH');
+    address WFTM = _addressesProvider.getAddress('WFTM');
 
     // Withdraw from Yearn Vault and receive WFTM
     uint256 assetAmount = IYearnVault(YVWFTM).withdraw(_amount, address(this), 1);

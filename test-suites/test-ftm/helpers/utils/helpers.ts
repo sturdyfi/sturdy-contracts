@@ -1,4 +1,5 @@
 import { LendingPool } from '../../../../types/LendingPool';
+import { ethers } from 'ethers';
 import { ReserveData, UserReserveData } from './interfaces';
 import {
   getLendingRateOracle,
@@ -90,7 +91,14 @@ export const getUserData = async (
     getATokenUserData(reserve, user, helper),
   ]);
 
-  const token = await getMintableERC20(reserve);
+  const config = loadPoolConfig(ConfigNames.Fantom);
+  const network = <eNetwork>DRE.network.name;
+  const reserveAssets = getParamPerNetwork(config.ReserveAssets, network);
+  const WFTM = getParamPerNetwork(config.WETH, network);
+  let token = await getMintableERC20(reserve);
+  if (reserve == reserveAssets.yvWFTM)
+    token = await getMintableERC20(WFTM);
+
   const walletBalance = new BigNumber((await token.balanceOf(sender || user)).toString());
 
   return {
@@ -109,12 +117,12 @@ export const getUserData = async (
 };
 
 export const getReserveAddressFromSymbol = async (symbol: string) => {
-  const config = loadPoolConfig(ConfigNames.Sturdy);
+  const config = loadPoolConfig(ConfigNames.Fantom);
   const network = <eNetwork>DRE.network.name;
   const reserveAssets = getParamPerNetwork(config.ReserveAssets, network);
 
   const token = await getMintableERC20(
-    reserveAssets[symbol] || (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
+    reserveAssets[symbol] || (await getDb().get(`${symbol}.${DRE.network.name}`).value())?.address
   );
 
   if (!token) {
@@ -139,8 +147,16 @@ const getATokenUserData = async (
 
 export const printUserAccountData = async (state: any) => {
   console.log(`${state?.user} ${state?.action}: ${state?.amount} ${state?.coin}`);
-  console.log(`totalDebtETH: `, ETHfromWei(state?.totalDebtETH.toString()));
-  console.log(`availableBorrowsETH: `, ETHfromWei(state?.availableBorrowsETH.toString()));
+  if (state?.unit == 'USD')
+    console.log(`totalDebtUSD: `, ethers.utils.formatUnits(state?.totalDebtETH.toString(), 8).toString());
+  else
+    console.log(`totalDebtETH: `, ETHfromWei(state?.totalDebtETH.toString()));
+
+  if (state?.unit == 'USD')
+    console.log(`availableBorrowsUSD: `, ethers.utils.formatUnits(state?.availableBorrowsETH.toString(), 8).toString());
+  else
+    console.log(`availableBorrowsETH: `, ETHfromWei(state?.availableBorrowsETH.toString()));
+
   console.log(
     `currentLiquidationThreshold: `,
     ETHfromWei(state?.currentLiquidationThreshold.toString())

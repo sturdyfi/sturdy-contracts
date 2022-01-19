@@ -69,6 +69,7 @@ export enum eContractid {
   UiIncentiveDataProvider = 'UiIncentiveDataProvider',
   UiPoolDataProvider = 'UiPoolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
+  IFantomETH = 'IFantomETH',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',

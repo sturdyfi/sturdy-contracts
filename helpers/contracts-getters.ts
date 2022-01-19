@@ -36,6 +36,7 @@ import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
 import { DRE, getDb, notFalsyOrZeroAddress, omit } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
+import { IFantomETHFactory } from '../types/IFantomETHFactory';
 
 export const getFirstSigner = async () => (await getEthersSigners())[0];
 
@@ -97,6 +98,12 @@ export const getMintableERC20 = async (address: tEthereumAddress) =>
       (
         await getDb().get(`${eContractid.MintableERC20}.${DRE.network.name}`).value()
       ).address,
+    await getFirstSigner()
+  );
+
+export const getIFantomETH = async (address: tEthereumAddress) =>
+  await IFantomETHFactory.connect(
+    address || (await getDb().get(`${eContractid.IFantomETH}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 

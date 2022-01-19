@@ -29,6 +29,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
   });
 
   it('yvWFTM & aYVWFTM balance check after deposit for collateral', async () => {
+    // TODO duplicates above
     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
     const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
     const aTokensBalance = await aYVWFTM.balanceOf(deployer.address);
@@ -36,7 +37,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     expect(aTokensBalance.gt(parseEther('1199.99999'))).to.be.equal(true);
   });
 
-  it('transfering aYVWFTM should be success after deposit FTM', async () => {
+  it('transferring aYVWFTM should be success after deposit FTM', async () => {
     const { aYVWFTM, users } = testEnv;
     await expect(aYVWFTM.transfer(users[0].address, parseEther('100'))).to.not.be.reverted;
   });

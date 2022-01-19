@@ -17,7 +17,7 @@ import {
   getSturdyToken,
   getFirstSigner,
   getYearnVault,
-  getBeefyVault,
+  getBeefyVault, getIFantomETH,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -43,6 +43,7 @@ import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
+import { IFantomETH } from '../../../types/IFantomETH';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -70,6 +71,7 @@ export interface TestEnv {
   aYVWFTM: AToken;
   aMOOWETH: AToken;
   WFTM: MintableERC20;
+  WETH: IFantomETH;
   brick: SturdyToken;
   yvwftm: IERC20Detailed;
   mooweth: IERC20Detailed;
@@ -101,6 +103,7 @@ const testEnv: TestEnv = {
   aYVWFTM: {} as AToken,
   aMOOWETH: {} as AToken,
   WFTM: {} as MintableERC20,
+  WETH: {} as IFantomETH,
   brick: {} as SturdyToken,
   yvwftm: {} as IERC20Detailed,
   mooweth: {} as IERC20Detailed,
@@ -115,6 +118,7 @@ export async function initializeMakeSuite() {
   const yvwftmAddress = getParamPerNetwork(poolConfig.YearnVaultFTM, network);
   const moowethAddress = getParamPerNetwork(poolConfig.BeefyVaultFTM, network);
   const wftmAddress = getParamPerNetwork(poolConfig.WFTM, network);
+  const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -190,6 +194,7 @@ export async function initializeMakeSuite() {
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.WFTM = await getMintableERC20(wftmAddress);
+  testEnv.WETH = await getIFantomETH(wethAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);
   testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);

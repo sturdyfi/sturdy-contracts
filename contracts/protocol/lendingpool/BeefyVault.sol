@@ -113,11 +113,14 @@ contract BeefyVault is GeneralVault {
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
     IERC20(WETH).approve(MOOWETH, _amount);
+
+    uint256 before = IERC20(MOOWETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).deposit(_amount);
+    uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before; // TODO confirm
 
     // Make lendingPool to transfer required amount
-    IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), _amount);
-    return (MOOWETH, _amount);
+    IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    return (MOOWETH, assetAmount);
   }
 
   /**

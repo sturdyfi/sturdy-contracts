@@ -33,11 +33,11 @@ task('sturdy:ftm', 'Deploy development enviroment')
     console.log('5. Deploy Incentives impl');
     await DRE.run('full:deploy-incentives-impl', { pool: POOL_NAME });
 
-    console.log('6. Initialize lending pool');
-    await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
-
-    console.log('8. Deploy Yearn vault');
+    console.log('6. Deploy Yearn vault');
     await DRE.run('full:deploy-yearn-vault', { pool: POOL_NAME });
+
+    console.log('8. Initialize lending pool');
+    await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();

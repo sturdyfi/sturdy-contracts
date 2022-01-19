@@ -43,13 +43,13 @@
       ]
     },
     {
-      "description": "User 1 Deposits 2 stETH, disables stETH as collateral, borrows 400 DAI (revert expected)",
+      "description": "User 1 Deposits 2000 WFTM, disables WFTM as collateral, borrows 400 DAI (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "2",
+            "reserve": "yvWFTM",
+            "amount": "2000",
             "user": "1"
           },
           "expected": "success"
@@ -57,7 +57,7 @@
         {
           "name": "approve",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1"
           },
           "expected": "success"
@@ -65,8 +65,8 @@
         {
           "name": "deposit",
           "args": {
-            "reserve": "stETH",
-            "amount": "2",
+            "reserve": "yvWFTM",
+            "amount": "2000",
             "user": "1"
           },
           "expected": "revert",
@@ -75,7 +75,7 @@
         {
           "name": "setUseAsCollateral",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1",
             "useAsCollateral": "false"
           },

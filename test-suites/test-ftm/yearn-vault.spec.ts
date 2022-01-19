@@ -13,140 +13,140 @@ import { ILidoFactory } from '../../types/ILidoFactory';
 
 const { parseEther } = ethers.utils;
 
-// makeSuite('yearnVault', (testEnv: TestEnv) => {
-//   it('failed deposit for collateral without ftm', async () => {
-//     const { yearnVault } = testEnv;
+makeSuite('yearnVault', (testEnv: TestEnv) => {
+  it('failed deposit for collateral without ftm', async () => {
+    const { yearnVault } = testEnv;
 
-//     await expect(yearnVault.depositCollateral(ZERO_ADDRESS, 0)).to.be.reverted;
-//   });
+    await expect(yearnVault.depositCollateral(ZERO_ADDRESS, 0)).to.be.reverted;
+  });
 
-//   it('deposit FTM for collateral', async () => {
-//     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
-//     await yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1200') });
-//     expect(await yvwftm.balanceOf(yearnVault.address)).to.be.equal(0);
-//     expect(await aYVWFTM.balanceOf(yearnVault.address)).to.be.equal(0);
-//     expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(true);
-//     expect(await ethers.getDefaultProvider().getBalance(yearnVault.address)).to.be.equal(0);
-//   });
+  it('deposit FTM for collateral', async () => {
+    const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
+    await yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1200') });
+    expect(await yvwftm.balanceOf(yearnVault.address)).to.be.equal(0);
+    expect(await aYVWFTM.balanceOf(yearnVault.address)).to.be.equal(0);
+    expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(true);
+    expect(await ethers.getDefaultProvider().getBalance(yearnVault.address)).to.be.equal(0);
+  });
 
-//   it('yvWFTM & aYVWFTM balance check after deposit for collateral', async () => {
-//     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
-//     const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
-//     const aTokensBalance = await aYVWFTM.balanceOf(deployer.address);
-//     expect(yvWFTMBalanceOfPool).to.be.equal(0);
-//     expect(aTokensBalance.gt(parseEther('1199.99999'))).to.be.equal(true);
-//   });
+  it('yvWFTM & aYVWFTM balance check after deposit for collateral', async () => {
+    const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
+    const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
+    const aTokensBalance = await aYVWFTM.balanceOf(deployer.address);
+    expect(yvWFTMBalanceOfPool).to.be.equal(0);
+    expect(aTokensBalance.gt(parseEther('1199.99999'))).to.be.equal(true);
+  });
 
-//   it('transfering aYVWFTM should be success after deposit FTM', async () => {
-//     const { aYVWFTM, users } = testEnv;
-//     await expect(aYVWFTM.transfer(users[0].address, parseEther('100'))).to.not.be.reverted;
-//   });
+  it('transfering aYVWFTM should be success after deposit FTM', async () => {
+    const { aYVWFTM, users } = testEnv;
+    await expect(aYVWFTM.transfer(users[0].address, parseEther('100'))).to.not.be.reverted;
+  });
 
-//   it('withdraw from collateral should be failed if user has not enough balance', async () => {
-//     const { deployer, yearnVault } = testEnv;
-//     await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address)).to
-//       .be.reverted;
-//   });
+  it('withdraw from collateral should be failed if user has not enough balance', async () => {
+    const { deployer, yearnVault } = testEnv;
+    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address)).to
+      .be.reverted;
+  });
 
-//   it('withdraw from collateral', async () => {
-//     const { deployer, yvwftm, yearnVault } = testEnv;
-//     const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
-//     const ftmBeforeBalanceOfUser = await deployer.signer.getBalance();
+  it('withdraw from collateral', async () => {
+    const { deployer, yvwftm, yearnVault } = testEnv;
+    const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
+    const ftmBeforeBalanceOfUser = await deployer.signer.getBalance();
 
-//     await yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1099'), deployer.address);
+    await yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1099'), deployer.address);
 
-//     const ftmCurrentBalanceOfUser = await deployer.signer.getBalance();
-//     expect(yvWFTMBalanceOfPool).to.be.equal(0);
-//     expect(ftmCurrentBalanceOfUser.sub(ftmBeforeBalanceOfUser).gt(parseEther('1090'))).to.be.equal(
-//       true
-//     );
-//     expect(await ethers.getDefaultProvider().getBalance(yearnVault.address)).to.be.equal(0);
-//   });
-// });
+    const ftmCurrentBalanceOfUser = await deployer.signer.getBalance();
+    expect(yvWFTMBalanceOfPool).to.be.equal(0);
+    expect(ftmCurrentBalanceOfUser.sub(ftmBeforeBalanceOfUser).gt(parseEther('1090'))).to.be.equal(
+      true
+    );
+    expect(await ethers.getDefaultProvider().getBalance(yearnVault.address)).to.be.equal(0);
+  });
+});
 
-// makeSuite('yearnVault - use other coin as collatoral', (testEnv) => {
-//   it('Should revert to use any of coin other than FTM, yvWFTM as collatoral. ', async () => {
-//     const { usdc, users, yearnVault } = testEnv;
-//     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
-//     const depositor = users[0];
-//     printDivider();
+makeSuite('yearnVault - use other coin as collatoral', (testEnv) => {
+  it('Should revert to use any of coin other than FTM, yvWFTM as collatoral. ', async () => {
+    const { usdc, users, yearnVault } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const depositor = users[0];
+    printDivider();
 
-//     //Make some test USDC for depositor
-//     await impersonateAccountsHardhat([usdcOwnerAddress]);
-//     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
-//     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
-//     await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
 
-//     //approve protocol to access depositor wallet
-//     await usdc.connect(depositor.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     //depositor deposits 1000 usdc as collateral
-//     await expect(
-//       yearnVault.connect(depositor.signer).depositCollateral(usdc.address, amountUSDCtoDeposit)
-//     ).to.be.reverted;
-//   });
-// });
+    //depositor deposits 1000 usdc as collateral
+    await expect(
+      yearnVault.connect(depositor.signer).depositCollateral(usdc.address, amountUSDCtoDeposit)
+    ).to.be.reverted;
+  });
+});
 
-// makeSuite('yearnVault', (testEnv: TestEnv) => {
-//   it('distribute yield to supplier for single asset', async () => {
-//     const { pool, yearnVault, usdc, users, yvwftm, WFTM, aUsdc, aYVWFTM } = testEnv;
-//     const depositor = users[0];
-//     const borrower = users[1];
-//     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
-//     const depositUSDC = '7000';
-//     //Make some test USDC for depositor
-//     await impersonateAccountsHardhat([usdcOwnerAddress]);
-//     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
-//     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-//     await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+makeSuite('yearnVault', (testEnv: TestEnv) => {
+  it('distribute yield to supplier for single asset', async () => {
+    const { pool, yearnVault, usdc, users, yvwftm, WFTM, aUsdc, aYVWFTM } = testEnv;
+    const depositor = users[0];
+    const borrower = users[1];
+    const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const depositUSDC = '7000';
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
 
-//     //approve protocol to access depositor wallet
-//     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     //Supplier  deposits 7000 USDC
-//     await pool
-//       .connect(depositor.signer)
-//       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+    //Supplier  deposits 7000 USDC
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-//     const WFTMOwnerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
-//     const depositWFTM = '1000';
-//     const depositWFTMAmount = await convertToCurrencyDecimals(WFTM.address, depositWFTM);
-//     //Make some test WFTM for borrower
-//     await impersonateAccountsHardhat([WFTMOwnerAddress]);
-//     signer = await ethers.provider.getSigner(WFTMOwnerAddress);
+    const WFTMOwnerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
+    const depositWFTM = '1000';
+    const depositWFTMAmount = await convertToCurrencyDecimals(WFTM.address, depositWFTM);
+    //Make some test WFTM for borrower
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    signer = await ethers.provider.getSigner(WFTMOwnerAddress);
 
-//     //transfer to borrower
-//     await WFTM.connect(signer).transfer(borrower.address, depositWFTMAmount);
+    //transfer to borrower
+    await WFTM.connect(signer).transfer(borrower.address, depositWFTMAmount);
 
-//     //approve protocol to access borrower wallet
-//     await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access borrower wallet
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     WFTMOwnerAddress
-//     // deposit collateral to borrow
-//     await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
-//     expect(await yearnVault.getYieldAmount()).to.be.equal(0);
+    WFTMOwnerAddress
+    // deposit collateral to borrow
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
+    expect(await yearnVault.getYieldAmount()).to.be.equal(0);
 
-//     //To simulate yield in lendingPool, deposit some yvWFTM to aYVWFTM contract
-//     const yvWFTMOwnerAddress = '0x41fB1251bd68796Ff7fdF51Fb312529F81817913';
-//     const yieldyvWFTM = '1000';
-//     const yieldyvWFTMAmount = await convertToCurrencyDecimals(yvwftm.address, yieldyvWFTM);
-//     //Make some test WFTM for borrower
-//     await impersonateAccountsHardhat([yvWFTMOwnerAddress]);
-//     signer = await ethers.provider.getSigner(yvWFTMOwnerAddress);
-//     await yvwftm.connect(signer).transfer(aYVWFTM.address, yieldyvWFTMAmount);
+    //To simulate yield in lendingPool, deposit some yvWFTM to aYVWFTM contract
+    const yvWFTMOwnerAddress = '0x41fB1251bd68796Ff7fdF51Fb312529F81817913';
+    const yieldyvWFTM = '1000';
+    const yieldyvWFTMAmount = await convertToCurrencyDecimals(yvwftm.address, yieldyvWFTM);
+    //Make some test WFTM for borrower
+    await impersonateAccountsHardhat([yvWFTMOwnerAddress]);
+    signer = await ethers.provider.getSigner(yvWFTMOwnerAddress);
+    await yvwftm.connect(signer).transfer(aYVWFTM.address, yieldyvWFTMAmount);
 
-//     expect((await yearnVault.getYieldAmount()).gt(parseEther('999'))).to.be.equal(true);
-//     expect(await usdc.balanceOf(yearnVault.address)).to.be.equal(0);
-//     expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
+    expect((await yearnVault.getYieldAmount()).gt(parseEther('999'))).to.be.equal(true);
+    expect(await usdc.balanceOf(yearnVault.address)).to.be.equal(0);
+    expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
 
-//     // process yield, so all yield should be converted to usdc
-//     await yearnVault.processYield();
-//     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
-//     expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
-//   });
-// });
+    // process yield, so all yield should be converted to usdc
+    await yearnVault.processYield();
+    const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
+    expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
+  });
+});
 
 makeSuite('yearnVault', (testEnv: TestEnv) => {
   it('distribute yield to supplier for multiple asset', async () => {
@@ -228,68 +228,68 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
   });
 });
 
-// makeSuite('yearnVault', (testEnv: TestEnv) => {
-//   it('move some yield to treasury', async () => {
-//     const { pool, yearnVault, usdc, users, yvwftm, aUsdc, aYVWFTM, WFTM } = testEnv;
-//     const depositor = users[0];
-//     const borrower = users[1];
-//     const treasury = users[2];
-//     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
-//     const depositUSDC = '7000';
-//     //Make some test USDC for depositor
-//     await impersonateAccountsHardhat([usdcOwnerAddress]);
-//     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
-//     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-//     await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+makeSuite('yearnVault', (testEnv: TestEnv) => {
+  it('move some yield to treasury', async () => {
+    const { pool, yearnVault, usdc, users, yvwftm, aUsdc, aYVWFTM, WFTM } = testEnv;
+    const depositor = users[0];
+    const borrower = users[1];
+    const treasury = users[2];
+    const ethers = (DRE as any).ethers;
+    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const depositUSDC = '7000';
+    //Make some test USDC for depositor
+    await impersonateAccountsHardhat([usdcOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
 
-//     //approve protocol to access depositor wallet
-//     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access depositor wallet
+    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     //Supplier  deposits 7000 USDC
-//     await pool
-//       .connect(depositor.signer)
-//       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+    //Supplier  deposits 7000 USDC
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-//     const WFTMOwnerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
-//     const depositWFTM = '1000';
-//     const depositWFTMAmount = await convertToCurrencyDecimals(WFTM.address, depositWFTM);
-//     //Make some test WFTM for borrower
-//     await impersonateAccountsHardhat([WFTMOwnerAddress]);
-//     signer = await ethers.provider.getSigner(WFTMOwnerAddress);
+    const WFTMOwnerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
+    const depositWFTM = '1000';
+    const depositWFTMAmount = await convertToCurrencyDecimals(WFTM.address, depositWFTM);
+    //Make some test WFTM for borrower
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    signer = await ethers.provider.getSigner(WFTMOwnerAddress);
 
-//     //transfer to borrower
-//     await WFTM.connect(signer).transfer(borrower.address, depositWFTMAmount);
+    //transfer to borrower
+    await WFTM.connect(signer).transfer(borrower.address, depositWFTMAmount);
 
-//     //approve protocol to access borrower wallet
-//     await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access borrower wallet
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-//     // deposit collateral to borrow
-//     await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
-//     expect(await yearnVault.getYieldAmount()).to.be.equal(0);
+    // deposit collateral to borrow
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
+    expect(await yearnVault.getYieldAmount()).to.be.equal(0);
 
-//     //To simulate yield in lendingPool, deposit some yvWFTM to aYVWFTM contract
-//     const yvWFTMOwnerAddress = '0x41fB1251bd68796Ff7fdF51Fb312529F81817913';
-//     const yieldyvWFTM = '1000';
-//     const yieldyvWFTMAmount = await convertToCurrencyDecimals(yvwftm.address, yieldyvWFTM);
-//     //Make some test WFTM for borrower
-//     await impersonateAccountsHardhat([yvWFTMOwnerAddress]);
-//     signer = await ethers.provider.getSigner(yvWFTMOwnerAddress);
-//     await yvwftm.connect(signer).transfer(aYVWFTM.address, yieldyvWFTMAmount);
+    //To simulate yield in lendingPool, deposit some yvWFTM to aYVWFTM contract
+    const yvWFTMOwnerAddress = '0x41fB1251bd68796Ff7fdF51Fb312529F81817913';
+    const yieldyvWFTM = '1000';
+    const yieldyvWFTMAmount = await convertToCurrencyDecimals(yvwftm.address, yieldyvWFTM);
+    //Make some test WFTM for borrower
+    await impersonateAccountsHardhat([yvWFTMOwnerAddress]);
+    signer = await ethers.provider.getSigner(yvWFTMOwnerAddress);
+    await yvwftm.connect(signer).transfer(aYVWFTM.address, yieldyvWFTMAmount);
 
-//     expect((await yearnVault.getYieldAmount()).gt(parseEther('999'))).to.be.equal(true);
-//     expect(await usdc.balanceOf(yearnVault.address)).to.be.equal(0);
-//     expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
-//     expect(await yvwftm.balanceOf(treasury.address)).to.be.equal(0);
+    expect((await yearnVault.getYieldAmount()).gt(parseEther('999'))).to.be.equal(true);
+    expect(await usdc.balanceOf(yearnVault.address)).to.be.equal(0);
+    expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
+    expect(await yvwftm.balanceOf(treasury.address)).to.be.equal(0);
 
-//     // process yield, so all yield should be converted to usdc
-//     await yearnVault.setTreasuryInfo(treasury.address, '2000');
-//     await yearnVault.processYield();
+    // process yield, so all yield should be converted to usdc
+    await yearnVault.setTreasuryInfo(treasury.address, '2000');
+    await yearnVault.processYield();
 
-//     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
-//     expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
-//     expect(
-//         (await yvwftm.balanceOf(treasury.address)).gt(yieldyvWFTMAmount.mul(19).div(100))
-//       ).to.be.equal(true);
-//   });
-// });
+    const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
+    expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
+    expect(
+        (await yvwftm.balanceOf(treasury.address)).gt(yieldyvWFTMAmount.mul(19).div(100))
+      ).to.be.equal(true);
+  });
+});

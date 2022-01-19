@@ -34,7 +34,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 1 deposits 1 stETH as collateral and borrows 100 DAI at variable rate",
+      "description": "User 0 deposits 1000 DAI, user 1 deposits 1000 WFTM as collateral and borrows 100 DAI at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -65,8 +65,8 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "success"
@@ -74,7 +74,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1"
           },
           "expected": "success"
@@ -82,8 +82,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "success"
@@ -203,7 +203,7 @@
         {
           "name": "withdrawCollateral",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "amount": "-1",
             "user": "1"
           },
@@ -244,7 +244,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 USDC, user 1 deposits 1 stETH as collateral and borrows 100 USDC at variable rate",
+      "description": "User 0 deposits 1000 USDC, user 1 deposits 1000 WFTM as collateral and borrows 100 USDC at variable rate",
       "actions": [
         {
           "name": "mint",
@@ -275,8 +275,8 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "success"
@@ -284,7 +284,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "1"
           },
           "expected": "success"
@@ -292,8 +292,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "1",
+            "reserve": "yvWFTM",
+            "amount": "1000",
             "user": "1"
           },
           "expected": "success"
@@ -381,7 +381,7 @@
         {
           "name": "withdrawCollateral",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "amount": "-1",
             "user": "1"
           },
@@ -432,13 +432,13 @@
       ]
     },
     {
-      "description": "user 3 deposits 0.1 stETH collateral to borrow 100 DAI; 0.1 stETH is not enough to borrow 100 DAI (revert expected)",
+      "description": "user 3 deposits 100 WFTM collateral to borrow 100 DAI; 100 WFTM is not enough to borrow 100 DAI (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "0.1",
+            "reserve": "yvWFTM",
+            "amount": "100",
             "user": "3"
           },
           "expected": "success"
@@ -446,7 +446,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "3"
           },
           "expected": "success"
@@ -454,8 +454,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "0.1",
+            "reserve": "yvWFTM",
+            "amount": "100",
             "user": "3"
           },
           "expected": "success"
@@ -474,12 +474,12 @@
       ]
     },
     {
-      "description": "user 3 withdraws the 0.1 stETH",
+      "description": "user 3 withdraws the 100 WFTM",
       "actions": [
         {
           "name": "withdrawCollateral",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "amount": "-1",
             "user": "3"
           },
@@ -530,13 +530,13 @@
       ]
     },
     {
-      "description": "user 3 deposits 0.1 stETH collateral to borrow 100 USDC; 0.1 stETH is not enough to borrow 100 USDC (revert expected)",
+      "description": "user 3 deposits 100 WFTM collateral to borrow 100 USDC; 100 WFTM is not enough to borrow 100 USDC (revert expected)",
       "actions": [
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "0.1",
+            "reserve": "yvWFTM",
+            "amount": "100",
             "user": "3"
           },
           "expected": "success"
@@ -544,7 +544,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "3"
           },
           "expected": "success"
@@ -552,8 +552,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "0.1",
+            "reserve": "yvWFTM",
+            "amount": "100",
             "user": "3"
           },
           "expected": "success"
@@ -572,12 +572,12 @@
       ]
     },
     {
-      "description": "user 3 withdraws the 0.1 stETH",
+      "description": "user 3 withdraws the 100 WFTM",
       "actions": [
         {
           "name": "withdrawCollateral",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "amount": "-1",
             "user": "3"
           },
@@ -586,7 +586,7 @@
       ]
     },
     {
-      "description": "User 0 deposits 1000 DAI, user 6 deposits 2 stETH and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 withdraws",
+      "description": "User 0 deposits 1000 DAI, user 6 deposits 2000 WFTM and borrow 100 DAI at variable rate first, then 100 DAI at stable rate, repays everything. User 0 withdraws",
       "actions": [
         {
           "name": "mint",
@@ -617,8 +617,8 @@
         {
           "name": "mint",
           "args": {
-            "reserve": "stETH",
-            "amount": "2",
+            "reserve": "yvWFTM",
+            "amount": "2000",
             "user": "6"
           },
           "expected": "success"
@@ -626,7 +626,7 @@
         {
           "name": "approveVault",
           "args": {
-            "reserve": "stETH",
+            "reserve": "yvWFTM",
             "user": "6"
           },
           "expected": "success"
@@ -634,8 +634,8 @@
         {
           "name": "depositCollateral",
           "args": {
-            "reserve": "stETH",
-            "amount": "2",
+            "reserve": "yvWFTM",
+            "amount": "2000",
             "user": "6"
           },
           "expected": "success"

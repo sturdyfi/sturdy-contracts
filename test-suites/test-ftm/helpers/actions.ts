@@ -3,21 +3,25 @@ import BigNumber from 'bignumber.js';
 import {
   calcExpectedReserveDataAfterBorrow,
   calcExpectedReserveDataAfterDeposit,
+  calcExpectedReserveDataAfterDepositCollateral,
   calcExpectedReserveDataAfterRepay,
   calcExpectedReserveDataAfterStableRateRebalance,
   calcExpectedReserveDataAfterSwapRateMode,
   calcExpectedReserveDataAfterWithdraw,
+  calcExpectedReserveDataAfterWithdrawCollateral,
   calcExpectedUserDataAfterBorrow,
   calcExpectedUserDataAfterDeposit,
+  calcExpectedUserDataAfterDepositCollateral,
   calcExpectedUserDataAfterRepay,
   calcExpectedUserDataAfterSetUseAsCollateral,
   calcExpectedUserDataAfterStableRateRebalance,
   calcExpectedUserDataAfterSwapRateMode,
   calcExpectedUserDataAfterWithdraw,
+  calcExpectedUserDataAfterWithdrawCollateral,
 } from './utils/calculations';
 import { getReserveAddressFromSymbol, getReserveData, getUserData } from './utils/helpers';
 
-import { convertToCurrencyDecimals } from '../../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals, getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import {
   getAToken,
   getMintableERC20,
@@ -38,7 +42,8 @@ import chai from 'chai';
 import { ReserveData, UserReserveData } from './utils/interfaces';
 import { ContractReceipt } from 'ethers';
 import { AToken } from '../../../types/AToken';
-import { RateMode, tEthereumAddress } from '../../../helpers/types';
+import { eNetwork, RateMode, tEthereumAddress } from '../../../helpers/types';
+import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 
 const { expect } = chai;
 
@@ -124,21 +129,21 @@ export const mint = async (
   user: SignerWithAddress,
   testEnv: TestEnv
 ) => {
-  const { usdc, dai, lido } = testEnv;
+  const { usdc, dai, WFTM } = testEnv;
   const ethers = (DRE as any).ethers;
   let ownerAddress;
   let depositAmount;
   let token;
 
   if (reserveSymbol == 'USDC') {
-    ownerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    ownerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
     token = usdc;
   } else if (reserveSymbol == 'DAI') {
-    ownerAddress = '0x1e3D6eAb4BCF24bcD04721caA11C478a2e59852D';
+    ownerAddress = '0x6Bf97f2534be2242dDb3A29bfb24d498212DcdED';
     token = dai;
-  } else if (reserveSymbol == 'stETH') {
-    ownerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
-    token = lido;
+  } else if (reserveSymbol == 'yvWFTM') {
+    ownerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
+    token = WFTM;
   }
 
   depositAmount = await convertToCurrencyDecimals(token.address, amount);
@@ -163,13 +168,13 @@ export const approveVault = async (
   user: SignerWithAddress,
   testEnv: TestEnv
 ) => {
-  const { lidoVault } = testEnv;
-  const reserve = await getReserveAddressFromSymbol(reserveSymbol);
+  const { yearnVault, WFTM } = testEnv;
+  // const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
-  const token = await getMintableERC20(reserve);
+  const token = await getMintableERC20(WFTM.address);
 
   await waitForTx(
-    await token.connect(user.signer).approve(lidoVault.address, '100000000000000000000000000000')
+    await token.connect(user.signer).approve(yearnVault.address, '100000000000000000000000000000')
   );
 };
 
@@ -263,7 +268,7 @@ export const depositCollateral = async (
   testEnv: TestEnv,
   revertMessage?: string
 ) => {
-  const { lidoVault } = testEnv;
+  const { yearnVault, WFTM } = testEnv;
 
   const reserve = await getReserveAddressFromSymbol(reserveSymbol);
 
@@ -279,12 +284,12 @@ export const depositCollateral = async (
   );
 
   if (sendValue) {
-    txOptions.value = await convertToCurrencyDecimals(reserve, sendValue);
+    txOptions.value = await convertToCurrencyDecimals(WFTM.address, sendValue);
   }
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await lidoVault.connect(sender.signer).depositCollateral(reserve, amountToDeposit, txOptions)
+      await yearnVault.connect(sender.signer).depositCollateral(WFTM.address, amountToDeposit, txOptions)
     );
 
     const {
@@ -295,13 +300,14 @@ export const depositCollateral = async (
 
     const { txCost, txTimestamp } = await getTxCostAndTimestamp(txResult);
 
-    const expectedReserveData = calcExpectedReserveDataAfterDeposit(
+    const expectedReserveData = calcExpectedReserveDataAfterDepositCollateral(
       amountToDeposit.toString(),
       reserveDataBefore,
+      reserveDataAfter,
       txTimestamp
     );
 
-    const expectedUserReserveData = calcExpectedUserDataAfterDeposit(
+    const expectedUserReserveData = calcExpectedUserDataAfterDepositCollateral(
       amountToDeposit.toString(),
       reserveDataBefore,
       expectedReserveData,
@@ -312,8 +318,33 @@ export const depositCollateral = async (
       reserveSymbol
     );
 
-    expectEqual(reserveDataAfter, expectedReserveData);
-    expectEqual(userDataAfter, expectedUserReserveData);
+    const {
+      totalLiquidity: reserveDataAfterTotalLiquidity, 
+      availableLiquidity: reserveDataAfterAvailableLiquidity, 
+      ...reserveDataAfterRemained
+    } = reserveDataAfter
+    const {
+      totalLiquidity: expectedReserveDataTotalLiquidity, 
+      availableLiquidity: expectedReserveDataAvailableLiquidity, 
+      ...expectedReserveDataRemained
+    } = expectedReserveData
+    expectEqual(reserveDataAfterRemained, expectedReserveDataRemained);
+    expect(expectedReserveDataTotalLiquidity.minus(reserveDataAfterTotalLiquidity).lte(10000)).to.equal(true);
+    expect(expectedReserveDataAvailableLiquidity.minus(reserveDataAfterAvailableLiquidity).lte(10000)).to.equal(true);
+    
+    const {
+      scaledATokenBalance: userDataAfterScaledATokenBalance, 
+      currentATokenBalance: userDataAfterCurrentATokenBalance, 
+      ...userDataAfterRemained
+    } = userDataAfter
+    const {
+      scaledATokenBalance: expectedUserReserveDataScaledATokenBalance, 
+      currentATokenBalance: expectedUserReserveDataCurrentATokenBalance, 
+      ...expectedUserReserveDataRemained
+    } = expectedUserReserveData
+    expectEqual(userDataAfterRemained, expectedUserReserveDataRemained);
+    expect(expectedUserReserveDataScaledATokenBalance.minus(userDataAfterScaledATokenBalance).lte(1000)).to.equal(true);
+    expect(expectedUserReserveDataCurrentATokenBalance.minus(userDataAfterCurrentATokenBalance).lte(1000)).to.equal(true);
 
     // truffleAssert.eventEmitted(txResult, "Deposit", (ev: any) => {
     //   const {_reserve, _user, _amount} = ev;
@@ -325,7 +356,7 @@ export const depositCollateral = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      lidoVault.connect(sender.signer).depositCollateral(reserve, amountToDeposit, txOptions),
+      yearnVault.connect(sender.signer).depositCollateral(reserve, amountToDeposit, txOptions),
       revertMessage
     ).to.be.reverted;
   }
@@ -411,7 +442,7 @@ export const withdrawCollateral = async (
   testEnv: TestEnv,
   revertMessage?: string
 ) => {
-  const { lidoVault } = testEnv;
+  const { yearnVault, WFTM } = testEnv;
 
   const {
     aTokenInstance,
@@ -423,16 +454,16 @@ export const withdrawCollateral = async (
   let amountToWithdraw = '0';
 
   if (amount !== '-1') {
-    amountToWithdraw = (await convertToCurrencyDecimals(reserve, amount)).toString();
+    amountToWithdraw = (await convertToCurrencyDecimals(WFTM.address, amount)).toString();
   } else {
     amountToWithdraw = MAX_UINT_AMOUNT;
   }
 
   if (expectedResult === 'success') {
     const txResult = await waitForTx(
-      await lidoVault
+      await yearnVault
         .connect(user.signer)
-        .withdrawCollateral(reserve, amountToWithdraw, user.address)
+        .withdrawCollateral(WFTM.address, amountToWithdraw, user.address)
     );
 
     const {
@@ -443,14 +474,15 @@ export const withdrawCollateral = async (
 
     const { txCost, txTimestamp } = await getTxCostAndTimestamp(txResult);
 
-    const expectedReserveData = calcExpectedReserveDataAfterWithdraw(
+    const expectedReserveData = calcExpectedReserveDataAfterWithdrawCollateral(
       amountToWithdraw,
       reserveDataBefore,
+      reserveDataAfter,
       userDataBefore,
       txTimestamp
     );
 
-    const expectedUserData = calcExpectedUserDataAfterWithdraw(
+    const expectedUserData = calcExpectedUserDataAfterWithdrawCollateral(
       amountToWithdraw,
       reserveDataBefore,
       expectedReserveData,
@@ -461,7 +493,18 @@ export const withdrawCollateral = async (
     );
 
     expectEqual(reserveDataAfter, expectedReserveData);
-    expectEqual(userDataAfter, expectedUserData);
+
+    const {
+      walletBalance: userDataAfterWalletBalance, 
+      ...userDataAfterRemained
+    } = userDataAfter
+    const {
+      walletBalance: expectedUserDataWalletBalance, 
+      ...expectedUserReserveDataRemained
+    } = expectedUserData
+    expectEqual(userDataAfterRemained, expectedUserReserveDataRemained);
+    expect(userDataAfterWalletBalance.minus(expectedUserDataWalletBalance).lte(1000)).to.equal(true);
+    expectEqual(userDataAfterRemained, expectedUserData);
 
     // truffleAssert.eventEmitted(txResult, "Redeem", (ev: any) => {
     //   const {_from, _value} = ev;
@@ -471,7 +514,7 @@ export const withdrawCollateral = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      lidoVault.connect(user.signer).withdrawCollateral(reserve, amountToWithdraw, user.address),
+      yearnVault.connect(user.signer).withdrawCollateral(reserve, amountToWithdraw, user.address),
       revertMessage
     ).to.be.reverted;
   }
@@ -894,8 +937,8 @@ export const setUseAsCollateral = async (
 // };
 
 const expectEqual = (
-  actual: UserReserveData | ReserveData,
-  expected: UserReserveData | ReserveData
+  actual: UserReserveData | ReserveData | any,
+  expected: UserReserveData | ReserveData | any
 ) => {
   if (!configuration.skipIntegrityCheck) {
     // @ts-ignore

@@ -173,10 +173,12 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
   }
 };
 
-export const getParamPerPool = <T>({ proto }: iParamsPerPool<T>, pool: SturdyPools) => {
+export const getParamPerPool = <T>({ proto, fantom }: iParamsPerPool<T>, pool: SturdyPools) => {
   switch (pool) {
     case SturdyPools.proto:
       return proto;
+    case SturdyPools.fantom:
+      return fantom;
     default:
       return proto;
   }

@@ -677,7 +677,7 @@ export const deployYearnVault = async (verify?: boolean) => {
 
   await waitForTx(
     await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('WETH'),
+      DRE.ethers.utils.formatBytes32String('WFTM'),
       getParamPerNetwork(config.WETH, network)
     )
   );

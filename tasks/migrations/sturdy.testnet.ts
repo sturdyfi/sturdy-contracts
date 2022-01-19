@@ -33,11 +33,11 @@ task('sturdy:testnet', 'Deploy development enviroment')
     console.log('5. Deploy Incentives impl');
     await DRE.run('testnet:deploy-incentives-impl', { pool: POOL_NAME });
 
-    console.log('6. Initialize lending pool');
-    await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
-
-    console.log('7. Deploy Lido vault');
+    console.log('6. Deploy Lido vault');
     await DRE.run('testnet:deploy-lido-vault', { pool: POOL_NAME });
+
+    console.log('7. Initialize lending pool');
+    await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();

@@ -97,6 +97,13 @@ contract BeefyVault is GeneralVault {
   }
 
   /**
+   * @dev Get price per share based on yield strategy
+   */
+  function pricePerShare() external view override returns (uint256) {
+    return IBeefyVault(_addressesProvider.getAddress('MOOWETH')).getPricePerFullShare();
+  }
+
+  /**
    * @dev Deposit to yield pool based on strategy and receive MOOWETH
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
@@ -117,6 +124,8 @@ contract BeefyVault is GeneralVault {
     uint256 before = IERC20(MOOWETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).deposit(_amount);
     uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before; // TODO confirm
+
+    //    console.log("Trying to deposit %s tokens", assetAmount); TODO
 
     // Make lendingPool to transfer required amount
     IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);

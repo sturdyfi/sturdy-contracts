@@ -101,11 +101,13 @@ export const CommonsConfig: ICommonConfiguration = {
       DAI: '0x91d5DEFAFfE2854C7D02F50c80FA1fdc8A721e52',
       USDC: '0x2553f4eeb82d5A26427b8d1106C51499CBa5D99c',
       yvWFTM: '0xf4766552D15AE4d256Ad41B6cf2933482B0680dc',
+      mooWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x91d5DEFAFfE2854C7D02F50c80FA1fdc8A721e52',
       USDC: '0x2553f4eeb82d5A26427b8d1106C51499CBa5D99c',
       yvWFTM: '0xf4766552D15AE4d256Ad41B6cf2933482B0680dc',
+      mooWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
     },
   },
   ReserveAssets: {
@@ -117,9 +119,13 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.ftm]: '',
     [eFantomNetwork.tenderlyFTM]: '',
   },
-  WETH: {
+  WFTM: {
     [eFantomNetwork.ftm]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
     [eFantomNetwork.tenderlyFTM]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
+  },
+  WETH: {
+    [eFantomNetwork.ftm]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
+    [eFantomNetwork.tenderlyFTM]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
   },
   WrappedNativeToken: {
     [eFantomNetwork.ftm]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',

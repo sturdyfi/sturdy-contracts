@@ -98,9 +98,10 @@ export const getATokenDomainSeparatorPerNetwork = (
   config: ICommonConfiguration
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
+// TODO getWftmAddress?
 export const getWethAddress = async (config: ICommonConfiguration) => {
   const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
-  const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
+  const wethAddress = getParamPerNetwork(config.WFTM, <eNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
   }

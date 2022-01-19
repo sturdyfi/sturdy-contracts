@@ -1,16 +1,17 @@
 import { eContractid, IReserveParams } from '../../helpers/types';
 
-import { 
+import {
   rateStrategyStableTwo,
   rateStrategyStableThree,
-  rateStrategyYVWFTM
+  rateStrategyYVWFTM,
+  rateStrategyMOOWETH,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
   strategy: rateStrategyStableTwo,
-  baseLTVAsCollateral: '0'/*'7500'*/,
-  liquidationThreshold: '0'/*'8000'*/,
-  liquidationBonus: '0'/*'10500'*/,
+  baseLTVAsCollateral: '0' /*'7500'*/,
+  liquidationThreshold: '0' /*'8000'*/,
+  liquidationBonus: '0' /*'10500'*/,
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -22,9 +23,9 @@ export const strategyDAI: IReserveParams = {
 
 export const strategyUSDC: IReserveParams = {
   strategy: rateStrategyStableThree,
-  baseLTVAsCollateral: '0'/*'7500'*/,
-  liquidationThreshold: '0'/*'8000'*/,
-  liquidationBonus: '0'/*'10500'*/,
+  baseLTVAsCollateral: '0' /*'7500'*/,
+  liquidationThreshold: '0' /*'8000'*/,
+  liquidationBonus: '0' /*'10500'*/,
   borrowingEnabled: true,
   stableBorrowRateEnabled: false,
   reserveDecimals: '6',
@@ -36,6 +37,20 @@ export const strategyUSDC: IReserveParams = {
 
 export const strategyYVWFTM: IReserveParams = {
   strategy: rateStrategyYVWFTM,
+  baseLTVAsCollateral: '7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+};
+
+export const strategyMOOWETH: IReserveParams = {
+  strategy: rateStrategyMOOWETH,
   baseLTVAsCollateral: '7000',
   liquidationThreshold: '7500',
   liquidationBonus: '10750',

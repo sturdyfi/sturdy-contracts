@@ -249,7 +249,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '',
   },
-  WETH: {
+  WFTM: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm
     [eEthereumNetwork.hardhat]: '', // deployed in local evm
     [eEthereumNetwork.geth]: '', // deployed in local evm

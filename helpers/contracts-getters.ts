@@ -30,6 +30,7 @@ import {
   UiPoolDataProviderFactory,
   UiIncentiveDataProviderFactory,
   YearnVaultFactory,
+  BeefyVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
@@ -388,6 +389,12 @@ export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
 export const getYearnVault = async (address?: tEthereumAddress) =>
   await YearnVaultFactory.connect(
     address || (await getDb().get(`${eContractid.YearnVault}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getBeefyVault = async (address?: tEthereumAddress) =>
+  await BeefyVaultFactory.connect(
+    address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 

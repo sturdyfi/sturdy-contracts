@@ -23,6 +23,7 @@ import {
   deploySturdyIncentivesController,
   deploySturdyToken,
   deployYearnVault,
+  deployBeefyVault,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, SturdyPools } from '../../helpers/types';
@@ -146,6 +147,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       USD: USD_ADDRESS,
       stETH: mockTokens.stETH.address,
       yvWFTM: mockTokens.yvWFTM.address,
+      mooWETH: mockTokens.mooWETH.address,
     },
     fallbackOracle
   );
@@ -237,6 +239,12 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   await configurator.registerVault(yearnVault.address);
   console.log('Yearn Vault', yearnVault.address);
   console.log(`\tFinished Yearn Vault deployment`);
+
+  console.log('Beefy Vault');
+  const beefyVault = await deployBeefyVault();
+  await configurator.registerVault(beefyVault.address);
+  console.log('Beefy Vault', beefyVault.address);
+  console.log(`\tFinished Beefy Vault deployment`);
 
   console.timeEnd('setup');
 };

@@ -9,7 +9,6 @@ import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { printDivider } from './helpers/utils/helpers';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
-import { ILidoFactory } from '../../types/ILidoFactory';
 
 const { parseEther } = ethers.utils;
 

@@ -84,6 +84,7 @@ export enum eContractid {
   LidoVault = 'LidoVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
+  BeefyVault = 'BeefyVault',
 }
 
 /*
@@ -202,6 +203,7 @@ export interface iAssetBase<T> {
   USD: T;
   stETH: T;
   yvWFTM: T;
+  mooWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -210,7 +212,10 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'stETH'>;
 
-export type iFantomPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'yvWFTM'>;
+export type iFantomPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'USDC' | 'yvWFTM' | 'mooWETH'
+>;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
 
@@ -224,6 +229,7 @@ export enum TokenContractId {
   USDC = 'USDC',
   stETH = 'stETH',
   yvWFTM = 'yvWFTM',
+  mooWETH = 'mooWETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -348,6 +354,7 @@ export interface IBaseConfiguration {
   EmergencyAdminIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
+  WFTM: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
@@ -370,6 +377,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
 export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 

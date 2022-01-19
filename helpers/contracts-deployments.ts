@@ -18,6 +18,7 @@ import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
+  getBeefyVault,
   getFirstSigner,
   getLendingPool,
   getLendingPoolAddressesProvider,
@@ -60,6 +61,7 @@ import {
   DaiFactory,
   ATokenForCollateralFactory,
   YearnVaultFactory,
+  BeefyVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -623,7 +625,7 @@ export const deployLidoVault = async (verify?: boolean) => {
   await waitForTx(
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('WETH'),
-      getParamPerNetwork(config.WETH, network)
+      getParamPerNetwork(config.WFTM, network)
     )
   );
 
@@ -678,7 +680,7 @@ export const deployYearnVault = async (verify?: boolean) => {
   await waitForTx(
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('WFTM'),
-      getParamPerNetwork(config.WETH, network)
+      getParamPerNetwork(config.WFTM, network)
     )
   );
 
@@ -688,6 +690,46 @@ export const deployYearnVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.YearnVault, yearnVaultProxyAddress);
 
   return await getYearnVault();
+};
+
+export const deployBeefyVault = async (verify?: boolean) => {
+  const beefyVault = await withSaveAndVerify(
+    await new BeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.BeefyVault,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('BEEFY_VAULT'),
+      beefyVault.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('MOOWETH'),
+      getParamPerNetwork(config.BeefyVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WETH'),
+      getParamPerNetwork(config.WETH, network)
+    )
+  );
+
+  const beefyVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('BEEFY_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.BeefyVault, beefyVaultProxyAddress);
+
+  return await getBeefyVault();
 };
 
 export const deploySturdyIncentivesControllerImpl = async (

@@ -94,7 +94,7 @@ export const getUserData = async (
   const config = loadPoolConfig(ConfigNames.Fantom);
   const network = <eNetwork>DRE.network.name;
   const reserveAssets = getParamPerNetwork(config.ReserveAssets, network);
-  const WFTM = getParamPerNetwork(config.WETH, network);
+  const WFTM = getParamPerNetwork(config.WFTM, network);
   let token = await getMintableERC20(reserve);
   if (reserve == reserveAssets.yvWFTM)
     token = await getMintableERC20(WFTM);

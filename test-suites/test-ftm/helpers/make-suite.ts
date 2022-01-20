@@ -2,6 +2,7 @@ import {
   evmRevert,
   evmSnapshot,
   DRE,
+  impersonateAccountsHardhat,
 } from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
@@ -42,6 +43,7 @@ import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
+import { parseEther } from '@ethersproject/units';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -123,6 +125,30 @@ export async function initializeMakeSuite() {
     signer: restSigners[0],
   };
 
+  if (network == 'ftm_test') {
+    const deployerAddress = '0x661fB502E24Deb30e927E39A38Bd2CC44D67339F';
+    const ethers = (DRE as any).ethers;
+    await impersonateAccountsHardhat([deployerAddress]);
+    let signer = await ethers.provider.getSigner(deployerAddress);
+    deployer = {
+      address: deployerAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+
+    const emergencyAddress = '0x05d75FB9db95AfC448d9F79c016ab027320acEc7';
+    await impersonateAccountsHardhat([emergencyAddress]);
+    signer = await ethers.provider.getSigner(emergencyAddress);
+
+    emergencyUser = {
+      address: emergencyAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
+  }
+
   for (const signer of restSigners) {
     testEnv.users.push({
       signer,
@@ -163,13 +189,13 @@ export async function initializeMakeSuite() {
 
   const aYVWFTMAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWFTM')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
-  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === 'afUSDT')?.tokenAddress;
+  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === (network == 'ftm_test' ? 'aUSDT' : 'afUSDT'))?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
-  const usdtAddress = reservesTokens.find((token) => token.symbol === 'fUSDT')?.tokenAddress;
+  const usdtAddress = reservesTokens.find((token) => token.symbol ===  (network == 'ftm_test' ? 'USDT' : 'fUSDT'))?.tokenAddress;
 
   if (!aDaiAddress || !aYVWFTMAddress) {
     process.exit(1);

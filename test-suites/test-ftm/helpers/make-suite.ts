@@ -1,8 +1,4 @@
-import {
-  evmRevert,
-  evmSnapshot,
-  DRE,
-} from '../../../helpers/misc-utils';
+import { evmRevert, evmSnapshot, DRE } from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
   getLendingPool,
@@ -17,7 +13,8 @@ import {
   getSturdyToken,
   getFirstSigner,
   getYearnVault,
-  getBeefyVault, getIFantomETH,
+  getBeefyVault,
+  getIFantomETH,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -37,7 +34,12 @@ import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
 import { SturdyConfig } from '../../../markets/sturdy';
-import { StakedTokenIncentivesController, SturdyToken, YearnVault, BeefyVault } from '../../../types';
+import {
+  StakedTokenIncentivesController,
+  SturdyToken,
+  YearnVault,
+  BeefyVault,
+} from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';

@@ -119,13 +119,18 @@ contract BeefyVault is GeneralVault {
     TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
+    console.log('Trying to deposit %s WETH', _amount); // TODO
+    console.log('_asset address', _asset);
+    console.log('WETH address', WETH);
+    console.log('Into BeefyVault', MOOWETH);
+
     IERC20(WETH).approve(MOOWETH, _amount);
 
     uint256 before = IERC20(MOOWETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).deposit(_amount);
     uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before; // TODO confirm
 
-    //    console.log("Trying to deposit %s tokens", assetAmount); TODO
+    console.log('Trying to deposit %s MOOWETH', assetAmount);
 
     // Make lendingPool to transfer required amount
     IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);

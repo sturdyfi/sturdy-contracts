@@ -35,10 +35,9 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  *   # Withdraw
  *   # Borrow
  *   # Repay
- *   # Swap their loans between variable and stable rate
  *   # Enable/disable their deposits as collateral rebalance stable rate borrow positions
  *   # Liquidate positions
- *   # Execute Flash Loans
+ *   # TODO Execute Flash Loans
  * - To be covered by a proxy contract, owned by the LendingPoolAddressesProvider of the specific market
  * - All admin functions are callable by the LendingPoolConfigurator contract defined also in the
  *   LendingPoolAddressesProvider
@@ -118,7 +117,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     bool isFirstDeposit = false;
 
     if (isCollateral) {
-      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     }
 
     ValidationLogic.validateDeposit(reserve, amount);
@@ -152,7 +151,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param amount The amount to be deposited
    **/
   function depositYield(address asset, uint256 amount) external override whenNotPaused {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
@@ -263,7 +262,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address from,
     address to
   ) external override whenNotPaused returns (uint256) {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     return _withdraw(asset, amount, from, to);
   }
 

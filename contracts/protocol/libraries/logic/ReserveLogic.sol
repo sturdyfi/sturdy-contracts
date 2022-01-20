@@ -16,7 +16,7 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
-//todo:to block collatoral to be borrowed
+//todo:to block collateral to be borrowed
 //todo:how the aToken ~==~ stETH calculated for balance
 
 //todo:new reserve logic - maybe

@@ -103,11 +103,11 @@ library Errors {
   string public constant LP_NOT_CONTRACT = '78';
   string public constant SDT_STABLE_DEBT_OVERFLOW = '79';
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
-  string public constant VT_COLLATORAL_DEPOSIT_REQUIRE_ETH = '81'; //Only accept ETH for collatoral deposit
-  string public constant VT_COLLATORAL_DEPOSIT_INVALID = '82'; //Collatoral deposit failed
+  string public constant VT_COLLATERAL_DEPOSIT_REQUIRE_ETH = '81'; //Only accept ETH for collateral deposit
+  string public constant VT_COLLATERAL_DEPOSIT_INVALID = '82'; //Collateral deposit failed
   string public constant VT_LIQUIDITY_DEPOSIT_INVALID = '83'; //Only accept USDC, USDT, DAI for liquidity deposit
-  string public constant VT_COLLATORAL_WITHDRAW_INVALID = '84'; //Collatoral withdraw failed
-  string public constant VT_COLLATORAL_WITHDRAW_INVALID_AMOUNT = '85'; //Collatoral withdraw has not enough amount
+  string public constant VT_COLLATERAL_WITHDRAW_INVALID = '84'; //Collateral withdraw failed
+  string public constant VT_COLLATERAL_WITHDRAW_INVALID_AMOUNT = '85'; //Collateral withdraw has not enough amount
   string public constant VT_CONVERT_ASSET_BY_CURVE_INVALID = '86'; //Convert asset by curve invalid
   string public constant VT_PROCESS_YIELD_INVALID = '87'; //Processing yield is invalid
   string public constant VT_TREASURY_INVALID = '88'; //Treasury is invalid

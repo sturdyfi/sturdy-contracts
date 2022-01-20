@@ -13,7 +13,7 @@ export const rateStrategyStableTwo: IInterestRateStrategyParams = {
   stableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
 }
 
-// USDC
+// USDC, USDT
 export const rateStrategyStableThree: IInterestRateStrategyParams = {
   name: "rateStrategyStableThree",
   optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),

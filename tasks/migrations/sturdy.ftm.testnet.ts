@@ -4,7 +4,7 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('sturdy:ftm', 'Deploy development enviroment')
+task('sturdy:ftm:testnet', 'Deploy development enviroment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addFlag('skipRegistry', 'Skip addresses provider registration at Addresses Provider Registry')
   .setAction(async ({ verify, skipRegistry }, DRE) => {
@@ -19,25 +19,25 @@ task('sturdy:ftm', 'Deploy development enviroment')
     console.log('Migration started\n');
 
     console.log('1. Deploy address provider');
-    await DRE.run('full:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
+    await DRE.run('testnet:deploy-address-provider', { pool: POOL_NAME, skipRegistry });
 
     console.log('2. Deploy lending pool');
-    await DRE.run('full:deploy-lending-pool', { pool: POOL_NAME });
+    await DRE.run('testnet:deploy-lending-pool', { pool: POOL_NAME });
 
     console.log('3. Deploy oracles');
-    await DRE.run('full:deploy-oracles', { pool: POOL_NAME });
+    await DRE.run('testnet:deploy-oracles', { pool: POOL_NAME });
 
     console.log('4. Deploy Data Provider');
-    await DRE.run('full:data-provider', { pool: POOL_NAME });
+    await DRE.run('testnet:data-provider', { pool: POOL_NAME });
 
     console.log('5. Deploy Incentives impl');
-    await DRE.run('full:deploy-incentives-impl', { pool: POOL_NAME });
+    await DRE.run('testnet:deploy-incentives-impl', { pool: POOL_NAME });
 
     console.log('6. Deploy Yearn vault');
-    await DRE.run('full:deploy-yearn-vault', { pool: POOL_NAME });
+    await DRE.run('testnet:deploy-yearn-vault', { pool: POOL_NAME });
 
     console.log('7. Initialize lending pool');
-    await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
+    await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();

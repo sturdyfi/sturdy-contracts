@@ -33,6 +33,7 @@ export const STURDY_REFERRAL = '0';
 export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   DAI: oneEther.multipliedBy('0.000268047349837').toFixed(),
   USDC: oneEther.multipliedBy('0.000267347358572').toFixed(),
+  fUSDT: oneEther.multipliedBy('0.000267347358572').toFixed(),
   stETH: oneEther.toFixed(),
   WETH: oneEther.toFixed(),
   yvWFTM: oneEther.toFixed(),

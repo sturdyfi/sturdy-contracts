@@ -56,6 +56,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         {
           DAI: reserveAssets.DAI,
           USDC: reserveAssets.USDC,
+          fUSDT: reserveAssets.fUSDT,
           stETH: reserveAssets.stETH,
           WETH: '',
           yvWFTM: '',

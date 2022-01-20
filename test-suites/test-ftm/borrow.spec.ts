@@ -13,7 +13,7 @@ makeSuite('Deposit FTM as collatoral and other as for pool liquidity supplier ',
   it('User1 deposits USDC, User deposits FTM as collatoral and borrows USDC', async () => {
     const { usdc, users, pool, yearnVault, oracle, WFTM } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
@@ -92,11 +92,94 @@ makeSuite('Deposit FTM as collatoral and other as for pool liquidity supplier ',
   });
 });
 
+makeSuite('Deposit FTM as collatoral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDT, User deposits FTM as collatoral and borrows USDT', async () => {
+    const { usdt, users, pool, yearnVault, oracle } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const usdtOwnerAddress = '0xcA436e14855323927d6e6264470DeD36455fC8bD';
+    const depositor = users[0];
+    const borrower = users[1];
+    printDivider();
+    const depositUSDT = '3500';
+    //Make some test USDT for depositor
+    await impersonateAccountsHardhat([usdtOwnerAddress]);
+    let signer = await ethers.provider.getSigner(usdtOwnerAddress);
+    const amountUSDTtoDeposit = await convertToCurrencyDecimals(usdt.address, depositUSDT);
+    await usdt.connect(signer).transfer(depositor.address, amountUSDTtoDeposit);
+
+    //approve protocol to access depositor wallet
+    await usdt.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //Supplier  deposits 3500 USDT
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdt.address, amountUSDTtoDeposit, depositor.address, '0');
+
+    const supplierGlobalData = await pool.getUserAccountData(depositor.address);
+    printUserAccountData({
+      user: `Supplier ${depositor.address}`,
+      action: 'deposited',
+      amount: depositUSDT,
+      coin: 'USDT',
+      unit: 'USD',
+      ...supplierGlobalData,
+    });
+
+    //user 2 deposits 1000 FTM
+    const amountFTMtoDeposit = ethers.utils.parseEther('1000');
+    await yearnVault
+      .connect(borrower.signer)
+      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
+    {
+      const supplierGlobalData = await pool.getUserAccountData(borrower.address);
+      printUserAccountData({
+        user: `Borrower ${borrower.address}`,
+        action: 'deposited',
+        amount: ETHfromWei(amountFTMtoDeposit),
+        coin: 'WFTM',
+        unit: 'USD',
+        ...supplierGlobalData,
+      });
+    }
+
+    //user 2 borrows
+    const userGlobalData = await pool.getUserAccountData(borrower.address);
+    const usdtPrice = await oracle.getAssetPrice(usdt.address);
+
+    const amountUSDTToBorrow = await convertToCurrencyDecimals(
+      usdt.address,
+      new BigNumber(userGlobalData.availableBorrowsETH.toString())
+        .div(usdtPrice.toString())
+        .multipliedBy(0.95)
+        .toFixed(0)
+    );
+
+    await pool
+      .connect(borrower.signer)
+      .borrow(usdt.address, amountUSDTToBorrow, RateMode.Variable, '0', borrower.address);
+
+    const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+    printUserAccountData({
+      user: `Borrower ${borrower.address}`,
+      action: 'borrowed',
+      amount: amountUSDTToBorrow,
+      coin: 'USDT',
+      unit: 'USD',
+      ...userGlobalDataAfter,
+    });
+
+    expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(
+      '7500',
+      'Invalid liquidation threshold'
+    );
+  });
+});
+
 makeSuite('Deposit WFTM as collatoral and other as for pool liquidity supplier ', (testEnv) => {
   it('User1 deposits USDC, User deposits FTM as collatoral and borrows USDC', async () => {
     const { usdc, users, pool, yearnVault, yvwftm, oracle, WFTM } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();

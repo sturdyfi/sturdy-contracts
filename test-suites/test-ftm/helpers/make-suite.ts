@@ -64,7 +64,9 @@ export interface TestEnv {
   dai: MintableERC20;
   aDai: AToken;
   usdc: MintableERC20;
+  usdt: MintableERC20;
   aUsdc: AToken;
+  aUsdt: AToken;
   aYVWFTM: AToken;
   WFTM: MintableERC20;
   brick: SturdyToken;
@@ -92,7 +94,9 @@ const testEnv: TestEnv = {
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as MintableERC20,
+  usdt: {} as MintableERC20,
   aUsdc: {} as AToken,
+  aUsdt: {} as AToken,
   aYVWFTM: {} as AToken,
   WFTM: {} as MintableERC20,
   brick: {} as SturdyToken,
@@ -159,11 +163,13 @@ export async function initializeMakeSuite() {
 
   const aYVWFTMAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWFTM')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
+  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === 'afUSDT')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
+  const usdtAddress = reservesTokens.find((token) => token.symbol === 'fUSDT')?.tokenAddress;
 
   if (!aDaiAddress || !aYVWFTMAddress) {
     process.exit(1);
@@ -175,9 +181,11 @@ export async function initializeMakeSuite() {
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aYVWFTM = await getAToken(aYVWFTMAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
+  testEnv.aUsdt = await getAToken(aUsdtAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
+  testEnv.usdt = await getMintableERC20(usdtAddress);
   testEnv.WFTM = await getMintableERC20(wftmAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);

@@ -88,7 +88,8 @@ export const getTreasuryAddress = async (
 
 export const getYieldAddress = async (config: ICommonConfiguration): Promise<tEthereumAddress> => {
   const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
-  if (currentNetwork == 'ftm') return (await getYearnVault()).address;
+  if (currentNetwork == 'ftm' || currentNetwork == 'ftm_test')
+    return (await getYearnVault()).address;
 
   return ZERO_ADDRESS;
 };

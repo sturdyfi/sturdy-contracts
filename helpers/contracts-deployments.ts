@@ -695,7 +695,7 @@ export const deployYearnVault = async (verify?: boolean) => {
 export const deployBeefyVault = async (verify?: boolean) => {
   const beefyVault = await withSaveAndVerify(
     await new BeefyVaultFactory(await getFirstSigner()).deploy(),
-    eContractid.BeefyVault,
+    eContractid.BeefyVaultImpl,
     [],
     verify
   );

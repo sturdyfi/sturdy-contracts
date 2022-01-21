@@ -69,7 +69,7 @@ export enum eContractid {
   UiIncentiveDataProvider = 'UiIncentiveDataProvider',
   UiPoolDataProvider = 'UiPoolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
-  IFantomETH = 'IFantomETH',
+  SwapinERC20 = 'SwapinERC20',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
@@ -86,6 +86,7 @@ export enum eContractid {
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   BeefyVault = 'BeefyVault',
+  BeefyVaultImpl = 'BeefyVaultImpl',
 }
 
 /*

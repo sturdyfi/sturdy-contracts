@@ -19,6 +19,7 @@ import { exit } from 'process';
 import {
   getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
+  getBeefyVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -65,7 +66,13 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         SymbolPrefix,
         admin,
         treasuryAddress,
-        yieldAddress,
+        {
+          // TODO @bshevchenko: refactor
+          DAI: yieldAddress,
+          USDC: yieldAddress,
+          yvWFTM: yieldAddress,
+          mooWETH: (await getBeefyVault()).address,
+        },
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);

@@ -27,8 +27,8 @@ contract BeefyVault is GeneralVault {
 
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH'); // TODO 0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a
-    address WETH = _addressesProvider.getAddress('WETH'); // TODO 0x74b23882a30290451a17c44f4f05243b6b58c76d
+    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
+    address WETH = _addressesProvider.getAddress('WETH');
     uint256 yieldMOOWETH = _getYield(MOOWETH);
 
     // move yield to treasury
@@ -40,7 +40,7 @@ contract BeefyVault is GeneralVault {
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).withdraw(yieldMOOWETH);
-    uint256 yieldWETH = before - IERC20(WETH).balanceOf(address(this)); // TODO confirm
+    uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)) - before;
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWETH);
     for (uint256 i = 0; i < assetYields.length; i++) {
@@ -119,18 +119,11 @@ contract BeefyVault is GeneralVault {
     TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
-    console.log('Trying to deposit %s WETH', _amount); // TODO
-    console.log('_asset address', _asset);
-    console.log('WETH address', WETH);
-    console.log('Into BeefyVault', MOOWETH);
-
     IERC20(WETH).approve(MOOWETH, _amount);
 
     uint256 before = IERC20(MOOWETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).deposit(_amount);
-    uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before; // TODO confirm
-
-    console.log('Trying to deposit %s MOOWETH', assetAmount);
+    uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before;
 
     // Make lendingPool to transfer required amount
     IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
@@ -161,13 +154,13 @@ contract BeefyVault is GeneralVault {
     address MOOWETH = _addressesProvider.getAddress('MOOWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
+    // noinspection SpellCheckingInspection TODO COLLATORAL
+    require(_asset == WETH, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).withdraw(_amount);
-    uint256 assetAmount = before - IERC20(WETH).balanceOf(address(this)); // TODO confirm
-
-    // noinspection SpellCheckingInspection TODO COLLATORAL
-    require(_asset == MOOWETH, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+    uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
     // Deliver WETH to user
     TransferHelper.safeTransfer(WETH, _to, assetAmount);

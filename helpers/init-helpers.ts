@@ -45,7 +45,7 @@ export const initReservesByHelper = async (
   symbolPrefix: string,
   admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
-  yieldAddress: tEthereumAddress,
+  yieldAddresses: Object, // TODO @bshevchenko: refactor
   verify: boolean
 ): Promise<BigNumber> => {
   let gasUsage = BigNumber.from('0');
@@ -194,7 +194,7 @@ export const initReservesByHelper = async (
       variableDebtTokenImpl: variableDebtTokenImplementationAddress,
       underlyingAssetDecimals: reserveInitDecimals[i],
       interestRateStrategyAddress: strategyAddressPerAsset[reserveSymbols[i]],
-      yieldAddress,
+      yieldAddress: yieldAddresses[reserveSymbols[i]],
       underlyingAsset: reserveTokens[i],
       treasury: treasuryAddress,
       incentivesController: incentives.address,

@@ -47,6 +47,7 @@ import { initReservesByHelper, configureReservesByHelper } from '../../helpers/i
 import FantomConfig from '../../markets/ftm';
 import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
+  getBeefyVault,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
@@ -222,7 +223,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     SymbolPrefix,
     admin,
     treasuryAddress,
-    yieldAddress,
+    {
+      // TODO @bshevchenko: refactor
+      DAI: yieldAddress,
+      USDC: yieldAddress,
+      yvWFTM: yieldAddress,
+      mooWETH: (await getBeefyVault()).address,
+    },
     false
   );
 

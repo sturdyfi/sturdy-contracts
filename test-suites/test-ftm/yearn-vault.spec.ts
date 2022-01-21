@@ -24,7 +24,9 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     await yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1200') });
     expect(await yvwftm.balanceOf(yearnVault.address)).to.be.equal(0);
     expect(await aYVWFTM.balanceOf(yearnVault.address)).to.be.equal(0);
-    expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(true);
+    expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(
+      true
+    );
     expect(await ethers.getDefaultProvider().getBalance(yearnVault.address)).to.be.equal(0);
   });
 
@@ -44,8 +46,8 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnVault } = testEnv;
-    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address)).to
-      .be.reverted;
+    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address))
+      .to.be.reverted;
   });
 
   it('withdraw from collateral', async () => {
@@ -68,7 +70,7 @@ makeSuite('yearnVault - use other coin as collatoral', (testEnv) => {
   it('Should revert to use any of coin other than FTM, yvWFTM as collatoral. ', async () => {
     const { usdc, users, yearnVault } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0xca436e14855323927d6e6264470ded36455fc8bd';
     const depositor = users[0];
     printDivider();
 
@@ -123,7 +125,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     //approve protocol to access borrower wallet
     await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    WFTMOwnerAddress
+    WFTMOwnerAddress;
     // deposit collateral to borrow
     await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
     expect(await yearnVault.getYieldAmount()).to.be.equal(0);
@@ -289,7 +291,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
     expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
     expect(
-        (await yvwftm.balanceOf(treasury.address)).gt(yieldyvWFTMAmount.mul(19).div(100))
-      ).to.be.equal(true);
+      (await yvwftm.balanceOf(treasury.address)).gt(yieldyvWFTMAmount.mul(19).div(100))
+    ).to.be.equal(true);
   });
 });

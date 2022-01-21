@@ -101,9 +101,12 @@ export const getMintableERC20 = async (address: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getIFantomETH = async (address: tEthereumAddress) =>
+export const getSwapinERC20 = async (address: tEthereumAddress) =>
   await IFantomETHFactory.connect(
-    address || (await getDb().get(`${eContractid.IFantomETH}.${DRE.network.name}`).value()).address,
+    address ||
+      (
+        await getDb().get(`${eContractid.SwapinERC20}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 

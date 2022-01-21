@@ -14,12 +14,13 @@ import {
   getFirstSigner,
   getYearnVault,
   getBeefyVault,
-  getIFantomETH,
+  getSwapinERC20,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
 import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
+import { SwapinERC20 } from '../../../types/SwapinERC20';
 import { AToken } from '../../../types/AToken';
 import { LendingPoolConfigurator } from '../../../types/LendingPoolConfigurator';
 
@@ -45,7 +46,6 @@ import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
-import { IFantomETH } from '../../../types/IFantomETH';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -68,12 +68,12 @@ export interface TestEnv {
   helpersContract: SturdyProtocolDataProvider;
   dai: MintableERC20;
   aDai: AToken;
-  usdc: MintableERC20;
+  usdc: SwapinERC20;
   aUsdc: AToken;
   aYVWFTM: AToken;
   aMOOWETH: AToken;
   WFTM: MintableERC20;
-  WETH: IFantomETH;
+  WETH: SwapinERC20;
   brick: SturdyToken;
   yvwftm: IERC20Detailed;
   mooweth: IERC20Detailed;
@@ -100,12 +100,12 @@ const testEnv: TestEnv = {
   oracle: {} as PriceOracle,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
-  usdc: {} as MintableERC20,
+  usdc: {} as SwapinERC20,
   aUsdc: {} as AToken,
   aYVWFTM: {} as AToken,
   aMOOWETH: {} as AToken,
   WFTM: {} as MintableERC20,
-  WETH: {} as IFantomETH,
+  WETH: {} as SwapinERC20,
   brick: {} as SturdyToken,
   yvwftm: {} as IERC20Detailed,
   mooweth: {} as IERC20Detailed,
@@ -194,9 +194,9 @@ export async function initializeMakeSuite() {
   testEnv.aUsdc = await getAToken(aUsdcAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
-  testEnv.usdc = await getMintableERC20(usdcAddress);
+  testEnv.usdc = await getSwapinERC20(usdcAddress);
   testEnv.WFTM = await getMintableERC20(wftmAddress);
-  testEnv.WETH = await getIFantomETH(wethAddress);
+  testEnv.WETH = await getSwapinERC20(wethAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);
   testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);

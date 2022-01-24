@@ -30,6 +30,7 @@ import {
   UiPoolDataProviderFactory,
   UiIncentiveDataProviderFactory,
   YearnVaultFactory,
+  MockyvWFTMFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -459,5 +460,11 @@ export const getSturdyToken = async (address?: tEthereumAddress) =>
       (
         await getDb().get(`${eContractid.SturdyToken}.${DRE.network.name}`).value()
       ).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvWFTM = async (address?: tEthereumAddress) =>
+  await MockyvWFTMFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvWFTM}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );

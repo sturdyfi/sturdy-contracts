@@ -119,7 +119,7 @@ contract YearnVault is GeneralVault {
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM
-      require(msg.value > 0, Errors.VT_COLLATORAL_DEPOSIT_REQUIRE_ETH);
+      require(msg.value > 0, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
 
       // FTM -> WFTM
       IWETH(WFTM).deposit{value: msg.value}();
@@ -127,7 +127,7 @@ contract YearnVault is GeneralVault {
       assetAmount = msg.value;
     } else {
       // Case of WFTM deposit from user, receive WFTM from user
-      require(_asset == WFTM, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+      require(_asset == WFTM, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
       TransferHelper.safeTransferFrom(WFTM, msg.sender, address(this), _amount);
     }
 
@@ -172,9 +172,9 @@ contract YearnVault is GeneralVault {
 
       // send FTM to user
       (bool sent, bytes memory data) = address(_to).call{value: assetAmount}('');
-      require(sent, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+      require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     } else {
-      require(_asset == WFTM, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+      require(_asset == WFTM, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
       // Deliver WFTM to user
       TransferHelper.safeTransfer(WFTM, _to, assetAmount);

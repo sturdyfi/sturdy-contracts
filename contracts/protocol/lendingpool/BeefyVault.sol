@@ -132,8 +132,7 @@ contract BeefyVault is GeneralVault {
     address MOOWETH = _addressesProvider.getAddress('MOOWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
-    // noinspection SpellCheckingInspection TODO COLLATORAL
-    require(_asset == WETH, Errors.VT_COLLATORAL_DEPOSIT_INVALID);
+    require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
@@ -172,8 +171,7 @@ contract BeefyVault is GeneralVault {
     address MOOWETH = _addressesProvider.getAddress('MOOWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
-    // noinspection SpellCheckingInspection TODO COLLATORAL
-    require(_asset == WETH, Errors.VT_COLLATORAL_WITHDRAW_INVALID);
+    require(_asset == WETH, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));

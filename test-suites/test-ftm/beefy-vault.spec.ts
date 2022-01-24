@@ -13,7 +13,7 @@ import { SignerWithAddress } from '../test-sturdy/helpers/make-suite';
 
 const { parseEther } = ethers.utils;
 
-const amountWETHtoDeposit = 1000000;
+let amountWETHtoDeposit = 1000000;
 
 // makeSuite('beefyVault', (testEnv: TestEnv) => {
 //   it('failed deposit for collateral without WETH', async () => {
@@ -86,12 +86,12 @@ const amountWETHtoDeposit = 1000000;
 
 makeSuite('beefyVault', (testEnv: TestEnv) => {
   it('distribute yield to supplier for single asset', async () => {
-    const { pool, beefyVault, usdc, users, WETH, mooweth, aMOOWETH } = testEnv;
+    const { pool, beefyVault, usdc, users, WETH, mooweth, aMOOWETH, aUsdc } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
     const usdcOwnerAddress = '0xc564ee9f21ed8a2d8e7e76c085740d5e4c5fafbe';
-    const depositUSDC = '7000';
+    const depositUSDC = '7';
 
     // Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -105,7 +105,7 @@ makeSuite('beefyVault', (testEnv: TestEnv) => {
     expect(await usdc.balanceOf(depositor.address)).to.equal(amountUSDCtoDeposit);
 
     // approve protocol to access depositor wallet
-    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await usdc.connect(depositor.signer).approve(pool.address, amountUSDCtoDeposit);
 
     // Supplier deposits USDC
     await pool
@@ -123,12 +123,29 @@ makeSuite('beefyVault', (testEnv: TestEnv) => {
     expect(await WETH.balanceOf(borrower.address)).to.be.equal(amountWETHtoDeposit);
 
     // approve protocol to access borrower wallet
-    await WETH.connect(borrower.signer).approve(beefyVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await WETH.connect(borrower.signer).approve(beefyVault.address, amountWETHtoDeposit);
 
     // deposit collateral to borrow
     await beefyVault.connect(borrower.signer).depositCollateral(WETH.address, amountWETHtoDeposit);
     expect(await mooweth.balanceOf(aMOOWETH.address)).to.be.gt(954400); // TODO balance varies
 
-    // TODO
+    // To simulate yield in lendingPool, deposit some mooWETH to aMOOWETH contract
+    const mooWETHOwnerAddress = '0x0bb4c8d035b091e15b95b98bc742ab95e75e0398';
+    // const yieldMOOWETH = '100';
+    const yieldMOOWETHAmount = 1000000;
+    await impersonateAccountsHardhat([mooWETHOwnerAddress]);
+    signer = await ethers.provider.getSigner(mooWETHOwnerAddress);
+    await mooweth.connect(signer).transfer(aMOOWETH.address, yieldMOOWETHAmount);
+
+    expect(await beefyVault.getYieldAmount()).to.be.gt(1000000 - 100); // TODO
+    expect(await usdc.balanceOf(beefyVault.address)).to.be.equal(0);
+    expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
+
+    // process yield, so all yield should be converted to usdc
+    await beefyVault.processYield();
+    const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
+    expect(await aUsdc.balanceOf(depositor.address)).to.be.gt(yieldUSDC);
   });
 });
+
+// TODO

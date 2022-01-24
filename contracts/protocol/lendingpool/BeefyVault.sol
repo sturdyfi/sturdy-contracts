@@ -70,6 +70,24 @@ contract BeefyVault is GeneralVault {
     path[0] = address(WETH);
     path[1] = _tokenOut;
 
+    console.log(
+      'console.log new test',
+      _wethAmount.mul(oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH'))).div(10**18)
+    ); // TODO
+    console.log('console.log token out', _tokenOut); // TODO
+    console.log('console.log token out oracle price', oracle.getAssetPrice(_tokenOut)); // TODO
+    console.log(
+      'console.log MOOWETH oracle price',
+      oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH'))
+    ); // TODO
+    console.log(
+      'console.log swapExactTokensForTokens 23 from %s to %s',
+      _wethAmount,
+      minAmountFromPrice
+    ); // TODO
+
+    IERC20(WETH).approve(uniswapRouter, _wethAmount);
+
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _wethAmount,
       minAmountFromPrice,

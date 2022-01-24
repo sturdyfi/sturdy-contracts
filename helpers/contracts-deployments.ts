@@ -1,4 +1,4 @@
-import { Contract } from 'ethers';
+import { BigNumberish, Contract } from 'ethers';
 import { DRE, impersonateAccountsHardhat, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
@@ -62,6 +62,9 @@ import {
   ATokenForCollateralFactory,
   YearnVaultFactory,
   BeefyVaultFactory,
+  MockyvWFTMFactory,
+  UsdcFactory,
+  UsdtFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -796,5 +799,32 @@ export const deployMockDai = async (chainId: any, verify?: boolean) =>
     await new DaiFactory(await getFirstSigner()).deploy(chainId),
     eContractid.DAIToken,
     [chainId],
+    verify
+  );
+
+export const deployMockUSDC = async (args: [string, string, any, string], verify?: boolean) =>
+  withSaveAndVerify(
+    await new UsdcFactory(await getFirstSigner()).deploy(...args),
+    eContractid.USDCToken,
+    args,
+    verify
+  );
+
+export const deployMockUSDT = async (args: [string, string, any, string], verify?: boolean) =>
+  withSaveAndVerify(
+    await new UsdtFactory(await getFirstSigner()).deploy(...args),
+    eContractid.USDTToken,
+    args,
+    verify
+  );
+
+export const deployMockyvWFTM = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockyvWFTMFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockyvWFTM,
+    args,
     verify
   );

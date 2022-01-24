@@ -70,7 +70,7 @@ makeSuite('yearnVault - use other coin as collatoral', (testEnv) => {
   it('Should revert to use any of coin other than FTM, yvWFTM as collatoral. ', async () => {
     const { usdc, users, yearnVault } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0xca436e14855323927d6e6264470ded36455fc8bd';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositor = users[0];
     printDivider();
 
@@ -96,7 +96,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     const depositor = users[0];
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositUSDC = '7000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -125,7 +125,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     //approve protocol to access borrower wallet
     await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    WFTMOwnerAddress;
+    WFTMOwnerAddress; // TODO ???
     // deposit collateral to borrow
     await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
     expect(await yearnVault.getYieldAmount()).to.be.equal(0);
@@ -152,12 +152,13 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 
 makeSuite('yearnVault', (testEnv: TestEnv) => {
   it('distribute yield to supplier for multiple asset', async () => {
-    const { pool, yearnVault, usdc, users, yvwftm, aUsdc, aYVWFTM, WFTM, dai, aDai } = testEnv;
+    const { pool, yearnVault, usdc, usdt, users, yvwftm, aUsdc, aUsdt, aYVWFTM, WFTM, dai, aDai } = testEnv;
     const depositor = users[0];
-    const other_depositor = users[1];
-    const borrower = users[2];
+    const depositor1 = users[1];
+    const depositor2 = users[2];
+    const borrower = users[3];
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositUSDC = '7000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -179,15 +180,31 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     await impersonateAccountsHardhat([daiOwnerAddress]);
     signer = await ethers.provider.getSigner(daiOwnerAddress);
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, depositDAI);
-    await dai.connect(signer).transfer(other_depositor.address, amountDAItoDeposit);
+    await dai.connect(signer).transfer(depositor1.address, amountDAItoDeposit);
 
     //approve protocol to access depositor wallet
-    await dai.connect(other_depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await dai.connect(depositor1.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //Supplier  deposits 7000 DAI
+    //Supplier deposits 7000 DAI
     await pool
-      .connect(other_depositor.signer)
-      .deposit(dai.address, amountDAItoDeposit, other_depositor.address, '0');
+      .connect(depositor1.signer)
+      .deposit(dai.address, amountDAItoDeposit, depositor1.address, '0');
+
+    const usdtOwnerAddress = '0xcA436e14855323927d6e6264470DeD36455fC8bD';
+    const depositUSDT = '3500';
+    //Make some test USDT for depositor
+    await impersonateAccountsHardhat([usdtOwnerAddress]);
+    signer = await ethers.provider.getSigner(usdtOwnerAddress);
+    const amountUSDTtoDeposit = await convertToCurrencyDecimals(usdt.address, depositUSDT);
+    await usdt.connect(signer).transfer(depositor2.address, amountUSDTtoDeposit);
+
+    //approve protocol to access depositor wallet
+    await usdt.connect(depositor2.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //Supplier  deposits 3500 USDT
+    await pool
+      .connect(depositor2.signer)
+      .deposit(usdt.address, amountUSDTtoDeposit, depositor2.address, '0');
 
     const WFTMOwnerAddress = '0x4901C740607E415685b4d09E4Aa960329cd183Ca';
     const depositWFTM = '1000';
@@ -219,14 +236,17 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     expect(await usdc.balanceOf(yearnVault.address)).to.be.equal(0);
     expect(await dai.balanceOf(yearnVault.address)).to.be.equal(0);
     expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
-    expect(await aDai.balanceOf(other_depositor.address)).to.be.equal(amountDAItoDeposit);
+    expect(await aDai.balanceOf(depositor1.address)).to.be.equal(amountDAItoDeposit);
+    expect(await aUsdt.balanceOf(depositor2.address)).to.be.equal(amountUSDTtoDeposit);
 
     // process yield, so all yield should be converted to usdc and dai
     await yearnVault.processYield();
     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
     const yieldDAI = await convertToCurrencyDecimals(dai.address, '8000');
+    const yieldUSDT = await convertToCurrencyDecimals(usdt.address, '4500');
     expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
-    expect((await aDai.balanceOf(other_depositor.address)).gt(yieldDAI)).to.be.equal(true);
+    expect((await aDai.balanceOf(depositor1.address)).gt(yieldDAI)).to.be.equal(true);
+    expect((await aUsdt.balanceOf(depositor2.address)).gt(yieldUSDT)).to.be.equal(true);
   });
 });
 
@@ -237,7 +257,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     const borrower = users[1];
     const treasury = users[2];
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositUSDC = '7000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);

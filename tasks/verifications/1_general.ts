@@ -17,6 +17,7 @@ import {
   getUiIncentiveDataProvider,
   getPriceOracle,
   getSturdyOracle,
+  getYearnVaultImpl,
 } from '../../helpers/contracts-getters';
 import { verifyContract, getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { DRE, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
@@ -47,9 +48,6 @@ task('verify:general', 'Verify contracts at Etherscan')
     const lendingPoolConfiguratorAddress = await addressesProvider.getLendingPoolConfigurator(); //getLendingPoolConfiguratorProxy();
     const lendingPoolCollateralManagerAddress =
       await addressesProvider.getLendingPoolCollateralManager();
-    const lidoVaultAddress = await addressesProvider.getAddress(
-      DRE.ethers.utils.formatBytes32String('LIDO_VAULT')
-    );
     const incentiveControllerAddress = await addressesProvider.getIncentiveController();
     const incentiveTokenAddress = await addressesProvider.getIncentiveToken();
     const oracleAddress = await addressesProvider.getPriceOracle();
@@ -58,7 +56,6 @@ task('verify:general', 'Verify contracts at Etherscan')
     const lendingPoolProxy = await getProxy(lendingPoolAddress);
     const lendingPoolConfiguratorProxy = await getProxy(lendingPoolConfiguratorAddress);
     const lendingPoolCollateralManagerProxy = await getProxy(lendingPoolCollateralManagerAddress);
-    const lidoVaultProxy = await getProxy(lidoVaultAddress);
     const incentiveControllerProxy = await getProxy(incentiveControllerAddress);
     const incentiveTokenProxy = await getProxy(incentiveTokenAddress);
 
@@ -68,7 +65,6 @@ task('verify:general', 'Verify contracts at Etherscan')
         ? await getLendingPoolImpl(lendingPoolImplAddress)
         : await getLendingPoolImpl();
 
-      const lidoVaultImpl = await getLidoVaultImpl();
       const incentiveControllerImpl = await getSturdyIncentivesControllerImpl();
       const incentiveTokenImpl = await getSturdyTokenImpl();
       const walletBalanceProvider = await getWalletProvider();
@@ -129,10 +125,6 @@ task('verify:general', 'Verify contracts at Etherscan')
         []
       );
 
-      // LidoVault implementation
-      console.log('\n- Verifying LidoVault Implementation...\n');
-      await verifyContract(eContractid.LidoVault, lidoVaultImpl, []);
-
       // IncentiveController implementation
       console.log('\n- Verifying IncentiveController Implementation...\n');
       await verifyContract(eContractid.StakedTokenIncentivesController, incentiveControllerImpl, [
@@ -188,14 +180,6 @@ task('verify:general', 'Verify contracts at Etherscan')
       []
     );
 
-    // LidoVault proxy
-    console.log('\n- Verifying  LidoVault Proxy...\n');
-    await verifyContract(
-      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
-      lidoVaultProxy,
-      [addressesProvider.address]
-    );
-
     // IncentiveController proxy
     console.log('\n- Verifying  IncentiveController Proxy...\n');
     await verifyContract(
@@ -211,6 +195,49 @@ task('verify:general', 'Verify contracts at Etherscan')
       incentiveTokenProxy,
       [addressesProvider.address]
     );
+
+    // Verifying vaults
+    if (pool == ConfigNames.Sturdy) {
+      const lidoVaultAddress = await addressesProvider.getAddress(
+        DRE.ethers.utils.formatBytes32String('LIDO_VAULT')
+      );
+      const lidoVaultProxy = await getProxy(lidoVaultAddress);
+      if (all) {
+        const lidoVaultImpl = await getLidoVaultImpl();
+
+        // LidoVault implementation
+        console.log('\n- Verifying LidoVault Implementation...\n');
+        await verifyContract(eContractid.LidoVault, lidoVaultImpl, []);
+      }
+
+      // LidoVault proxy
+      console.log('\n- Verifying  LidoVault Proxy...\n');
+      await verifyContract(
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+        lidoVaultProxy,
+        [addressesProvider.address]
+      );
+    } else if (pool == ConfigNames.Fantom) {
+      const yearnVaultAddress = await addressesProvider.getAddress(
+        DRE.ethers.utils.formatBytes32String('YEARN_VAULT')
+      );
+      const yearnVaultProxy = await getProxy(yearnVaultAddress);
+
+      if (all) {
+        const yearnVaultImpl = await getYearnVaultImpl();
+        // YearnVault implementation
+        console.log('\n- Verifying YearnVault Implementation...\n');
+        await verifyContract(eContractid.YearnVault, yearnVaultImpl, []);
+      }
+
+      // YearnVault proxy
+      console.log('\n- Verifying  YearnVault Proxy...\n');
+      await verifyContract(
+        eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+        yearnVaultProxy,
+        [addressesProvider.address]
+      );
+    }
 
     console.log('Finished verifications.');
   });

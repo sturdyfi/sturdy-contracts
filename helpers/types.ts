@@ -21,6 +21,7 @@ export enum eEthereumNetwork {
 
 export enum eFantomNetwork {
   ftm = 'ftm',
+  ftm_test = 'ftm_test',
   tenderlyFTM = 'tenderlyFTM',
 }
 
@@ -75,6 +76,8 @@ export enum eContractid {
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
   DAIToken = 'DAIToken',
+  USDCToken = 'USDCToken',
+  USDTToken = 'USDTToken',
   WETHMocked = 'WETHMocked',
   SelfdestructTransferMock = 'SelfdestructTransferMock',
   LendingPoolImpl = 'LendingPoolImpl',
@@ -85,6 +88,7 @@ export enum eContractid {
   LidoVault = 'LidoVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
+  MockyvWFTM = 'MockyvWFTM',
   BeefyVault = 'BeefyVault',
   BeefyVaultImpl = 'BeefyVaultImpl',
 }
@@ -202,6 +206,7 @@ export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
   USDC: T;
+  fUSDT: T;
   USD: T;
   stETH: T;
   yvWFTM: T;
@@ -216,7 +221,7 @@ export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | '
 
 export type iFantomPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'yvWFTM' | 'mooWETH'
+  'DAI' | 'USDC' | 'yvWFTM' | 'mooWETH' | 'fUSDT'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -229,6 +234,7 @@ export enum TokenContractId {
   DAI = 'DAI',
   WETH = 'WETH',
   USDC = 'USDC',
+  USDT = 'USDT',
   stETH = 'stETH',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
@@ -286,6 +292,7 @@ export interface iEthereumParamsPerNetwork<T> {
 
 export interface iFantomParamsPerNetwork<T> {
   [eFantomNetwork.ftm]: T;
+  [eFantomNetwork.ftm_test]: T;
   [eFantomNetwork.tenderlyFTM]: T;
 }
 

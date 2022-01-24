@@ -35,6 +35,20 @@ export const strategyUSDC: IReserveParams = {
   emissionPerSecond: '10',
 };
 
+export const strategyUSDT: IReserveParams = {
+  strategy: rateStrategyStableThree,
+  baseLTVAsCollateral: '0'/*'7500'*/,
+  liquidationThreshold: '0'/*'8000'*/,
+  liquidationBonus: '0'/*'10500'*/,
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000',
+  collateralEnabled: false,
+  emissionPerSecond: '10',
+};
+
 export const strategyYVWFTM: IReserveParams = {
   strategy: rateStrategyYVWFTM,
   baseLTVAsCollateral: '7000',

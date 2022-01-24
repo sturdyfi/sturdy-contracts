@@ -136,7 +136,7 @@ export const mint = async (
   let token;
 
   if (reserveSymbol == 'USDC') {
-    ownerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    ownerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     token = usdc;
   } else if (reserveSymbol == 'DAI') {
     ownerAddress = '0x6Bf97f2534be2242dDb3A29bfb24d498212DcdED';

@@ -13,7 +13,7 @@ makeSuite('Withdraw USDC ', (testEnv) => {
   it('User1 deposits USDC and then withdraw USDC', async () => {
     const { usdc, users, pool, yearnVault, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8684Cfec578ee0B4c95C2C34e5612f1Bbb8e5EC4';
+    const usdcOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositor = users[0];
     printDivider();
     const depositUSDC = '7000';
@@ -51,6 +51,54 @@ makeSuite('Withdraw USDC ', (testEnv) => {
       action: 'withdraw',
       amount: amountUSDCtoDeposit,
       coin: 'USDC',
+      unit: 'USD',
+      ...userGlobalDataAfter,
+    });
+  });
+});
+
+makeSuite('Withdraw USDT ', (testEnv) => {
+  it('User1 deposits USDT and then withdraw USDT', async () => {
+    const { usdt, users, pool, yearnVault, oracle } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const usdtOwnerAddress = '0xcA436e14855323927d6e6264470DeD36455fC8bD';
+    const depositor = users[0];
+    printDivider();
+    const depositUSDT = '3500';
+    //Make some test USDT for depositor
+    await impersonateAccountsHardhat([usdtOwnerAddress]);
+    const signer = await ethers.provider.getSigner(usdtOwnerAddress);
+    const amountUSDTtoDeposit = await convertToCurrencyDecimals(usdt.address, depositUSDT);
+    await usdt.connect(signer).transfer(depositor.address, amountUSDTtoDeposit);
+
+    //approve protocol to access depositor wallet
+    await usdt.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+    //Supplier  deposits 3500 USDT
+    await pool
+      .connect(depositor.signer)
+      .deposit(usdt.address, amountUSDTtoDeposit, depositor.address, '0');
+
+    const supplierGlobalData = await pool.getUserAccountData(depositor.address);
+    printUserAccountData({
+      user: `Supplier ${depositor.address}`,
+      action: 'deposited',
+      amount: depositUSDT,
+      coin: 'USDT',
+      unit: 'USD',
+      ...supplierGlobalData,
+    });
+
+    await pool
+      .connect(depositor.signer)
+      .withdraw(usdt.address, amountUSDTtoDeposit, depositor.address);
+
+    const userGlobalDataAfter = await pool.getUserAccountData(depositor.address);
+    printUserAccountData({
+      user: `Supplier ${depositor.address}`,
+      action: 'withdraw',
+      amount: amountUSDTtoDeposit,
+      coin: 'USDT',
       unit: 'USD',
       ...userGlobalDataAfter,
     });

@@ -33,6 +33,7 @@ import {
   BeefyVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
+import { IWETHFactory } from '../types/IWETHFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
 import { DRE, getDb, notFalsyOrZeroAddress, omit } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
@@ -118,6 +119,9 @@ export const getIErc20Detailed = async (address: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
+
+export const getIWETH = async (address: tEthereumAddress) =>
+  await IWETHFactory.connect(address, await getFirstSigner());
 
 export const getSturdyProtocolDataProvider = async (address?: tEthereumAddress) =>
   await SturdyProtocolDataProviderFactory.connect(

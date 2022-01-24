@@ -67,8 +67,8 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
   });
 });
 
-makeSuite('LidoVault - use other coin as collatoral', (testEnv) => {
-  it('Should revert to use any of coin other than ETH, stETH as collatoral. ', async () => {
+makeSuite('LidoVault - use other coin as collateral', (testEnv) => {
+  it('Should revert to use any of coin other than ETH, stETH as collateral. ', async () => {
     const { lido, usdc, users, lidoVault } = testEnv;
     const ethers = (DRE as any).ethers;
     const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';

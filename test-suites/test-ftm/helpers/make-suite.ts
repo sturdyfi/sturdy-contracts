@@ -1,4 +1,9 @@
-import { evmRevert, evmSnapshot, DRE } from '../../../helpers/misc-utils';
+import {
+  evmRevert,
+  evmSnapshot,
+  DRE,
+  impersonateAccountsHardhat,
+} from '../../../helpers/misc-utils';
 import { Signer } from 'ethers';
 import {
   getLendingPool,
@@ -46,6 +51,7 @@ import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
+import { parseEther } from '@ethersproject/units';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -68,8 +74,10 @@ export interface TestEnv {
   helpersContract: SturdyProtocolDataProvider;
   dai: MintableERC20;
   aDai: AToken;
+  usdt: MintableERC20;
   usdc: SwapinERC20;
   aUsdc: AToken;
+  aUsdt: AToken;
   aYVWFTM: AToken;
   aMOOWETH: AToken;
   WFTM: MintableERC20;
@@ -101,7 +109,9 @@ const testEnv: TestEnv = {
   dai: {} as MintableERC20,
   aDai: {} as AToken,
   usdc: {} as SwapinERC20,
+  usdt: {} as MintableERC20,
   aUsdc: {} as AToken,
+  aUsdt: {} as AToken,
   aYVWFTM: {} as AToken,
   aMOOWETH: {} as AToken,
   WFTM: {} as MintableERC20,
@@ -132,6 +142,30 @@ export async function initializeMakeSuite() {
     address: await restSigners[0].getAddress(),
     signer: restSigners[0],
   };
+
+  if (network == 'ftm_test') {
+    const deployerAddress = '0x661fB502E24Deb30e927E39A38Bd2CC44D67339F';
+    const ethers = (DRE as any).ethers;
+    await impersonateAccountsHardhat([deployerAddress]);
+    let signer = await ethers.provider.getSigner(deployerAddress);
+    deployer = {
+      address: deployerAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+
+    const emergencyAddress = '0x05d75FB9db95AfC448d9F79c016ab027320acEc7';
+    await impersonateAccountsHardhat([emergencyAddress]);
+    signer = await ethers.provider.getSigner(emergencyAddress);
+
+    emergencyUser = {
+      address: emergencyAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
+  }
 
   for (const signer of restSigners) {
     testEnv.users.push({
@@ -175,11 +209,13 @@ export async function initializeMakeSuite() {
   const aYVWFTMAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWFTM')?.tokenAddress;
   const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
+  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === (network == 'ftm_test' ? 'aUSDT' : 'afUSDT'))?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
+  const usdtAddress = reservesTokens.find((token) => token.symbol ===  (network == 'ftm_test' ? 'USDT' : 'fUSDT'))?.tokenAddress;
 
   if (!aDaiAddress || !aYVWFTMAddress) {
     process.exit(1);
@@ -192,9 +228,11 @@ export async function initializeMakeSuite() {
   testEnv.aYVWFTM = await getAToken(aYVWFTMAddress);
   testEnv.aMOOWETH = await getAToken(aMOOWETHAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
+  testEnv.aUsdt = await getAToken(aUsdtAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getSwapinERC20(usdcAddress);
+  testEnv.usdt = await getMintableERC20(usdtAddress);
   testEnv.WFTM = await getMintableERC20(wftmAddress);
   testEnv.WETH = await getSwapinERC20(wethAddress);
   testEnv.brick = await getSturdyToken();

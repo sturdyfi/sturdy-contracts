@@ -54,6 +54,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   BeefyVaultFTM: {
     [eFantomNetwork.ftm]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
+    [eFantomNetwork.ftm_test]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
     [eFantomNetwork.tenderlyFTM]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
   },
   UniswapRouter: {

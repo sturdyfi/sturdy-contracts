@@ -149,6 +149,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   WETH: {
     [eFantomNetwork.ftm]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
+    [eFantomNetwork.ftm_test]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
     [eFantomNetwork.tenderlyFTM]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
   },
   WrappedNativeToken: {

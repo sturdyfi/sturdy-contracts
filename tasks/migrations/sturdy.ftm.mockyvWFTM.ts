@@ -1,9 +1,9 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { deployMockDai, deployMockyvWFTM } from '../../helpers/contracts-deployments';
+import { deployMockyvWFTM } from '../../helpers/contracts-deployments';
 import { getFirstSigner } from '../../helpers/contracts-getters';
 import { getParamPerNetwork, verifyContract } from '../../helpers/contracts-helpers';
-import { eContractid, eNetwork, IFantomConfiguration } from '../../helpers/types';
+import { eNetwork, IFantomConfiguration } from '../../helpers/types';
 
 task('sturdy:testnet:ftm:mockyvWFTM', 'Deploy dai token')
   .addFlag('verify', 'Verify contracts at Etherscan')

@@ -33,7 +33,7 @@ export const FantomConfig: IFantomConfiguration = {
       DAI: '0x9440c3bB6Adb5F0D5b8A460d8a8c010690daC2E8',
       USDC: '0x8f785910e0cc96f854450DFb53be6492daff0b15',
       fUSDT: '0x211554151F2f00305f33530Fdd3a5d0354927A65',
-      yvWFTM: '0xD98FeDef0308A85F30f3082F605a1DFa76437608'
+      yvWFTM: '0x27E6263e00D50D745822326f843A21D7801fa79C'
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -44,7 +44,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   YearnVaultFTM: {
     [eFantomNetwork.ftm]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
-    [eFantomNetwork.ftm_test]: '0xD98FeDef0308A85F30f3082F605a1DFa76437608',
+    [eFantomNetwork.ftm_test]: '0x27E6263e00D50D745822326f843A21D7801fa79C',
     [eFantomNetwork.tenderlyFTM]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
   },
   UniswapRouter: {

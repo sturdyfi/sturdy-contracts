@@ -60,7 +60,7 @@
     "sturdy:incentiveTokenImpl:goerli": "npm run compile && hardhat sturdy:incentiveTokenImpl --network goerli",
     "sturdy:incentiveControllerImpl:goerli": "npm run compile && hardhat sturdy:incentiveControllerImpl --network goerli",
     "sturdy:dai:goerli": "npm run compile && hardhat sturdy:testnet:dai --network goerli",
-    "sturdy:mockyvWFTM:ftm_test": "npm run compile && hardhat sturdy:testnet:ftm:mockyvWFTM --verify --network ftm_test",
+    "sturdy:mockyvWFTM:ftm_test": "npm run compile && hardhat sturdy:testnet:ftm:mockyvWFTM --network ftm_test",
     "sturdy:dai:ftm_test": "npm run compile && hardhat sturdy:testnet:dai --network ftm_test",
     "sturdy:usdc:ftm_test": "npm run compile && hardhat sturdy:testnet:usdc --network ftm_test",
     "sturdy:usdt:ftm_test": "npm run compile && hardhat sturdy:testnet:usdt --network ftm_test",

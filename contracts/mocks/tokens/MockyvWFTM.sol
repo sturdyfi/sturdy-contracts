@@ -92,7 +92,8 @@ contract MockyvWFTM is ERC20 {
   }
 
   function pricePerShare() external view returns (uint256) {
-    return _shareValue(10**decimals());
+    uint256 decimal = decimals();
+    return _shareValue(10**decimal);
   }
 
   function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {

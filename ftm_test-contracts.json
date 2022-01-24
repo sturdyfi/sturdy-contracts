@@ -31,11 +31,11 @@
     },
     "MockyvWFTM": {
       "ftm_test": {
-        "address": "0xD98FeDef0308A85F30f3082F605a1DFa76437608",
+        "address": "0x27E6263e00D50D745822326f843A21D7801fa79C",
         "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
       },
       "localhost": {
-        "address": "0xD98FeDef0308A85F30f3082F605a1DFa76437608",
+        "address": "0x27E6263e00D50D745822326f843A21D7801fa79C",
         "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
       }
     },

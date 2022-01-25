@@ -59,7 +59,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           fUSDT: reserveAssets.fUSDT,
           stETH: reserveAssets.stETH,
           WETH: '',
-          yvWFTM: '',
+          yvWFTM: reserveAssets.yvWFTM,
           USD: UsdAddress,
         },
         fallbackOracle

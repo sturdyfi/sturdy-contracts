@@ -81,5 +81,5 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eEthereumNetwork.tenderly]: 12406069,
   [eEthereumNetwork.goerli]: 6055821,
   [eFantomNetwork.ftm]: 28465954,
-  [eFantomNetwork.ftm_test]: 6868855,
+  [eFantomNetwork.ftm_test]: 6901960,
 };

@@ -22,7 +22,7 @@
     "test": "FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-sturdy/*.spec.ts --network localhost",
     "test:ftm": "FORK=ftm TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-ftm/*.spec.ts --network localhost",
     "test:goerli": "FORK=goerli SKIP_DEPLOY=true TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-sturdy/__setup.deploy.spec.ts ./test-suites/test-sturdy/*.spec.goerli.ts ./test-suites/test-sturdy/lending-pool-addresses-provider.spec.goerli_last.ts --network localhost",
-    "test:ftm:testnet": "FORK=ftm_test SKIP_DEPLOY=true TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-ftm/__setup.deploy.spec.ts ./test-suites/test-ftm/*.spec.testnet.ts ./test-suites/test-ftm/lending-pool-addresses-provider.spec.testnet_last.ts --network localhost",
+    "test:ftm:testnet": "FORK=ftm_test SKIP_DEPLOY=true TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-ftm/__setup.deploy.spec.ts ./test-suites/test-ftm/*.spec.testnet.ts --network localhost",
     "test-scenarios": "npm run compile && npx hardhat test test-suites/test-sturdy/__setup.spec.ts test-suites/test-sturdy/scenario.spec.ts",
     "test-subgraph:scenarios": "npm run compile && hardhat --network hardhatevm_docker test test-suites/test-sturdy/__setup.spec.ts test-suites/test-sturdy/subgraph-scenarios.spec.ts",
     "dev:coverage": "buidler compile --force && buidler coverage --network coverage",

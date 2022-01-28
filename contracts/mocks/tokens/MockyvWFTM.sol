@@ -22,6 +22,7 @@ contract MockyvWFTM is ERC20 {
   address public governance;
   address public management;
   address public guardian;
+  bool public isIncreasing;
 
   constructor(
     address _token,
@@ -46,12 +47,16 @@ contract MockyvWFTM is ERC20 {
     management = _management;
     rewards = _rewards;
     guardian = _guardian;
-    rewardRatio = 10**25; // 0.01 * ray()
+    rewardRatio = 10**25; // 0.01 * ray() = 1%
     lastReport = block.timestamp;
   }
 
   function setRewardRation(uint256 ratio) external {
     rewardRatio = ratio;
+  }
+
+  function setIncreasing(bool increasing) external {
+    isIncreasing = increasing;
   }
 
   function deposit(uint256 _amount, address recipient) external returns (uint256) {
@@ -64,7 +69,7 @@ contract MockyvWFTM is ERC20 {
 
     uint256 shares = _issueSharesForAmount(recipient, amount);
 
-    TransferHelper.safeTransferFrom(address(token), msg.sender, address(this), _amount);
+    TransferHelper.safeTransferFrom(address(token), msg.sender, address(this), amount);
 
     return shares;
   }
@@ -97,18 +102,25 @@ contract MockyvWFTM is ERC20 {
   }
 
   function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {
-    require(amount != 0);
+    uint256 decimal = decimals();
+    uint256 shares = amount.rayDiv(_shareValue(10**decimal));
+    require(shares != 0);
 
-    _mint(to, amount);
+    _mint(to, shares);
 
-    return amount;
+    return shares;
   }
 
   function _shareValue(uint256 shares) internal view returns (uint256) {
     uint256 timeDifference = block.timestamp.sub(lastReport);
+    if (isIncreasing) {
+      timeDifference = 3 days;
+    }
+
     uint256 linearReward = (rewardRatio.mul(timeDifference) / SECONDS_PER_YEAR).add(
       WadRayMath.ray()
     );
+
     return shares.rayMul(linearReward);
   }
 }

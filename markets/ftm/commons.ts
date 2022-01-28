@@ -67,7 +67,7 @@ export const CommonsConfig: ICommonConfiguration = {
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
     [eFantomNetwork.ftm]: '',
-    [eFantomNetwork.ftm_test]: '0xCF6cB97A98B553D4242E5F04BCb66eA4772A830F',
+    [eFantomNetwork.ftm_test]: '0x7141447552bCdbc76DFD9C954E247bA627c00740',
     [eFantomNetwork.tenderlyFTM]: '',
   },
   ProviderRegistryOwner: {
@@ -77,22 +77,22 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   LendingRateOracle: {
     [eFantomNetwork.ftm]: '',
-    [eFantomNetwork.ftm_test]: '0x523c71567fDfe78A722bf1e86b465494088063D5',
+    [eFantomNetwork.ftm_test]: '0x295214fa15dF1b45C7dF9E458C0ceeca845f12EB',
     [eFantomNetwork.tenderlyFTM]: '',
   },
   LendingPoolCollateralManager: {
     [eFantomNetwork.ftm]: '',
-    [eFantomNetwork.ftm_test]: '0xA12A48943e76ab85f363c3170f811Fd2DEd769a0',
+    [eFantomNetwork.ftm_test]: '0xC0319B90dc54332c27684101D0276bB08c84A4eC',
     [eFantomNetwork.tenderlyFTM]: '',
   },
   LendingPoolConfigurator: {
     [eFantomNetwork.ftm]: '',
-    [eFantomNetwork.ftm_test]: '0xC23A754F4b874a23Eb69e9C824DdFD14D3898F0b',
+    [eFantomNetwork.ftm_test]: '0x564F675e39A9E759f27c84689A8FC2485e41AA3F',
     [eFantomNetwork.tenderlyFTM]: '',
   },
   LendingPool: {
     [eFantomNetwork.ftm]: '',
-    [eFantomNetwork.ftm_test]: '0x18adDC7BF6403BA12f111b34DEB53979D4B86f2D',
+    [eFantomNetwork.ftm_test]: '0x29f3406111Ba752e43563918f83a4AC6ff8B8Baa',
     [eFantomNetwork.tenderlyFTM]: '',
   },
   TokenDistributor: {
@@ -107,7 +107,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   FallbackOracle: {
     [eFantomNetwork.ftm]: ZERO_ADDRESS,
-    [eFantomNetwork.ftm_test]: '0x9810EB770a2d6a01289c541761154B96614Cc9bE',
+    [eFantomNetwork.ftm_test]: '0x97D4b8faeBC1f9A599576A4C4c542428Bf1BB6D7',
     [eFantomNetwork.tenderlyFTM]: ZERO_ADDRESS,
   },
   ChainlinkAggregator: {
@@ -157,7 +157,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   IncentivesController: {
     [eFantomNetwork.ftm]: ZERO_ADDRESS,
-    [eFantomNetwork.ftm_test]: '0xd7A9463faE1Ac78C7019E12C07859f942a44F005',
+    [eFantomNetwork.ftm_test]: '0x78c0E0cC62f3C38841e7Daf114C3315Ab9dD2FD9',
     [eFantomNetwork.tenderlyFTM]: ZERO_ADDRESS,
   },
 };

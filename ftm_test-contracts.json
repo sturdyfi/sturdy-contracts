@@ -365,11 +365,11 @@
   },
   "UiPoolDataProvider": {
     "ftm_test": {
-      "address": "0x3Bdf1225bd3e7e70fe5399349c5AE7E8bC3dAA89",
+      "address": "0xabACcd6Ae250dDc4e2ef6052a90CB2bcc301F2C8",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x3Bdf1225bd3e7e70fe5399349c5AE7E8bC3dAA89",
+      "address": "0xabACcd6Ae250dDc4e2ef6052a90CB2bcc301F2C8",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },

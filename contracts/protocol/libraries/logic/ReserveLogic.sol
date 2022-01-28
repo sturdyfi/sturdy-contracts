@@ -392,4 +392,16 @@ library ReserveLogic {
   {
     return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
+
+  /**
+   * @dev Get the memory reserve indexes from the pricePerShare of yield contract
+   * @param reserve The reserve reserve to be updated
+   **/
+  function getIndexFromPricePerShareMemory(DataTypes.ReserveData memory reserve)
+    internal
+    view
+    returns (uint128)
+  {
+    return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
+  }
 }

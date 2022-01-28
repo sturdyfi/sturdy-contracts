@@ -49,6 +49,7 @@ contract MockyvWFTM is ERC20 {
     guardian = _guardian;
     rewardRatio = 10**25; // 0.01 * ray() = 1%
     lastReport = block.timestamp;
+    isIncreasing = true;
   }
 
   function setRewardRation(uint256 ratio) external {
@@ -103,7 +104,7 @@ contract MockyvWFTM is ERC20 {
 
   function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {
     uint256 decimal = decimals();
-    uint256 shares = amount.rayDiv(_shareValue(10**decimal));
+    uint256 shares = amount.rayDiv(_shareValue(10**decimal).wadToRay());
     require(shares != 0);
 
     _mint(to, shares);
@@ -113,7 +114,7 @@ contract MockyvWFTM is ERC20 {
 
   function _shareValue(uint256 shares) internal view returns (uint256) {
     uint256 timeDifference = block.timestamp.sub(lastReport);
-    if (isIncreasing) {
+    if (!isIncreasing) {
       timeDifference = 3 days;
     }
 

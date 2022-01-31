@@ -32,13 +32,13 @@ import {
   YearnVaultFactory,
   BeefyVaultFactory,
   MockyvWFTMFactory,
+  SwapinERC20Factory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
 import { DRE, getDb, notFalsyOrZeroAddress, omit } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
-import { IFantomETHFactory } from '../types/IFantomETHFactory';
 
 export const getFirstSigner = async () => (await getEthersSigners())[0];
 
@@ -104,7 +104,7 @@ export const getMintableERC20 = async (address: tEthereumAddress) =>
   );
 
 export const getSwapinERC20 = async (address: tEthereumAddress) =>
-  await IFantomETHFactory.connect(
+  await SwapinERC20Factory.connect(
     address ||
       (
         await getDb().get(`${eContractid.SwapinERC20}.${DRE.network.name}`).value()

@@ -70,6 +70,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
           // TODO @bshevchenko: refactor
           DAI: yieldAddress,
           USDC: yieldAddress,
+          fUSDT: yieldAddress,
           yvWFTM: yieldAddress,
           mooWETH: (await getBeefyVault()).address,
         },

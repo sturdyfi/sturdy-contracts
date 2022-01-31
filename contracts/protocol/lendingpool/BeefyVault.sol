@@ -70,6 +70,7 @@ contract BeefyVault is GeneralVault {
     path[0] = address(WETH);
     path[1] = _tokenOut;
 
+    console.log('wethAmount', _wethAmount);
     console.log(
       'console.log new test',
       _wethAmount.mul(oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH'))).div(10**18)

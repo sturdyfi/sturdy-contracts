@@ -14,6 +14,7 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
@@ -123,8 +124,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
-    reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+      reserve.updateInterestRates(asset, aToken, amount, 0);
+    }
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
@@ -297,8 +300,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    reserve.updateState();
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, amountToWithdraw);
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+      reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, amountToWithdraw);
+    }
 
     if (amountToWithdraw == userBalance) {
       _usersConfig[from].setUsingAsCollateral(reserve.id, false);
@@ -401,7 +406,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       paybackAmount = amount;
     }
 
-    reserve.updateState();
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+    }
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
@@ -414,7 +421,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
-    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+    }
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
@@ -818,7 +827,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    reserve.updateState();
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+    }
 
     uint256 currentStableRate = 0;
 
@@ -845,12 +856,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       userConfig.setBorrowing(reserve.id, true);
     }
 
-    reserve.updateInterestRates(
-      vars.asset,
-      vars.aTokenAddress,
-      0,
-      vars.releaseUnderlying ? vars.amount : 0
-    );
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateInterestRates(
+        vars.asset,
+        vars.aTokenAddress,
+        0,
+        vars.releaseUnderlying ? vars.amount : 0
+      );
+    }
 
     if (vars.releaseUnderlying) {
       IAToken(vars.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
@@ -882,5 +895,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       _reservesCount = reservesCount + 1;
     }
+  }
+
+  function _isInterestRateAvailable(address interestRateStrategyAddress)
+    internal
+    view
+    returns (bool)
+  {
+    return
+      IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope1() == 0 &&
+      IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope2() == 0 &&
+      IReserveInterestRateStrategy(interestRateStrategyAddress).baseVariableBorrowRate() == 0;
   }
 }

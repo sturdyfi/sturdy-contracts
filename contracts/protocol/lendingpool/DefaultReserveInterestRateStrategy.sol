@@ -73,11 +73,11 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     _stableRateSlope2 = stableRateSlope2;
   }
 
-  function variableRateSlope1() external view returns (uint256) {
+  function variableRateSlope1() external view override returns (uint256) {
     return _variableRateSlope1;
   }
 
-  function variableRateSlope2() external view returns (uint256) {
+  function variableRateSlope2() external view override returns (uint256) {
     return _variableRateSlope2;
   }
 

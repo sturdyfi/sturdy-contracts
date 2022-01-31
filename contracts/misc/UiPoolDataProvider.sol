@@ -16,9 +16,11 @@ import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveC
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
+  using ReserveLogic for DataTypes.ReserveData;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
@@ -83,6 +85,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
         reserveData.underlyingAsset
       );
+      (, , , , bool isCollateral) = baseData.configuration.getFlagsMemory();
+
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;
@@ -98,6 +102,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
       );
+      if (isCollateral && baseData.yieldAddress != address(0)) {
+        uint256 pricePerShare = baseData.getIndexFromPricePerShareMemory();
+        reserveData.availableLiquidity = reserveData.availableLiquidity.rayMul(pricePerShare);
+      }
+
       (
         reserveData.totalPrincipalStableDebt,
         ,
@@ -257,6 +266,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
         reserveData.underlyingAsset
       );
+      (, , , , bool isCollateral) = baseData.configuration.getFlagsMemory();
+
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;
@@ -272,6 +283,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
       );
+      if (isCollateral && baseData.yieldAddress != address(0)) {
+        uint256 pricePerShare = baseData.getIndexFromPricePerShareMemory();
+        reserveData.availableLiquidity = reserveData.availableLiquidity.rayMul(pricePerShare);
+      }
+
       (
         reserveData.totalPrincipalStableDebt,
         ,

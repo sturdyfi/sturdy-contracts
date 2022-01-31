@@ -134,6 +134,7 @@ const buidlerConfig: HardhatUserConfig = {
       gasPrice: 8000000000,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
       forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
+      timeout: 100000
     },
 
     buidlerevm_docker: {

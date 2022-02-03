@@ -19,6 +19,7 @@ import {
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
 import {
+  deployCollateralAToken,
   deployCollateralATokenImpl,
   deployDefaultReserveInterestRateStrategy,
   deployGenericAToken,
@@ -26,13 +27,30 @@ import {
   deployGenericStableDebtToken,
   deployGenericVariableDebtToken,
 } from './contracts-deployments';
+import { ZERO_ADDRESS } from './constants';
+import * as sturdyReserveConfigs from '../markets/sturdy/reservesConfigs';
+import * as fantomReserveConfigs from '../markets/ftm/reservesConfigs';
+import { ConfigNames } from './configuration';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
     case eContractid.AToken:
       return deployGenericAToken;
+    case eContractid.ATokenForCollateral:
+      return deployCollateralAToken;
     default:
       throw Error(`Missing aToken deployment script for: ${id}`);
+  }
+};
+
+export const getReserveConfigs = (pool: string) => {
+  switch (pool) {
+    case ConfigNames.Sturdy:
+      return sturdyReserveConfigs;
+    case ConfigNames.Fantom:
+      return fantomReserveConfigs;
+    default:
+      throw Error(`Not exist reserveConfigs`);
   }
 };
 
@@ -115,8 +133,8 @@ export const initReservesByHelper = async (
   //   rawInsertContractAddressInDb(`variableDebtTokenImpl`, variableDebtTokenImplementationAddress);
   // });
   //gasUsage = gasUsage.add(tx1.gasUsed);
-  stableDebtTokenImplementationAddress = await (await deployGenericStableDebtToken()).address;
-  variableDebtTokenImplementationAddress = await (await deployGenericVariableDebtToken()).address;
+  stableDebtTokenImplementationAddress = (await deployGenericStableDebtToken()).address;
+  variableDebtTokenImplementationAddress = (await deployGenericVariableDebtToken()).address;
 
   const incentives = await getSturdyIncentivesController();
 
@@ -194,7 +212,7 @@ export const initReservesByHelper = async (
       variableDebtTokenImpl: variableDebtTokenImplementationAddress,
       underlyingAssetDecimals: reserveInitDecimals[i],
       interestRateStrategyAddress: strategyAddressPerAsset[reserveSymbols[i]],
-      yieldAddress: yieldAddresses[reserveSymbols[i]],
+      yieldAddress: yieldAddresses[reserveSymbols[i]] || ZERO_ADDRESS,
       underlyingAsset: reserveTokens[i],
       treasury: treasuryAddress,
       incentivesController: incentives.address,

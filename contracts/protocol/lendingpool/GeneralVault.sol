@@ -36,7 +36,7 @@ contract GeneralVault is VersionedInitializable {
   uint256 internal _vaultFee;
   address internal _treasuryAddress;
 
-  uint256 public constant VAULT_REVISION = 0x1;
+  uint256 public constant VAULT_REVISION = 0x2;
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.

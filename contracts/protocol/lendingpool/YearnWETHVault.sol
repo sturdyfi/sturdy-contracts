@@ -5,42 +5,40 @@ pragma experimental ABIEncoderV2;
 import 'hardhat/console.sol';
 import {GeneralVault} from './GeneralVault.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IBeefyVault} from '../../interfaces/IBeefyVault.sol';
-import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {IWETH} from '../../misc/interfaces/IWETH.sol';
+import {IYearnVault} from '../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
- * @title BeefyVault
- * @notice mooScreamETH/WETH Vault by using Beefy on Fantom
+ * @title YearnVault
+ * @notice yvWETH/WETH Vault by using Yearn on Fantom
  * @author Sturdy
  **/
-contract BeefyVault is GeneralVault {
+contract YearnWETHVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
-    address WETH = _addressesProvider.getAddress('WETH');
-    uint256 yieldMOOWETH = _getYield(MOOWETH);
+    address YVWETH = _addressesProvider.getAddress('YVWETH');
+    uint256 yieldYVWETH = _getYield(YVWETH);
 
     // move yield to treasury
     if (_vaultFee > 0) {
-      uint256 treasuryMOOWETH = _processTreasury(yieldMOOWETH);
-      yieldMOOWETH = yieldMOOWETH.sub(treasuryMOOWETH);
+      uint256 treasuryYVWETH = _processTreasury(yieldYVWETH);
+      yieldYVWETH = yieldYVWETH.sub(treasuryYVWETH);
     }
 
-    // Withdraw from Beefy Vault and receive WETH
-    uint256 before = IERC20(WETH).balanceOf(address(this));
-    IBeefyVault(MOOWETH).withdraw(yieldMOOWETH);
-    uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)) - before;
+    // Withdraw from Yearn Vault and receive WETH
+    uint256 yieldWETH = IYearnVault(YVWETH).withdraw(yieldYVWETH, address(this), 1);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWETH);
     for (uint256 i = 0; i < assetYields.length; i++) {
@@ -60,7 +58,7 @@ contract BeefyVault is GeneralVault {
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 _minFTMAmount = _wethAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH')))
+      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWETH')))
       .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
       .percentMul(99_00);
 
@@ -102,72 +100,68 @@ contract BeefyVault is GeneralVault {
    * @dev Get yield amount based on strategy
    */
   function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(_addressesProvider.getAddress('MOOWETH'));
+    return _getYieldAmount(_addressesProvider.getAddress('YVWETH'));
   }
 
   /**
    * @dev Get price per share based on yield strategy
    */
   function pricePerShare() external view override returns (uint256) {
-    return IBeefyVault(_addressesProvider.getAddress('MOOWETH')).getPricePerFullShare();
+    return IYearnVault(_addressesProvider.getAddress('YVWETH')).pricePerShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive MOOWETH
+   * @dev Deposit to yield pool based on strategy and receive yvWETH
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
     override
     returns (address, uint256)
   {
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
+    address YVWETH = _addressesProvider.getAddress('YVWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
+    // Case of WETH deposit from user, receive WETH from user
     require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
 
-    // Deposit WETH to Beefy Vault and receive mooScreamETH
-    IERC20(WETH).approve(MOOWETH, _amount);
-
-    uint256 before = IERC20(MOOWETH).balanceOf(address(this));
-    IBeefyVault(MOOWETH).deposit(_amount);
-    uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before;
+    // Deposit WETH to Yearn Vault and receive yvWETH
+    IERC20(WETH).approve(YVWETH, _amount);
+    uint256 assetAmount = IYearnVault(YVWETH).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
-    return (MOOWETH, assetAmount);
+    IERC20(YVWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    return (YVWETH, assetAmount);
   }
 
   /**
-   * @dev Get Withdrawal amount of mooScreamETH based on strategy
+   * @dev Get Withdrawal amount of yvWETH based on strategy
    */
-  function _getWithdrawalAmount(address, uint256 _amount)
+  function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
     view
     override
     returns (address, uint256)
   {
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('MOOWETH'), _amount);
+    return (_addressesProvider.getAddress('YVWETH'), _amount);
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with mooScreamETH and deliver asset
+   * @dev Withdraw from yield pool based on strategy with yvWETH and deliver asset
    */
   function _withdrawFromYieldPool(
     address _asset,
     uint256 _amount,
     address _to
   ) internal override {
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
+    address YVWETH = _addressesProvider.getAddress('YVWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
-    require(_asset == WETH, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    // Withdraw from Yearn Vault and receive WETH
+    uint256 assetAmount = IYearnVault(YVWETH).withdraw(_amount, address(this), 1);
 
-    // Withdraw from Beefy Vault and receive WETH
-    uint256 before = IERC20(WETH).balanceOf(address(this));
-    IBeefyVault(MOOWETH).withdraw(_amount);
-    uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
+    require(_asset == WETH, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     // Deliver WETH to user
     TransferHelper.safeTransfer(WETH, _to, assetAmount);
@@ -178,7 +172,7 @@ contract BeefyVault is GeneralVault {
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(_addressesProvider.getAddress('MOOWETH')).safeTransfer(_treasuryAddress, treasuryAmount);
+    IERC20(_addressesProvider.getAddress('YVWETH')).safeTransfer(_treasuryAddress, treasuryAmount);
     return treasuryAmount;
   }
 }

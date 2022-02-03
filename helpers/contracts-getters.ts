@@ -33,6 +33,10 @@ import {
   BeefyVaultFactory,
   MockyvWFTMFactory,
   SwapinERC20Factory,
+  YearnWETHVaultFactory,
+  MockyvWETHFactory,
+  MockWETHForFTMFactory,
+  ATokenForCollateralFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -407,11 +411,20 @@ export const getYearnVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getBeefyVault = async (address?: tEthereumAddress) =>
-  await BeefyVaultFactory.connect(
-    address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,
+export const getYearnWETHVault = async (address?: tEthereumAddress) =>
+  await YearnWETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWETHVault}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
+
+// export const getBeefyVault = async (address?: tEthereumAddress) =>
+//   await BeefyVaultFactory.connect(
+//     address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,
+//     await getFirstSigner()
+//   );
 
 export const getWalletProvider = async (address?: tEthereumAddress) =>
   await WalletBalanceProviderFactory.connect(
@@ -483,5 +496,35 @@ export const getSturdyToken = async (address?: tEthereumAddress) =>
 export const getMockyvWFTM = async (address?: tEthereumAddress) =>
   await MockyvWFTMFactory.connect(
     address || (await getDb().get(`${eContractid.MockyvWFTM}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvWETH = async (address?: tEthereumAddress) =>
+  await MockyvWETHFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvWETH}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockWETHForFTM = async (address?: tEthereumAddress) =>
+  await MockWETHForFTMFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockWETHForFTM}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getGenericATokenImpl = async (address?: tEthereumAddress) =>
+  await ATokenFactory.connect(
+    address || (await getDb().get(`${eContractid.AToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getCollateralATokenImpl = async (address?: tEthereumAddress) =>
+  await ATokenForCollateralFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ATokenForCollateral}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );

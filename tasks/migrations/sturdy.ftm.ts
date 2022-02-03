@@ -36,18 +36,21 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('6. Deploy Yearn vault');
     await DRE.run('full:deploy-yearn-vault', { pool: POOL_NAME });
 
-    console.log('7. Deploy Beefy vault');
-    await DRE.run('full:deploy-beefy-vault', { pool: POOL_NAME });
+    // console.log('7. Deploy Beefy vault');
+    // await DRE.run('full:deploy-beefy-vault', { pool: POOL_NAME });
+
+    console.log('7. Deploy Yearn WETH vault');
+    await DRE.run('full:deploy-yearn-weth-vault', { pool: POOL_NAME });
 
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();
-      console.log('8. Verifying contracts');
+      console.log('9. Verifying contracts');
       await DRE.run('verify:general', { all: true, pool: POOL_NAME });
 
-      console.log('9. Verifying aTokens and debtTokens');
+      console.log('10. Verifying aTokens and debtTokens');
       await DRE.run('verify:tokens', { pool: POOL_NAME });
     }
 

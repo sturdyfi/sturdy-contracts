@@ -29,6 +29,26 @@
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
+  "MockWETHForFTM": {
+    "ftm_test": {
+      "address": "0x4135c251eE7804A73dB09D36C306AE0214deA28B",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x4135c251eE7804A73dB09D36C306AE0214deA28B",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "MockyvWETH": {
+    "ftm_test": {
+      "address": "0x5F37179e6714D137C6A196eAd40d79005c5e9A61",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x5F37179e6714D137C6A196eAd40d79005c5e9A61",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
   "MockyvWFTM": {
     "ftm_test": {
       "address": "0x5a18d89Ad063C1AEd5B3c30741333c1a1116CFE3",
@@ -381,6 +401,24 @@
     "localhost": {
       "address": "0x1F164A927B5558F46f1471aB43B673b6d776CC13",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "YearnWETHVaultImpl": {
+    "ftm_test": {
+      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "YearnWETHVault": {
+    "ftm_test": {
+      "address": "0x6b9ba59c56f096d16D755DF3395b6b66d35d13e1"
+    },
+    "localhost": {
+      "address": "0x6b9ba59c56f096d16D755DF3395b6b66d35d13e1"
     }
   }
 }

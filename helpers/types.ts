@@ -88,9 +88,13 @@ export enum eContractid {
   LidoVault = 'LidoVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
+  YearnWETHVaultImpl = 'YearnWETHVaultImpl',
+  YearnWETHVault = 'YearnWETHVault',
   MockyvWFTM = 'MockyvWFTM',
-  BeefyVault = 'BeefyVault',
-  BeefyVaultImpl = 'BeefyVaultImpl',
+  MockyvWETH = 'MockyvWETH',
+  MockWETHForFTM = 'MockWETHForFTM',
+  // BeefyVault = 'BeefyVault',
+  // BeefyVaultImpl = 'BeefyVaultImpl',
 }
 
 /*
@@ -210,7 +214,8 @@ export interface iAssetBase<T> {
   USD: T;
   stETH: T;
   yvWFTM: T;
-  mooWETH: T;
+  // mooWETH: T;
+  yvWETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -221,7 +226,7 @@ export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | '
 
 export type iFantomPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'yvWFTM' | 'mooWETH' | 'fUSDT'
+  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -237,7 +242,8 @@ export enum TokenContractId {
   USDT = 'USDT',
   stETH = 'stETH',
   yvWFTM = 'yvWFTM',
-  mooWETH = 'mooWETH',
+  // mooWETH = 'mooWETH',
+  yvWETH = 'yvWETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -386,7 +392,8 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
 export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
-  BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 

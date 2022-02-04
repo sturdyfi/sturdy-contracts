@@ -18,6 +18,7 @@ import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
+  // getBeefyVault,
   getFirstSigner,
   getLendingPool,
   getLendingPoolAddressesProvider,
@@ -25,6 +26,8 @@ import {
   getSturdyIncentivesController,
   getSturdyToken,
   getYearnVault,
+  getYearnWBTCVault,
+  getYearnWETHVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -60,9 +63,16 @@ import {
   DaiFactory,
   ATokenForCollateralFactory,
   YearnVaultFactory,
+  BeefyVaultFactory,
   MockyvWFTMFactory,
   UsdcFactory,
   UsdtFactory,
+  YearnWETHVaultFactory,
+  MockyvWETHFactory,
+  MockWETHForFTMFactory,
+  YearnWBTCVaultFactory,
+  MockyvWBTCFactory,
+  MockWBTCForFTMFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -318,7 +328,7 @@ export const deployDefaultReserveInterestRateStrategy = async (
   );
 
 export const deployStableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
@@ -328,13 +338,13 @@ export const deployStableDebtToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4], '0x10');
+  await instance.initialize(args[0], args[1], args[2], args[5], args[3], args[4], '0x10');
 
   return instance;
 };
 
 export const deployVariableDebtToken = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, string, string, string],
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
@@ -344,7 +354,7 @@ export const deployVariableDebtToken = async (
     verify
   );
 
-  await instance.initialize(args[0], args[1], args[2], '18', args[3], args[4], '0x10');
+  await instance.initialize(args[0], args[1], args[2], args[5], args[3], args[4], '0x10');
 
   return instance;
 };
@@ -366,11 +376,20 @@ export const deployGenericVariableDebtToken = async () =>
   );
 
 export const deployGenericAToken = async (
-  [poolAddress, underlyingAssetAddress, treasuryAddress, incentivesController, name, symbol]: [
+  [
+    poolAddress,
+    underlyingAssetAddress,
+    treasuryAddress,
+    incentivesController,
+    name,
+    symbol,
+    decimal,
+  ]: [
     tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
     tEthereumAddress,
+    string,
     string,
     string
   ],
@@ -388,7 +407,48 @@ export const deployGenericAToken = async (
     treasuryAddress,
     underlyingAssetAddress,
     incentivesController,
-    '18',
+    decimal,
+    name,
+    symbol,
+    '0x10'
+  );
+
+  return instance;
+};
+
+export const deployCollateralAToken = async (
+  [
+    poolAddress,
+    underlyingAssetAddress,
+    treasuryAddress,
+    incentivesController,
+    name,
+    symbol,
+    decimal,
+  ]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    string,
+    string
+  ],
+  verify: boolean
+) => {
+  const instance = await withSaveAndVerify(
+    await new ATokenForCollateralFactory(await getFirstSigner()).deploy(),
+    eContractid.ATokenForCollateral,
+    [],
+    verify
+  );
+
+  await instance.initialize(
+    poolAddress,
+    treasuryAddress,
+    underlyingAssetAddress,
+    incentivesController,
+    decimal,
     name,
     symbol,
     '0x10'
@@ -625,8 +685,8 @@ export const deployLidoVault = async (verify?: boolean) => {
 
   await waitForTx(
     await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('WETH'),
-      getParamPerNetwork(config.WETH, network)
+      DRE.ethers.utils.formatBytes32String('WFTM'),
+      getParamPerNetwork(config.WFTM, network)
     )
   );
 
@@ -681,7 +741,7 @@ export const deployYearnVault = async (verify?: boolean) => {
   await waitForTx(
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('WFTM'),
-      getParamPerNetwork(config.WETH, network)
+      getParamPerNetwork(config.WFTM, network)
     )
   );
 
@@ -692,6 +752,126 @@ export const deployYearnVault = async (verify?: boolean) => {
 
   return await getYearnVault();
 };
+
+export const deployYearnWETHVault = async (verify?: boolean) => {
+  const yearnWETHVaultImpl = await withSaveAndVerify(
+    await new YearnWETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnWETHVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_WETH_VAULT'),
+      yearnWETHVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVWETH'),
+      getParamPerNetwork(config.YearnWETHVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WETH'),
+      getParamPerNetwork(config.WETH, network)
+    )
+  );
+
+  const yearnWETHVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_WETH_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnWETHVault, yearnWETHVaultProxyAddress);
+
+  return await getYearnWETHVault();
+};
+
+export const deployYearnWBTCVault = async (verify?: boolean) => {
+  const yearnWBTCVaultImpl = await withSaveAndVerify(
+    await new YearnWBTCVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnWBTCVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_WBTC_VAULT'),
+      yearnWBTCVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVWBTC'),
+      getParamPerNetwork(config.YearnWBTCVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WBTC'),
+      getParamPerNetwork(config.WBTC, network)
+    )
+  );
+
+  const yearnWBTCVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_WBTC_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnWBTCVault, yearnWBTCVaultProxyAddress);
+
+  return await getYearnWBTCVault();
+};
+
+// export const deployBeefyVault = async (verify?: boolean) => {
+//   const beefyVault = await withSaveAndVerify(
+//     await new BeefyVaultFactory(await getFirstSigner()).deploy(),
+//     eContractid.BeefyVaultImpl,
+//     [],
+//     verify
+//   );
+
+//   const addressesProvider = await getLendingPoolAddressesProvider();
+//   await waitForTx(
+//     await addressesProvider.setAddressAsProxy(
+//       DRE.ethers.utils.formatBytes32String('BEEFY_VAULT'),
+//       beefyVault.address
+//     )
+//   );
+
+//   const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+//   const network = <eNetwork>DRE.network.name;
+//   await waitForTx(
+//     await addressesProvider.setAddress(
+//       DRE.ethers.utils.formatBytes32String('MOOWETH'),
+//       getParamPerNetwork(config.BeefyVaultFTM, network)
+//     )
+//   );
+
+//   await waitForTx(
+//     await addressesProvider.setAddress(
+//       DRE.ethers.utils.formatBytes32String('WETH'),
+//       getParamPerNetwork(config.WETH, network)
+//     )
+//   );
+
+//   const beefyVaultProxyAddress = await addressesProvider.getAddress(
+//     DRE.ethers.utils.formatBytes32String('BEEFY_VAULT')
+//   );
+//   await insertContractAddressInDb(eContractid.BeefyVault, beefyVaultProxyAddress);
+
+//   return await getBeefyVault();
+// };
 
 export const deploySturdyIncentivesControllerImpl = async (
   args: [tEthereumAddress],
@@ -783,6 +963,50 @@ export const deployMockyvWFTM = async (
   withSaveAndVerify(
     await new MockyvWFTMFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockyvWFTM,
+    args,
+    verify
+  );
+
+export const deployMockyvWETH = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockyvWETHFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockyvWETH,
+    args,
+    verify
+  );
+
+export const deployMockyvWBTC = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockyvWBTCFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockyvWBTC,
+    args,
+    verify
+  );
+
+export const deployMockWETHForFTM = async (
+  args: [string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockWETHForFTMFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockWETHForFTM,
+    args,
+    verify
+  );
+
+export const deployMockWBTCForFTM = async (
+  args: [string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockWBTCForFTMFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockWBTCForFTM,
     args,
     verify
   );

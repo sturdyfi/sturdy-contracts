@@ -33,18 +33,24 @@ task('sturdy:ftm:testnet', 'Deploy development enviroment')
     console.log('5. Deploy Incentives impl');
     await DRE.run('testnet:deploy-incentives-impl', { pool: POOL_NAME });
 
-    console.log('6. Deploy Yearn vault');
+    console.log('7. Deploy Yearn vault');
     await DRE.run('testnet:deploy-yearn-vault', { pool: POOL_NAME });
 
-    console.log('7. Initialize lending pool');
+    console.log('7-2. Deploy Yearn WETH vault');
+    await DRE.run('testnet:deploy-yearn-weth-vault', { pool: POOL_NAME });
+
+    console.log('7-3. Deploy Yearn WBTC vault');
+    await DRE.run('testnet:deploy-yearn-wbtc-vault', { pool: POOL_NAME });
+
+    console.log('8. Initialize lending pool');
     await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();
-      console.log('8. Veryfing contracts');
+      console.log('9. Veryfing contracts');
       await DRE.run('verify:general', { all: true, pool: POOL_NAME });
 
-      console.log('9. Veryfing aTokens and debtTokens');
+      console.log('10. Veryfing aTokens and debtTokens');
       await DRE.run('verify:tokens', { pool: POOL_NAME });
     }
 

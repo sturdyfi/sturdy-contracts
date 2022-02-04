@@ -7,6 +7,10 @@ pragma solidity 0.6.12;
  * @author Sturdy
  */
 interface IReserveInterestRateStrategy {
+  function variableRateSlope1() external view returns (uint256);
+
+  function variableRateSlope2() external view returns (uint256);
+
   function baseVariableBorrowRate() external view returns (uint256);
 
   function getMaxVariableBorrowRate() external view returns (uint256);

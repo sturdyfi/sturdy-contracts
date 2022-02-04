@@ -40,7 +40,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     expect(aTokensBalance).to.be.equal(parseEther('1.1'));
   });
 
-  it('transfering aStETH should be success after deposit ETH', async () => {
+  it('transferring aStETH should be success after deposit ETH', async () => {
     const { aStETH, users } = testEnv;
     await expect(aStETH.transfer(users[0].address, parseEther('0.05'))).to.not.be.reverted;
   });

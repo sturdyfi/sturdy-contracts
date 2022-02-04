@@ -9,7 +9,6 @@ import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { printDivider } from './helpers/utils/helpers';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
-import { ILidoFactory } from '../../types/ILidoFactory';
 
 const { parseEther } = ethers.utils;
 
@@ -25,11 +24,14 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     await yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1200') });
     expect(await yvwftm.balanceOf(yearnVault.address)).to.be.equal(0);
     expect(await aYVWFTM.balanceOf(yearnVault.address)).to.be.equal(0);
-    expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(true);
+    expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(
+      true
+    );
     expect(await ethers.getDefaultProvider().getBalance(yearnVault.address)).to.be.equal(0);
   });
 
   it('yvWFTM & aYVWFTM balance check after deposit for collateral', async () => {
+    // TODO duplicates above
     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
     const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
     const aTokensBalance = await aYVWFTM.balanceOf(deployer.address);
@@ -37,15 +39,15 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     expect(aTokensBalance.gt(parseEther('1199.99999'))).to.be.equal(true);
   });
 
-  it('transfering aYVWFTM should be success after deposit FTM', async () => {
+  it('transferring aYVWFTM should be success after deposit FTM', async () => {
     const { aYVWFTM, users } = testEnv;
     await expect(aYVWFTM.transfer(users[0].address, parseEther('100'))).to.not.be.reverted;
   });
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnVault } = testEnv;
-    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address)).to
-      .be.reverted;
+    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address))
+      .to.be.reverted;
   });
 
   it('withdraw from collateral', async () => {
@@ -123,7 +125,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     //approve protocol to access borrower wallet
     await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    WFTMOwnerAddress
+    WFTMOwnerAddress; // TODO ???
     // deposit collateral to borrow
     await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, depositWFTMAmount);
     expect(await yearnVault.getYieldAmount()).to.be.equal(0);
@@ -187,7 +189,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     await pool
       .connect(depositor1.signer)
       .deposit(dai.address, amountDAItoDeposit, depositor1.address, '0');
-    
+
     const usdtOwnerAddress = '0xcA436e14855323927d6e6264470DeD36455fC8bD';
     const depositUSDT = '3500';
     //Make some test USDT for depositor
@@ -309,7 +311,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
     expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
     expect(
-        (await yvwftm.balanceOf(treasury.address)).gt(yieldyvWFTMAmount.mul(19).div(100))
-      ).to.be.equal(true);
+      (await yvwftm.balanceOf(treasury.address)).gt(yieldyvWFTMAmount.mul(19).div(100))
+    ).to.be.equal(true);
   });
 });

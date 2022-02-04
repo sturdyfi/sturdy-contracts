@@ -1,8 +1,4 @@
-import {
-  ZERO_ADDRESS,
-  MOCK_CHAINLINK_AGGREGATORS_PRICES,
-  oneEther,
-} from '../../helpers/constants';
+import { ZERO_ADDRESS, MOCK_CHAINLINK_AGGREGATORS_PRICES, oneEther } from '../../helpers/constants';
 import { ICommonConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 // ----------------
@@ -15,7 +11,7 @@ export const CommonsConfig: ICommonConfiguration = {
   StableDebtTokenNamePrefix: 'Sturdy stable debt bearing',
   VariableDebtTokenNamePrefix: 'Sturdy variable debt bearing',
   SymbolPrefix: '',
-  ProviderId: 0, // Overriden in index.ts
+  ProviderId: 0, // Overridden in index.ts
   OracleQuoteCurrency: 'ETH',
   OracleQuoteUnit: oneEther.toString(),
   ProtocolGlobalParams: {
@@ -80,7 +76,7 @@ export const CommonsConfig: ICommonConfiguration = {
   ProviderRegistry: {
     [eEthereumNetwork.kovan]: '0x1E40B561EC587036f9789aF83236f057D1ed2A90',
     [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '',//'0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
+    [eEthereumNetwork.main]: '', //'0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.geth]: '',
@@ -92,7 +88,7 @@ export const CommonsConfig: ICommonConfiguration = {
   ProviderRegistryOwner: {
     [eEthereumNetwork.kovan]: '0x85e4A467343c0dc4aDAB74Af84448D9c45D8ae6F',
     [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '',//'0xB9062896ec3A615a4e4444DF183F0531a77218AE',
+    [eEthereumNetwork.main]: '', //'0xB9062896ec3A615a4e4444DF183F0531a77218AE',
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
     [eEthereumNetwork.geth]: '',
@@ -121,7 +117,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.kovan]: '0x9269b6453d0d75370c4c85e5a42977a53efdb72a',
     [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '',//'0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
+    [eEthereumNetwork.main]: '', //'0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
     [eEthereumNetwork.tenderly]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
     [eEthereumNetwork.goerli]: '0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655',
   },
@@ -157,7 +153,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.localhost]: '',
     [eEthereumNetwork.kovan]: '0x971efe90088f21dc6a36f610ffed77fc19710708',
     [eEthereumNetwork.ropsten]: '0xeba2ea67942b8250d870b12750b594696d02fc9c',
-    [eEthereumNetwork.main]: '',//'0xe3d9988f676457123c5fd01297605efdd0cba1ae',
+    [eEthereumNetwork.main]: '', //'0xe3d9988f676457123c5fd01297605efdd0cba1ae',
     [eEthereumNetwork.tenderly]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
     [eEthereumNetwork.goerli]: '',
   },
@@ -237,12 +233,23 @@ export const CommonsConfig: ICommonConfiguration = {
       '0x95b73a72c6ecf4ccbbba5178800023260bad8e75cdccdb8e4827a2977a37c820',
     [eEthereumNetwork.hardhat]:
       '0xbae024d959c6a022dc5ed37294cd39c141034b2ae5f02a955cce75c930a81bf5',
-      [eEthereumNetwork.localhost]:
+    [eEthereumNetwork.localhost]:
       '0xbae024d959c6a022dc5ed37294cd39c141034b2ae5f02a955cce75c930a81bf5',
-      [eEthereumNetwork.geth]:
-      '0xbae024d959c6a022dc5ed37294cd39c141034b2ae5f02a955cce75c930a81bf5',
+    [eEthereumNetwork.geth]: '0xbae024d959c6a022dc5ed37294cd39c141034b2ae5f02a955cce75c930a81bf5',
     [eEthereumNetwork.buidlerevm]:
       '0xbae024d959c6a022dc5ed37294cd39c141034b2ae5f02a955cce75c930a81bf5',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  WFTM: {
+    [eEthereumNetwork.coverage]: '', // deployed in local evm
+    [eEthereumNetwork.hardhat]: '', // deployed in local evm
+    [eEthereumNetwork.geth]: '', // deployed in local evm
+    [eEthereumNetwork.localhost]: '', // deployed in local evm
+    [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '',
@@ -255,11 +262,23 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.geth]: '', // deployed in local evm
     [eEthereumNetwork.localhost]: '', // deployed in local evm
     [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
-    [eEthereumNetwork.kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
-    [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
-    [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.goerli]: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  WBTC: {
+    [eEthereumNetwork.coverage]: '', // deployed in local evm
+    [eEthereumNetwork.hardhat]: '', // deployed in local evm
+    [eEthereumNetwork.geth]: '', // deployed in local evm
+    [eEthereumNetwork.localhost]: '', // deployed in local evm
+    [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
   },
   WrappedNativeToken: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm

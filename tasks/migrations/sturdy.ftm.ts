@@ -4,7 +4,7 @@ import { ConfigNames } from '../../helpers/configuration';
 import { printContracts } from '../../helpers/misc-utils';
 import { usingTenderly } from '../../helpers/tenderly-utils';
 
-task('sturdy:ftm', 'Deploy development enviroment')
+task('sturdy:ftm', 'Deploy development environment')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addFlag('skipRegistry', 'Skip addresses provider registration at Addresses Provider Registry')
   .setAction(async ({ verify, skipRegistry }, DRE) => {
@@ -33,18 +33,27 @@ task('sturdy:ftm', 'Deploy development enviroment')
     console.log('5. Deploy Incentives impl');
     await DRE.run('full:deploy-incentives-impl', { pool: POOL_NAME });
 
-    console.log('6. Deploy Yearn vault');
+    console.log('7. Deploy Yearn vault');
     await DRE.run('full:deploy-yearn-vault', { pool: POOL_NAME });
 
-    console.log('7. Initialize lending pool');
+    // console.log('7-1. Deploy Beefy vault');
+    // await DRE.run('full:deploy-beefy-vault', { pool: POOL_NAME });
+
+    console.log('7-2. Deploy Yearn WETH vault');
+    await DRE.run('full:deploy-yearn-weth-vault', { pool: POOL_NAME });
+
+    console.log('7-3. Deploy Yearn WBTC vault');
+    await DRE.run('full:deploy-yearn-wbtc-vault', { pool: POOL_NAME });
+
+    console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
     if (verify) {
       printContracts();
-      console.log('8. Veryfing contracts');
+      console.log('9. Verifying contracts');
       await DRE.run('verify:general', { all: true, pool: POOL_NAME });
 
-      console.log('9. Veryfing aTokens and debtTokens');
+      console.log('10. Verifying aTokens and debtTokens');
       await DRE.run('verify:tokens', { pool: POOL_NAME });
     }
 

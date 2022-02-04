@@ -14,6 +14,7 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
@@ -49,7 +50,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
-  uint256 public constant LENDINGPOOL_REVISION = 0x1;
+  uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   modifier whenNotPaused() {
     _whenNotPaused();
@@ -123,8 +124,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
-    reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+      reserve.updateInterestRates(asset, aToken, amount, 0);
+    }
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
@@ -199,6 +202,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
       aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18) aTokenBalance = aTokenBalance.div(10**(18 - decimal));
     }
 
     return (assetBalance, aTokenBalance);
@@ -297,8 +302,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    reserve.updateState();
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, amountToWithdraw);
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+      reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, amountToWithdraw);
+    }
 
     if (amountToWithdraw == userBalance) {
       _usersConfig[from].setUsingAsCollateral(reserve.id, false);
@@ -313,6 +320,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         reserve.getIndexFromPricePerShare()
       );
       amountToWithdraw = amountToWithdraw.rayDiv(reserve.getIndexFromPricePerShare());
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18) amountToWithdraw = amountToWithdraw.div(10**(18 - decimal));
     } else {
       IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
     }
@@ -401,7 +410,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       paybackAmount = amount;
     }
 
-    reserve.updateState();
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+    }
 
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
@@ -414,7 +425,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
-    reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+    }
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
@@ -818,7 +831,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    reserve.updateState();
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+    }
 
     uint256 currentStableRate = 0;
 
@@ -845,12 +860,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       userConfig.setBorrowing(reserve.id, true);
     }
 
-    reserve.updateInterestRates(
-      vars.asset,
-      vars.aTokenAddress,
-      0,
-      vars.releaseUnderlying ? vars.amount : 0
-    );
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateInterestRates(
+        vars.asset,
+        vars.aTokenAddress,
+        0,
+        vars.releaseUnderlying ? vars.amount : 0
+      );
+    }
 
     if (vars.releaseUnderlying) {
       IAToken(vars.aTokenAddress).transferUnderlyingTo(vars.user, vars.amount);
@@ -882,5 +899,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       _reservesCount = reservesCount + 1;
     }
+  }
+
+  function _isInterestRateAvailable(address interestRateStrategyAddress)
+    internal
+    view
+    returns (bool)
+  {
+    return
+      IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope1() == 0 &&
+      IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope2() == 0 &&
+      IReserveInterestRateStrategy(interestRateStrategyAddress).baseVariableBorrowRate() == 0;
   }
 }

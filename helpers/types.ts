@@ -70,6 +70,7 @@ export enum eContractid {
   UiIncentiveDataProvider = 'UiIncentiveDataProvider',
   UiPoolDataProvider = 'UiPoolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
+  SwapinERC20 = 'SwapinERC20',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
@@ -87,7 +88,17 @@ export enum eContractid {
   LidoVault = 'LidoVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
+  YearnWETHVaultImpl = 'YearnWETHVaultImpl',
+  YearnWETHVault = 'YearnWETHVault',
+  YearnWBTCVaultImpl = 'YearnWBTCVaultImpl',
+  YearnWBTCVault = 'YearnWBTCVault',
   MockyvWFTM = 'MockyvWFTM',
+  MockyvWETH = 'MockyvWETH',
+  MockyvWBTC = 'MockyvWBTC',
+  MockWETHForFTM = 'MockWETHForFTM',
+  MockWBTCForFTM = 'MockWBTCForFTM',
+  // BeefyVault = 'BeefyVault',
+  // BeefyVaultImpl = 'BeefyVaultImpl',
 }
 
 /*
@@ -207,6 +218,9 @@ export interface iAssetBase<T> {
   USD: T;
   stETH: T;
   yvWFTM: T;
+  // mooWETH: T;
+  yvWETH: T;
+  yvWBTC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -215,7 +229,10 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'stETH'>;
 
-export type iFantomPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'fUSDT' | 'yvWFTM'>;
+export type iFantomPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH' | 'yvWBTC'
+>;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
 
@@ -230,6 +247,9 @@ export enum TokenContractId {
   USDT = 'USDT',
   stETH = 'stETH',
   yvWFTM = 'yvWFTM',
+  // mooWETH = 'mooWETH',
+  yvWETH = 'yvWETH',
+  yvWBTC = 'yvWBTC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -355,7 +375,9 @@ export interface IBaseConfiguration {
   EmergencyAdminIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
+  WFTM: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WBTC: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
@@ -377,6 +399,9 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
 export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 

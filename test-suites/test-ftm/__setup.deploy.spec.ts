@@ -23,6 +23,7 @@ import {
   deploySturdyIncentivesController,
   deploySturdyToken,
   deployYearnVault,
+  // deployBeefyVault,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, SturdyPools } from '../../helpers/types';
@@ -31,7 +32,6 @@ import {
   ConfigNames,
   getReservesConfigByPool,
   getTreasuryAddress,
-  getYieldAddress,
   loadPoolConfig,
 } from '../../helpers/configuration';
 import { initializeMakeSuite } from './helpers/make-suite';
@@ -46,9 +46,12 @@ import { initReservesByHelper, configureReservesByHelper } from '../../helpers/i
 import FantomConfig from '../../markets/ftm';
 import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
+  // getBeefyVault,
   getLendingPool,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
+  getYearnVault,
+  getYearnWETHVault,
 } from '../../helpers/contracts-getters';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 
@@ -147,6 +150,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       USD: USD_ADDRESS,
       stETH: mockTokens.stETH.address,
       yvWFTM: mockTokens.yvWFTM.address,
+      // mooWETH: mockTokens.mooWETH.address,
+      yvWETH: mockTokens.yvWETH.address,
+      yvWBTC: mockTokens.yvWBTC.address,
     },
     fallbackOracle
   );
@@ -210,7 +216,6 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const { ATokenNamePrefix, StableDebtTokenNamePrefix, VariableDebtTokenNamePrefix, SymbolPrefix } =
     config;
   const treasuryAddress = await getTreasuryAddress(config);
-  const yieldAddress = await getYieldAddress(config);
 
   await initReservesByHelper(
     reservesParams,
@@ -221,7 +226,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     SymbolPrefix,
     admin,
     treasuryAddress,
-    yieldAddress,
+    {
+      yvWFTM: (await getYearnVault()).address,
+      yvWETH: (await getYearnWETHVault()).address,
+      // mooWETH: (await getBeefyVault()).address,
+    },
     false
   );
 
@@ -232,12 +241,18 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
-  console.log('Yearn Vault');
-  const yearnVault = await deployYearnVault();
-  const configurator = await getLendingPoolConfiguratorProxy();
-  await configurator.registerVault(yearnVault.address);
-  console.log('Yearn Vault', yearnVault.address);
-  console.log(`\tFinished Yearn Vault deployment`);
+  // console.log('Yearn Vault');
+  // const yearnVault = await deployYearnVault();
+  // const configurator = await getLendingPoolConfiguratorProxy();
+  // await configurator.registerVault(yearnVault.address);
+  // console.log('Yearn Vault', yearnVault.address);
+  // console.log(`\tFinished Yearn Vault deployment`);
+
+  // console.log('Beefy Vault');
+  // const beefyVault = await deployBeefyVault();
+  // await configurator.registerVault(beefyVault.address);
+  // console.log('Beefy Vault', beefyVault.address);
+  // console.log(`\tFinished Beefy Vault deployment`);
 
   console.timeEnd('setup');
 };

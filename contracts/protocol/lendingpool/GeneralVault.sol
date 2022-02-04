@@ -58,7 +58,7 @@ contract GeneralVault is VersionedInitializable {
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
     // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH TODO No Lido
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset

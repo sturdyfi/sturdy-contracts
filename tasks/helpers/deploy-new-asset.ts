@@ -1,84 +1,67 @@
 import { task } from 'hardhat/config';
-import { eEthereumNetwork } from '../../helpers/types';
-import { getTreasuryAddress } from '../../helpers/configuration';
-import * as marketConfigs from '../../markets/sturdy';
-import * as reserveConfigs from '../../markets/sturdy/reservesConfigs';
-import { chooseATokenDeployment } from '../../helpers/init-helpers';
-import { getLendingPoolAddressesProvider } from './../../helpers/contracts-getters';
+import { eContractid, eEthereumNetwork, PoolConfiguration } from '../../helpers/types';
+import { getTreasuryAddress, loadPoolConfig } from '../../helpers/configuration';
+import { getReserveConfigs } from '../../helpers/init-helpers';
 import {
-  deployDefaultReserveInterestRateStrategy,
-  deployStableDebtToken,
-  deployVariableDebtToken,
-} from './../../helpers/contracts-deployments';
-import { setDRE } from '../../helpers/misc-utils';
+  getATokensAndRatesHelper,
+  getCollateralATokenImpl,
+  getGenericATokenImpl,
+  getLendingPool,
+  getLendingPoolAddressesProvider,
+  getLendingPoolConfiguratorProxy,
+  getPriceOracle,
+  getStableDebtToken,
+  getSturdyIncentivesController,
+  getVariableDebtToken,
+} from './../../helpers/contracts-getters';
+import { deployDefaultReserveInterestRateStrategy } from './../../helpers/contracts-deployments';
+import { setDRE, waitForTx } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from './../../helpers/constants';
+import { rawInsertContractAddressInDb } from '../../helpers/contracts-helpers';
 
-const LENDING_POOL_ADDRESS_PROVIDER = {
-  main: '0xb53c1a33016b2dc2ff3653530bff1848a515c8c5',
-  kovan: '0x652B2937Efd0B5beA1c8d54293FC1289672AFC6b',
-};
-
-const isSymbolValid = (symbol: string, network: eEthereumNetwork) =>
-  Object.keys(reserveConfigs).includes('strategy' + symbol) &&
-  marketConfigs.SturdyConfig.ReserveAssets[network][symbol] &&
-  marketConfigs.SturdyConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol];
+const isSymbolValid = (
+  symbol: string,
+  network: eEthereumNetwork,
+  poolConfig: PoolConfiguration,
+  reserveConfigs: any
+) =>
+  Object.keys(reserveConfigs).includes('strategy' + symbol.toUpperCase()) &&
+  poolConfig.ReserveAssets[network][symbol] &&
+  poolConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol.toUpperCase()];
 
 task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters')
+  .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
+  .addParam('yieldaddress', `Yield address, needs for collateral asset`)
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ verify, symbol }, localBRE) => {
-    const network = localBRE.network.name;
-    if (!isSymbolValid(symbol, network as eEthereumNetwork)) {
+  .setAction(async ({ pool, verify, symbol, yieldaddress }, localBRE) => {
+    const poolConfig = loadPoolConfig(pool);
+    const reserveConfigs = getReserveConfigs(pool);
+    const network = process.env.FORK || localBRE.network.name;
+    if (!isSymbolValid(symbol, network as eEthereumNetwork, poolConfig, reserveConfigs)) {
       throw new Error(
         `
 WRONG RESERVE ASSET SETUP:
         The symbol ${symbol} has no reserve Config and/or reserve Asset setup.
-        update /markets/sturdy/index.ts and add the asset address for ${network} network
-        update /markets/sturdy/reservesConfigs.ts and add parameters for ${symbol}
+        update /markets/${pool}/index.ts and add the asset address for ${network} network
+        update /markets/${pool}/reservesConfigs.ts and add parameters for ${symbol}
         `
       );
     }
     setDRE(localBRE);
-    const strategyParams = reserveConfigs['strategy' + symbol];
-    const reserveAssetAddress =
-      marketConfigs.SturdyConfig.ReserveAssets[localBRE.network.name][symbol];
-    const deployCustomAToken = chooseATokenDeployment(strategyParams.aTokenImpl);
-    const addressProvider = await getLendingPoolAddressesProvider(
-      LENDING_POOL_ADDRESS_PROVIDER[network]
-    );
-    const poolAddress = await addressProvider.getLendingPool();
-    const treasuryAddress = await getTreasuryAddress(marketConfigs.SturdyConfig);
-    const aToken = await deployCustomAToken(
-      [
-        poolAddress,
-        reserveAssetAddress,
-        treasuryAddress,
-        ZERO_ADDRESS, // Incentives Controller
-        `Sturdy interest bearing ${symbol}`,
-        `a${symbol}`,
-      ],
-      verify
-    );
-    const stableDebt = await deployStableDebtToken(
-      [
-        poolAddress,
-        reserveAssetAddress,
-        ZERO_ADDRESS, // Incentives Controller
-        `Sturdy stable debt bearing ${symbol}`,
-        `stableDebt${symbol}`,
-      ],
-      verify
-    );
-    const variableDebt = await deployVariableDebtToken(
-      [
-        poolAddress,
-        reserveAssetAddress,
-        ZERO_ADDRESS, // Incentives Controller
-        `Sturdy variable debt bearing ${symbol}`,
-        `variableDebt${symbol}`,
-      ],
-      verify
-    );
+    const {
+      Mocks: { AllAssetsInitialPrices },
+      ATokenNamePrefix,
+      SymbolPrefix,
+      StableDebtTokenNamePrefix,
+      VariableDebtTokenNamePrefix,
+    } = poolConfig;
+    const strategyParams = reserveConfigs['strategy' + symbol.toUpperCase()];
+    const reserveAssetAddress = poolConfig.ReserveAssets[network][symbol];
+    const addressProvider = await getLendingPoolAddressesProvider();
+    const lendingPool = await getLendingPool();
+    const treasuryAddress = await getTreasuryAddress(poolConfig);
+    const incentivesController = await getSturdyIncentivesController();
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,
@@ -91,11 +74,83 @@ WRONG RESERVE ASSET SETUP:
       ],
       verify
     );
+    rawInsertContractAddressInDb(strategyParams.strategy.name, rates.address);
+
+    const configurator = await getLendingPoolConfiguratorProxy();
+    let aTokenToUse: string;
+
+    if (strategyParams.aTokenImpl === eContractid.AToken) {
+      aTokenToUse = (await getGenericATokenImpl()).address;
+    } else {
+      aTokenToUse = (await getCollateralATokenImpl()).address;
+    }
+
+    await waitForTx(
+      await configurator.batchInitReserve([
+        {
+          aTokenImpl: aTokenToUse,
+          stableDebtTokenImpl: (await getStableDebtToken()).address,
+          variableDebtTokenImpl: (await getVariableDebtToken()).address,
+          underlyingAssetDecimals: strategyParams.reserveDecimals,
+          interestRateStrategyAddress: rates.address,
+          yieldAddress: yieldaddress || ZERO_ADDRESS,
+          underlyingAsset: reserveAssetAddress,
+          treasury: treasuryAddress,
+          incentivesController: incentivesController.address,
+          underlyingAssetName: symbol,
+          aTokenName: `${ATokenNamePrefix} ${symbol}`,
+          aTokenSymbol: `a${SymbolPrefix}${symbol}`,
+          variableDebtTokenName: `${VariableDebtTokenNamePrefix} ${SymbolPrefix}${symbol}`,
+          variableDebtTokenSymbol: `variableDebt${SymbolPrefix}${symbol}`,
+          stableDebtTokenName: `${StableDebtTokenNamePrefix} ${symbol}`,
+          stableDebtTokenSymbol: `stableDebt${SymbolPrefix}${symbol}`,
+          params: '0x10',
+        },
+      ])
+    );
+
+    const response = await lendingPool.getReserveData(reserveAssetAddress);
+
+    await incentivesController.configureAssets(
+      [response.aTokenAddress, response.variableDebtTokenAddress],
+      [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
+    );
+
+    const atokenAndRatesDeployer = await getATokensAndRatesHelper();
+    const admin = await addressProvider.getPoolAdmin();
+    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
+    await waitForTx(
+      await atokenAndRatesDeployer.configureReserves(
+        [
+          {
+            asset: reserveAssetAddress,
+            baseLTV: strategyParams.baseLTVAsCollateral,
+            liquidationThreshold: strategyParams.liquidationThreshold,
+            liquidationBonus: strategyParams.liquidationBonus,
+            reserveFactor: strategyParams.reserveFactor,
+            stableBorrowingEnabled: strategyParams.stableBorrowRateEnabled,
+            borrowingEnabled: strategyParams.borrowingEnabled,
+            collateralEnabled: strategyParams.collateralEnabled,
+          },
+        ],
+        {
+          gasLimit: 7900000,
+        }
+      )
+    );
+    await waitForTx(await addressProvider.setPoolAdmin(admin));
+
+    // set asset price
+    const priceOracleInstance = await getPriceOracle();
+    await waitForTx(
+      await priceOracleInstance.setAssetPrice(reserveAssetAddress, AllAssetsInitialPrices[symbol])
+    );
+
     console.log(`
     New interest bearing asset deployed on ${network}:
-    Interest bearing a${symbol} address: ${aToken.address}
-    Variable Debt variableDebt${symbol} address: ${variableDebt.address}
-    Stable Debt stableDebt${symbol} address: ${stableDebt.address}
+    Interest bearing a${symbol} address: ${response.aTokenAddress}
+    Variable Debt variableDebt${symbol} address: ${response.variableDebtTokenAddress}
+    Stable Debt stableDebt${symbol} address: ${response.stableDebtTokenAddress}
     Strategy Implementation for ${symbol} address: ${rates.address}
     `);
   });

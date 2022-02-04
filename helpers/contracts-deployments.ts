@@ -26,6 +26,7 @@ import {
   getSturdyIncentivesController,
   getSturdyToken,
   getYearnVault,
+  getYearnWBTCVault,
   getYearnWETHVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
@@ -69,6 +70,9 @@ import {
   YearnWETHVaultFactory,
   MockyvWETHFactory,
   MockWETHForFTMFactory,
+  YearnWBTCVaultFactory,
+  MockyvWBTCFactory,
+  MockWBTCForFTMFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -789,6 +793,46 @@ export const deployYearnWETHVault = async (verify?: boolean) => {
   return await getYearnWETHVault();
 };
 
+export const deployYearnWBTCVault = async (verify?: boolean) => {
+  const yearnWBTCVaultImpl = await withSaveAndVerify(
+    await new YearnWBTCVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnWBTCVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_WBTC_VAULT'),
+      yearnWBTCVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVWBTC'),
+      getParamPerNetwork(config.YearnWBTCVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WBTC'),
+      getParamPerNetwork(config.WBTC, network)
+    )
+  );
+
+  const yearnWBTCVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_WBTC_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnWBTCVault, yearnWBTCVaultProxyAddress);
+
+  return await getYearnWBTCVault();
+};
+
 // export const deployBeefyVault = async (verify?: boolean) => {
 //   const beefyVault = await withSaveAndVerify(
 //     await new BeefyVaultFactory(await getFirstSigner()).deploy(),
@@ -934,6 +978,17 @@ export const deployMockyvWETH = async (
     verify
   );
 
+export const deployMockyvWBTC = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockyvWBTCFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockyvWBTC,
+    args,
+    verify
+  );
+
 export const deployMockWETHForFTM = async (
   args: [string, string, string, string],
   verify?: boolean
@@ -941,6 +996,17 @@ export const deployMockWETHForFTM = async (
   withSaveAndVerify(
     await new MockWETHForFTMFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockWETHForFTM,
+    args,
+    verify
+  );
+
+export const deployMockWBTCForFTM = async (
+  args: [string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockWBTCForFTMFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockWBTCForFTM,
     args,
     verify
   );

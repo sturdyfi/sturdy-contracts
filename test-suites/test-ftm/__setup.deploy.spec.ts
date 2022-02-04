@@ -22,9 +22,9 @@ import {
   deployWETHMocked,
   deploySturdyIncentivesController,
   deploySturdyToken,
-  deployLidoVault,
+  deployYearnVault,
+  // deployBeefyVault,
 } from '../../helpers/contracts-deployments';
-import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, SturdyPools } from '../../helpers/types';
 import { MintableERC20 } from '../../types/MintableERC20';
@@ -43,22 +43,23 @@ import {
 } from '../../helpers/oracles-helpers';
 import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
-import SturdyConfig from '../../markets/sturdy';
+import FantomConfig from '../../markets/ftm';
 import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
+  // getBeefyVault,
   getLendingPool,
-  getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getPairsTokenAggregator,
-  getPriceOracle,
+  getYearnVault,
+  getYearnWETHVault,
 } from '../../helpers/contracts-getters';
 import { WETH9Mocked } from '../../types/WETH9Mocked';
 
-const MOCK_USD_PRICE_IN_WEI = SturdyConfig.ProtocolGlobalParams.MockUsdPriceInWei;
-const ALL_ASSETS_INITIAL_PRICES = SturdyConfig.Mocks.AllAssetsInitialPrices;
-const USD_ADDRESS = SturdyConfig.ProtocolGlobalParams.UsdAddress;
-const MOCK_CHAINLINK_AGGREGATORS_PRICES = SturdyConfig.Mocks.AllAssetsInitialPrices;
-const LENDING_RATE_ORACLE_RATES_COMMON = SturdyConfig.LendingRateOracleRatesCommon;
+const MOCK_USD_PRICE_IN_WEI = FantomConfig.ProtocolGlobalParams.MockUsdPriceInWei;
+const ALL_ASSETS_INITIAL_PRICES = FantomConfig.Mocks.AllAssetsInitialPrices;
+const USD_ADDRESS = FantomConfig.ProtocolGlobalParams.UsdAddress;
+const MOCK_CHAINLINK_AGGREGATORS_PRICES = FantomConfig.Mocks.AllAssetsInitialPrices;
+const LENDING_RATE_ORACLE_RATES_COMMON = FantomConfig.LendingRateOracleRatesCommon;
 
 const deployAllMockTokens = async (deployer: Signer) => {
   const tokens: { [symbol: string]: MockContract | MintableERC20 | WETH9Mocked } = {};
@@ -95,7 +96,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   const sturdyAdmin = await deployer.getAddress();
   const mockTokens = await deployAllMockTokens(deployer);
   console.log('Deployed mocks');
-  const addressesProvider = await deployLendingPoolAddressesProvider(SturdyConfig.MarketId);
+  const addressesProvider = await deployLendingPoolAddressesProvider(FantomConfig.MarketId);
   await waitForTx(await addressesProvider.setPoolAdmin(sturdyAdmin));
 
   //setting users[1] as emergency admin, which is in position 2 in the DRE addresses list
@@ -145,13 +146,13 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
       USDC: mockTokens.USDC.address,
-      fUSDT: ZERO_ADDRESS,
+      fUSDT: mockTokens.fUSDT.address,
       USD: USD_ADDRESS,
       stETH: mockTokens.stETH.address,
       yvWFTM: mockTokens.yvWFTM.address,
+      // mooWETH: mockTokens.mooWETH.address,
       yvWETH: mockTokens.yvWETH.address,
       yvWBTC: mockTokens.yvWBTC.address,
-      // mooWETH: mockTokens.mooWETH.address,
     },
     fallbackOracle
   );
@@ -173,19 +174,9 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {}
   );
 
-  const [tokens, aggregators] = getPairsTokenAggregator(
-    allTokenAddresses,
-    allAggregatorsAddresses,
-    SturdyConfig.OracleQuoteCurrency
-  );
+  const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses, FantomConfig.OracleQuoteCurrency);
 
-  await deploySturdyOracle([
-    tokens,
-    aggregators,
-    fallbackOracle.address,
-    mockTokens.WETH.address,
-    oneEther.toString(),
-  ]);
+  await deploySturdyOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address, oneEther.toString()]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
   const lendingRateOracle = await deployLendingRateOracle();
@@ -235,7 +226,11 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     SymbolPrefix,
     admin,
     treasuryAddress,
-    ZERO_ADDRESS,
+    {
+      yvWFTM: (await getYearnVault()).address,
+      yvWETH: (await getYearnWETHVault()).address,
+      // mooWETH: (await getBeefyVault()).address,
+    },
     false
   );
 
@@ -246,12 +241,18 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     await addressesProvider.setLendingPoolCollateralManager(collateralManager.address)
   );
 
-  console.log('Lido Vault');
-  const lidoVault = await deployLidoVault();
-  const configurator = await getLendingPoolConfiguratorProxy();
-  await configurator.registerVault(lidoVault.address);
-  console.log('Lido Vault', lidoVault.address);
-  console.log(`\tFinished Lido Vault deployment`);
+  // console.log('Yearn Vault');
+  // const yearnVault = await deployYearnVault();
+  // const configurator = await getLendingPoolConfiguratorProxy();
+  // await configurator.registerVault(yearnVault.address);
+  // console.log('Yearn Vault', yearnVault.address);
+  // console.log(`\tFinished Yearn Vault deployment`);
+
+  // console.log('Beefy Vault');
+  // const beefyVault = await deployBeefyVault();
+  // await configurator.registerVault(beefyVault.address);
+  // console.log('Beefy Vault', beefyVault.address);
+  // console.log(`\tFinished Beefy Vault deployment`);
 
   console.timeEnd('setup');
 };
@@ -264,7 +265,7 @@ before(async () => {
 
   if (!SKIP_DEPLOY) {
     if (FORK) {
-      await rawBRE.run('sturdy:mainnet');
+      await rawBRE.run('sturdy:ftm');
     } else {
       console.log('-> Deploying test environment...');
       await buildTestEnv(deployer, secondaryWallet);

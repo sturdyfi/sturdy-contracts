@@ -21,6 +21,7 @@ import {
   // getBeefyVault,
   getSwapinERC20,
   getYearnWETHVault,
+  getYearnWBTCVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -47,6 +48,7 @@ import {
   YearnVault,
   BeefyVault,
   YearnWETHVault,
+  YearnWBTCVault,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -71,6 +73,7 @@ export interface TestEnv {
   yearnVault: YearnVault;
   // beefyVault: BeefyVault;
   yearnWETHVault: YearnWETHVault;
+  yearnWBTCVault: YearnWBTCVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -83,12 +86,15 @@ export interface TestEnv {
   aUsdt: AToken;
   aYVWFTM: AToken;
   aYVWETH: AToken;
+  aYVWBTC: AToken;
   // aMOOWETH: AToken;
   WFTM: MintableERC20;
   WETH: SwapinERC20;
+  WBTC: SwapinERC20;
   brick: SturdyToken;
   yvwftm: IERC20Detailed;
   yvweth: IERC20Detailed;
+  yvwbtc: IERC20Detailed;
   // mooweth: IERC20Detailed;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
@@ -108,6 +114,7 @@ const testEnv: TestEnv = {
   yearnVault: {} as YearnVault,
   // beefyVault: {} as BeefyVault,
   yearnWETHVault: {} as YearnWETHVault,
+  yearnWBTCVault: {} as YearnWBTCVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -120,12 +127,15 @@ const testEnv: TestEnv = {
   aUsdt: {} as AToken,
   aYVWFTM: {} as AToken,
   aYVWETH: {} as AToken,
+  aYVWBTC: {} as AToken,
   // aMOOWETH: {} as AToken,
   WFTM: {} as MintableERC20,
   WETH: {} as SwapinERC20,
+  WBTC: {} as SwapinERC20,
   brick: {} as SturdyToken,
   yvwftm: {} as IERC20Detailed,
   yvweth: {} as IERC20Detailed,
+  yvwbtc: {} as IERC20Detailed,
   // mooweth: {} as IERC20Detailed,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
@@ -138,8 +148,10 @@ export async function initializeMakeSuite() {
   const yvwftmAddress = getParamPerNetwork(poolConfig.YearnVaultFTM, network);
   // const moowethAddress = getParamPerNetwork(poolConfig.BeefyVaultFTM, network);
   const yvwethAddress = getParamPerNetwork(poolConfig.YearnWETHVaultFTM, network);
+  const yvwbtcAddress = getParamPerNetwork(poolConfig.YearnWBTCVaultFTM, network);
   const wftmAddress = getParamPerNetwork(poolConfig.WFTM, network);
   const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
+  const wbtcAddress = getParamPerNetwork(poolConfig.WBTC, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -188,6 +200,7 @@ export async function initializeMakeSuite() {
   testEnv.yearnVault = await getYearnVault();
   // testEnv.beefyVault = await getBeefyVault();
   testEnv.yearnWETHVault = await getYearnWETHVault();
+  testEnv.yearnWBTCVault = await getYearnWBTCVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
@@ -218,6 +231,12 @@ export async function initializeMakeSuite() {
 
   const aYVWFTMAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWFTM')?.tokenAddress;
   const aYVWETHAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWETH')?.tokenAddress;
+  let aYVWBTCAddress;   // tempcode for fantom testnet, because it has same name ayvWBTC token.
+  if (allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC').length > 1)
+    aYVWBTCAddress = allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC')[1].tokenAddress;
+  else
+    aYVWBTCAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWBTC')?.tokenAddress;
+  
   // const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
   const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === (network == 'ftm_test' ? 'aUSDT' : 'afUSDT'))?.tokenAddress;
@@ -238,6 +257,7 @@ export async function initializeMakeSuite() {
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aYVWFTM = await getAToken(aYVWFTMAddress);
   testEnv.aYVWETH = await getAToken(aYVWETHAddress);
+  testEnv.aYVWBTC = await getAToken(aYVWBTCAddress);
   // testEnv.aMOOWETH = await getAToken(aMOOWETHAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
   testEnv.aUsdt = await getAToken(aUsdtAddress);
@@ -247,9 +267,11 @@ export async function initializeMakeSuite() {
   testEnv.usdt = await getMintableERC20(usdtAddress);
   testEnv.WFTM = await getMintableERC20(wftmAddress);
   testEnv.WETH = await getSwapinERC20(wethAddress);
+  testEnv.WBTC = await getSwapinERC20(wbtcAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);
   testEnv.yvweth = IERC20DetailedFactory.connect(yvwethAddress, deployer.signer);
+  testEnv.yvwbtc = IERC20DetailedFactory.connect(yvwbtcAddress, deployer.signer);
   // testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);
 }
 

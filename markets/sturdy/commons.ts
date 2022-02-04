@@ -250,13 +250,25 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.geth]: '', // deployed in local evm
     [eEthereumNetwork.localhost]: '', // deployed in local evm
     [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
-    [eEthereumNetwork.kovan]: '0xd0a1e359811322d97991e03f863a0c30c2cf029c',
-    [eEthereumNetwork.ropsten]: '0xc778417e063141139fce010982780140aa0cd5ab',
-    [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.goerli]: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
   },
   WETH: {
+    [eEthereumNetwork.coverage]: '', // deployed in local evm
+    [eEthereumNetwork.hardhat]: '', // deployed in local evm
+    [eEthereumNetwork.geth]: '', // deployed in local evm
+    [eEthereumNetwork.localhost]: '', // deployed in local evm
+    [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  WBTC: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm
     [eEthereumNetwork.hardhat]: '', // deployed in local evm
     [eEthereumNetwork.geth]: '', // deployed in local evm

@@ -37,6 +37,9 @@ import {
   MockyvWETHFactory,
   MockWETHForFTMFactory,
   ATokenForCollateralFactory,
+  YearnWBTCVaultFactory,
+  MockyvWBTCFactory,
+  MockWBTCForFTMFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -420,6 +423,15 @@ export const getYearnWETHVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYearnWBTCVault = async (address?: tEthereumAddress) =>
+  await YearnWBTCVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWBTCVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 // export const getBeefyVault = async (address?: tEthereumAddress) =>
 //   await BeefyVaultFactory.connect(
 //     address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,
@@ -505,11 +517,17 @@ export const getMockyvWETH = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getMockWETHForFTM = async (address?: tEthereumAddress) =>
-  await MockWETHForFTMFactory.connect(
+export const getMockyvWBTC = async (address?: tEthereumAddress) =>
+  await MockyvWBTCFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvWBTC}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockWBTCForFTM = async (address?: tEthereumAddress) =>
+  await MockWBTCForFTMFactory.connect(
     address ||
       (
-        await getDb().get(`${eContractid.MockWETHForFTM}.${DRE.network.name}`).value()
+        await getDb().get(`${eContractid.MockWBTCForFTM}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

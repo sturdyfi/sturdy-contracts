@@ -17,6 +17,7 @@ import {
   getSturdyIncentivesController,
   getYearnVault,
   getYearnWETHVault,
+  getYearnWBTCVault,
 } from '../../helpers/contracts-getters';
 
 task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -66,6 +67,7 @@ task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.'
         {
           yvWFTM: (await getYearnVault()).address,
           yvWETH: (await getYearnWETHVault()).address,
+          yvWBTC: (await getYearnWBTCVault()).address,
         },
         verify
       );

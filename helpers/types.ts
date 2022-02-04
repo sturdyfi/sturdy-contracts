@@ -90,9 +90,13 @@ export enum eContractid {
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
   YearnWETHVault = 'YearnWETHVault',
+  YearnWBTCVaultImpl = 'YearnWBTCVaultImpl',
+  YearnWBTCVault = 'YearnWBTCVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
+  MockyvWBTC = 'MockyvWBTC',
   MockWETHForFTM = 'MockWETHForFTM',
+  MockWBTCForFTM = 'MockWBTCForFTM',
   // BeefyVault = 'BeefyVault',
   // BeefyVaultImpl = 'BeefyVaultImpl',
 }
@@ -216,6 +220,7 @@ export interface iAssetBase<T> {
   yvWFTM: T;
   // mooWETH: T;
   yvWETH: T;
+  yvWBTC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -226,7 +231,7 @@ export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | '
 
 export type iFantomPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH'
+  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH' | 'yvWBTC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -244,6 +249,7 @@ export enum TokenContractId {
   yvWFTM = 'yvWFTM',
   // mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
+  yvWBTC = 'yvWBTC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -371,6 +377,7 @@ export interface IBaseConfiguration {
   ATokenDomainSeparator: iParamsPerNetwork<string>;
   WFTM: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WBTC: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
@@ -393,6 +400,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }

@@ -2,7 +2,9 @@ import { parseEther } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
+  deployMockWBTCForFTM,
   deployMockWETHForFTM,
+  deployMockyvWBTC,
   deployMockyvWETH,
   deployMockyvWFTM,
 } from '../../helpers/contracts-deployments';
@@ -25,6 +27,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const sender = await (await getFirstSigner()).getAddress();
     const wftmAddress = getParamPerNetwork(poolConfig.WFTM, network);
     const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
+    const wbtcAddress = getParamPerNetwork(poolConfig.WBTC, network);
 
     console.log('Deploying MockyvWFTM started\n');
     const yvWFTM = await deployMockyvWFTM(
@@ -40,18 +43,38 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     );
     console.log(`MockyvWETH address `, yvWETH.address);
 
+    console.log('Deploying MockyvWBTC started\n');
+    const yvWBTC = await deployMockyvWBTC(
+      [wbtcAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockyvWBTC address `, yvWBTC.address);
+
     // console.log('Deploying MockWETH started\n');
     // const WETH = await deployMockWETHForFTM(
     //   ['Wrapped ETH', 'WETH', '18', sender],
     //   verify
     // );
 
-    // WETH.Swapin(
+    // await WETH.Swapin(
     //   "0x288f6dec7d6165b3513dbeafa36332f35b9946943ebb362c387cc7956dc16ec5",
     //   sender,
     //   parseEther('1000000')
     // );
     // console.log(`MockWETH address `, WETH.address);
+
+    // console.log('Deploying MockWBTC started\n');
+    // const WBTC = await deployMockWBTCForFTM(
+    //   ['Wrapped BTC', 'WBTC', '8', sender],
+    //   verify
+    // );
+
+    // await WBTC.Swapin(
+    //   "0x288f6dec7d6165b3513dbeafa36332f35b9946943ebb362c387cc7956dc16ec5",
+    //   sender,
+    //   await convertToCurrencyDecimals(WBTC.address, '1000')
+    // );
+    // console.log(`MockWBTC address `, WBTC.address);
 
     // const usdc = await getSwapinERC20('0x8f785910e0cc96f854450DFb53be6492daff0b15');
     // await usdc.Swapin(

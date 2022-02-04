@@ -48,11 +48,22 @@ export const rateStrategyYVWFTM: IInterestRateStrategyParams = {
 
 // yvWETH
 export const rateStrategyYVWETH: IInterestRateStrategyParams = {
-    name: 'rateStrategyYVWETH',
-    optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
-    baseVariableBorrowRate: '0',
-    variableRateSlope1: '0',
-    variableRateSlope2: '0',
-    stableRateSlope1: '0',
-    stableRateSlope2: '0',
-  };
+  name: 'rateStrategyYVWETH',
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+};
+
+// yvWBTC
+export const rateStrategyYVWBTC: IInterestRateStrategyParams = {
+  name: 'rateStrategyYVWBTC',
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+};

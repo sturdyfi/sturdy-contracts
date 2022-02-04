@@ -118,6 +118,7 @@ export const CommonsConfig: ICommonConfiguration = {
       yvWFTM: '0xf4766552D15AE4d256Ad41B6cf2933482B0680dc',
       // mooWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
+      yvWBTC: '0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4',
     },
     [eFantomNetwork.ftm_test]: {},
     [eFantomNetwork.tenderlyFTM]: {
@@ -127,6 +128,7 @@ export const CommonsConfig: ICommonConfiguration = {
       yvWFTM: '0xf4766552D15AE4d256Ad41B6cf2933482B0680dc',
       // mooWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
+      yvWBTC: '0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4',
     },
   },
   ReserveAssets: {
@@ -149,6 +151,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.ftm]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
     [eFantomNetwork.ftm_test]: '0x4135c251eE7804A73dB09D36C306AE0214deA28B',
     [eFantomNetwork.tenderlyFTM]: '0x74b23882a30290451a17c44f4f05243b6b58c76d',
+  },
+  WBTC: {
+    [eFantomNetwork.ftm]: '0x321162Cd933E2Be498Cd2267a90534A804051b11',
+    [eFantomNetwork.ftm_test]: '0x0e9Cbd91546F290b0F99cF62DAC637B33D22D9B6',
+    [eFantomNetwork.tenderlyFTM]: '0x321162Cd933E2Be498Cd2267a90534A804051b11',
   },
   WrappedNativeToken: {
     [eFantomNetwork.ftm]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',

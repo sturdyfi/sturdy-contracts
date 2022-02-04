@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
+import 'hardhat/console.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
@@ -30,7 +31,7 @@ contract ATokenForCollateral is
   bytes32 public constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
 
-  uint256 public constant ATOKEN_REVISION = 0x1;
+  uint256 public constant ATOKEN_REVISION = 0x2;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -123,7 +124,15 @@ contract ATokenForCollateral is
     uint256 amount,
     uint256 index
   ) external override onlyLendingPool {
-    uint256 share = amount.rayDiv(index);
+    uint256 share = 0;
+    uint256 decimal = decimals();
+    console.log(decimal);
+    console.log(amount);
+    console.log(index);
+    if (decimal < 18) share = amount.rayDiv(index).div(10**(18 - decimal));
+    else share = amount.rayDiv(index);
+    console.log(share);
+
     require(share != 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     _burn(user, amount);
@@ -148,7 +157,11 @@ contract ATokenForCollateral is
     uint256 index
   ) external override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
-    uint256 amount = share.rayMul(index);
+    uint256 amount = 0;
+    uint256 decimal = decimals();
+    if (decimal < 18) amount = share.mul(10**(18 - decimal)).rayMul(index);
+    else amount = share.rayMul(index);
+
     require(amount != 0, Errors.CT_INVALID_MINT_AMOUNT);
 
     _mint(user, amount);

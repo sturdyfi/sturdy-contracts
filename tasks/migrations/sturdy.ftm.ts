@@ -33,14 +33,17 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('5. Deploy Incentives impl');
     await DRE.run('full:deploy-incentives-impl', { pool: POOL_NAME });
 
-    console.log('6. Deploy Yearn vault');
+    console.log('7. Deploy Yearn vault');
     await DRE.run('full:deploy-yearn-vault', { pool: POOL_NAME });
 
-    // console.log('7. Deploy Beefy vault');
+    // console.log('7-1. Deploy Beefy vault');
     // await DRE.run('full:deploy-beefy-vault', { pool: POOL_NAME });
 
-    console.log('7. Deploy Yearn WETH vault');
+    console.log('7-2. Deploy Yearn WETH vault');
     await DRE.run('full:deploy-yearn-weth-vault', { pool: POOL_NAME });
+
+    console.log('7-3. Deploy Yearn WBTC vault');
+    await DRE.run('full:deploy-yearn-wbtc-vault', { pool: POOL_NAME });
 
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });

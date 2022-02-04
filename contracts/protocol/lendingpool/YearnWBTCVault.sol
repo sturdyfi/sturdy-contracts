@@ -17,47 +17,47 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title YearnVault
- * @notice yvWETH/WETH Vault by using Yearn on Fantom
+ * @notice yvWBTC/WBTC Vault by using Yearn on Fantom
  * @author Sturdy
  **/
-contract YearnWETHVault is GeneralVault {
+contract YearnWBTCVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
-    address YVWETH = _addressesProvider.getAddress('YVWETH');
-    uint256 yieldYVWETH = _getYield(YVWETH);
+    address YVWBTC = _addressesProvider.getAddress('YVWBTC');
+    uint256 yieldYVWBTC = _getYield(YVWBTC);
 
     // move yield to treasury
     if (_vaultFee > 0) {
-      uint256 treasuryYVWETH = _processTreasury(yieldYVWETH);
-      yieldYVWETH = yieldYVWETH.sub(treasuryYVWETH);
+      uint256 treasuryYVWBTC = _processTreasury(yieldYVWBTC);
+      yieldYVWBTC = yieldYVWBTC.sub(treasuryYVWBTC);
     }
 
-    // Withdraw from Yearn Vault and receive WETH
-    uint256 yieldWETH = IYearnVault(YVWETH).withdraw(yieldYVWETH, address(this), 1);
+    // Withdraw from Yearn Vault and receive WBTC
+    uint256 yieldWBTC = IYearnVault(YVWBTC).withdraw(yieldYVWBTC, address(this), 1);
 
-    AssetYield[] memory assetYields = _getAssetYields(yieldWETH);
+    AssetYield[] memory assetYields = _getAssetYields(yieldWBTC);
     for (uint256 i = 0; i < assetYields.length; i++) {
-      // WETH -> Asset and Deposit to pool
+      // WBTC -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
   }
 
-  function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
+  function _convertAndDepositYield(address _tokenOut, uint256 _wbtcAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WETH = _addressesProvider.getAddress('WETH');
+    address WBTC = _addressesProvider.getAddress('WBTC');
     address WFTM = _addressesProvider.getAddress('WFTM');
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 _minFTMAmount = _wethAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWETH')))
+    uint256 _minFTMAmount = _wbtcAmount
+      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWBTC')))
       .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
       .percentMul(99_00);
 
@@ -68,16 +68,16 @@ contract YearnWETHVault is GeneralVault {
       .div(oracle.getAssetPrice(_tokenOut))
       .percentMul(99_00);
 
-    // Exchange WETH -> _tokenOut via UniswapV2
+    // Exchange WBTC -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
-    path[0] = address(WETH);
+    path[0] = address(WBTC);
     path[1] = address(WFTM);
     path[2] = _tokenOut;
 
-    IERC20(WETH).approve(uniswapRouter, _wethAmount);
+    IERC20(WBTC).approve(uniswapRouter, _wbtcAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
-      _wethAmount,
+      _wbtcAmount,
       minAmountFromPrice,
       path,
       address(this),
@@ -99,42 +99,42 @@ contract YearnWETHVault is GeneralVault {
    * @dev Get yield amount based on strategy
    */
   function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(_addressesProvider.getAddress('YVWETH'));
+    return _getYieldAmount(_addressesProvider.getAddress('YVWBTC'));
   }
 
   /**
    * @dev Get price per share based on yield strategy
    */
   function pricePerShare() external view override returns (uint256) {
-    return IYearnVault(_addressesProvider.getAddress('YVWETH')).pricePerShare();
+    return IYearnVault(_addressesProvider.getAddress('YVWBTC')).pricePerShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive yvWETH
+   * @dev Deposit to yield pool based on strategy and receive yvWBTC
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
     override
     returns (address, uint256)
   {
-    address YVWETH = _addressesProvider.getAddress('YVWETH');
-    address WETH = _addressesProvider.getAddress('WETH');
+    address YVWBTC = _addressesProvider.getAddress('YVWBTC');
+    address WBTC = _addressesProvider.getAddress('WBTC');
 
-    // Case of WETH deposit from user, receive WETH from user
-    require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
+    // Case of WBTC deposit from user, receive WBTC from user
+    require(_asset == WBTC, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    TransferHelper.safeTransferFrom(WBTC, msg.sender, address(this), _amount);
 
-    // Deposit WETH to Yearn Vault and receive yvWETH
-    IERC20(WETH).approve(YVWETH, _amount);
-    uint256 assetAmount = IYearnVault(YVWETH).deposit(_amount, address(this));
+    // Deposit WBTC to Yearn Vault and receive yvWBTC
+    IERC20(WBTC).approve(YVWBTC, _amount);
+    uint256 assetAmount = IYearnVault(YVWBTC).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
-    return (YVWETH, assetAmount);
+    IERC20(YVWBTC).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    return (YVWBTC, assetAmount);
   }
 
   /**
-   * @dev Get Withdrawal amount of yvWETH based on strategy
+   * @dev Get Withdrawal amount of yvWBTC based on strategy
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -143,27 +143,27 @@ contract YearnWETHVault is GeneralVault {
     returns (address, uint256)
   {
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVWETH'), _amount);
+    return (_addressesProvider.getAddress('YVWBTC'), _amount);
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with yvWETH and deliver asset
+   * @dev Withdraw from yield pool based on strategy with yvWBTC and deliver asset
    */
   function _withdrawFromYieldPool(
     address _asset,
     uint256 _amount,
     address _to
   ) internal override {
-    address YVWETH = _addressesProvider.getAddress('YVWETH');
-    address WETH = _addressesProvider.getAddress('WETH');
+    address YVWBTC = _addressesProvider.getAddress('YVWBTC');
+    address WBTC = _addressesProvider.getAddress('WBTC');
 
-    // Withdraw from Yearn Vault and receive WETH
-    uint256 assetAmount = IYearnVault(YVWETH).withdraw(_amount, address(this), 1);
+    // Withdraw from Yearn Vault and receive WBTC
+    uint256 assetAmount = IYearnVault(YVWBTC).withdraw(_amount, address(this), 1);
 
-    require(_asset == WETH, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    require(_asset == WBTC, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
-    // Deliver WETH to user
-    TransferHelper.safeTransfer(WETH, _to, assetAmount);
+    // Deliver WBTC to user
+    TransferHelper.safeTransfer(WBTC, _to, assetAmount);
   }
 
   /**
@@ -171,7 +171,7 @@ contract YearnWETHVault is GeneralVault {
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(_addressesProvider.getAddress('YVWETH')).safeTransfer(_treasuryAddress, treasuryAmount);
+    IERC20(_addressesProvider.getAddress('YVWBTC')).safeTransfer(_treasuryAddress, treasuryAmount);
     return treasuryAmount;
   }
 }

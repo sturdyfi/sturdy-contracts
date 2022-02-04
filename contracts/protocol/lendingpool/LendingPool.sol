@@ -50,7 +50,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
-  uint256 public constant LENDINGPOOL_REVISION = 0x1;
+  uint256 public constant LENDINGPOOL_REVISION = 0x2;
 
   modifier whenNotPaused() {
     _whenNotPaused();
@@ -202,6 +202,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
       aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18) aTokenBalance = aTokenBalance.div(10**(18 - decimal));
     }
 
     return (assetBalance, aTokenBalance);
@@ -318,6 +320,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         reserve.getIndexFromPricePerShare()
       );
       amountToWithdraw = amountToWithdraw.rayDiv(reserve.getIndexFromPricePerShare());
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18) amountToWithdraw = amountToWithdraw.div(10**(18 - decimal));
     } else {
       IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
     }

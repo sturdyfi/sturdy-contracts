@@ -1,14 +1,9 @@
 import { task } from 'hardhat/config';
-import {
-  eContractid,
-  eEthereumNetwork,
-  eNetwork,
-  iAssetBase,
-  PoolConfiguration,
-} from '../../helpers/types';
+import { eContractid, eEthereumNetwork, PoolConfiguration } from '../../helpers/types';
 import { getTreasuryAddress, loadPoolConfig } from '../../helpers/configuration';
 import { getReserveConfigs } from '../../helpers/init-helpers';
 import {
+  getATokensAndRatesHelper,
   getCollateralATokenImpl,
   getGenericATokenImpl,
   getLendingPool,
@@ -18,7 +13,6 @@ import {
   getStableDebtToken,
   getSturdyIncentivesController,
   getVariableDebtToken,
-  getYearnWETHVault,
 } from './../../helpers/contracts-getters';
 import { deployDefaultReserveInterestRateStrategy } from './../../helpers/contracts-deployments';
 import { setDRE, waitForTx } from '../../helpers/misc-utils';
@@ -121,6 +115,30 @@ WRONG RESERVE ASSET SETUP:
       [response.aTokenAddress, response.variableDebtTokenAddress],
       [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
     );
+
+    const atokenAndRatesDeployer = await getATokensAndRatesHelper();
+    const admin = await addressProvider.getPoolAdmin();
+    await waitForTx(await addressProvider.setPoolAdmin(atokenAndRatesDeployer.address));
+    await waitForTx(
+      await atokenAndRatesDeployer.configureReserves(
+        [
+          {
+            asset: reserveAssetAddress,
+            baseLTV: strategyParams.baseLTVAsCollateral,
+            liquidationThreshold: strategyParams.liquidationThreshold,
+            liquidationBonus: strategyParams.liquidationBonus,
+            reserveFactor: strategyParams.reserveFactor,
+            stableBorrowingEnabled: strategyParams.stableBorrowRateEnabled,
+            borrowingEnabled: strategyParams.borrowingEnabled,
+            collateralEnabled: strategyParams.collateralEnabled,
+          },
+        ],
+        {
+          gasLimit: 7900000,
+        }
+      )
+    );
+    await waitForTx(await addressProvider.setPoolAdmin(admin));
 
     // set asset price
     const priceOracleInstance = await getPriceOracle();

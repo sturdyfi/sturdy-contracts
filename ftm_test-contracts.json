@@ -269,11 +269,11 @@
   },
   "YearnVaultImpl": {
     "ftm_test": {
-      "address": "0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A",
+      "address": "0x9c6f34C9C1A15D31e935B4932dF2c60A29664f8C",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A",
+      "address": "0x9c6f34C9C1A15D31e935B4932dF2c60A29664f8C",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -377,19 +377,19 @@
   },
   "LendingPoolCollateralManagerImpl": {
     "ftm_test": {
-      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d"
+      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5"
     },
     "localhost": {
-      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d"
+      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5"
     }
   },
   "LendingPoolCollateralManager": {
     "ftm_test": {
-      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
+      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
+      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -425,11 +425,11 @@
   },
   "YearnWETHVaultImpl": {
     "ftm_test": {
-      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
+      "address": "0x9a3A287286997F3F3727b1Ec5D3fbD36b5E7771f",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
+      "address": "0x9a3A287286997F3F3727b1Ec5D3fbD36b5E7771f",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -443,11 +443,11 @@
   },
   "YearnWBTCVaultImpl": {
     "ftm_test": {
-      "address": "0x0a07e3A6B26ee1Fd1855a617f5c472F1699210db",
+      "address": "0x7e316D0Fe53f2Fe0C5bD7D878EBDbA47fA2500e0",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x0a07e3A6B26ee1Fd1855a617f5c472F1699210db",
+      "address": "0x7e316D0Fe53f2Fe0C5bD7D878EBDbA47fA2500e0",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -462,6 +462,24 @@
   "rateStrategyYVWBTC": {
     "ftm_test": {
       "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246"
+    }
+  },
+  "CollateralAdapterImpl": {
+    "ftm_test": {
+      "address": "0x88dA098c374Fb0A1102aF1Da2b56143e942BC622",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x88dA098c374Fb0A1102aF1Da2b56143e942BC622",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "CollateralAdapter": {
+    "ftm_test": {
+      "address": "0x3C25eD61dA816CD43261C4B91acb29D759a77C15"
+    },
+    "localhost": {
+      "address": "0x3C25eD61dA816CD43261C4B91acb29D759a77C15"
     }
   }
 }

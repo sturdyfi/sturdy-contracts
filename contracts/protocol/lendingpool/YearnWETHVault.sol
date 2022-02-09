@@ -16,7 +16,7 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
- * @title YearnVault
+ * @title YearnWETHVault
  * @notice yvWETH/WETH Vault by using Yearn on Fantom
  * @author Sturdy
  **/
@@ -58,14 +58,14 @@ contract YearnWETHVault is GeneralVault {
     require(_asset == WETH, Errors.LP_LIQUIDATION_CALL_FAILED);
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
-    // Withdraw from Yearn Vault and receive WFTM
+    // Withdraw from Yearn Vault and receive WETH
     uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVWETH')).withdraw(
       _amount,
       address(this),
       1
     );
 
-    // Deliver WFTM to user
+    // Deliver WETH to user
     TransferHelper.safeTransfer(WETH, msg.sender, assetAmount);
 
     return assetAmount;

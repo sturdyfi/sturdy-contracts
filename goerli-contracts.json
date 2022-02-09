@@ -269,19 +269,19 @@
   },
   "LendingPoolCollateralManagerImpl": {
     "goerli": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655"
+      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246"
     },
     "localhost": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655"
+      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246"
     }
   },
   "LendingPoolCollateralManager": {
     "goerli": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655",
+      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655",
+      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -317,11 +317,11 @@
   },
   "LidoVaultImpl": {
     "goerli": {
-      "address": "0x019D8174D62F843be3e4f08a7B161fD04d2c871c",
+      "address": "0x406a940bAC270C2dEE26D884A13E733B9F91Ceaf",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x019D8174D62F843be3e4f08a7B161fD04d2c871c",
+      "address": "0x406a940bAC270C2dEE26D884A13E733B9F91Ceaf",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -331,6 +331,24 @@
     },
     "localhost": {
       "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
+    }
+  },
+  "CollateralAdapterImpl": {
+    "goerli": {
+      "address": "0x018f3460b435B7C695703c3318a8A6685F86aBcA",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x018f3460b435B7C695703c3318a8A6685F86aBcA",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "CollateralAdapter": {
+    "goerli": {
+      "address": "0x7D7010dA0dA6A611e39004efA8FA5Ee8EA848638"
+    },
+    "localhost": {
+      "address": "0x7D7010dA0dA6A611e39004efA8FA5Ee8EA848638"
     }
   }
 }

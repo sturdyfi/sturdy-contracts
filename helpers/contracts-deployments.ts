@@ -755,6 +755,14 @@ export const deployYearnVault = async (verify?: boolean) => {
   return await getYearnVault();
 };
 
+export const deployYearnWETHVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnWETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnWETHVaultImpl,
+    [],
+    verify
+  );
+
 export const deployYearnWETHVault = async (verify?: boolean) => {
   const yearnWETHVaultImpl = await withSaveAndVerify(
     await new YearnWETHVaultFactory(await getFirstSigner()).deploy(),
@@ -794,6 +802,14 @@ export const deployYearnWETHVault = async (verify?: boolean) => {
 
   return await getYearnWETHVault();
 };
+
+export const deployYearnWBTCVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnWBTCVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnWBTCVaultImpl,
+    [],
+    verify
+  );
 
 export const deployYearnWBTCVault = async (verify?: boolean) => {
   const yearnWBTCVaultImpl = await withSaveAndVerify(

@@ -55,8 +55,7 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
           };
 
     const reserves = Object.entries(ReservesConfig).filter(
-      ([_, { aTokenImpl }]) =>
-        aTokenImpl === eContractid.AToken || aTokenImpl === eContractid.ATokenForCollateral
+      ([_, { aTokenImpl }]) => aTokenImpl === eContractid.ATokenForCollateral
     ) as [string, IReserveParams][];
 
     for (let [symbol, params] of reserves) {

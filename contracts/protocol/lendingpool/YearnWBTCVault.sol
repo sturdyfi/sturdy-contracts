@@ -16,7 +16,7 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
- * @title YearnVault
+ * @title YearnWBTCVault
  * @notice yvWBTC/WBTC Vault by using Yearn on Fantom
  * @author Sturdy
  **/
@@ -58,14 +58,14 @@ contract YearnWBTCVault is GeneralVault {
     require(_asset == WBTC, Errors.LP_LIQUIDATION_CALL_FAILED);
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
-    // Withdraw from Yearn Vault and receive WFTM
+    // Withdraw from Yearn Vault and receive WBTC
     uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVWBTC')).withdraw(
       _amount,
       address(this),
       1
     );
 
-    // Deliver WFTM to user
+    // Deliver WBTC to user
     TransferHelper.safeTransfer(WBTC, msg.sender, assetAmount);
 
     return assetAmount;

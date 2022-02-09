@@ -180,10 +180,16 @@ export async function initializeMakeSuite() {
   testEnv.helpersContract = await getSturdyProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
-  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
+  const aDaiAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'aDAI' || aToken.symbol === 'sDAI'
+  )?.tokenAddress;
 
-  const aStETHAddress = allTokens.find((aToken) => aToken.symbol === 'astETH')?.tokenAddress;
-  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
+  const aStETHAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'astETH' || aToken.symbol === 'sstETH'
+  )?.tokenAddress;
+  const aUsdcAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC'
+  )?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 

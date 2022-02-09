@@ -243,7 +243,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     await yearnVault.processYield();
     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8000');
     const yieldDAI = await convertToCurrencyDecimals(dai.address, '8000');
-    const yieldUSDT = await convertToCurrencyDecimals(usdt.address, '4500');
+    const yieldUSDT = await convertToCurrencyDecimals(usdt.address, '4000');
     expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
     expect((await aDai.balanceOf(depositor1.address)).gt(yieldDAI)).to.be.equal(true);
     expect((await aUsdt.balanceOf(depositor2.address)).gt(yieldUSDT)).to.be.equal(true);

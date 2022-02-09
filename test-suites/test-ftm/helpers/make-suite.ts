@@ -227,19 +227,19 @@ export async function initializeMakeSuite() {
   testEnv.helpersContract = await getSturdyProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
-  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
+  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI' || aToken.symbol === 'sDAI')?.tokenAddress;
 
-  const aYVWFTMAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWFTM')?.tokenAddress;
-  const aYVWETHAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWETH')?.tokenAddress;
+  const aYVWFTMAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWFTM' || aToken.symbol === 'syvWFTM')?.tokenAddress;
+  const aYVWETHAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWETH' || aToken.symbol === 'syvWETH')?.tokenAddress;
   let aYVWBTCAddress;   // tempcode for fantom testnet, because it has same name ayvWBTC token.
-  if (allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC').length > 1)
-    aYVWBTCAddress = allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC')[1].tokenAddress;
+  if (allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC' || aToken.symbol === 'syvWBTC').length > 1)
+    aYVWBTCAddress = allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC' || aToken.symbol === 'syvWBTC')[1].tokenAddress;
   else
-    aYVWBTCAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWBTC')?.tokenAddress;
+    aYVWBTCAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWBTC' || aToken.symbol === 'syvWBTC')?.tokenAddress;
   
   // const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH')?.tokenAddress;
-  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
-  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === (network == 'ftm_test' ? 'aUSDT' : 'afUSDT'))?.tokenAddress;
+  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC')?.tokenAddress;
+  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === (network == 'ftm_test' ? 'aUSDT' : 'afUSDT') || aToken.symbol === (network == 'ftm_test' ? 'sUSDT' : 'sfUSDT'))?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 

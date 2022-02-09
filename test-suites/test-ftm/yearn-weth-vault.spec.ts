@@ -64,7 +64,7 @@ makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
     const wethCurrentBalanceOfUser = await WETH.balanceOf(deployer.address);
     expect(yvwethBalanceOfPool).to.be.equal(0);
     expect(wethCurrentBalanceOfUser.sub(wethBeforeBalanceOfUser)).to.be.gte(
-      parseEther('0.9')
+      parseEther('0.8999')
     );
     expect(await WETH.balanceOf(yearnWETHVault.address)).to.be.equal(0);
   });

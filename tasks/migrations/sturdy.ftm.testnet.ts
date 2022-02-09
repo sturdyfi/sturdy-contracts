@@ -45,6 +45,9 @@ task('sturdy:ftm:testnet', 'Deploy development enviroment')
     console.log('8. Initialize lending pool');
     await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
 
+    console.log('8-1. Deploy Collateral Adapter');
+    await DRE.run('testnet:deploy-collateral-adapter', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('9. Veryfing contracts');

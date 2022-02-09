@@ -48,6 +48,9 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 
+    console.log('8-1. Deploy Collateral Adapter');
+    await DRE.run('full:deploy-collateral-adapter', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('9. Verifying contracts');

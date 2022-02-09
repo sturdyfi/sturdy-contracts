@@ -40,6 +40,7 @@ import {
   YearnWBTCVaultFactory,
   MockyvWBTCFactory,
   MockWBTCForFTMFactory,
+  CollateralAdapterFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -501,6 +502,15 @@ export const getSturdyToken = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.SturdyToken}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getCollateralAdapter = async (address?: tEthereumAddress) =>
+  await CollateralAdapterFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.CollateralAdapter}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

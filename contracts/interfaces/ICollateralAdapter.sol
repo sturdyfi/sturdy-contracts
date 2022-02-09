@@ -1,0 +1,13 @@
+// SPDX-License-Identifier: agpl-3.0
+pragma solidity 0.6.12;
+
+/**
+ * @title ICollateralAdapter
+ * @author Sturdy
+ * @notice Defines the relation between external/internal collateral assets and acceptable vaults.
+ **/
+interface ICollateralAdapter {
+  function getAcceptableVault(address _externalAsset) external view returns (address);
+
+  function getInternalCollateralAsset(address _externalAsset) external view returns (address);
+}

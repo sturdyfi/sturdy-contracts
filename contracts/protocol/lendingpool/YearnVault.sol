@@ -57,6 +57,29 @@ contract YearnVault is GeneralVault {
     }
   }
 
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    override
+    returns (uint256)
+  {
+    address WFTM = _addressesProvider.getAddress('WFTM');
+
+    require(_asset == WFTM, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+
+    // Withdraw from Yearn Vault and receive WFTM
+    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVWFTM')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
+
+    // Deliver WFTM to user
+    TransferHelper.safeTransfer(WFTM, msg.sender, assetAmount);
+
+    return assetAmount;
+  }
+
   function _convertAndDepositYield(address _tokenOut, uint256 _ftmAmount) internal {
     // Approve the uniswapRouter to spend WFTM.
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');

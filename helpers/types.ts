@@ -99,6 +99,8 @@ export enum eContractid {
   MockWBTCForFTM = 'MockWBTCForFTM',
   // BeefyVault = 'BeefyVault',
   // BeefyVaultImpl = 'BeefyVaultImpl',
+  CollateralAdapter = 'CollateralAdapter',
+  CollateralAdapterImpl = 'CollateralAdapterImpl',
 }
 
 /*

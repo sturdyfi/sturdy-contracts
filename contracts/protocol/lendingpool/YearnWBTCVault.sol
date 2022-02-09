@@ -48,6 +48,29 @@ contract YearnWBTCVault is GeneralVault {
     }
   }
 
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    override
+    returns (uint256)
+  {
+    address WBTC = _addressesProvider.getAddress('WBTC');
+
+    require(_asset == WBTC, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+
+    // Withdraw from Yearn Vault and receive WFTM
+    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVWBTC')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
+
+    // Deliver WFTM to user
+    TransferHelper.safeTransfer(WBTC, msg.sender, assetAmount);
+
+    return assetAmount;
+  }
+
   function _convertAndDepositYield(address _tokenOut, uint256 _wbtcAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
     address WBTC = _addressesProvider.getAddress('WBTC');

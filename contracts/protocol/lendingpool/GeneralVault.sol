@@ -102,6 +102,20 @@ contract GeneralVault is VersionedInitializable {
   }
 
   /**
+   * @dev Withdraw an `amount` of asset used as collateral to user on liquidation.
+   * @param _asset The asset address for collateral
+   *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
+   * @param _amount The amount to be withdrawn
+   */
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    virtual
+    returns (uint256)
+  {
+    return _amount;
+  }
+
+  /**
    * @dev Get yield based on strategy and re-deposit
    */
   function processYield() external virtual {}

@@ -39,8 +39,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         IncentivesController,
       } = poolConfig as ICommonConfiguration;
 
-      const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
-      const incentivesController = await getParamPerNetwork(IncentivesController, network);
+      const reserveAssets = getParamPerNetwork(ReserveAssets, network);
+      const incentivesController = getParamPerNetwork(IncentivesController, network);
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       const testHelpers = await getSturdyProtocolDataProvider();
@@ -53,6 +53,15 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       }
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
+      const yieldAddresses =
+        pool == ConfigNames.Sturdy
+          ? {}
+          : {
+              yvWFTM: (await getYearnVault()).address,
+              yvWETH: (await getYearnWETHVault()).address,
+              yvWBTC: (await getYearnWBTCVault()).address,
+              // mooWETH: (await getBeefyVault()).address,
+            };
 
       await initReservesByHelper(
         ReservesConfig,
@@ -63,20 +72,12 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         SymbolPrefix,
         admin,
         treasuryAddress,
-        {
-          yvWFTM: (await getYearnVault()).address,
-          yvWETH: (await getYearnWETHVault()).address,
-          yvWBTC: (await getYearnWBTCVault()).address,
-          // mooWETH: (await getBeefyVault()).address,
-        },
+        yieldAddresses,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
-      let collateralManagerAddress = await getParamPerNetwork(
-        LendingPoolCollateralManager,
-        network
-      );
+      let collateralManagerAddress = getParamPerNetwork(LendingPoolCollateralManager, network);
       if (!notFalsyOrZeroAddress(collateralManagerAddress)) {
         const collateralManager = await deployLendingPoolCollateralManager(verify);
         collateralManagerAddress = collateralManager.address;

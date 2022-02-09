@@ -18,6 +18,7 @@ import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
+  getCollateralAdapter,
   // getBeefyVault,
   getFirstSigner,
   getLendingPool,
@@ -73,6 +74,7 @@ import {
   YearnWBTCVaultFactory,
   MockyvWBTCFactory,
   MockWBTCForFTMFactory,
+  CollateralAdapterFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -930,6 +932,29 @@ export const deploySturdyToken = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.SturdyToken, incentiveTokenProxyAddress);
 
   return await getSturdyToken();
+};
+
+export const deployCollateralAdapter = async (verify?: boolean) => {
+  const collateralAdapterImpl = await withSaveAndVerify(
+    await new CollateralAdapterFactory(await getFirstSigner()).deploy(),
+    eContractid.CollateralAdapterImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('COLLATERAL_ADAPTER'),
+      collateralAdapterImpl.address
+    )
+  );
+  const collateralAdapterProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('COLLATERAL_ADAPTER')
+  );
+  await insertContractAddressInDb(eContractid.CollateralAdapter, collateralAdapterProxyAddress);
+
+  return await getCollateralAdapter();
 };
 
 export const deployMockDai = async (chainId: any, verify?: boolean) =>

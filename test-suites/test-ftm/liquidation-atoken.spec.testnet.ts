@@ -10,6 +10,7 @@ import { getUserData, getReserveData } from './helpers/utils/helpers';
 
 const chai = require('chai');
 const { expect } = chai;
+const hre = require("hardhat");
 
 makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => {
   const {
@@ -20,8 +21,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     LP_IS_PAUSED,
   } = ProtocolErrors;
 
-  it('Deposits stETH, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
-    const { dai, users, lido, pool, oracle, lidoVault, deployer } = testEnv;
+  it('Deposits WFTM, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
+    const { dai, users, pool, oracle, yearnVault, deployer, WFTM, yvwftm } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
@@ -37,21 +38,22 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .connect(depositor.signer)
       .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
 
-    const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    let signer = await ethers.provider.getSigner(stETHOwnerAddress);
+    const amountWFTMtoDeposit = await convertToCurrencyDecimals(WFTM.address, '1');
 
-    await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);
+    //prepare WFTM to deposit
+    const WFTMOwnerAddress = '0xde080FdB13F273dbE1183deB59025B2BC4250a23';
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    let signer = await ethers.provider.getSigner(WFTMOwnerAddress);
+    await WFTM.connect(signer).transfer(borrower.address, amountWFTMtoDeposit);
 
     //approve protocol to access borrower wallet
-    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //user 2 deposits 1 stETH
-    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountETHtoDeposit);
+    //user 2 deposits 1 WFTM
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, amountWFTMtoDeposit);
 
     //user 2 borrows
-    const userGlobalData = await pool.getUserAccountData(borrower.address);
+    const userGlobalData = await pool.connect(depositor.signer).getUserAccountData(borrower.address);
     const daiPrice = await oracle.getAssetPrice(dai.address);
 
     const amountDAIToBorrow = await convertToCurrencyDecimals(
@@ -59,9 +61,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(daiPrice.toString())
         .multipliedBy(0.95)
-        .toFixed(0)
+        .toFixed(3)
     );
-
     await pool
       .connect(borrower.signer)
       .borrow(dai.address, amountDAIToBorrow, RateMode.Variable, '0', borrower.address);
@@ -75,7 +76,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //someone tries to liquidate user 2
     await expect(
-      pool.liquidationCall(lido.address, dai.address, borrower.address, 1, true)
+      pool.liquidationCall(yvwftm.address, dai.address, borrower.address, 1, true)
     ).to.be.revertedWith(LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD);
   });
 
@@ -99,11 +100,11 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('Tries to liquidate a different currency than the loan principal', async () => {
-    const { pool, users, lido } = testEnv;
+    const { pool, users, yvwftm, usdc } = testEnv;
     const borrower = users[1];
     //user 2 tries to borrow
     await expect(
-      pool.liquidationCall(lido.address, lido.address, borrower.address, oneEther.toString(), true)
+      pool.liquidationCall(yvwftm.address, usdc.address, borrower.address, oneEther.toString(), true)
     ).revertedWith(LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER);
   });
 
@@ -117,7 +118,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('Liquidates the borrow', async () => {
-    const { pool, dai, lido, users, oracle, helpersContract, deployer } = testEnv;
+    const { pool, dai, WFTM, yvwftm, users, oracle, helpersContract, deployer } = testEnv;
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
 
@@ -125,7 +126,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await dai.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const daiReserveDataBefore = await getReserveData(helpersContract, dai.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
 
     const userReserveDataBefore = await getUserData(
       pool,
@@ -140,7 +141,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const tx = await pool
       .connect(deployer.signer)
-      .liquidationCall(lido.address, dai.address, borrower.address, amountToLiquidate, true);
+      .liquidationCall(yvwftm.address, dai.address, borrower.address, amountToLiquidate, true);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       dai.address,
@@ -150,13 +151,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const daiReserveDataAfter = await helpersContract.getReserveData(dai.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
 
-    const collateralPrice = (await oracle.getAssetPrice(lido.address)).toString();
+    const collateralPrice = (await oracle.getAssetPrice(WFTM.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(dai.address)).toString();
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(lido.address)
+      await helpersContract.getReserveConfigurationData(WFTM.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(dai.address)
@@ -216,22 +217,19 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     expect(
-      (await helpersContract.getUserReserveData(lido.address, deployer.address))
+      (await helpersContract.getUserReserveData(yvwftm.address, deployer.address))
         .usageAsCollateralEnabled
     ).to.be.true;
   });
 
-  it('User 3 deposits 7000 USDC, user 4 1 stETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const { users, pool, usdc, oracle, lido, helpersContract, lidoVault, deployer } = testEnv;
+  it('User 3 deposits 7000 USDC, user 4 1 WFTM, user 4 borrows - drops HF, liquidates the borrow', async () => {
+    const { users, pool, usdc, oracle, WFTM, yvwftm, helpersContract, yearnVault, deployer } = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc
-      .connect(signer)
+      .connect(deployer.signer)
       .transfer(depositor.address, await convertToCurrencyDecimals(usdc.address, '7000'));
 
     //approve protocol to access depositor wallet
@@ -244,17 +242,17 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    //user 4 deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(stETHOwnerAddress);
-    await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);
+    //user 4 deposits 1 WFTM
+    const amountWFTMtoDeposit = await convertToCurrencyDecimals(WFTM.address, '1');
+    const WFTMOwnerAddress = '0xde080FdB13F273dbE1183deB59025B2BC4250a23';
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    const signer = await ethers.provider.getSigner(WFTMOwnerAddress);
+    await WFTM.connect(signer).transfer(borrower.address, amountWFTMtoDeposit);
 
     //approve protocol to access borrower wallet
-    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountETHtoDeposit);
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, amountWFTMtoDeposit);
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -266,7 +264,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
         .multipliedBy(0.9502)
-        .toFixed(0)
+        .toFixed(3)
     );
 
     await pool
@@ -274,16 +272,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
     //drops HF below 1
-
     await oracle.setAssetPrice(
       usdc.address,
       new BigNumber(usdcPrice.toString()).multipliedBy(1.5).toFixed(0)
     );
 
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc
-      .connect(signer)
+      .connect(deployer.signer)
       .transfer(deployer.address, await convertToCurrencyDecimals(usdc.address, '7000'));
 
     //approve protocol to access depositor wallet
@@ -295,7 +290,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .multipliedBy(0.5)
@@ -303,7 +298,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await pool
       .connect(deployer.signer)
-      .liquidationCall(lido.address, usdc.address, borrower.address, amountToLiquidate, true);
+      .liquidationCall(yvwftm.address, usdc.address, borrower.address, amountToLiquidate, true);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       usdc.address,
@@ -313,13 +308,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
 
-    const collateralPrice = (await oracle.getAssetPrice(lido.address)).toString();
+    const collateralPrice = (await oracle.getAssetPrice(WFTM.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(usdc.address)).toString();
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(lido.address)
+      await helpersContract.getReserveConfigurationData(yvwftm.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(usdc.address)

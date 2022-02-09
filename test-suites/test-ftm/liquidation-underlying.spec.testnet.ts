@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 
 import { DRE, impersonateAccountsHardhat, increaseTime } from '../../helpers/misc-utils';
-import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../../helpers/constants';
+import { APPROVAL_AMOUNT_LENDING_POOL, oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite } from './helpers/make-suite';
 import { ProtocolErrors, RateMode } from '../../helpers/types';
@@ -29,28 +29,29 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     BigNumber.config({ DECIMAL_PLACES: 20, ROUNDING_MODE: BigNumber.ROUND_HALF_UP });
   });
 
-  it("It's not possible to liquidate on a non-active collateral or a non active principal", async () => {
-    const { configurator, lido, pool, users, dai, deployer } = testEnv;
-    const user = users[1];
-    await configurator.connect(deployer.signer).deactivateReserve(lido.address);
+  // It's impossible to test deactiveReserve because of forked network.
+  // it("It's not possible to liquidate on a non-active collateral or a non active principal", async () => {
+  //   const { configurator, yvwftm, pool, users, dai, deployer } = testEnv;
+  //   const user = users[1];
+  //   await configurator.connect(deployer.signer).deactivateReserve(yvwftm.address);
 
-    await expect(
-      pool.liquidationCall(lido.address, dai.address, user.address, parseEther('7000'), false)
-    ).to.be.revertedWith('2');
+  //   await expect(
+  //     pool.liquidationCall(yvwftm.address, dai.address, user.address, parseEther('7000'), false)
+  //   ).to.be.revertedWith('2');
 
-    await configurator.connect(deployer.signer).activateReserve(lido.address);
+  //   await configurator.connect(deployer.signer).activateReserve(yvwftm.address);
 
-    await configurator.connect(deployer.signer).deactivateReserve(dai.address);
+  //   await configurator.connect(deployer.signer).deactivateReserve(dai.address);
 
-    await expect(
-      pool.liquidationCall(lido.address, dai.address, user.address, parseEther('7000'), false)
-    ).to.be.revertedWith('2');
+  //   await expect(
+  //     pool.liquidationCall(yvwftm.address, dai.address, user.address, parseEther('7000'), false)
+  //   ).to.be.revertedWith('2');
 
-    await configurator.connect(deployer.signer).activateReserve(dai.address);
-  });
+  //   await configurator.connect(deployer.signer).activateReserve(dai.address);
+  // });
 
-  it('Deposits stETH, borrows DAI', async () => {
-    const { dai, lido, users, pool, oracle, lidoVault, deployer } = testEnv;
+  it('Deposits FTM, borrows DAI', async () => {
+    const { dai, users, pool, oracle, yearnVault, deployer } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
@@ -65,21 +66,14 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     await pool
       .connect(depositor.signer)
       .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
-    //user 2 deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    let signer = await ethers.provider.getSigner(stETHOwnerAddress);
 
-    await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);
-
-    //approve protocol to access the borrower wallet
-    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountETHtoDeposit);
+    //user 2 deposits 1000 FTM
+    const amountFTMtoDeposit = ethers.utils.parseEther('1000');
+    await yearnVault
+      .connect(borrower.signer)
+      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
 
     //user 2 borrows
-
     const userGlobalData = await pool.getUserAccountData(borrower.address);
     const daiPrice = await oracle.getAssetPrice(dai.address);
 
@@ -104,7 +98,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('Drop the health factor below 1', async () => {
-    const { dai, lido, users, pool, oracle, deployer } = testEnv;
+    const { dai, users, pool, oracle, deployer } = testEnv;
     const borrower = users[1];
 
     const daiPrice = await oracle.getAssetPrice(dai.address);
@@ -122,7 +116,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('Liquidates the borrow', async () => {
-    const { dai, lido, users, pool, oracle, helpersContract, deployer } = testEnv;
+    const { dai, yvwftm, WFTM, users, pool, oracle, helpersContract, deployer } = testEnv;
     const liquidator = users[3];
     const borrower = users[1];
 
@@ -136,7 +130,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     await dai.connect(liquidator.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const daiReserveDataBefore = await getReserveData(helpersContract, dai.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
 
     const userReserveDataBefore = await getUserData(
       pool,
@@ -153,7 +147,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     const tx = await pool
       .connect(liquidator.signer)
-      .liquidationCall(lido.address, dai.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(yvwftm.address, dai.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter = await getUserData(
       pool,
@@ -163,13 +157,13 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const daiReserveDataAfter = await helpersContract.getReserveData(dai.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
 
-    const collateralPrice = await oracle.getAssetPrice(lido.address);
+    const collateralPrice = await oracle.getAssetPrice(WFTM.address);
     const principalPrice = await oracle.getAssetPrice(dai.address);
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(lido.address)
+      await helpersContract.getReserveConfigurationData(yvwftm.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(dai.address)
@@ -238,19 +232,16 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
   });
 
-  it('User 3 deposits 7000 USDC, user 4 1 stETH, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const { usdc, users, pool, oracle, lido, helpersContract, lidoVault, deployer } = testEnv;
+  it('User 3 deposits 7000 USDC, user 4 1000 WFTM, user 4 borrows - drops HF, liquidates the borrow', async () => {
+    const { usdc, users, pool, oracle, WFTM, helpersContract, yearnVault, deployer, yvwftm } = testEnv;
 
     const depositor = users[3];
     const borrower = users[4];
     const liquidator = users[5];
 
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc
-      .connect(signer)
+      .connect(deployer.signer)
       .transfer(depositor.address, await convertToCurrencyDecimals(usdc.address, '7000'));
 
     //approve protocol to access depositor wallet
@@ -263,17 +254,17 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    //borrower deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(stETHOwnerAddress);
-    await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);
+    //borrower deposits 1000 WFTM
+    const amountWFTMtoDeposit = await convertToCurrencyDecimals(WFTM.address, '1000');
+    const WFTMOwnerAddress = '0xde080FdB13F273dbE1183deB59025B2BC4250a23';
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    const signer = await ethers.provider.getSigner(WFTMOwnerAddress);
+    await WFTM.connect(signer).transfer(borrower.address, amountWFTMtoDeposit);
 
-    //approve protocol to access the borrower wallet
-    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    //approve protocol to access borrower wallet
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountETHtoDeposit);
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, amountWFTMtoDeposit);
 
     //borrower borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -301,10 +292,8 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       );
 
     //mints usdc to the liquidator
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc
-      .connect(signer)
+      .connect(deployer.signer)
       .transfer(liquidator.address, await convertToCurrencyDecimals(usdc.address, '7000'));
 
     //approve protocol to access depositor wallet
@@ -316,7 +305,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
 
     const amountToLiquidate = ethers.BigNumber.from(
       userReserveDataBefore.currentVariableDebt.toString()
@@ -326,7 +315,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await pool
       .connect(liquidator.signer)
-      .liquidationCall(lido.address, usdc.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(yvwftm.address, usdc.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       usdc.address,
@@ -336,13 +325,13 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(lido.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
 
-    const collateralPrice = await oracle.getAssetPrice(lido.address);
+    const collateralPrice = await oracle.getAssetPrice(WFTM.address);
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(lido.address)
+      await helpersContract.getReserveConfigurationData(yvwftm.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(usdc.address)

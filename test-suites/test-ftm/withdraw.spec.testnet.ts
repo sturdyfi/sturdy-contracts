@@ -11,17 +11,14 @@ const { expect } = chai;
 
 makeSuite('Withdraw USDC ', (testEnv) => {
   it('User1 deposits USDC and then withdraw USDC', async () => {
-    const { usdc, users, pool, lidoVault, oracle } = testEnv;
+    const { usdc, users, pool, yearnVault, oracle, deployer } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     printDivider();
     const depositUSDC = '7000';
     //Make some test USDC for depositor
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    const signer = await ethers.provider.getSigner(usdcOwnerAddress);
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+    await usdc.connect(deployer.signer).transfer(depositor.address, amountUSDCtoDeposit);
 
     //approve protocol to access depositor wallet
     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);

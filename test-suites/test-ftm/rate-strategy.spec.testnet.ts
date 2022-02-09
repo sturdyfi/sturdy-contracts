@@ -1,7 +1,7 @@
 import { TestEnv, makeSuite } from './helpers/make-suite';
 import { deployDefaultReserveInterestRateStrategy } from '../../helpers/contracts-deployments';
 
-import { APPROVAL_AMOUNT_LENDING_POOL, PERCENTAGE_FACTOR, RAY } from '../../helpers/constants';
+import { APPROVAL_AMOUNT_LENDING_POOL, PERCENTAGE_FACTOR, RAY, ZERO_ADDRESS } from '../../helpers/constants';
 
 import { rateStrategyStableTwo } from '../../markets/sturdy/rateStrategies';
 
@@ -147,6 +147,10 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
       strategyDAI.reserveFactor
     );
 
+    const totalDebt = new BigNumber('800000000000000000');
+    const availableLiquidity = await dai.balanceOf(aDai.address);
+    const utilizationRate = totalDebt.rayDiv(totalDebt.plus(availableLiquidity.toString()));
+
     const expectedVariableRate = new BigNumber(rateStrategyStableTwo.baseVariableBorrowRate)
       .plus(rateStrategyStableTwo.variableRateSlope1)
       .plus(rateStrategyStableTwo.variableRateSlope2);
@@ -154,6 +158,7 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
     const expectedLiquidityRate = new BigNumber(
       currentVariableBorrowRate.add('100000000000000000000000000').div(2).toString()
     )
+      .rayMul(utilizationRate)
       .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
       .toFixed(0);
 

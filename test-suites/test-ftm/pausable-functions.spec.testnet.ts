@@ -1,6 +1,6 @@
 import { makeSuite, TestEnv } from './helpers/make-suite';
 import { ProtocolErrors, RateMode } from '../../helpers/types';
-import { APPROVAL_AMOUNT_LENDING_POOL, oneEther } from '../../helpers/constants';
+import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { parseEther, parseUnits } from 'ethers/lib/utils';
 import { BigNumber } from 'bignumber.js';
@@ -152,10 +152,10 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
       pool,
       usdc,
       oracle,
-      lido,
+      yvwftm,
       configurator,
       helpersContract,
-      lidoVault,
+      yearnVault,
       deployer,
       emergencyUser,
     } = testEnv;
@@ -163,34 +163,24 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     const borrower = users[4];
 
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '7000');
     await usdc
-      .connect(signer)
-      .transfer(depositor.address, await convertToCurrencyDecimals(usdc.address, '7000'));
+      .connect(deployer.signer)
+      .transfer(depositor.address, amountUSDCtoDeposit);
 
     //approve protocol to access depositor wallet
     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     //user 3 deposits 7000 USDC
-    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '7000');
-
     await pool
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    //user 4 deposits 1 ETH
-    const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(stETHOwnerAddress);
-    await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);
-
-    //approve protocol to access the borrower wallet
-    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountETHtoDeposit);
+    //user 4 deposits 1000 FTM
+    const amountFTMtoDeposit = ethers.utils.parseEther('1000');
+    await yearnVault
+      .connect(borrower.signer)
+      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -217,13 +207,13 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
         new BigNumber(usdcPrice.toString()).multipliedBy(1.2).toFixed(0)
       );
 
-    //mints usdc to the liquidator
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    signer = await ethers.provider.getSigner(usdcOwnerAddress);
-    await usdc
-      .connect(signer)
-      .transfer(deployer.address, await convertToCurrencyDecimals(usdc.address, '7000'));
-    await usdc.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    // //mints usdc to the liquidator
+    // await impersonateAccountsHardhat([usdcOwnerAddress]);
+    // signer = await ethers.provider.getSigner(usdcOwnerAddress);
+    // await usdc
+    //   .connect(signer)
+    //   .transfer(deployer.address, await convertToCurrencyDecimals(usdc.address, '7000'));
+    // await usdc.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const userReserveDataBefore = await helpersContract.getUserReserveData(
       usdc.address,
@@ -241,7 +231,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     await expect(
       pool
         .connect(deployer.signer)
-        .liquidationCall(lido.address, usdc.address, borrower.address, amountToLiquidate, true)
+        .liquidationCall(yvwftm.address, usdc.address, borrower.address, amountToLiquidate, true)
     ).revertedWith(LP_IS_PAUSED);
 
     // Unpause pool

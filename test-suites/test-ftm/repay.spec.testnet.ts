@@ -10,20 +10,17 @@ import { printUserAccountData, ETHfromWei, printDivider } from './helpers/utils/
 const chai = require('chai');
 const { expect } = chai;
 
-makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ', (testEnv) => {
-  it('User1 deposits USDC, User deposits ETH as collateral and borrows USDC', async () => {
-    const { usdc, users, pool, lidoVault, oracle } = testEnv;
+makeSuite('Deposit FTM as collateral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDC, User2 deposits FTM as collateral and borrows USDC', async () => {
+    const { usdc, users, pool, yearnVault, oracle, deployer } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
     const depositUSDC = '7000';
     //Make some test USDC for depositor
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    const signer = await ethers.provider.getSigner(usdcOwnerAddress);
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+    await usdc.connect(deployer.signer).transfer(depositor.address, amountUSDCtoDeposit);
 
     //approve protocol to access depositor wallet
     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -42,18 +39,19 @@ makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ',
       ...supplierGlobalData,
     });
 
-    //user 2 deposits 1 ETH
-    const amountETHtoDeposit = ethers.utils.parseEther('1');
-    await lidoVault
+    //user 2 deposits 1000 FTM
+    const amountFTMtoDeposit = ethers.utils.parseEther('1000');
+    await yearnVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
+      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
     {
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({
         user: `Borrower ${borrower.address}`,
         action: 'deposited',
-        amount: ETHfromWei(amountETHtoDeposit),
-        coin: 'stETH',
+        amount: ETHfromWei(amountFTMtoDeposit),
+        coin: 'FTM',
+        unit: 'USD',
         ...supplierGlobalData,
       });
     }
@@ -67,7 +65,7 @@ makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ',
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
         .multipliedBy(0.95)
-        .toFixed(0)
+        .toFixed(3)
     );
 
     await pool
@@ -99,20 +97,17 @@ makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ',
   });
 });
 
-makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier ', (testEnv) => {
-  it('User1 deposits USDC, User deposits stETH as collateral and borrows USDC', async () => {
-    const { usdc, users, pool, lidoVault, lido, oracle } = testEnv;
+makeSuite('Deposit WFTM as collateral and other as for pool liquidity supplier ', (testEnv) => {
+  it('User1 deposits USDC, User2 deposits WFTM as collateral and borrows USDC', async () => {
+    const { usdc, users, pool, yearnVault, WFTM, oracle, deployer } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x6dBe810e3314546009bD6e1B29f9031211CdA5d2';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
     const depositUSDC = '7000';
     //Make some test USDC for depositor
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+    await usdc.connect(deployer.signer).transfer(depositor.address, amountUSDCtoDeposit);
 
     //approve protocol to access depositor wallet
     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
@@ -131,25 +126,26 @@ makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier 
       ...supplierGlobalData,
     });
 
-    //user 2 deposits 1 stETH
-    const stETHOwnerAddress = '0x06F405e5a760b8cDE3a48F96105659CEDf62dA63';
-    const depositStETH = '1';
-    const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, depositStETH);
+    //user 2 deposits 1000 WFTM
+    const WFTMOwnerAddress = '0xde080FdB13F273dbE1183deB59025B2BC4250a23';
+    const depositWFTM = '1000';
+    const amountWFTMtoDeposit = await convertToCurrencyDecimals(WFTM.address, depositWFTM);
     //Make some test stETH for borrower
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(stETHOwnerAddress);
-    await lido.connect(signer).transfer(borrower.address, amountStETHtoDeposit);
+    await impersonateAccountsHardhat([WFTMOwnerAddress]);
+    const signer = await ethers.provider.getSigner(WFTMOwnerAddress);
+    await WFTM.connect(signer).transfer(borrower.address, amountWFTMtoDeposit);
     //approve protocol to access depositor wallet
-    await lido.connect(borrower.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await lidoVault.connect(borrower.signer).depositCollateral(lido.address, amountStETHtoDeposit);
+    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, amountWFTMtoDeposit);
     {
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({
         user: `Borrower ${borrower.address}`,
         action: 'deposited',
-        amount: ETHfromWei(amountStETHtoDeposit),
-        coin: 'stETH',
+        amount: amountWFTMtoDeposit,
+        coin: 'WFTM',
+        unit: 'USD',
         ...supplierGlobalData,
       });
     }
@@ -163,7 +159,7 @@ makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier 
       new BigNumber(userGlobalData.availableBorrowsETH.toString())
         .div(usdcPrice.toString())
         .multipliedBy(0.95)
-        .toFixed(0)
+        .toFixed(3)
     );
 
     await pool

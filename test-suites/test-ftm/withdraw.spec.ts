@@ -61,7 +61,7 @@ makeSuite('Withdraw USDT ', (testEnv) => {
   it('User1 deposits USDT and then withdraw USDT', async () => {
     const { usdt, users, pool, yearnVault, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdtOwnerAddress = '0xcA436e14855323927d6e6264470DeD36455fC8bD';
+    const usdtOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositor = users[0];
     printDivider();
     const depositUSDT = '3500';

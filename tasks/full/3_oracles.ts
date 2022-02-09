@@ -7,7 +7,6 @@ import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
-  getWethAddress,
   getGenesisPoolAdmin,
   getLendingRateOracles,
   getQuoteCurrency,

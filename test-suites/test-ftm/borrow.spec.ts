@@ -96,7 +96,7 @@ makeSuite('Deposit FTM as collatoral and other as for pool liquidity supplier ',
   it('User1 deposits USDT, User deposits FTM as collatoral and borrows USDT', async () => {
     const { usdt, users, pool, yearnVault, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdtOwnerAddress = '0xcA436e14855323927d6e6264470DeD36455fC8bD';
+    const usdtOwnerAddress = '0x93C08a3168fC469F3fC165cd3A471D19a37ca19e';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();

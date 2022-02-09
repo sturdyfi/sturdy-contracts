@@ -264,9 +264,9 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
+    [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    [eEthereumNetwork.goerli]: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
   },
   WBTC: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm

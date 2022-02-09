@@ -218,7 +218,7 @@ export const initReservesByHelper = async (
       incentivesController: incentives.address,
       underlyingAssetName: reserveSymbols[i],
       aTokenName: `${aTokenNamePrefix} ${reserveSymbols[i]}`,
-      aTokenSymbol: `a${symbolPrefix}${reserveSymbols[i]}`,
+      aTokenSymbol: `s${symbolPrefix}${reserveSymbols[i]}`,
       variableDebtTokenName: `${variableDebtTokenNamePrefix} ${symbolPrefix}${reserveSymbols[i]}`,
       variableDebtTokenSymbol: `variableDebt${symbolPrefix}${reserveSymbols[i]}`,
       stableDebtTokenName: `${stableDebtTokenNamePrefix} ${reserveSymbols[i]}`,

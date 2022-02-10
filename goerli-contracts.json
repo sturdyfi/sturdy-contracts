@@ -21,40 +21,40 @@
   },
   "ReserveLogic": {
     "goerli": {
-      "address": "0x137119b2597df46114714D262e433d5e31F52E6f",
+      "address": "0xB07F2D6299B2F9a645C867AeC2BD6385a6E4D76e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x137119b2597df46114714D262e433d5e31F52E6f",
+      "address": "0xB07F2D6299B2F9a645C867AeC2BD6385a6E4D76e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "GenericLogic": {
     "goerli": {
-      "address": "0x73cAF60dD438ed101c9409A615Ae11488F807193",
+      "address": "0xFd5500bE0Ea3A3a24A34cFfa143AACeEdAFb8959",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x73cAF60dD438ed101c9409A615Ae11488F807193",
+      "address": "0xFd5500bE0Ea3A3a24A34cFfa143AACeEdAFb8959",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "ValidationLogic": {
     "goerli": {
-      "address": "0xf0074B10f63c7002A2254e8E310c60D72b13Ed91",
+      "address": "0x3df280E0588bD52a9A65BF3795F4CFd218c6051e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0xf0074B10f63c7002A2254e8E310c60D72b13Ed91",
+      "address": "0x3df280E0588bD52a9A65BF3795F4CFd218c6051e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "LendingPoolImpl": {
     "goerli": {
-      "address": "0xfC141337a91584e6062f4B42Fa619C89084AAB67"
+      "address": "0xbF30702E5b293CC9CaB4EC25e6d2da1E7f4F8611"
     },
     "localhost": {
-      "address": "0xfC141337a91584e6062f4B42Fa619C89084AAB67"
+      "address": "0xbF30702E5b293CC9CaB4EC25e6d2da1E7f4F8611"
     }
   },
   "LendingPool": {
@@ -269,19 +269,19 @@
   },
   "LendingPoolCollateralManagerImpl": {
     "goerli": {
-      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246"
+      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e"
     },
     "localhost": {
-      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246"
+      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e"
     }
   },
   "LendingPoolCollateralManager": {
     "goerli": {
-      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246",
+      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x96b300fDE73c3D8612C7C35D9C11fd0FFE301246",
+      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },

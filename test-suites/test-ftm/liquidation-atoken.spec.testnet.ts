@@ -76,7 +76,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //someone tries to liquidate user 2
     await expect(
-      pool.liquidationCall(yvwftm.address, dai.address, borrower.address, 1, true)
+      pool.liquidationCall(WFTM.address, dai.address, borrower.address, 1, true)
     ).to.be.revertedWith(LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD);
   });
 
@@ -100,20 +100,20 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('Tries to liquidate a different currency than the loan principal', async () => {
-    const { pool, users, yvwftm, usdc } = testEnv;
+    const { pool, users, WFTM, usdc } = testEnv;
     const borrower = users[1];
     //user 2 tries to borrow
     await expect(
-      pool.liquidationCall(yvwftm.address, usdc.address, borrower.address, oneEther.toString(), true)
+      pool.liquidationCall(WFTM.address, usdc.address, borrower.address, oneEther.toString(), true)
     ).revertedWith(LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER);
   });
 
   it('Tries to liquidate a different collateral than the borrower collateral', async () => {
-    const { pool, dai, users } = testEnv;
+    const { pool, dai, WETH, users } = testEnv;
     const borrower = users[1];
 
     await expect(
-      pool.liquidationCall(dai.address, dai.address, borrower.address, oneEther.toString(), true)
+      pool.liquidationCall(WETH.address, dai.address, borrower.address, oneEther.toString(), true)
     ).revertedWith(LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED);
   });
 
@@ -126,7 +126,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await dai.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const daiReserveDataBefore = await getReserveData(helpersContract, dai.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(WFTM.address);
 
     const userReserveDataBefore = await getUserData(
       pool,
@@ -141,7 +141,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const tx = await pool
       .connect(deployer.signer)
-      .liquidationCall(yvwftm.address, dai.address, borrower.address, amountToLiquidate, true);
+      .liquidationCall(WFTM.address, dai.address, borrower.address, amountToLiquidate, true);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       dai.address,
@@ -151,7 +151,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const daiReserveDataAfter = await helpersContract.getReserveData(dai.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(WFTM.address);
 
     const collateralPrice = (await oracle.getAssetPrice(WFTM.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(dai.address)).toString();
@@ -217,7 +217,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     expect(
-      (await helpersContract.getUserReserveData(yvwftm.address, deployer.address))
+      (await helpersContract.getUserReserveData(WFTM.address, deployer.address))
         .usageAsCollateralEnabled
     ).to.be.true;
   });
@@ -290,7 +290,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(WFTM.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .multipliedBy(0.5)
@@ -298,7 +298,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await pool
       .connect(deployer.signer)
-      .liquidationCall(yvwftm.address, usdc.address, borrower.address, amountToLiquidate, true);
+      .liquidationCall(WFTM.address, usdc.address, borrower.address, amountToLiquidate, true);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       usdc.address,
@@ -308,13 +308,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(WFTM.address);
 
     const collateralPrice = (await oracle.getAssetPrice(WFTM.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(usdc.address)).toString();
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(yvwftm.address)
+      await helpersContract.getReserveConfigurationData(WFTM.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(usdc.address)

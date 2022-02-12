@@ -279,7 +279,7 @@ contract LendingPoolCollateralManager is
     address user
   ) internal {
     ICollateralAdapter collateralAdapter = ICollateralAdapter(
-      _addressesProvider.getAddress('CollateralAdapter')
+      _addressesProvider.getAddress('COLLATERAL_ADAPTER')
     );
     address vault = collateralAdapter.getAcceptableVault(collateralAsset);
     require(vault != address(0), Errors.LP_LIQUIDATION_CALL_FAILED);

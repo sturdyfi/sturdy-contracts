@@ -377,19 +377,19 @@
   },
   "LendingPoolCollateralManagerImpl": {
     "ftm_test": {
-      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5"
+      "address": "0x3DbDE0ce8572279a69c1E986F0BBac5E81C407e5"
     },
     "localhost": {
-      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5"
+      "address": "0x3DbDE0ce8572279a69c1E986F0BBac5E81C407e5"
     }
   },
   "LendingPoolCollateralManager": {
     "ftm_test": {
-      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5",
+      "address": "0x3DbDE0ce8572279a69c1E986F0BBac5E81C407e5",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x128d021f060F4037a8Da5d53a604be28de7543b5",
+      "address": "0x3DbDE0ce8572279a69c1E986F0BBac5E81C407e5",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },

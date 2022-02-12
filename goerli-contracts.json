@@ -269,19 +269,19 @@
   },
   "LendingPoolCollateralManagerImpl": {
     "goerli": {
-      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e"
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777"
     },
     "localhost": {
-      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e"
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777"
     }
   },
   "LendingPoolCollateralManager": {
     "goerli": {
-      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e",
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x8714536AAaf9485e4861d3d002f6bd2eb1abCb9e",
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },

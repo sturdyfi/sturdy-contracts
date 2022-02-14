@@ -57,7 +57,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     expect(unclaimedBorrowerRewardsBefore.toString()).to.be.bignumber.equal('0');
     expect(borrowerBrickBefore.toString()).to.be.bignumber.equal('0');
 
-    const depositUSDC = '7000';
+    const depositUSDC = '500000';
     //Make some test USDC for depositor
     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
     await usdc.connect(deployer.signer).transfer(depositor.address, amountUSDCtoDeposit);
@@ -65,7 +65,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     //approve protocol to access depositor wallet
     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //Supplier  deposits 7000 USDC
+    //Supplier  deposits 500,000 USDC
     await pool
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
@@ -93,7 +93,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     borrowerBrickBefore = await brick.balanceOf(borrower.address);
     // Testing is on Forked Network, so aUsdc's total_supply is different from 7000
     // expect(unclaimedDepositorRewardsBefore.toString()).to.be.bignumber.equal('999');
-    expect(unclaimedDepositorRewardsBefore.toString()).to.be.bignumber.equal('159');
+    expect(unclaimedDepositorRewardsBefore.toString()).to.be.bignumber.equal('235');
     expect(depositorBrickBefore.toString()).to.be.bignumber.equal('0');
     expect(unclaimedBorrowerRewardsBefore.toString()).to.be.bignumber.equal('0');
     expect(borrowerBrickBefore.toString()).to.be.bignumber.equal('0');
@@ -109,7 +109,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     );
     let depositorBrickAfter = await brick.balanceOf(depositor.address);
     // expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.equal('909');
-    expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.equal('61');
+    expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.equal('137');
     expect(depositorBrickAfter.toString()).to.be.bignumber.equal('100');
 
     //user 2 deposits 1000 FTM
@@ -166,9 +166,9 @@ makeSuite('Check incentive token growing ', (testEnv) => {
       borrower.address
     );
     borrowerBrickBefore = await brick.balanceOf(borrower.address);
-    expect(unclaimedDepositorRewardsBefore.gte('223')).to.be.equal(true);
+    expect(unclaimedDepositorRewardsBefore.gte('377')).to.be.equal(true);
     expect(depositorBrickBefore.toString()).to.be.bignumber.equal('100');
-    expect(unclaimedBorrowerRewardsBefore.toString()).to.be.bignumber.equal('985');
+    expect(unclaimedBorrowerRewardsBefore.toString()).to.be.bignumber.equal('398');
     expect(borrowerBrickBefore.toString()).to.be.bignumber.equal('0');
 
     //claim rewards of borrower
@@ -181,7 +181,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
       borrower.address
     );
     let borrowerBrickAfter = await brick.balanceOf(borrower.address);
-    expect(unclaimedBorrowerRewardsAfter.gte('895')).to.be.equal(true);
+    expect(unclaimedBorrowerRewardsAfter.gte('302')).to.be.equal(true);
     expect(borrowerBrickAfter.toString()).to.be.bignumber.equal('100');
 
     expect(userGlobalDataAfter.currentLiquidationThreshold.toString()).to.be.bignumber.equal(

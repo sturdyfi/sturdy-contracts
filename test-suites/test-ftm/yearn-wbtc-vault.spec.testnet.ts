@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import { makeSuite, TestEnv } from './helpers/make-suite';
-import { ethers } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import { DRE } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
@@ -12,6 +12,11 @@ import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 const { parseEther } = ethers.utils;
 
 makeSuite('yearnWBTCVault', (testEnv: TestEnv) => {
+  let beforeBalance : BigNumber;
+  before(async() => {
+    const { deployer, aYVWBTC } = testEnv;
+    beforeBalance = await aYVWBTC.balanceOf(deployer.address);
+  }),  
   it('failed deposit for collateral without WBTC', async () => {
     const { yearnWBTCVault } = testEnv;
     await expect(yearnWBTCVault.depositCollateral(ZERO_ADDRESS, 0)).to.be.reverted;
@@ -21,7 +26,6 @@ makeSuite('yearnWBTCVault', (testEnv: TestEnv) => {
     const { yearnWBTCVault, deployer, yvwbtc, aYVWBTC, WBTC } = testEnv;
     const ethers = (DRE as any).ethers;
 
-    expect(await aYVWBTC.balanceOf(deployer.address)).to.be.equal(0);
     const amountWBTCtoDeposit = await convertToCurrencyDecimals(WBTC.address, '0.1');
     await WBTC.connect(deployer.signer).approve(yearnWBTCVault.address, amountWBTCtoDeposit);
 
@@ -29,7 +33,7 @@ makeSuite('yearnWBTCVault', (testEnv: TestEnv) => {
 
     expect(await yvwbtc.balanceOf(yearnWBTCVault.address)).to.be.equal(0);
     expect(await aYVWBTC.balanceOf(yearnWBTCVault.address)).to.be.equal(0);
-    expect(await aYVWBTC.balanceOf(deployer.address)).to.be.gte(await convertToCurrencyDecimals(WBTC.address, '0.099'));
+    expect(await aYVWBTC.balanceOf(deployer.address)).to.be.gte(beforeBalance.add(await convertToCurrencyDecimals(WBTC.address, '0.099')));
     expect(await ethers.getDefaultProvider().getBalance(yearnWBTCVault.address)).to.be.equal(0);
   });
 
@@ -40,7 +44,7 @@ makeSuite('yearnWBTCVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnWBTCVault, WBTC, aYVWBTC } = testEnv;
-    const amountWBTCtoDeposit = await convertToCurrencyDecimals(WBTC.address, '0.1');
+    const amountWBTCtoDeposit = beforeBalance.add(await convertToCurrencyDecimals(WBTC.address, '0.1'));
     await expect(yearnWBTCVault.connect(deployer.signer).withdrawCollateral(WBTC.address, amountWBTCtoDeposit, deployer.address))
       .to.be.reverted;
   });

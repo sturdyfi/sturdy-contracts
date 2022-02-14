@@ -4,7 +4,7 @@
 
 import { expect } from 'chai';
 import { makeSuite, TestEnv } from './helpers/make-suite';
-import { ethers } from 'ethers';
+import { ethers, BigNumber } from 'ethers';
 import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
@@ -14,6 +14,11 @@ const { parseEther } = ethers.utils;
 let amountWETHtoDeposit = parseEther('1');
 
 makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
+  let beforeBalance : BigNumber;
+  before(async() => {
+    const { deployer, aYVWETH } = testEnv;
+    beforeBalance = await aYVWETH.balanceOf(deployer.address);
+  }),  
   it('failed deposit for collateral without WETH', async () => {
     const { yearnWETHVault, deployer } = testEnv;
     await expect(yearnWETHVault.connect(deployer.signer).depositCollateral(ZERO_ADDRESS, 0)).to.be.reverted;
@@ -29,7 +34,7 @@ makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
 
     expect(await yvweth.balanceOf(yearnWETHVault.address)).to.be.equal(0);
     expect(await aYVWETH.balanceOf(yearnWETHVault.address)).to.be.equal(0);
-    expect(await aYVWETH.balanceOf(deployer.address)).to.be.gte(parseEther('0.999'));
+    expect(await aYVWETH.balanceOf(deployer.address)).to.be.gte(beforeBalance.add(parseEther('0.999')));
     expect(await ethers.getDefaultProvider().getBalance(yearnWETHVault.address)).to.be.equal(0);
   });
 
@@ -40,7 +45,7 @@ makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnWETHVault, WETH } = testEnv;
-    await expect(yearnWETHVault.connect(deployer.signer).withdrawCollateral(WETH.address, amountWETHtoDeposit, deployer.address))
+    await expect(yearnWETHVault.connect(deployer.signer).withdrawCollateral(WETH.address, amountWETHtoDeposit.add(beforeBalance), deployer.address))
       .to.be.reverted;
   });
 
@@ -54,7 +59,7 @@ makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
     const wethCurrentBalanceOfUser = await WETH.balanceOf(deployer.address);
     expect(yvwethBalanceOfPool).to.be.equal(0);
     expect(wethCurrentBalanceOfUser.sub(wethBeforeBalanceOfUser)).to.be.gte(
-      parseEther('0.9')
+      parseEther('0.899999')
     );
     expect(await WETH.balanceOf(yearnWETHVault.address)).to.be.equal(0);
   });

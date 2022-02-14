@@ -186,6 +186,28 @@ export async function initializeMakeSuite() {
     };
 
     await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
+  } else if (network == 'ftm') {
+    const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
+    const ethers = (DRE as any).ethers;
+    await impersonateAccountsHardhat([deployerAddress]);
+    let signer = await ethers.provider.getSigner(deployerAddress);
+    deployer = {
+      address: deployerAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+
+    const emergencyAddress = '0xc4bb97d8c974221faed7b023736b990cA3EF1C5d';
+    await impersonateAccountsHardhat([emergencyAddress]);
+    signer = await ethers.provider.getSigner(emergencyAddress);
+
+    emergencyUser = {
+      address: emergencyAddress,
+      signer: signer,
+    };
+
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
   }
 
   for (const signer of restSigners) {
@@ -247,10 +269,10 @@ export async function initializeMakeSuite() {
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
   const usdtAddress = reservesTokens.find((token) => token.symbol ===  (network == 'ftm_test' ? 'USDT' : 'fUSDT'))?.tokenAddress;
 
-  if (!aDaiAddress || !aYVWFTMAddress) {
+  if (!aDaiAddress || !aUsdcAddress || !aUsdtAddress || !aYVWFTMAddress || !aYVWETHAddress || !aYVWBTCAddress) {
     process.exit(1);
   }
-  if (!daiAddress || !usdcAddress) {
+  if (!daiAddress || !usdcAddress || !usdtAddress) {
     process.exit(1);
   }
 

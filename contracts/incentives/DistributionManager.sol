@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import 'hardhat/console.sol';
 import {ISturdyDistributionManager} from '../interfaces/ISturdyDistributionManager.sol';
 import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {DistributionTypes} from '../lib/DistributionTypes.sol';

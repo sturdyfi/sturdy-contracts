@@ -8,6 +8,7 @@ import {
   getYearnWETHVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { waitForTx } from '../../helpers/misc-utils';
 import {
   eContractid,
   eNetwork,
@@ -64,10 +65,12 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
         continue;
       }
 
-      await collateralAdapter.addCollateralAsset(
-        reserveExternalAssets[symbol],
-        reserveAssets[symbol],
-        acceptableVaults[symbol]
+      await waitForTx(
+        await collateralAdapter.addCollateralAsset(
+          reserveExternalAssets[symbol],
+          reserveAssets[symbol],
+          acceptableVaults[symbol]
+        )
       );
     }
 

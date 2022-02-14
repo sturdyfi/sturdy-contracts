@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import 'hardhat/console.sol';
 import {GeneralVault} from './GeneralVault.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IBeefyVault} from '../../interfaces/IBeefyVault.sol';

@@ -107,7 +107,8 @@ const buidlerConfig: HardhatUserConfig = {
     // tenderly: getCommonNetworkConfig(eFantomNetwork.tenderlyFTM, 250),   // Fantom
     geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
-    ftm_test:getCommonNetworkConfig(eFantomNetwork.ftm_test, 4002),
+    ftm: getCommonNetworkConfig(eFantomNetwork.ftm, 250),
+    ftm_test: getCommonNetworkConfig(eFantomNetwork.ftm_test, 4002),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

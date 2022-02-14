@@ -163,9 +163,9 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',
   },
   ReserveFactorTreasuryAddress: {
-    [eFantomNetwork.ftm]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
-    [eFantomNetwork.ftm_test]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
-    [eFantomNetwork.tenderlyFTM]: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+    [eFantomNetwork.ftm]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
+    [eFantomNetwork.ftm_test]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
+    [eFantomNetwork.tenderlyFTM]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
   },
   IncentivesController: {
     [eFantomNetwork.ftm]: ZERO_ADDRESS,

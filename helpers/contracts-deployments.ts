@@ -50,7 +50,6 @@ import {
   MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
-  SelfdestructTransferFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
   WETH9MockedFactory,
@@ -600,14 +599,6 @@ export const deployMockAToken = async (
 
   return instance;
 };
-
-export const deploySelfdestructTransferMock = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new SelfdestructTransferFactory(await getFirstSigner()).deploy(),
-    eContractid.SelfdestructTransferMock,
-    [],
-    verify
-  );
 
 export const deployWalletBalancerProvider = async (verify?: boolean) =>
   withSaveAndVerify(

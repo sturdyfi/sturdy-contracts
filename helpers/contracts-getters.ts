@@ -17,7 +17,6 @@ import {
   MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
-  SelfdestructTransferFactory,
   StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
@@ -307,15 +306,6 @@ export const getMockStableDebtToken = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.MockStableDebtToken}.${DRE.network.name}`).value()
-      ).address,
-    await getFirstSigner()
-  );
-
-export const getSelfdestructTransferMock = async (address?: tEthereumAddress) =>
-  await SelfdestructTransferFactory.connect(
-    address ||
-      (
-        await getDb().get(`${eContractid.SelfdestructTransferMock}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

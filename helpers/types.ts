@@ -79,7 +79,6 @@ export enum eContractid {
   USDCToken = 'USDCToken',
   USDTToken = 'USDTToken',
   WETHMocked = 'WETHMocked',
-  SelfdestructTransferMock = 'SelfdestructTransferMock',
   LendingPoolImpl = 'LendingPoolImpl',
   LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
   LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',

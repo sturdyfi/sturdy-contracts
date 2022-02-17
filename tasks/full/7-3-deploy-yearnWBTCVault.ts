@@ -1,7 +1,9 @@
 import { task } from 'hardhat/config';
-import { ConfigNames } from '../../helpers/configuration';
+import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployYearnWBTCVault } from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
+import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { eNetwork, ICommonConfiguration } from '../../helpers/types';
 
 const CONTRACT_NAME = 'YearnWBTCVault';
 
@@ -14,9 +16,17 @@ task(`full:deploy-yearn-wbtc-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
     }
+
+    const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
+    const poolConfig = loadPoolConfig(pool);
+    const { ReserveFactorTreasuryAddress } = poolConfig as ICommonConfiguration;
+    const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
+
     const yearnWBTCVault = await deployYearnWBTCVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(yearnWBTCVault.address);
+    await yearnWBTCVault.setTreasuryInfo(treasuryAddress, '3000'); //30% fee
+
     console.log(`${CONTRACT_NAME}.address`, yearnWBTCVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);
   });

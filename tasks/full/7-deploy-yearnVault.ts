@@ -1,7 +1,7 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployYearnVault } from '../../helpers/contracts-deployments';
-import { getLendingPoolConfiguratorProxy, getYearnVault } from '../../helpers/contracts-getters';
+import { getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { eNetwork, ICommonConfiguration } from '../../helpers/types';
 
@@ -22,11 +22,10 @@ task(`full:deploy-yearn-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     const { ReserveFactorTreasuryAddress } = poolConfig as ICommonConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
-    // const yearnVault = await deployYearnVault(verify);
-    // const configurator = await getLendingPoolConfiguratorProxy();
-    // await configurator.registerVault(yearnVault.address);
-    const yearnVault = await getYearnVault();
-    await yearnVault.setTreasuryInfo(treasuryAddress, '3000'); //30% fee
+    const yearnVault = await deployYearnVault(verify);
+    const configurator = await getLendingPoolConfiguratorProxy();
+    await configurator.registerVault(yearnVault.address);
+    await yearnVault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
 
     console.log(`${CONTRACT_NAME}.address`, yearnVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

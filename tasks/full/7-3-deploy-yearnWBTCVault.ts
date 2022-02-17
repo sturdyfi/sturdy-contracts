@@ -25,7 +25,7 @@ task(`full:deploy-yearn-wbtc-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     const yearnWBTCVault = await deployYearnWBTCVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(yearnWBTCVault.address);
-    await yearnWBTCVault.setTreasuryInfo(treasuryAddress, '3000'); //30% fee
+    await yearnWBTCVault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
 
     console.log(`${CONTRACT_NAME}.address`, yearnWBTCVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

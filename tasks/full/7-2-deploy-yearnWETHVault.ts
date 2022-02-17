@@ -25,7 +25,7 @@ task(`full:deploy-yearn-weth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     const yearnWETHVault = await deployYearnWETHVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(yearnWETHVault.address);
-    await yearnWETHVault.setTreasuryInfo(treasuryAddress, '3000'); //30% fee
+    await yearnWETHVault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
 
     console.log(`${CONTRACT_NAME}.address`, yearnWETHVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

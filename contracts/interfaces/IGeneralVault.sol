@@ -5,4 +5,6 @@ interface IGeneralVault {
   function pricePerShare() external view returns (uint256);
 
   function withdrawOnLiquidation(address _asset, uint256 _amount) external returns (uint256);
+
+  function processYield() external;
 }

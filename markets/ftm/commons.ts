@@ -66,9 +66,9 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
-    [eFantomNetwork.ftm]: '',
+    [eFantomNetwork.ftm]: '0x23Df30FE1d2a8C6f4602db382D727561097F899E',
     [eFantomNetwork.ftm_test]: '0xAD475FfbCB15fbc1D481ffDf16dBe5f6ac209Bca',
-    [eFantomNetwork.tenderlyFTM]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x23Df30FE1d2a8C6f4602db382D727561097F899E',
   },
   ProviderRegistryOwner: {
     [eFantomNetwork.ftm]: '',
@@ -76,24 +76,24 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '',
   },
   LendingRateOracle: {
-    [eFantomNetwork.ftm]: '',
+    [eFantomNetwork.ftm]: '0x0024a128CB74FF0C93de1261C59E4d04321E9dC0',
     [eFantomNetwork.ftm_test]: '0x829223FB97E0fB5aecFbfD7167aEAe4ec9e0dc75',
-    [eFantomNetwork.tenderlyFTM]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x0024a128CB74FF0C93de1261C59E4d04321E9dC0',
   },
   LendingPoolCollateralManager: {
-    [eFantomNetwork.ftm]: '',
+    [eFantomNetwork.ftm]: '0x174110e39F1B67a185C9440B980d799AE5332795',
     [eFantomNetwork.ftm_test]: '0x5a3aE44704D95CcAffe608c808308c850bDec94d',
-    [eFantomNetwork.tenderlyFTM]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x174110e39F1B67a185C9440B980d799AE5332795',
   },
   LendingPoolConfigurator: {
-    [eFantomNetwork.ftm]: '',
+    [eFantomNetwork.ftm]: '0x72D2ADBD98e03Cd1eA05C133142DDFec0Aa26A6d',
     [eFantomNetwork.ftm_test]: '0x6719B46ee295208911f5241f429fDD9F5D88df86',
-    [eFantomNetwork.tenderlyFTM]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x72D2ADBD98e03Cd1eA05C133142DDFec0Aa26A6d',
   },
   LendingPool: {
-    [eFantomNetwork.ftm]: '',
+    [eFantomNetwork.ftm]: '0x7FF2520Cd7b76e8C49B5DB51505b842d665f3e9A',
     [eFantomNetwork.ftm_test]: '0x7b07169cCB3CcEe717498e1Cefe6049De02f588D',
-    [eFantomNetwork.tenderlyFTM]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x7FF2520Cd7b76e8C49B5DB51505b842d665f3e9A',
   },
   TokenDistributor: {
     [eFantomNetwork.ftm]: '',
@@ -101,9 +101,9 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '',
   },
   SturdyOracle: {
-    [eFantomNetwork.ftm]: '',
+    [eFantomNetwork.ftm]: '0xE84fD77E8B7bB52a71087653a26d6CC6448fb77D',
     [eFantomNetwork.ftm_test]: '',
-    [eFantomNetwork.tenderlyFTM]: '',
+    [eFantomNetwork.tenderlyFTM]: '0xE84fD77E8B7bB52a71087653a26d6CC6448fb77D',
   },
   FallbackOracle: {
     [eFantomNetwork.ftm]: ZERO_ADDRESS,
@@ -168,8 +168,8 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
   },
   IncentivesController: {
-    [eFantomNetwork.ftm]: ZERO_ADDRESS,
+    [eFantomNetwork.ftm]: '0xcdA2B5Cd654be0DBA19E4064c583642741712560',
     [eFantomNetwork.ftm_test]: '0xe8257438ea046A3f5f246c862Efd8c96AD82289a',
-    [eFantomNetwork.tenderlyFTM]: ZERO_ADDRESS,
+    [eFantomNetwork.tenderlyFTM]: '0xcdA2B5Cd654be0DBA19E4064c583642741712560',
   },
 };

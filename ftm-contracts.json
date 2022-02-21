@@ -21,40 +21,40 @@
   },
   "ReserveLogic": {
     "ftm": {
-      "address": "0x243DEACf3fF0B247c32EF97f6b1De5D7607392Ad",
+      "address": "0xa69a8E3e1834F8aebeb35219f9f369bB15d8A698",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x243DEACf3fF0B247c32EF97f6b1De5D7607392Ad",
+      "address": "0xa69a8E3e1834F8aebeb35219f9f369bB15d8A698",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "GenericLogic": {
     "ftm": {
-      "address": "0xdC09185721599b6f4fD17Be0733fD451fD07c93b",
+      "address": "0xf3cE44D3f81F98a7644dbf56Baea262d2a445AD1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xdC09185721599b6f4fD17Be0733fD451fD07c93b",
+      "address": "0xf3cE44D3f81F98a7644dbf56Baea262d2a445AD1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "ValidationLogic": {
     "ftm": {
-      "address": "0x5526020cE471388ECBEe19236639604413A76265",
+      "address": "0x48dd8AF3c41DDa384Fc3c9286A04910299c8cFA5",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x5526020cE471388ECBEe19236639604413A76265",
+      "address": "0x48dd8AF3c41DDa384Fc3c9286A04910299c8cFA5",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "LendingPoolImpl": {
     "ftm": {
-      "address": "0xAC7595909DC004923B50eBa2297De99e78F64bFb"
+      "address": "0x06caE399575E3d20cD4B468c8Ef53fAdd2C6aEC8"
     },
     "localhost": {
-      "address": "0xAC7595909DC004923B50eBa2297De99e78F64bFb"
+      "address": "0x06caE399575E3d20cD4B468c8Ef53fAdd2C6aEC8"
     }
   },
   "LendingPool": {

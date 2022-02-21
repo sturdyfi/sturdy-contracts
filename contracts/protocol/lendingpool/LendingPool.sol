@@ -232,9 +232,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       DataTypes.ReserveData storage reserve = _reserves[_reservesList[i]];
       (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
       if (isActive && !isFrozen && isBorrowing) {
-        volumes[pos] = IERC20(_reservesList[i]).balanceOf(reserve.aTokenAddress).div(
-          10**reserve.configuration.getDecimals()
-        );
+        volumes[pos] = IERC20(reserve.aTokenAddress).totalSupply();
+        volumes[pos] = volumes[pos].div(10**reserve.configuration.getDecimals());
         assets[pos] = _reservesList[i];
         totalVolume = totalVolume.add(volumes[pos]);
         pos = pos.add(1);

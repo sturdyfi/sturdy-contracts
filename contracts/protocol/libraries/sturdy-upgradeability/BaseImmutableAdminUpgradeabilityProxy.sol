@@ -5,7 +5,7 @@ import '../../../dependencies/openzeppelin/upgradeability/BaseUpgradeabilityProx
 
 /**
  * @title BaseImmutableAdminUpgradeabilityProxy
- * @author Sturdy, inspired by the OpenZeppelin upgradeability proxy pattern
+ * @author Sturdy, inspiration from Aave
  * @dev This contract combines an upgradeability proxy with an authorization
  * mechanism for administrative tasks. The admin role is stored in an immutable, which
  * helps saving transactions costs

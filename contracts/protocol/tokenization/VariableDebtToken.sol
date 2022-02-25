@@ -12,7 +12,7 @@ import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesCon
  * @title VariableDebtToken
  * @notice Implements a variable debt token to track the borrowing positions of users
  * at variable rate mode
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;

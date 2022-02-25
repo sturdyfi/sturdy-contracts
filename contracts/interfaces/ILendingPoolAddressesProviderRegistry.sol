@@ -7,7 +7,7 @@ pragma solidity 0.6.12;
  * - Used for indexing purposes of Sturdy protocol's markets
  * - The id assigned to a LendingPoolAddressesProvider refers to the market it is connected with,
  *   for example with `0` for the Sturdy main market and `1` for the next created
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 interface ILendingPoolAddressesProviderRegistry {
   event AddressesProviderRegistered(address indexed newAddress);

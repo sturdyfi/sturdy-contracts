@@ -7,7 +7,7 @@ import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 /**
  * @title IInitializableDebtToken
  * @notice Interface for the initialize function common between debt tokens
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 interface IInitializableDebtToken {
   /**

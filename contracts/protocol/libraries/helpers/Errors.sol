@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 /**
  * @title Errors library
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @notice Defines the error messages emitted by the different contracts of the Sturdy protocol
  * @dev Error messages prefix glossary:
  *  - VL = ValidationLogic

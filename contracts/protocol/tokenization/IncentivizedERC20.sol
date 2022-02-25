@@ -10,7 +10,7 @@ import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesCon
 /**
  * @title ERC20
  * @notice Basic ERC20 implementation
- * @author Sturdy, inspired by the Openzeppelin ERC20 implementation
+ * @author Sturdy, inspiration from Aave
  **/
 abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
   using SafeMath for uint256;

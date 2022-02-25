@@ -14,7 +14,7 @@ import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesCon
 /**
  * @title Sturdy ERC20 AToken
  * @dev Implementation of the interest bearing token for the Sturdy protocol
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  */
 contract AToken is
   VersionedInitializable,

@@ -6,7 +6,7 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title Helpers library
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  */
 library Helpers {
   /**

@@ -7,7 +7,7 @@ import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 /**
  * @title IInitializableAToken
  * @notice Interface for the initialize function on AToken
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 interface IInitializableAToken {
   /**

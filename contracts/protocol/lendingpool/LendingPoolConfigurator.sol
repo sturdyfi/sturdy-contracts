@@ -19,7 +19,7 @@ import {ILendingPoolConfigurator} from '../../interfaces/ILendingPoolConfigurato
 
 /**
  * @title LendingPoolConfigurator contract
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @dev Implements the configuration methods for the Sturdy protocol
  **/
 

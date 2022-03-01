@@ -101,50 +101,72 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
         ]
       );
 
-      const stableDebt = await getAddressById(`stableDebt${token}`);
-      const variableDebt = await getAddressById(`variableDebt${token}`);
-      const aToken = await getAddressById(`a${token}`);
+      // const stableDebt = await getAddressById(`stableDebt${token}`);
+      // const variableDebt = await getAddressById(`variableDebt${token}`);
+      // const aToken = await getAddressById(`a${token}`);
 
-      if (aToken) {
-        console.log('\n- Verifying aToken...\n');
-        await verifyContract(eContractid.AToken, await getAToken(aToken), [
-          lendingPoolProxy.address,
-          tokenAddress,
-          treasuryAddress,
-          `Sturdy interest bearing ${token}`,
-          `a${token}`,
-          ZERO_ADDRESS,
-        ]);
-      } else {
-        console.error(`Skipping aToken verify for ${token}. Missing address at JSON DB.`);
-      }
-      if (stableDebt) {
-        console.log('\n- Verifying StableDebtToken...\n');
-        await verifyContract(eContractid.StableDebtToken, await getStableDebtToken(stableDebt), [
-          lendingPoolProxy.address,
-          tokenAddress,
-          `Sturdy stable debt bearing ${token}`,
-          `stableDebt${token}`,
-          ZERO_ADDRESS,
-        ]);
-      } else {
-        console.error(`Skipping stable debt verify for ${token}. Missing address at JSON DB.`);
-      }
-      if (variableDebt) {
-        console.log('\n- Verifying VariableDebtToken...\n');
-        await verifyContract(
-          eContractid.VariableDebtToken,
-          await getVariableDebtToken(variableDebt),
-          [
-            lendingPoolProxy.address,
-            tokenAddress,
-            `Sturdy variable debt bearing ${token}`,
-            `variableDebt${token}`,
-            ZERO_ADDRESS,
-          ]
-        );
-      } else {
-        console.error(`Skipping variable debt verify for ${token}. Missing address at JSON DB.`);
-      }
+      // if (aToken) {
+      //   console.log('\n- Verifying aToken...\n');
+      //   await verifyContract(eContractid.AToken, await getAToken(aToken), [
+      //     lendingPoolProxy.address,
+      //     tokenAddress,
+      //     treasuryAddress,
+      //     `Sturdy interest bearing ${token}`,
+      //     `a${token}`,
+      //     ZERO_ADDRESS,
+      //   ]);
+      //   await verifyContract(eContractid.AToken, await getAToken(aToken), []);
+      // } else {
+      //   console.error(`Skipping aToken verify for ${token}. Missing address at JSON DB.`);
+      // }
+      // if (stableDebt) {
+      //   console.log('\n- Verifying StableDebtToken...\n');
+      //   await verifyContract(eContractid.StableDebtToken, await getStableDebtToken(stableDebt), [
+      //     lendingPoolProxy.address,
+      //     tokenAddress,
+      //     `Sturdy stable debt bearing ${token}`,
+      //     `stableDebt${token}`,
+      //     ZERO_ADDRESS,
+      //   ]);
+      // } else {
+      //   console.error(`Skipping stable debt verify for ${token}. Missing address at JSON DB.`);
+      // }
+      // if (variableDebt) {
+      //   console.log('\n- Verifying VariableDebtToken...\n');
+      //   await verifyContract(
+      //     eContractid.VariableDebtToken,
+      //     await getVariableDebtToken(variableDebt),
+      //     [
+      //       lendingPoolProxy.address,
+      //       tokenAddress,
+      //       `Sturdy variable debt bearing ${token}`,
+      //       `variableDebt${token}`,
+      //       ZERO_ADDRESS,
+      //     ]
+      //   );
+      // } else {
+      //   console.error(`Skipping variable debt verify for ${token}. Missing address at JSON DB.`);
+      // }
+
+      const stableDebt = await getAddressById(eContractid.StableDebtToken);
+      const variableDebt = await getAddressById(eContractid.VariableDebtToken);
+      const aToken = await getAddressById(eContractid.AToken);
+      const aTokenForCollateral = await getAddressById(eContractid.ATokenForCollateral);
+
+      console.log('\n- Verifying aToken...\n');
+      await verifyContract(eContractid.AToken, await getAToken(aToken), []);
+
+      console.log('\n- Verifying aTokenForCollateral...\n');
+      await verifyContract(
+        eContractid.ATokenForCollateral,
+        await getAToken(aTokenForCollateral),
+        []
+      );
+
+      console.log('\n- Verifying StableDebtToken...\n');
+      await verifyContract(eContractid.StableDebtToken, await getStableDebtToken(aToken), []);
+
+      console.log('\n- Verifying VariableDebtToken...\n');
+      await verifyContract(eContractid.VariableDebtToken, await getVariableDebtToken(aToken), []);
     }
   });

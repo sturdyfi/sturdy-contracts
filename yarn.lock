@@ -8461,6 +8461,11 @@ snapdragon@^0.8.1:
     source-map-resolve "^0.5.0"
     use "^3.1.0"
 
+sol-merge@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/sol-merge/-/sol-merge-0.0.1.tgz#739b6073d4865960d6dc656e176478f5cb3b74cb"
+  integrity sha1-c5tgc9SGWWDW3GVuF2R49cs7dMs=
+
 solc@0.6.8:
   version "0.6.8"
   resolved "https://registry.yarnpkg.com/solc/-/solc-0.6.8.tgz#accf03634554938e166ba9b9853d17ca5c728131"

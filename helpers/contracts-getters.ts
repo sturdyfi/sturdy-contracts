@@ -405,11 +405,29 @@ export const getYearnVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYearnWETHVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnWETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWETHVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnWETHVault = async (address?: tEthereumAddress) =>
   await YearnWETHVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.YearnWETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnWBTCVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnWBTCVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWBTCVaultImpl}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

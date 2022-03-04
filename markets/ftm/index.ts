@@ -9,6 +9,7 @@ import {
   // strategyMOOWETH,
   strategyYVWETH,
   strategyYVWBTC,
+  strategyYVBOO,
 } from './reservesConfigs';
 
 // ----------------
@@ -28,6 +29,7 @@ export const FantomConfig: IFantomConfiguration = {
     // mooWETH: strategyMOOWETH,
     yvWETH: strategyYVWETH,
     yvWBTC: strategyYVWBTC,
+    yvBOO: strategyYVBOO,
   },
   ReserveAssets: {
     [eFantomNetwork.ftm]: {
@@ -37,7 +39,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWFTM: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
       // mooWETH: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
       yvWETH: '0xCe2Fc0bDc18BD6a4d9A725791A3DEe33F3a23BB7',
-      yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9'
+      yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
+      yvBOO: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698'
     },
     [eFantomNetwork.ftm_test]: {
       DAI: '0x9440c3bB6Adb5F0D5b8A460d8a8c010690daC2E8',
@@ -45,7 +48,8 @@ export const FantomConfig: IFantomConfiguration = {
       fUSDT: '0x211554151F2f00305f33530Fdd3a5d0354927A65',
       yvWFTM: '0x5a18d89Ad063C1AEd5B3c30741333c1a1116CFE3',
       yvWETH: '0x5F37179e6714D137C6A196eAd40d79005c5e9A61',
-      yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91'
+      yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
+      yvBOO: ''
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -54,7 +58,8 @@ export const FantomConfig: IFantomConfiguration = {
       // mooWETH: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
       fUSDT: '0x049d68029688eAbF473097a2fC38ef61633A3C7A',
       yvWETH: '0xCe2Fc0bDc18BD6a4d9A725791A3DEe33F3a23BB7',
-      yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9'
+      yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
+      yvBOO: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698'
     },
   },
   YearnVaultFTM: {
@@ -71,6 +76,11 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm]: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
     [eFantomNetwork.ftm_test]: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
     [eFantomNetwork.tenderlyFTM]: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
+  },
+  YearnBOOVaultFTM: {
+    [eFantomNetwork.ftm]: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
+    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
   },
   // BeefyVaultFTM: {
   //   [eFantomNetwork.ftm]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',

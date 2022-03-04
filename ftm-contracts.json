@@ -394,5 +394,15 @@
     "localhost": {
       "address": "0x8fc40c8D4575CB1068DFbdccB351B58f44Fdf074"
     }
+  },
+  "BooOracle": {
+    "ftm": {
+      "address": "0x4aD9884E676ee2a3F71eC9847C01B4e7755669e8",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x4aD9884E676ee2a3F71eC9847C01B4e7755669e8",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

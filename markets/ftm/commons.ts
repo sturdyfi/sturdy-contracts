@@ -66,7 +66,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
-    [eFantomNetwork.ftm]: '0x23Df30FE1d2a8C6f4602db382D727561097F899E',
+    [eFantomNetwork.ftm]: '', //'0x23Df30FE1d2a8C6f4602db382D727561097F899E',
     [eFantomNetwork.ftm_test]: '0xAD475FfbCB15fbc1D481ffDf16dBe5f6ac209Bca',
     [eFantomNetwork.tenderlyFTM]: '0x23Df30FE1d2a8C6f4602db382D727561097F899E',
   },
@@ -76,22 +76,22 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '',
   },
   LendingRateOracle: {
-    [eFantomNetwork.ftm]: '0x0024a128CB74FF0C93de1261C59E4d04321E9dC0',
+    [eFantomNetwork.ftm]: '',//'0x0024a128CB74FF0C93de1261C59E4d04321E9dC0',
     [eFantomNetwork.ftm_test]: '0x829223FB97E0fB5aecFbfD7167aEAe4ec9e0dc75',
     [eFantomNetwork.tenderlyFTM]: '0x0024a128CB74FF0C93de1261C59E4d04321E9dC0',
   },
   LendingPoolCollateralManager: {
-    [eFantomNetwork.ftm]: '0x174110e39F1B67a185C9440B980d799AE5332795',
+    [eFantomNetwork.ftm]: '',//'0x174110e39F1B67a185C9440B980d799AE5332795',
     [eFantomNetwork.ftm_test]: '0x5a3aE44704D95CcAffe608c808308c850bDec94d',
     [eFantomNetwork.tenderlyFTM]: '0x174110e39F1B67a185C9440B980d799AE5332795',
   },
   LendingPoolConfigurator: {
-    [eFantomNetwork.ftm]: '0x72D2ADBD98e03Cd1eA05C133142DDFec0Aa26A6d',
+    [eFantomNetwork.ftm]: '',//'0x72D2ADBD98e03Cd1eA05C133142DDFec0Aa26A6d',
     [eFantomNetwork.ftm_test]: '0x6719B46ee295208911f5241f429fDD9F5D88df86',
     [eFantomNetwork.tenderlyFTM]: '0x72D2ADBD98e03Cd1eA05C133142DDFec0Aa26A6d',
   },
   LendingPool: {
-    [eFantomNetwork.ftm]: '0x7FF2520Cd7b76e8C49B5DB51505b842d665f3e9A',
+    [eFantomNetwork.ftm]: '',//'0x7FF2520Cd7b76e8C49B5DB51505b842d665f3e9A',
     [eFantomNetwork.ftm_test]: '0x7b07169cCB3CcEe717498e1Cefe6049De02f588D',
     [eFantomNetwork.tenderlyFTM]: '0x7FF2520Cd7b76e8C49B5DB51505b842d665f3e9A',
   },
@@ -101,7 +101,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.tenderlyFTM]: '',
   },
   SturdyOracle: {
-    [eFantomNetwork.ftm]: '0xE84fD77E8B7bB52a71087653a26d6CC6448fb77D',
+    [eFantomNetwork.ftm]: '',//'0xE84fD77E8B7bB52a71087653a26d6CC6448fb77D',
     [eFantomNetwork.ftm_test]: '',
     [eFantomNetwork.tenderlyFTM]: '0xE84fD77E8B7bB52a71087653a26d6CC6448fb77D',
   },
@@ -119,6 +119,7 @@ export const CommonsConfig: ICommonConfiguration = {
       // mooWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWBTC: '0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4',
+      yvBOO: '0x4aD9884E676ee2a3F71eC9847C01B4e7755669e8'
     },
     [eFantomNetwork.ftm_test]: {},
     [eFantomNetwork.tenderlyFTM]: {
@@ -129,6 +130,7 @@ export const CommonsConfig: ICommonConfiguration = {
       // mooWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWBTC: '0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4',
+      yvBOO: '0x4aD9884E676ee2a3F71eC9847C01B4e7755669e8'
     },
   },
   ReserveAssets: {
@@ -156,6 +158,11 @@ export const CommonsConfig: ICommonConfiguration = {
     [eFantomNetwork.ftm]: '0x321162Cd933E2Be498Cd2267a90534A804051b11',
     [eFantomNetwork.ftm_test]: '0x0e9Cbd91546F290b0F99cF62DAC637B33D22D9B6',
     [eFantomNetwork.tenderlyFTM]: '0x321162Cd933E2Be498Cd2267a90534A804051b11',
+  },
+  BOO: {
+    [eFantomNetwork.ftm]: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE',
+    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE',
   },
   WrappedNativeToken: {
     [eFantomNetwork.ftm]: '0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83',

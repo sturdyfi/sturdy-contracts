@@ -12,12 +12,13 @@ import {
   getPriceOracle,
   getStableDebtToken,
   getSturdyIncentivesController,
+  getSturdyOracle,
   getVariableDebtToken,
 } from './../../helpers/contracts-getters';
 import { deployDefaultReserveInterestRateStrategy } from './../../helpers/contracts-deployments';
 import { setDRE, waitForTx } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from './../../helpers/constants';
-import { rawInsertContractAddressInDb } from '../../helpers/contracts-helpers';
+import { getParamPerNetwork, rawInsertContractAddressInDb } from '../../helpers/contracts-helpers';
 
 const isSymbolValid = (
   symbol: string,
@@ -142,9 +143,16 @@ WRONG RESERVE ASSET SETUP:
 
     // set asset price
     const priceOracleInstance = await getPriceOracle();
-    await waitForTx(
-      await priceOracleInstance.setAssetPrice(reserveAssetAddress, AllAssetsInitialPrices[symbol])
-    );
+    if (priceOracleInstance) {
+      await waitForTx(
+        await priceOracleInstance.setAssetPrice(reserveAssetAddress, AllAssetsInitialPrices[symbol])
+      );
+    } else {
+      const oracleSource = poolConfig.ChainlinkAggregator[network][symbol];
+      const sturdyOracle = await getSturdyOracle();
+      await waitForTx(await sturdyOracle.setAssetSources([reserveAssetAddress], [oracleSource]));
+      console.log((await sturdyOracle.getAssetPrice(reserveAssetAddress)).toString());
+    }
 
     console.log(`
     New interest bearing asset deployed on ${network}:

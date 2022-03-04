@@ -40,6 +40,8 @@ import {
   MockyvWBTCFactory,
   MockWBTCForFTMFactory,
   CollateralAdapterFactory,
+  YearnBOOVaultFactory,
+  BooOracleFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -366,6 +368,12 @@ export const getSturdyOracle = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getBooOracle = async (address?: tEthereumAddress) =>
+  await BooOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.BooOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
 export const getLendingPool = async (address?: tEthereumAddress) =>
   await LendingPoolFactory.connect(
     address ||
@@ -437,6 +445,24 @@ export const getYearnWBTCVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.YearnWBTCVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnBOOVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnBOOVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnBOOVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnBOOVault = async (address?: tEthereumAddress) =>
+  await YearnBOOVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnBOOVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

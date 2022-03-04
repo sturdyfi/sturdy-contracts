@@ -26,6 +26,7 @@ import {
   getLidoVault,
   getSturdyIncentivesController,
   getSturdyToken,
+  getYearnBOOVault,
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
@@ -74,6 +75,8 @@ import {
   MockyvWBTCFactory,
   MockWBTCForFTMFactory,
   CollateralAdapterFactory,
+  YearnBOOVaultFactory,
+  BooOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -258,6 +261,14 @@ export const deploySturdyOracle = async (
     await new SturdyOracleFactory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyOracle,
     args,
+    verify
+  );
+
+export const deployBooOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BooOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.BooOracle,
+    [],
     verify
   );
 
@@ -840,6 +851,54 @@ export const deployYearnWBTCVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.YearnWBTCVault, yearnWBTCVaultProxyAddress);
 
   return await getYearnWBTCVault();
+};
+
+export const deployYearnBOOVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnBOOVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnBOOVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnBOOVault = async (verify?: boolean) => {
+  const yearnBOOVaultImpl = await withSaveAndVerify(
+    await new YearnBOOVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnBOOVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_BOO_VAULT'),
+      yearnBOOVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVBOO'),
+      getParamPerNetwork(config.YearnBOOVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('BOO'),
+      getParamPerNetwork(config.BOO, network)
+    )
+  );
+
+  const yearnBOOVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_BOO_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnBOOVault, yearnBOOVaultProxyAddress);
+
+  return await getYearnBOOVault();
 };
 
 // export const deployBeefyVault = async (verify?: boolean) => {

@@ -18,6 +18,7 @@ import {
   getYearnVault,
   getYearnWETHVault,
   getYearnWBTCVault,
+  getYearnBOOVault,
 } from '../../helpers/contracts-getters';
 
 task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -61,6 +62,7 @@ task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.'
               yvWFTM: (await getYearnVault()).address,
               yvWETH: (await getYearnWETHVault()).address,
               yvWBTC: (await getYearnWBTCVault()).address,
+              yvBOO: (await getYearnBOOVault()).address,
               // mooWETH: (await getBeefyVault()).address,
             };
 

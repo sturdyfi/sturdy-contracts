@@ -73,27 +73,21 @@ contract YearnWBTCVault is GeneralVault {
   function _convertAndDepositYield(address _tokenOut, uint256 _wbtcAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
     address WBTC = _addressesProvider.getAddress('WBTC');
-    address WFTM = _addressesProvider.getAddress('WFTM');
 
-    // Calculate minAmount from price with 1% slippage
+    // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 _minFTMAmount = _wbtcAmount
+    uint256 minAmountFromPrice = _wbtcAmount
       .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWBTC')))
-      .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .percentMul(99_00);
-
-    uint256 minAmountFromPrice = _minFTMAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
+      .div(10**8)
       .mul(10**assetDecimal)
-      .div(10**18)
       .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(99_00);
+      .percentMul(98_00);
 
     // Exchange WBTC -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
-    path[0] = address(WBTC);
-    path[1] = address(WFTM);
+    path[0] = WBTC;
+    path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = _tokenOut;
 
     IERC20(WBTC).approve(uniswapRouter, _wbtcAmount);

@@ -42,6 +42,9 @@ task('sturdy:ftm:testnet', 'Deploy development enviroment')
     console.log('7-3. Deploy Yearn WBTC vault');
     await DRE.run('testnet:deploy-yearn-wbtc-vault', { pool: POOL_NAME });
 
+    console.log('7-4. Deploy Yearn BOO vault');
+    await DRE.run('testnet:deploy-yearn-boo-vault', { pool: POOL_NAME });
+
     console.log('8. Initialize lending pool');
     await DRE.run('testnet:initialize-lending-pool', { pool: POOL_NAME });
 

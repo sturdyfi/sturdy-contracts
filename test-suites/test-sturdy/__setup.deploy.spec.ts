@@ -151,6 +151,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       yvWFTM: mockTokens.yvWFTM.address,
       yvWETH: mockTokens.yvWETH.address,
       yvWBTC: mockTokens.yvWBTC.address,
+      yvBOO: mockTokens.yvBOO.address,
       // mooWETH: mockTokens.mooWETH.address,
     },
     fallbackOracle

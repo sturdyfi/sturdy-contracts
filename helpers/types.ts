@@ -53,6 +53,7 @@ export enum eContractid {
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
   SturdyOracle = 'SturdyOracle',
+  BooOracle = 'BooOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -91,6 +92,8 @@ export enum eContractid {
   YearnWETHVault = 'YearnWETHVault',
   YearnWBTCVaultImpl = 'YearnWBTCVaultImpl',
   YearnWBTCVault = 'YearnWBTCVault',
+  YearnBOOVaultImpl = 'YearnBOOVaultImpl',
+  YearnBOOVault = 'YearnBOOVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
   MockyvWBTC = 'MockyvWBTC',
@@ -222,6 +225,7 @@ export interface iAssetBase<T> {
   // mooWETH: T;
   yvWETH: T;
   yvWBTC: T;
+  yvBOO: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -232,7 +236,7 @@ export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | '
 
 export type iFantomPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH' | 'yvWBTC'
+  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH' | 'yvWBTC' | 'yvBOO'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -251,6 +255,7 @@ export enum TokenContractId {
   // mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
   yvWBTC = 'yvWBTC',
+  yvBOO = 'yvBOO',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -379,6 +384,7 @@ export interface IBaseConfiguration {
   WFTM: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WBTC: iParamsPerNetwork<tEthereumAddress>;
+  BOO: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
@@ -402,6 +408,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnBOOVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }

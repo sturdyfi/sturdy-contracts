@@ -68,7 +68,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
           ],
           verify
         );
-        await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));
+        // await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));
       }
 
       if (notFalsyOrZeroAddress(lendingRateOracleAddress)) {

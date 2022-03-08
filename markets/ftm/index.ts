@@ -49,7 +49,7 @@ export const FantomConfig: IFantomConfiguration = {
       yvWFTM: '0x5a18d89Ad063C1AEd5B3c30741333c1a1116CFE3',
       yvWETH: '0x5F37179e6714D137C6A196eAd40d79005c5e9A61',
       yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
-      yvBOO: ''
+      yvBOO: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272'
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -79,7 +79,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   YearnBOOVaultFTM: {
     [eFantomNetwork.ftm]: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272',
     [eFantomNetwork.tenderlyFTM]: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
   },
   // BeefyVaultFTM: {

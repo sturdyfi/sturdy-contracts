@@ -161,7 +161,7 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   BOO: {
     [eFantomNetwork.ftm]: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x9dAFB108f0fFd18C1f844C4782F8c7F934f8566E',
     [eFantomNetwork.tenderlyFTM]: '0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE',
   },
   WrappedNativeToken: {

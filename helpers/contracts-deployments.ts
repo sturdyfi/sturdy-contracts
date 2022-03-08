@@ -77,6 +77,8 @@ import {
   CollateralAdapterFactory,
   YearnBOOVaultFactory,
   BooOracleFactory,
+  MockyvBOOFactory,
+  MockBOOForFTMFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1080,6 +1082,17 @@ export const deployMockyvWBTC = async (
     verify
   );
 
+export const deployMockyvBOO = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockyvBOOFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockyvBOO,
+    args,
+    verify
+  );
+
 export const deployMockWETHForFTM = async (
   args: [string, string, string, string],
   verify?: boolean
@@ -1098,6 +1111,17 @@ export const deployMockWBTCForFTM = async (
   withSaveAndVerify(
     await new MockWBTCForFTMFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockWBTCForFTM,
+    args,
+    verify
+  );
+
+export const deployMockBOOForFTM = async (
+  args: [string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockBOOForFTMFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockBOOForFTM,
     args,
     verify
   );

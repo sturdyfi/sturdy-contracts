@@ -36,7 +36,6 @@ makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
     expect(await aYVBOO.balanceOf(yearnBOOVault.address)).to.be.equal(0);
     expect(await aYVBOO.balanceOf(deployer.address)).to.be.gte(await convertToCurrencyDecimals(BOO.address, '299.99'));
     expect(await BOO.balanceOf(deployer.address)).to.be.equal(0);
-    expect(await ethers.getDefaultProvider().getBalance(yearnBOOVault.address)).to.be.equal(0);
   });
 
   it('transferring aYVBOO should be success after deposit BOO', async () => {

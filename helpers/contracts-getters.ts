@@ -42,6 +42,7 @@ import {
   CollateralAdapterFactory,
   YearnBOOVaultFactory,
   BooOracleFactory,
+  MockyvBOOFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -564,6 +565,12 @@ export const getMockyvWETH = async (address?: tEthereumAddress) =>
 export const getMockyvWBTC = async (address?: tEthereumAddress) =>
   await MockyvWBTCFactory.connect(
     address || (await getDb().get(`${eContractid.MockyvWBTC}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvBOO = async (address?: tEthereumAddress) =>
+  await MockyvBOOFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvBOO}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );
 

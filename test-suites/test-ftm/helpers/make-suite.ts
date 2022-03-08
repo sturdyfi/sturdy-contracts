@@ -271,11 +271,11 @@ export async function initializeMakeSuite() {
     aYVWBTCAddress = allTokens.filter((aToken) => aToken.symbol === 'ayvWBTC' || aToken.symbol === 'syvWBTC')[1].tokenAddress;
   else
     aYVWBTCAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWBTC' || aToken.symbol === 'syvWBTC')?.tokenAddress;
-  const aYVBOOAddress = allTokens.find((aToken) => aToken.symbol === 'syvBOO')?.tokenAddress;
+  const aYVBOOAddress = allTokens.find((aToken) => aToken.symbol === 'ayvBOO' || aToken.symbol === 'syvBOO')?.tokenAddress;
   
   // const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC')?.tokenAddress;
-  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === (network == 'ftm_test' ? 'aUSDT' : 'afUSDT') || aToken.symbol === (network == 'ftm_test' ? 'sUSDT' : 'sfUSDT'))?.tokenAddress;
+  const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === 'afUSDT' || aToken.symbol === 'sfUSDT')?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 

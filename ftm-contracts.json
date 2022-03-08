@@ -207,11 +207,11 @@
   },
   "YearnWBTCVaultImpl": {
     "ftm": {
-      "address": "0x77A7C41E7E3Bc7583E6eF03efb61a26330716a0B",
+      "address": "0xAd8158b40a5Ff8d8c7192b9316Ffa1e7C8BF5738",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x77A7C41E7E3Bc7583E6eF03efb61a26330716a0B",
+      "address": "0xAd8158b40a5Ff8d8c7192b9316Ffa1e7C8BF5738",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

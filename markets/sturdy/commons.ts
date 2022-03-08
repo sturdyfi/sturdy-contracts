@@ -280,6 +280,18 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '',
   },
+  BOO: {
+    [eEthereumNetwork.coverage]: '', // deployed in local evm
+    [eEthereumNetwork.hardhat]: '', // deployed in local evm
+    [eEthereumNetwork.geth]: '', // deployed in local evm
+    [eEthereumNetwork.localhost]: '', // deployed in local evm
+    [eEthereumNetwork.buidlerevm]: '', // deployed in local evm
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
   WrappedNativeToken: {
     [eEthereumNetwork.coverage]: '', // deployed in local evm
     [eEthereumNetwork.hardhat]: '', // deployed in local evm

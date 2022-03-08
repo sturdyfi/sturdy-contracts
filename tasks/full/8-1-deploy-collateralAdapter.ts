@@ -3,6 +3,7 @@ import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployCollateralAdapter } from '../../helpers/contracts-deployments';
 import {
   getLidoVault,
+  getYearnBOOVault,
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
@@ -42,6 +43,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
             yvWETH: getParamPerNetwork(poolConfig.WETH, network),
             yvWBTC: getParamPerNetwork(poolConfig.WBTC, network),
+            yvBOO: getParamPerNetwork(poolConfig.BOO, network),
           };
 
     const acceptableVaults =
@@ -53,6 +55,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvWFTM: (await getYearnVault()).address,
             yvWETH: (await getYearnWETHVault()).address,
             yvWBTC: (await getYearnWBTCVault()).address,
+            yvBOO: (await getYearnBOOVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

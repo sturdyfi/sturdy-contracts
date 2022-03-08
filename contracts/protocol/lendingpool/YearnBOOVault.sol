@@ -15,32 +15,32 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
 /**
- * @title YearnWBTCVault
- * @notice yvWBTC/WBTC Vault by using Yearn on Fantom
+ * @title YearnBOOVault
+ * @notice yvBOO/BOO Vault by using Yearn on Fantom
  * @author Sturdy
  **/
-contract YearnWBTCVault is GeneralVault {
+contract YearnBOOVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
-    address YVWBTC = _addressesProvider.getAddress('YVWBTC');
-    uint256 yieldYVWBTC = _getYield(YVWBTC);
+    address YVBOO = _addressesProvider.getAddress('YVBOO');
+    uint256 yieldYVBOO = _getYield(YVBOO);
 
     // move yield to treasury
     if (_vaultFee > 0) {
-      uint256 treasuryYVWBTC = _processTreasury(yieldYVWBTC);
-      yieldYVWBTC = yieldYVWBTC.sub(treasuryYVWBTC);
+      uint256 treasuryYVBOO = _processTreasury(yieldYVBOO);
+      yieldYVBOO = yieldYVBOO.sub(treasuryYVBOO);
     }
 
-    // Withdraw from Yearn Vault and receive WBTC
-    uint256 yieldWBTC = IYearnVault(YVWBTC).withdraw(yieldYVWBTC, address(this), 1);
+    // Withdraw from Yearn Vault and receive BOO
+    uint256 yieldBOO = IYearnVault(YVBOO).withdraw(yieldYVBOO, address(this), 1);
 
-    AssetYield[] memory assetYields = _getAssetYields(yieldWBTC);
+    AssetYield[] memory assetYields = _getAssetYields(yieldBOO);
     for (uint256 i = 0; i < assetYields.length; i++) {
-      // WBTC -> Asset and Deposit to pool
+      // BOO -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
@@ -52,48 +52,48 @@ contract YearnWBTCVault is GeneralVault {
     override
     returns (uint256)
   {
-    address WBTC = _addressesProvider.getAddress('WBTC');
+    address BOO = _addressesProvider.getAddress('BOO');
 
-    require(_asset == WBTC, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(_asset == BOO, Errors.LP_LIQUIDATION_CALL_FAILED);
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
-    // Withdraw from Yearn Vault and receive WBTC
-    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVWBTC')).withdraw(
+    // Withdraw from Yearn Vault and receive BOO
+    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVBOO')).withdraw(
       _amount,
       address(this),
       1
     );
 
-    // Deliver WBTC to user
-    TransferHelper.safeTransfer(WBTC, msg.sender, assetAmount);
+    // Deliver BOO to user
+    TransferHelper.safeTransfer(BOO, msg.sender, assetAmount);
 
     return assetAmount;
   }
 
-  function _convertAndDepositYield(address _tokenOut, uint256 _wbtcAmount) internal {
+  function _convertAndDepositYield(address _tokenOut, uint256 _booAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WBTC = _addressesProvider.getAddress('WBTC');
+    address BOO = _addressesProvider.getAddress('BOO');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = _wbtcAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWBTC')))
-      .div(10**8)
+    uint256 minAmountFromPrice = _booAmount
+      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVBOO')))
+      .div(10**18)
       .mul(10**assetDecimal)
       .div(oracle.getAssetPrice(_tokenOut))
       .percentMul(98_00);
 
-    // Exchange WBTC -> _tokenOut via UniswapV2
+    // Exchange BOO -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
-    path[0] = WBTC;
+    path[0] = BOO;
     path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(WBTC).approve(uniswapRouter, _wbtcAmount);
+    IERC20(BOO).approve(uniswapRouter, _booAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
-      _wbtcAmount,
+      _booAmount,
       minAmountFromPrice,
       path,
       address(this),
@@ -115,42 +115,42 @@ contract YearnWBTCVault is GeneralVault {
    * @dev Get yield amount based on strategy
    */
   function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(_addressesProvider.getAddress('YVWBTC'));
+    return _getYieldAmount(_addressesProvider.getAddress('YVBOO'));
   }
 
   /**
    * @dev Get price per share based on yield strategy
    */
   function pricePerShare() external view override returns (uint256) {
-    return IYearnVault(_addressesProvider.getAddress('YVWBTC')).pricePerShare();
+    return IYearnVault(_addressesProvider.getAddress('YVBOO')).pricePerShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive yvWBTC
+   * @dev Deposit to yield pool based on strategy and receive yvBOO
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
     override
     returns (address, uint256)
   {
-    address YVWBTC = _addressesProvider.getAddress('YVWBTC');
-    address WBTC = _addressesProvider.getAddress('WBTC');
+    address YVBOO = _addressesProvider.getAddress('YVBOO');
+    address BOO = _addressesProvider.getAddress('BOO');
 
-    // Case of WBTC deposit from user, receive WBTC from user
-    require(_asset == WBTC, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(WBTC, msg.sender, address(this), _amount);
+    // receive BOO from user
+    require(_asset == BOO, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    TransferHelper.safeTransferFrom(BOO, msg.sender, address(this), _amount);
 
-    // Deposit WBTC to Yearn Vault and receive yvWBTC
-    IERC20(WBTC).approve(YVWBTC, _amount);
-    uint256 assetAmount = IYearnVault(YVWBTC).deposit(_amount, address(this));
+    // Deposit BOO to Yearn Vault and receive yvBOO
+    IERC20(BOO).approve(YVBOO, _amount);
+    uint256 assetAmount = IYearnVault(YVBOO).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWBTC).approve(address(_addressesProvider.getLendingPool()), assetAmount);
-    return (YVWBTC, assetAmount);
+    IERC20(YVBOO).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    return (YVBOO, assetAmount);
   }
 
   /**
-   * @dev Get Withdrawal amount of yvWBTC based on strategy
+   * @dev Get Withdrawal amount of yvBOO based on strategy
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -159,27 +159,27 @@ contract YearnWBTCVault is GeneralVault {
     returns (address, uint256)
   {
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVWBTC'), _amount);
+    return (_addressesProvider.getAddress('YVBOO'), _amount);
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with yvWBTC and deliver asset
+   * @dev Withdraw from yield pool based on strategy with yvBOO and deliver asset
    */
   function _withdrawFromYieldPool(
     address _asset,
     uint256 _amount,
     address _to
   ) internal override {
-    address YVWBTC = _addressesProvider.getAddress('YVWBTC');
-    address WBTC = _addressesProvider.getAddress('WBTC');
+    address YVBOO = _addressesProvider.getAddress('YVBOO');
+    address BOO = _addressesProvider.getAddress('BOO');
 
-    // Withdraw from Yearn Vault and receive WBTC
-    uint256 assetAmount = IYearnVault(YVWBTC).withdraw(_amount, address(this), 1);
+    require(_asset == BOO, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
-    require(_asset == WBTC, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    // Withdraw from Yearn Vault and receive BOO
+    uint256 assetAmount = IYearnVault(YVBOO).withdraw(_amount, address(this), 1);
 
-    // Deliver WBTC to user
-    TransferHelper.safeTransfer(WBTC, _to, assetAmount);
+    // Deliver BOO to user
+    TransferHelper.safeTransfer(BOO, _to, assetAmount);
   }
 
   /**
@@ -187,7 +187,7 @@ contract YearnWBTCVault is GeneralVault {
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(_addressesProvider.getAddress('YVWBTC')).safeTransfer(_treasuryAddress, treasuryAmount);
+    IERC20(_addressesProvider.getAddress('YVBOO')).safeTransfer(_treasuryAddress, treasuryAmount);
     return treasuryAmount;
   }
 }

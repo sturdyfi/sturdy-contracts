@@ -2,8 +2,10 @@ import { parseEther } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
+  deployMockBOOForFTM,
   deployMockWBTCForFTM,
   deployMockWETHForFTM,
+  deployMockyvBOO,
   deployMockyvWBTC,
   deployMockyvWETH,
   deployMockyvWFTM,
@@ -28,6 +30,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const wftmAddress = getParamPerNetwork(poolConfig.WFTM, network);
     const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
     const wbtcAddress = getParamPerNetwork(poolConfig.WBTC, network);
+    const booAddress = getParamPerNetwork(poolConfig.BOO, network);
 
     console.log('Deploying MockyvWFTM started\n');
     const yvWFTM = await deployMockyvWFTM(
@@ -49,6 +52,26 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockyvWBTC address `, yvWBTC.address);
+
+    console.log('Deploying MockyvBOO started\n');
+    const yvBOO = await deployMockyvBOO(
+      [booAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockyvBOO address `, yvBOO.address);
+
+    // console.log('Deploying MockBOO started\n');
+    // const BOO = await deployMockBOOForFTM(
+    //   ['BOO', 'BOO', '18', sender],
+    //   verify
+    // );
+
+    // await BOO.Swapin(
+    //   "0x288f6dec7d6165b3513dbeafa36332f35b9946943ebb362c387cc7956dc16ec5",
+    //   sender,
+    //   parseEther('100000000000000000')
+    // );
+    // console.log(`MockBOO address `, BOO.address);
 
     // console.log('Deploying MockWETH started\n');
     // const WETH = await deployMockWETHForFTM(

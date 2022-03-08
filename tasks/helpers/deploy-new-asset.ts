@@ -146,8 +146,8 @@ WRONG RESERVE ASSET SETUP:
       await waitForTx(await addressProvider.setPoolAdmin(admin));
 
       // set asset price
-      const priceOracleInstance = await getPriceOracle();
-      if (priceOracleInstance) {
+      if (network === 'ftm_test') {
+        const priceOracleInstance = await getPriceOracle();
         await waitForTx(
           await priceOracleInstance.setAssetPrice(
             reserveAssetAddress,

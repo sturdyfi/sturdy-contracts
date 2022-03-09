@@ -69,9 +69,9 @@ makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
 
 makeSuite('yearnBOOVault - use other coin as collateral', (testEnv) => {
   it('Should revert to use any of coin other than BOO as collateral', async () => {
-    const { usdc, yearnBOOVault } = testEnv;
+    const { usdc, yearnBOOVault, yvboo } = testEnv;
     // TODO @bshevchenko: use Error const instead of 82
-    await expect(yearnBOOVault.depositCollateral(usdc.address, 1000)).to.be.revertedWith('82');
+    await expect(yearnBOOVault.depositCollateral(yvboo.address, 1000)).to.be.revertedWith('82');
   });
 });
 

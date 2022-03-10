@@ -60,6 +60,8 @@ contract LidoVault is GeneralVault {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
+
+    emit ProcessYield(_addressesProvider.getAddress('WETH'), receivedETHAmount);
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {

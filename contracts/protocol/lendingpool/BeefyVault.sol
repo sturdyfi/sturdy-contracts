@@ -48,6 +48,8 @@ contract BeefyVault is GeneralVault {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
+
+    emit ProcessYield(WETH, yieldWETH);
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {

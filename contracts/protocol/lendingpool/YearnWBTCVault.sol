@@ -45,6 +45,8 @@ contract YearnWBTCVault is GeneralVault {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
+
+    emit ProcessYield(_addressesProvider.getAddress('WBTC'), yieldWBTC);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)

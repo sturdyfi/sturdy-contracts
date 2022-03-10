@@ -45,6 +45,8 @@ contract YearnBOOVault is GeneralVault {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
+
+    emit ProcessYield(_addressesProvider.getAddress('BOO'), yieldBOO);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)

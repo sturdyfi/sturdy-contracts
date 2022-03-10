@@ -19,6 +19,11 @@ contract GeneralVault is VersionedInitializable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
 
+  event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
+  event DepositCollateral(address indexed collateralAsset, address indexed from, uint256 amount);
+  event WithdrawCollateral(address indexed collateralAsset, address indexed to, uint256 amount);
+  event SetTreasuryInfo(address indexed treasuryAddress, uint256 fee);
+
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
     _;
@@ -67,6 +72,8 @@ contract GeneralVault is VersionedInitializable {
       msg.sender,
       0
     );
+
+    emit DepositCollateral(_asset, msg.sender, _amount);
   }
 
   /**
@@ -98,6 +105,8 @@ contract GeneralVault is VersionedInitializable {
     // Withdraw from vault, it will convert stAsset to asset and send to user
     // Ex: In Lido vault, it will return ETH or stETH to user
     _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+
+    emit WithdrawCollateral(_asset, _to, _amount);
   }
 
   /**
@@ -134,6 +143,8 @@ contract GeneralVault is VersionedInitializable {
     require(_fee <= 30_00, Errors.VT_FEE_TOO_BIG);
     _treasuryAddress = _treasury;
     _vaultFee = _fee;
+
+    emit SetTreasuryInfo(_treasury, _fee);
   }
 
   /**

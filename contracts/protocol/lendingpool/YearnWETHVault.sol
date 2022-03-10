@@ -45,6 +45,8 @@ contract YearnWETHVault is GeneralVault {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
+
+    emit ProcessYield(_addressesProvider.getAddress('WETH'), yieldWETH);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)

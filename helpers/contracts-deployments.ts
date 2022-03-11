@@ -26,6 +26,7 @@ import {
   getLidoVault,
   getSturdyIncentivesController,
   getSturdyToken,
+  getTombFtmBeefyVault,
   getYearnBOOVault,
   getYearnVault,
   getYearnWBTCVault,
@@ -79,6 +80,9 @@ import {
   BooOracleFactory,
   MockyvBOOFactory,
   MockBOOForFTMFactory,
+  TombOracleFactory,
+  TombFtmLPOracleFactory,
+  TombFtmBeefyVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -270,6 +274,22 @@ export const deployBooOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BooOracleFactory(await getFirstSigner()).deploy(),
     eContractid.BooOracle,
+    [],
+    verify
+  );
+
+export const deployTombOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TombOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.TombOracle,
+    [],
+    verify
+  );
+
+export const deployTombFtmLPOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TombFtmLPOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.TombFtmLPOracle,
     [],
     verify
   );
@@ -901,6 +921,61 @@ export const deployYearnBOOVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.YearnBOOVault, yearnBOOVaultProxyAddress);
 
   return await getYearnBOOVault();
+};
+
+export const deployTombFTMBeefyVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TombFtmBeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.TombFtmBeefyVaultImpl,
+    [],
+    verify
+  );
+
+export const deployTombFTMBeefyVault = async (verify?: boolean) => {
+  const tombFtmBeefyVaultImpl = await withSaveAndVerify(
+    await new TombFtmBeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.TombFtmBeefyVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('BEEFY_TOMB_FTM_VAULT'),
+      tombFtmBeefyVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('mooTombTOMB-FTM'),
+      getParamPerNetwork(config.BeefyVaultTOMB_FTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('TOMB_FTM_LP'),
+      getParamPerNetwork(config.TOMB_FTM_LP, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('TOMB'),
+      getParamPerNetwork(config.TOMB, network)
+    )
+  );
+
+  const tombFtmBeefyVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('BEEFY_TOMB_FTM_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.TombFtmBeefyVault, tombFtmBeefyVaultProxyAddress);
+
+  return await getTombFtmBeefyVault();
 };
 
 // export const deployBeefyVault = async (verify?: boolean) => {

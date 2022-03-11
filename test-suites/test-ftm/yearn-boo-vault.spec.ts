@@ -196,7 +196,7 @@ makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
     const booOwnerAddress = '0xE0c15e9Fe90d56472D8a43da5D3eF34ae955583C';
     const depositBOO = '300';
     const depositBOOAmount = await convertToCurrencyDecimals(BOO.address, depositBOO);
-    //Make some test WFTM for borrower
+    //Make some test BOO for borrower
     await impersonateAccountsHardhat([booOwnerAddress]);
     signer = await ethers.provider.getSigner(booOwnerAddress);
 

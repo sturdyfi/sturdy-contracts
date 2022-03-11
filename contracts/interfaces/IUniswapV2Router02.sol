@@ -56,4 +56,13 @@ interface IUniswapV2Router02 {
 
   // solhint-disable-next-line func-name-mixedcase
   function WETH() external pure returns (address);
+
+  function removeLiquidityETH(
+    address token,
+    uint256 liquidity,
+    uint256 amountTokenMin,
+    uint256 amountETHMin,
+    address to,
+    uint256 deadline
+  ) external returns (uint256 amountToken, uint256 amountETH);
 }

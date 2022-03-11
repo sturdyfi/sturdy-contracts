@@ -3,6 +3,8 @@ import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployCollateralAdapter } from '../../helpers/contracts-deployments';
 import {
   getLidoVault,
+  getTombFtmBeefyVault,
+  getYearnBOOVault,
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
@@ -12,6 +14,7 @@ import {
   eContractid,
   eNetwork,
   ICommonConfiguration,
+  IFantomConfiguration,
   IReserveParams,
   ISturdyConfiguration,
 } from '../../helpers/types';
@@ -41,6 +44,11 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
             yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
             yvWETH: getParamPerNetwork(poolConfig.WETH, network),
             yvWBTC: getParamPerNetwork(poolConfig.WBTC, network),
+            yvBOO: getParamPerNetwork((poolConfig as IFantomConfiguration).BOO, network),
+            mooTOMB_FTM: getParamPerNetwork(
+              (poolConfig as IFantomConfiguration).TOMB_FTM_LP,
+              network
+            ),
           };
 
     const acceptableVaults =
@@ -52,6 +60,8 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
             yvWFTM: (await getYearnVault()).address,
             yvWETH: (await getYearnWETHVault()).address,
             yvWBTC: (await getYearnWBTCVault()).address,
+            yvBOO: (await getYearnBOOVault()).address,
+            mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

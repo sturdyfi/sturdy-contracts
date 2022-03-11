@@ -43,6 +43,7 @@ import {
   YearnBOOVaultFactory,
   BooOracleFactory,
   MockyvBOOFactory,
+  TombFtmBeefyVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -215,17 +216,19 @@ export const getPairsTokenAggregator = (
     getQuoteCurrencies(oracleQuoteCurrency)
   );
 
-  const pairs = Object.entries(assetsWithoutQuoteCurrency).map(([tokenSymbol, tokenAddress]) => {
-    //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
-    const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-      (value) => value === tokenSymbol
-    );
-    const [, aggregatorAddress] = (
-      Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
-    )[aggregatorAddressIndex];
-    return [tokenAddress, aggregatorAddress];
-    //}
-  }) as [string, string][];
+  const pairs = Object.entries(assetsWithoutQuoteCurrency)
+    .map(([tokenSymbol, tokenAddress]) => {
+      //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
+      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
+        (value) => value === tokenSymbol
+      );
+      const [, aggregatorAddress] = (
+        Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+      )[aggregatorAddressIndex];
+      return [tokenAddress, aggregatorAddress];
+      //}
+    })
+    .filter(([tokenAddress, aggregatorsAddresses]) => aggregatorsAddresses) as [string, string][];
 
   const mappedPairs = pairs.map(([asset]) => asset);
   const mappedAggregators = pairs.map(([, source]) => source);
@@ -464,6 +467,24 @@ export const getYearnBOOVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.YearnBOOVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await TombFtmBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmBeefyVault = async (address?: tEthereumAddress) =>
+  await TombFtmBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmBeefyVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

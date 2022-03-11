@@ -63,6 +63,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           yvWETH: reserveAssets.yvWETH,
           yvWBTC: reserveAssets.yvWBTC,
           yvBOO: reserveAssets.yvBOO,
+          mooTOMB_FTM: reserveAssets.mooTOMB_FTM,
           // mooWETH: reserveAssets.mooWETH,
           USD: UsdAddress,
         },

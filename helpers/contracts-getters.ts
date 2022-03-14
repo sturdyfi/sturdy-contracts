@@ -43,6 +43,8 @@ import {
   YearnBOOVaultFactory,
   BooOracleFactory,
   MockyvBOOFactory,
+  TombFtmBeefyVaultFactory,
+  MockMooTOMBFTMFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -215,17 +217,19 @@ export const getPairsTokenAggregator = (
     getQuoteCurrencies(oracleQuoteCurrency)
   );
 
-  const pairs = Object.entries(assetsWithoutQuoteCurrency).map(([tokenSymbol, tokenAddress]) => {
-    //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
-    const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-      (value) => value === tokenSymbol
-    );
-    const [, aggregatorAddress] = (
-      Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
-    )[aggregatorAddressIndex];
-    return [tokenAddress, aggregatorAddress];
-    //}
-  }) as [string, string][];
+  const pairs = Object.entries(assetsWithoutQuoteCurrency)
+    .map(([tokenSymbol, tokenAddress]) => {
+      //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
+      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
+        (value) => value === tokenSymbol
+      );
+      const [, aggregatorAddress] = (
+        Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+      )[aggregatorAddressIndex];
+      return [tokenAddress, aggregatorAddress];
+      //}
+    })
+    .filter(([tokenAddress, aggregatorsAddresses]) => aggregatorsAddresses) as [string, string][];
 
   const mappedPairs = pairs.map(([asset]) => asset);
   const mappedAggregators = pairs.map(([, source]) => source);
@@ -468,6 +472,24 @@ export const getYearnBOOVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getTombFtmBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await TombFtmBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmBeefyVault = async (address?: tEthereumAddress) =>
+  await TombFtmBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 // export const getBeefyVault = async (address?: tEthereumAddress) =>
 //   await BeefyVaultFactory.connect(
 //     address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,
@@ -571,6 +593,15 @@ export const getMockyvWBTC = async (address?: tEthereumAddress) =>
 export const getMockyvBOO = async (address?: tEthereumAddress) =>
   await MockyvBOOFactory.connect(
     address || (await getDb().get(`${eContractid.MockyvBOO}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockMooTOMBFTM = async (address?: tEthereumAddress) =>
+  await MockMooTOMBFTMFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooTOMBFTM}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 

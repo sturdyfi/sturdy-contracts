@@ -80,6 +80,6 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eEthereumNetwork.buidlerevm]: undefined,
   [eEthereumNetwork.tenderly]: 12406069,
   [eEthereumNetwork.goerli]: 6365888, //6055821,
-  [eFantomNetwork.ftm]: 32538096, //31634864, //29874440,
-  [eFantomNetwork.ftm_test]: 	8244571, //7562913, //7241687, //6901960,
+  [eFantomNetwork.ftm]: 33172433, //32538096, //31634864, //29874440,
+  [eFantomNetwork.ftm_test]: 8407553, //8244571, //7562913, //7241687, //6901960,
 };

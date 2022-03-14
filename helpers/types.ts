@@ -54,6 +54,8 @@ export enum eContractid {
   LendingRateOracle = 'LendingRateOracle',
   SturdyOracle = 'SturdyOracle',
   BooOracle = 'BooOracle',
+  TombOracle = 'TombOracle',
+  TombFtmLPOracle = 'TombFtmLPOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -94,10 +96,13 @@ export enum eContractid {
   YearnWBTCVault = 'YearnWBTCVault',
   YearnBOOVaultImpl = 'YearnBOOVaultImpl',
   YearnBOOVault = 'YearnBOOVault',
+  TombFtmBeefyVaultImpl = 'TombFtmBeefyVaultImpl',
+  TombFtmBeefyVault = 'TombFtmBeefyVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
   MockyvWBTC = 'MockyvWBTC',
   MockyvBOO = 'MockyvBOO',
+  MockMooTOMBFTM = 'MockMooTOMBFTM',
   MockWETHForFTM = 'MockWETHForFTM',
   MockWBTCForFTM = 'MockWBTCForFTM',
   MockBOOForFTM = 'MockBOOForFTM',
@@ -228,6 +233,7 @@ export interface iAssetBase<T> {
   yvWETH: T;
   yvWBTC: T;
   yvBOO: T;
+  mooTOMB_FTM: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -238,7 +244,14 @@ export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | '
 
 export type iFantomPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'yvWFTM' | /* 'mooWETH' | */ 'fUSDT' | 'yvWETH' | 'yvWBTC' | 'yvBOO'
+  | 'DAI'
+  | 'USDC'
+  | 'yvWFTM'
+  | /* 'mooWETH' | */ 'fUSDT'
+  | 'yvWETH'
+  | 'yvWBTC'
+  | 'yvBOO'
+  | 'mooTOMB_FTM'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -258,6 +271,7 @@ export enum TokenContractId {
   yvWETH = 'yvWETH',
   yvWBTC = 'yvWBTC',
   yvBOO = 'yvBOO',
+  mooTOMB_FTM = 'mooTOMB_FTM',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -386,7 +400,6 @@ export interface IBaseConfiguration {
   WFTM: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
   WBTC: iParamsPerNetwork<tEthereumAddress>;
-  BOO: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
@@ -407,10 +420,14 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
 
 export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
+  BOO: iParamsPerNetwork<tEthereumAddress>;
+  TOMB: iParamsPerNetwork<tEthereumAddress>;
+  TOMB_FTM_LP: iParamsPerNetwork<tEthereumAddress>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnBOOVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyVaultTOMB_FTM: iParamsPerNetwork<tEthereumAddress>;
   // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }

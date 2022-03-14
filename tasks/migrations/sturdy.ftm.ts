@@ -48,6 +48,9 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('7-4. Deploy Yearn BOO vault');
     await DRE.run('full:deploy-yearn-boo-vault', { pool: POOL_NAME });
 
+    console.log('7-5. Deploy TOMB-FTM Beefy vault');
+    await DRE.run('full:deploy-tomb-ftm-beefy-vault', { pool: POOL_NAME });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 

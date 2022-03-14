@@ -146,20 +146,20 @@ WRONG RESERVE ASSET SETUP:
       await waitForTx(await addressProvider.setPoolAdmin(admin));
 
       // set asset price
-      if (network === 'ftm_test') {
-        const priceOracleInstance = await getPriceOracle();
-        await waitForTx(
-          await priceOracleInstance.setAssetPrice(
-            reserveAssetAddress,
-            AllAssetsInitialPrices[symbol]
-          )
-        );
-      } else {
-        const oracleSource = poolConfig.ChainlinkAggregator[network][symbol];
-        const sturdyOracle = await getSturdyOracle();
-        await waitForTx(await sturdyOracle.setAssetSources([reserveAssetAddress], [oracleSource]));
-        console.log((await sturdyOracle.getAssetPrice(reserveAssetAddress)).toString());
-      }
+      // if (network === 'ftm_test') {
+      //   const priceOracleInstance = await getPriceOracle();
+      //   await waitForTx(
+      //     await priceOracleInstance.setAssetPrice(
+      //       reserveAssetAddress,
+      //       AllAssetsInitialPrices[symbol]
+      //     )
+      //   );
+      // } else {
+      //   const oracleSource = poolConfig.ChainlinkAggregator[network][symbol];
+      //   const sturdyOracle = await getSturdyOracle();
+      //   await waitForTx(await sturdyOracle.setAssetSources([reserveAssetAddress], [oracleSource]));
+      //   console.log((await sturdyOracle.getAssetPrice(reserveAssetAddress)).toString());
+      // }
 
       // add collateral adapter
       const collateralAdapter = await getCollateralAdapter();

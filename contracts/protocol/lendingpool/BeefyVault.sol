@@ -55,27 +55,21 @@ contract BeefyVault is GeneralVault {
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
     address WETH = _addressesProvider.getAddress('WETH');
-    address WFTM = _addressesProvider.getAddress('WFTM');
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 _minFTMAmount = _wethAmount
+    uint256 minAmountFromPrice = _wethAmount
       .mul(oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH')))
-      .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .percentMul(99_00);
-
-    uint256 minAmountFromPrice = _minFTMAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .mul(10**assetDecimal)
       .div(10**18)
+      .mul(10**assetDecimal)
       .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(99_00);
+      .percentMul(98_00);
 
     // Exchange WETH -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
     path[0] = address(WETH);
-    path[1] = address(WFTM);
+    path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = _tokenOut;
 
     IERC20(WETH).approve(uniswapRouter, _wethAmount);

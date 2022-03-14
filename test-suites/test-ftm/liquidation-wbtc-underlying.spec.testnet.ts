@@ -31,27 +31,27 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
   // It's impossible to test deactiveReserve because of forked network.
   // it("It's not possible to liquidate on a non-active collateral or a non active principal", async () => {
-  //   const { configurator, yvwftm, pool, users, dai, deployer } = testEnv;
+  //   const { configurator, yvwbtc, pool, users, dai, deployer } = testEnv;
   //   const user = users[1];
-  //   await configurator.connect(deployer.signer).deactivateReserve(yvwftm.address);
+  //   await configurator.connect(deployer.signer).deactivateReserve(yvwbtc.address);
 
   //   await expect(
-  //     pool.liquidationCall(yvwftm.address, dai.address, user.address, parseEther('7000'), false)
+  //     pool.liquidationCall(yvwbtc.address, dai.address, user.address, parseEther('7000'), false)
   //   ).to.be.revertedWith('2');
 
-  //   await configurator.connect(deployer.signer).activateReserve(yvwftm.address);
+  //   await configurator.connect(deployer.signer).activateReserve(yvwbtc.address);
 
   //   await configurator.connect(deployer.signer).deactivateReserve(dai.address);
 
   //   await expect(
-  //     pool.liquidationCall(yvwftm.address, dai.address, user.address, parseEther('7000'), false)
+  //     pool.liquidationCall(yvwbtc.address, dai.address, user.address, parseEther('7000'), false)
   //   ).to.be.revertedWith('2');
 
   //   await configurator.connect(deployer.signer).activateReserve(dai.address);
   // });
 
-  it('Deposits FTM, borrows DAI', async () => {
-    const { dai, users, pool, oracle, yearnVault, deployer } = testEnv;
+  it('Deposits WBTC, borrows DAI', async () => {
+    const { dai, users, pool, oracle, yearnWBTCVault, deployer, WBTC } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
@@ -67,11 +67,12 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       .connect(depositor.signer)
       .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
 
-    //user 2 deposits 1000 FTM
-    const amountFTMtoDeposit = ethers.utils.parseEther('1000');
-    await yearnVault
-      .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
+    //user 2 deposits 0.1 WBTC
+    const amountWBTCtoDeposit = await convertToCurrencyDecimals(WBTC.address, '0.1');
+    await WBTC.connect(deployer.signer).transfer(borrower.address, amountWBTCtoDeposit);
+    await WBTC.connect(borrower.signer).approve(yearnWBTCVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await yearnWBTCVault.connect(borrower.signer).depositCollateral(WBTC.address, amountWBTCtoDeposit);
+    
 
     //user 2 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -116,7 +117,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
   });
 
   it('Liquidates the borrow', async () => {
-    const { dai, yvwftm, WFTM, users, pool, oracle, helpersContract, deployer } = testEnv;
+    const { dai, yvwbtc, WBTC, users, pool, oracle, helpersContract, deployer } = testEnv;
     const liquidator = users[3];
     const borrower = users[1];
 
@@ -130,7 +131,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     await dai.connect(liquidator.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const daiReserveDataBefore = await getReserveData(helpersContract, dai.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(yvwbtc.address);
 
     const userReserveDataBefore = await getUserData(
       pool,
@@ -147,7 +148,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     const tx = await pool
       .connect(liquidator.signer)
-      .liquidationCall(WFTM.address, dai.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(WBTC.address, dai.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter = await getUserData(
       pool,
@@ -157,13 +158,13 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const daiReserveDataAfter = await helpersContract.getReserveData(dai.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(yvwbtc.address);
 
-    const collateralPrice = await oracle.getAssetPrice(yvwftm.address);
+    const collateralPrice = await oracle.getAssetPrice(yvwbtc.address);
     const principalPrice = await oracle.getAssetPrice(dai.address);
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(yvwftm.address)
+      await helpersContract.getReserveConfigurationData(yvwbtc.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(dai.address)
@@ -227,13 +228,13 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
         .minus(ethReserveDataAfter.availableLiquidity.toString())
         .toString()
     ).to.be.bignumber.gte(
-      ethers.utils.parseEther('0.015'),
+      await convertToCurrencyDecimals(WBTC.address, '0.001'),
       'Invalid collateral available liquidity'
     );
   });
 
-  it('User 3 deposits 7000 USDC, user 4 1000 WFTM, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const { usdc, users, pool, oracle, WFTM, helpersContract, yearnVault, deployer, yvwftm } = testEnv;
+  it('User 3 deposits 7000 USDC, user 4 0.1 WBTC, user 4 borrows - drops HF, liquidates the borrow', async () => {
+    const { usdc, users, pool, oracle, WBTC, helpersContract, yearnWBTCVault, deployer, yvwbtc } = testEnv;
 
     const depositor = users[3];
     const borrower = users[4];
@@ -254,17 +255,14 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    //borrower deposits 1000 WFTM
-    const amountWFTMtoDeposit = await convertToCurrencyDecimals(WFTM.address, '1000');
-    const WFTMOwnerAddress = '0xde080FdB13F273dbE1183deB59025B2BC4250a23';
-    await impersonateAccountsHardhat([WFTMOwnerAddress]);
-    const signer = await ethers.provider.getSigner(WFTMOwnerAddress);
-    await WFTM.connect(signer).transfer(borrower.address, amountWFTMtoDeposit);
+    //borrower deposits 0.1 WBTC
+    const amountWBTCtoDeposit = await convertToCurrencyDecimals(WBTC.address, '0.1');
+    await WBTC.connect(deployer.signer).transfer(borrower.address, amountWBTCtoDeposit);
 
     //approve protocol to access borrower wallet
-    await WFTM.connect(borrower.signer).approve(yearnVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await WBTC.connect(borrower.signer).approve(yearnWBTCVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await yearnVault.connect(borrower.signer).depositCollateral(WFTM.address, amountWFTMtoDeposit);
+    await yearnWBTCVault.connect(borrower.signer).depositCollateral(WBTC.address, amountWBTCtoDeposit);
 
     //borrower borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -305,7 +303,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     );
 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(yvwbtc.address);
 
     const amountToLiquidate = ethers.BigNumber.from(
       userReserveDataBefore.currentVariableDebt.toString()
@@ -315,7 +313,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
 
     await pool
       .connect(liquidator.signer)
-      .liquidationCall(WFTM.address, usdc.address, borrower.address, amountToLiquidate, false);
+      .liquidationCall(WBTC.address, usdc.address, borrower.address, amountToLiquidate, false);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       usdc.address,
@@ -325,13 +323,13 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(yvwftm.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(yvwbtc.address);
 
-    const collateralPrice = await oracle.getAssetPrice(yvwftm.address);
+    const collateralPrice = await oracle.getAssetPrice(yvwbtc.address);
     const principalPrice = await oracle.getAssetPrice(usdc.address);
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(yvwftm.address)
+      await helpersContract.getReserveConfigurationData(yvwbtc.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(usdc.address)
@@ -390,7 +388,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
         .minus(ethReserveDataAfter.availableLiquidity.toString())
         .toString()
     ).to.be.bignumber.gte(
-      ethers.utils.parseEther('0.001'),
+      await convertToCurrencyDecimals(WBTC.address, '0.001'),
       'Invalid collateral available liquidity'
     );
   });

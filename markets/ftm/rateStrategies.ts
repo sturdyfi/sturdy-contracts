@@ -80,8 +80,8 @@ export const rateStrategyYVBOO: IInterestRateStrategyParams = {
 };
 
 // mooTOMB_FTM
-export const rateStrategyMooTOMB_FTM: IInterestRateStrategyParams = {
-  name: 'rateStrategyMooTOMB_FTM',
+export const rateStrategyMOOTOMB_FTM: IInterestRateStrategyParams = {
+  name: 'rateStrategyMOOTOMB_FTM',
   optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: '0',
   variableRateSlope1: '0',

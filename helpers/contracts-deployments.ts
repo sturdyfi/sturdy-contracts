@@ -83,6 +83,7 @@ import {
   TombOracleFactory,
   TombFtmLPOracleFactory,
   TombFtmBeefyVaultFactory,
+  MockMooTOMBFTMFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1197,6 +1198,17 @@ export const deployMockBOOForFTM = async (
   withSaveAndVerify(
     await new MockBOOForFTMFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockBOOForFTM,
+    args,
+    verify
+  );
+
+export const deployMockMooTOMBFTM = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockMooTOMBFTMFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockMooTOMBFTM,
     args,
     verify
   );

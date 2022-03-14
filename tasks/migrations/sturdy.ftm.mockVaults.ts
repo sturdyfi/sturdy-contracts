@@ -2,7 +2,9 @@ import { parseEther } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
+  deployMintableERC20,
   deployMockBOOForFTM,
+  deployMockMooTOMBFTM,
   deployMockWBTCForFTM,
   deployMockWETHForFTM,
   deployMockyvBOO,
@@ -31,6 +33,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
     const wbtcAddress = getParamPerNetwork(poolConfig.WBTC, network);
     const booAddress = getParamPerNetwork(poolConfig.BOO, network);
+    const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
 
     console.log('Deploying MockyvWFTM started\n');
     const yvWFTM = await deployMockyvWFTM(
@@ -59,6 +62,35 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockyvBOO address `, yvBOO.address);
+
+    console.log('Deploying MockMooTOMBFTM started\n');
+    const mooTOMB_FTM = await deployMockMooTOMBFTM(
+      [tombFtmLPAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockMooTOMBFTM address `, mooTOMB_FTM.address);
+
+    // console.log('Deploying MockTOMBFTMLP started\n');
+    // const TOMB_FTM_LP = await deployMintableERC20(
+    //   ['TOMB-FTM LP', 'TOMB-FTM', '18'],
+    //   verify
+    // );
+
+    // await TOMB_FTM_LP.mint(
+    //   await convertToCurrencyDecimals(TOMB_FTM_LP.address, '20000000')
+    // );
+    // console.log(`MockTOMBFTMLP address `, TOMB_FTM_LP.address);
+
+    // console.log('Deploying MockTOMB started\n');
+    // const TOMB = await deployMintableERC20(
+    //   ['TOMB', 'TOMB', '18'],
+    //   verify
+    // );
+
+    // await TOMB.mint(
+    //   await convertToCurrencyDecimals(TOMB.address, '20000000')
+    // );
+    // console.log(`MockTOMB address `, TOMB.address);
 
     // console.log('Deploying MockBOO started\n');
     // const BOO = await deployMockBOOForFTM(

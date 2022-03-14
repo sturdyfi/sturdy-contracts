@@ -70,6 +70,28 @@ contract TombFtmBeefyVault is GeneralVault {
     emit ProcessYield(TOMB_FTM_LP, yieldTOMB_FTM_LP);
   }
 
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    override
+    returns (uint256)
+  {
+    address TOMB_FTM_LP = _addressesProvider.getAddress('TOMB_FTM_LP');
+    address MOO_TOMB_FTM = _addressesProvider.getAddress('mooTombTOMB-FTM');
+
+    require(_asset == TOMB_FTM_LP, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+
+    // Withdraw from Beefy Vault and receive TOMB_FTM_LP
+    uint256 before = IERC20(TOMB_FTM_LP).balanceOf(address(this));
+    IBeefyVault(MOO_TOMB_FTM).withdraw(_amount);
+    uint256 assetAmount = IERC20(TOMB_FTM_LP).balanceOf(address(this)) - before;
+
+    // Deliver TOMB_FTM_LP to user
+    TransferHelper.safeTransfer(TOMB_FTM_LP, msg.sender, assetAmount);
+
+    return assetAmount;
+  }
+
   function _withdrawLiquidityPool(address _poolAddress, uint256 _amount)
     internal
     returns (uint256 amountToken, uint256 amountFTM)

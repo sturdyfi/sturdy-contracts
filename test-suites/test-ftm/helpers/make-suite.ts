@@ -198,7 +198,7 @@ export async function initializeMakeSuite() {
       signer: signer,
     };
 
-    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+    await _deployer.sendTransaction({ value: parseEther('9000'), to: deployerAddress });
 
     const emergencyAddress = '0x05d75FB9db95AfC448d9F79c016ab027320acEc7';
     await impersonateAccountsHardhat([emergencyAddress]);
@@ -209,7 +209,7 @@ export async function initializeMakeSuite() {
       signer: signer,
     };
 
-    await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
+    await _deployer.sendTransaction({ value: parseEther('9000'), to: emergencyAddress });
   } else if (network == 'ftm' && process.env.SKIP_DEPLOY) {
     const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
     const ethers = (DRE as any).ethers;
@@ -220,7 +220,7 @@ export async function initializeMakeSuite() {
       signer: signer,
     };
 
-    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+    await _deployer.sendTransaction({ value: parseEther('9000'), to: deployerAddress });
 
     const emergencyAddress = '0xc4bb97d8c974221faed7b023736b990cA3EF1C5d';
     await impersonateAccountsHardhat([emergencyAddress]);
@@ -231,7 +231,7 @@ export async function initializeMakeSuite() {
       signer: signer,
     };
 
-    await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
+    await _deployer.sendTransaction({ value: parseEther('9000'), to: emergencyAddress });
   }
 
   for (const signer of restSigners) {

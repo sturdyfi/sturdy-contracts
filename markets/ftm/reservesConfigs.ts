@@ -8,7 +8,7 @@ import {
   rateStrategyYVWETH,
   rateStrategyYVWBTC,
   rateStrategyYVBOO,
-  rateStrategyMooTOMB_FTM,
+  rateStrategyMOOTOMB_FTM,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -123,8 +123,8 @@ export const strategyYVWETH: IReserveParams = {
     emissionPerSecond: '0',
   };
 
-  export const strategyMooTOMB_FTM: IReserveParams = {
-    strategy: rateStrategyMooTOMB_FTM,
+  export const strategyMOOTOMB_FTM: IReserveParams = {
+    strategy: rateStrategyMOOTOMB_FTM,
     baseLTVAsCollateral: '7000',
     liquidationThreshold: '7500',
     liquidationBonus: '10750',

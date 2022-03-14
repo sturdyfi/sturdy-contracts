@@ -44,6 +44,7 @@ import {
   BooOracleFactory,
   MockyvBOOFactory,
   TombFtmBeefyVaultFactory,
+  MockMooTOMBFTMFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -592,6 +593,15 @@ export const getMockyvWBTC = async (address?: tEthereumAddress) =>
 export const getMockyvBOO = async (address?: tEthereumAddress) =>
   await MockyvBOOFactory.connect(
     address || (await getDb().get(`${eContractid.MockyvBOO}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockMooTOMBFTM = async (address?: tEthereumAddress) =>
+  await MockMooTOMBFTMFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooTOMBFTM}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 

@@ -10,7 +10,7 @@ import {
   strategyYVWETH,
   strategyYVWBTC,
   strategyYVBOO,
-  strategyMooTOMB_FTM,
+  strategyMOOTOMB_FTM,
 } from './reservesConfigs';
 
 // ----------------
@@ -31,7 +31,7 @@ export const FantomConfig: IFantomConfiguration = {
     yvWETH: strategyYVWETH,
     yvWBTC: strategyYVWBTC,
     yvBOO: strategyYVBOO,
-    mooTOMB_FTM: strategyMooTOMB_FTM,
+    mooTOMB_FTM: strategyMOOTOMB_FTM,
   },
   ReserveAssets: {
     [eFantomNetwork.ftm]: {
@@ -53,7 +53,7 @@ export const FantomConfig: IFantomConfiguration = {
       yvWETH: '0x5F37179e6714D137C6A196eAd40d79005c5e9A61',
       yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
       yvBOO: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272',
-      mooTOMB_FTM: ''
+      mooTOMB_FTM: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d'
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -74,12 +74,12 @@ export const FantomConfig: IFantomConfiguration = {
   },
   TOMB: {
     [eFantomNetwork.ftm]: '0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x81b1E83538Adaa4164156ED43b8081aA97eD197D',
     [eFantomNetwork.tenderlyFTM]: '0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7',
   },
   TOMB_FTM_LP: {
     [eFantomNetwork.ftm]: '0x2A651563C9d3Af67aE0388a5c8F89b867038089e',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x0906E97beB6f422C239627FeFB9198144904327d',
     [eFantomNetwork.tenderlyFTM]: '0x2A651563C9d3Af67aE0388a5c8F89b867038089e',
   },
   YearnVaultFTM: {
@@ -104,7 +104,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   BeefyVaultTOMB_FTM: {
     [eFantomNetwork.ftm]: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d',
     [eFantomNetwork.tenderlyFTM]: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
   },
   // BeefyVaultFTM: {

@@ -45,6 +45,8 @@ import {
   MockyvBOOFactory,
   TombFtmBeefyVaultFactory,
   MockMooTOMBFTMFactory,
+  TombOracleFactory,
+  TombFtmLPOracleFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -376,6 +378,21 @@ export const getSturdyOracle = async (address?: tEthereumAddress) =>
 export const getBooOracle = async (address?: tEthereumAddress) =>
   await BooOracleFactory.connect(
     address || (await getDb().get(`${eContractid.BooOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getTombOracle = async (address?: tEthereumAddress) =>
+  await TombOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.TombOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmLPOracle = async (address?: tEthereumAddress) =>
+  await TombFtmLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmLPOracle}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 

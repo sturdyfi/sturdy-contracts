@@ -430,5 +430,43 @@
     "localhost": {
       "address": "0x20D65AA1107C47D798fC266Ca0585252409eaB3a"
     }
+  },
+  "TombFtmBeefyVaultImpl": {
+    "ftm": {
+      "address": "0x5D49B4dfdc2f86CB7d8D2EFffe31a9B3c47Cc644",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x5D49B4dfdc2f86CB7d8D2EFffe31a9B3c47Cc644",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "TombFtmBeefyVault": {
+    "ftm": {
+      "address": "0xac37C98f6DBf69Ac93Dfd7BdC7aEFC23B0dd341a"
+    },
+    "localhost": {
+      "address": "0xac37C98f6DBf69Ac93Dfd7BdC7aEFC23B0dd341a"
+    }
+  },
+  "TombOracle": {
+    "ftm": {
+      "address": "0xa60811d6398EFaCa83D45F58C733EE7C3C4f0e1e",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xa60811d6398EFaCa83D45F58C733EE7C3C4f0e1e",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "TombFtmLPOracle": {
+    "ftm": {
+      "address": "0x6dB13c9fcEc2D7AE996bb2220d13aa9274005219",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x6dB13c9fcEc2D7AE996bb2220d13aa9274005219",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

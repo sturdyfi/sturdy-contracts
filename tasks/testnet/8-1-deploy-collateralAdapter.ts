@@ -4,6 +4,7 @@ import { deployCollateralAdapter } from '../../helpers/contracts-deployments';
 import {
   getLidoVault,
   getTombFtmBeefyVault,
+  getTombMiMaticBeefyVault,
   getYearnBOOVault,
   getYearnVault,
   getYearnWBTCVault,
@@ -49,6 +50,10 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
               (poolConfig as IFantomConfiguration).TOMB_FTM_LP,
               network
             ),
+            mooTOMB_MIMATIC: getParamPerNetwork(
+              (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
+              network
+            ),
           };
 
     const acceptableVaults =
@@ -62,6 +67,7 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
             yvWBTC: (await getYearnWBTCVault()).address,
             yvBOO: (await getYearnBOOVault()).address,
             mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
+            mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

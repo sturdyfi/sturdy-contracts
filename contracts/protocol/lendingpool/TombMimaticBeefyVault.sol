@@ -102,7 +102,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     internal
     returns (uint256 amountTOMB, uint256 amountMIMATIC)
   {
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
+    address tombSwapRouter = _addressesProvider.getAddress('tombSwapRouter');
 
     // Calculate minAmount from price with 1% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
@@ -119,8 +119,8 @@ contract TombMimaticBeefyVault is GeneralVault {
       oracle.getAssetPrice(_addressesProvider.getAddress('TOMB'))
     );
 
-    IERC20(_poolAddress).approve(uniswapRouter, _amount);
-    (amountTOMB, amountMIMATIC) = IUniswapV2Router02(uniswapRouter).removeLiquidity(
+    IERC20(_poolAddress).approve(tombSwapRouter, _amount);
+    (amountTOMB, amountMIMATIC) = IUniswapV2Router02(tombSwapRouter).removeLiquidity(
       _addressesProvider.getAddress('TOMB'),
       _addressesProvider.getAddress('MIMATIC'),
       _amount,

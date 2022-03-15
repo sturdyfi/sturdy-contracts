@@ -35,39 +35,31 @@ task(`full:deploy-tomb-ftm-beefy-vault`, `Deploys the ${CONTRACT_NAME} contract`
 
     // Deploy TOMB, mooTOMB_FTM oracle
     let tombOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).TOMB;
-    let needRegister = false;
     if (!tombOracleAddress) {
       const tombOracle = await deployTombOracle();
       tombOracleAddress = tombOracle.address;
-      needRegister = true;
     }
 
     let mooTombFtmOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).mooTOMB_FTM;
     if (!mooTombFtmOracleAddress) {
       const mooTombFtmOracle = await deployTombFtmLPOracle();
       mooTombFtmOracleAddress = mooTombFtmOracle.address;
-      needRegister = true;
     }
 
     // Register TOMB, mooTOMB_FTM oracle
-    if (needRegister) {
-      const sturdyOracle = await getSturdyOracle();
-      await waitForTx(
-        await sturdyOracle.setAssetSources(
-          [
-            getParamPerNetwork(TOMB, network),
-            getParamPerNetwork(ReserveAssets, network).mooTOMB_FTM,
-          ],
-          [tombOracleAddress, mooTombFtmOracleAddress]
-        )
-      );
-      console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(TOMB, network))).toString());
-      console.log(
-        (
-          await sturdyOracle.getAssetPrice(getParamPerNetwork(ReserveAssets, network).mooTOMB_FTM)
-        ).toString()
-      );
-    }
+    const sturdyOracle = await getSturdyOracle();
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(TOMB, network), getParamPerNetwork(ReserveAssets, network).mooTOMB_FTM],
+        [tombOracleAddress, mooTombFtmOracleAddress]
+      )
+    );
+    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(TOMB, network))).toString());
+    console.log(
+      (
+        await sturdyOracle.getAssetPrice(getParamPerNetwork(ReserveAssets, network).mooTOMB_FTM)
+      ).toString()
+    );
 
     console.log(`${CONTRACT_NAME}.address`, tombFtmBeefyVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

@@ -20,6 +20,7 @@ import {
   getYearnWBTCVault,
   getYearnBOOVault,
   getTombFtmBeefyVault,
+  getTombMiMaticBeefyVault,
 } from '../../helpers/contracts-getters';
 
 task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -65,6 +66,7 @@ task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.'
               yvWBTC: (await getYearnWBTCVault()).address,
               yvBOO: (await getYearnBOOVault()).address,
               mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
+              mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
               // mooWETH: (await getBeefyVault()).address,
             };
 

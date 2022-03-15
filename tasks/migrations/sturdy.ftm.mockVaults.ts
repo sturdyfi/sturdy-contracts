@@ -5,6 +5,7 @@ import {
   deployMintableERC20,
   deployMockBOOForFTM,
   deployMockMooTOMBFTM,
+  deployMockMooTOMBMIMATIC,
   deployMockWBTCForFTM,
   deployMockWETHForFTM,
   deployMockyvBOO,
@@ -12,7 +13,12 @@ import {
   deployMockyvWETH,
   deployMockyvWFTM,
 } from '../../helpers/contracts-deployments';
-import { getFirstSigner, getMintableERC20, getSwapinERC20 } from '../../helpers/contracts-getters';
+import {
+  getFirstSigner,
+  getLendingPoolConfiguratorProxy,
+  getMintableERC20,
+  getSwapinERC20,
+} from '../../helpers/contracts-getters';
 import {
   convertToCurrencyDecimals,
   getParamPerNetwork,
@@ -34,6 +40,10 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const wbtcAddress = getParamPerNetwork(poolConfig.WBTC, network);
     const booAddress = getParamPerNetwork(poolConfig.BOO, network);
     const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
+    const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
+
+    // const configurator = await getLendingPoolConfiguratorProxy();
+    // await configurator.freezeReserve('0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d');
 
     console.log('Deploying MockyvWFTM started\n');
     const yvWFTM = await deployMockyvWFTM(
@@ -69,6 +79,35 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockMooTOMBFTM address `, mooTOMB_FTM.address);
+
+    console.log('Deploying MockMooTOMBMIMATIC started\n');
+    const mooTOMB_MIMATIC = await deployMockMooTOMBMIMATIC(
+      [tombMiMaticLPAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockMooTOMBMIMATIC address `, mooTOMB_MIMATIC.address);
+
+    // console.log('Deploying MockTOMBMIMATICLP started\n');
+    // const TOMB_MIMATIC_LP = await deployMintableERC20(
+    //   ['TOMB-MIMATIC LP', 'TOMB-MIMATIC', '18'],
+    //   verify
+    // );
+
+    // await TOMB_MIMATIC_LP.mint(
+    //   await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '20000000')
+    // );
+    // console.log(`MockTOMBMIMATICLP address `, TOMB_MIMATIC_LP.address);
+
+    // console.log('Deploying MockMIMATIC started\n');
+    // const MIMATIC = await deployMintableERC20(
+    //   ['MIMATIC', 'MIMATIC', '18'],
+    //   verify
+    // );
+
+    // await MIMATIC.mint(
+    //   await convertToCurrencyDecimals(MIMATIC.address, '20000000')
+    // );
+    // console.log(`MockMIMATIC address `, MIMATIC.address);
 
     // console.log('Deploying MockTOMBFTMLP started\n');
     // const TOMB_FTM_LP = await deployMintableERC20(

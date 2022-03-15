@@ -343,7 +343,7 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "ftm_test": {
-      "address": "0xFA3658fC2c549378D00E72e7d6aBEe395750eD37",
+      "address": "0x6EcB9C1f2c93Cd01FD9D92dbe6bFc1e0297144ae",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
@@ -558,6 +558,42 @@
     },
     "localhost": {
       "address": "0xFA3658fC2c549378D00E72e7d6aBEe395750eD37"
+    }
+  },
+  "MockMooTOMBMIMATIC": {
+    "ftm_test": {
+      "address": "0x53F26e11497A3632CC58F88957C1761925f753B0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x53F26e11497A3632CC58F88957C1761925f753B0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "TombMiMaticBeefyVaultImpl": {
+    "ftm_test": {
+      "address": "0x8ea6A5cCE298738500314044802f0Ec23747c4a0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x8ea6A5cCE298738500314044802f0Ec23747c4a0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "TombMiMaticBeefyVault": {
+    "ftm_test": {
+      "address": "0x28Ceee5212aA73C4Ac4d635542fE97B4128A5dEf"
+    },
+    "localhost": {
+      "address": "0x28Ceee5212aA73C4Ac4d635542fE97B4128A5dEf"
+    }
+  },
+  "rateStrategyMOOTOMB_MIMATIC": {
+    "ftm_test": {
+      "address": "0x6EcB9C1f2c93Cd01FD9D92dbe6bFc1e0297144ae"
+    },
+    "localhost": {
+      "address": "0x6EcB9C1f2c93Cd01FD9D92dbe6bFc1e0297144ae"
     }
   }
 }

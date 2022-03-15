@@ -57,7 +57,7 @@ export const FantomConfig: IFantomConfiguration = {
       yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
       yvBOO: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272',
       mooTOMB_FTM: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d',
-      mooTOMB_MIMATIC: ''
+      mooTOMB_MIMATIC: '0x53F26e11497A3632CC58F88957C1761925f753B0'
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -84,7 +84,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   MIMATIC: {
     [eFantomNetwork.ftm]: '0xfB98B335551a418cD0737375a2ea0ded62Ea213b',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x3420eFfdc6ADd729325B38122904Cfe7F3dD6762',
     [eFantomNetwork.tenderlyFTM]: '0xfB98B335551a418cD0737375a2ea0ded62Ea213b',
   },
   TOMB_FTM_LP: {
@@ -94,7 +94,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   TOMB_MIMATIC_LP: {
     [eFantomNetwork.ftm]: '0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x16c8deB0B2a1dfC8Fc44b4b2694ccAfa76dfE6B6',
     [eFantomNetwork.tenderlyFTM]: '0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b',
   },
   YearnVaultFTM: {
@@ -124,7 +124,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   BeefyVaultTOMB_MIMATIC: {
     [eFantomNetwork.ftm]: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
-    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.ftm_test]: '0x53F26e11497A3632CC58F88957C1761925f753B0',
     [eFantomNetwork.tenderlyFTM]: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
   },
   // BeefyVaultFTM: {

@@ -88,6 +88,7 @@ import {
   MiMaticOracleFactory,
   TombMiMaticLPOracleFactory,
   TombMimaticBeefyVaultFactory,
+  MockMooTOMBMIMATICFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1301,6 +1302,17 @@ export const deployMockMooTOMBFTM = async (
   withSaveAndVerify(
     await new MockMooTOMBFTMFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooTOMBFTM,
+    args,
+    verify
+  );
+
+export const deployMockMooTOMBMIMATIC = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockMooTOMBMIMATICFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockMooTOMBMIMATIC,
     args,
     verify
   );

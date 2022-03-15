@@ -107,6 +107,7 @@ export enum eContractid {
   MockyvWBTC = 'MockyvWBTC',
   MockyvBOO = 'MockyvBOO',
   MockMooTOMBFTM = 'MockMooTOMBFTM',
+  MockMooTOMBMIMATIC = 'MockMooTOMBMIMATIC',
   MockWETHForFTM = 'MockWETHForFTM',
   MockWBTCForFTM = 'MockWBTCForFTM',
   MockBOOForFTM = 'MockBOOForFTM',

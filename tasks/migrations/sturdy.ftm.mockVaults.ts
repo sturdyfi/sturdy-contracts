@@ -43,7 +43,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
 
     // const configurator = await getLendingPoolConfiguratorProxy();
-    // await configurator.freezeReserve('0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d');
+    // await configurator.freezeReserve('0x53F26e11497A3632CC58F88957C1761925f753B0');
 
     console.log('Deploying MockyvWFTM started\n');
     const yvWFTM = await deployMockyvWFTM(

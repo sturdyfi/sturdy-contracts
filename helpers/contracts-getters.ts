@@ -47,7 +47,6 @@ import {
   MockMooTOMBFTMFactory,
   TombOracleFactory,
   TombFtmLPOracleFactory,
-  MiMaticOracleFactory,
   TombMiMaticLPOracleFactory,
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,

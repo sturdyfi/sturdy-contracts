@@ -84,7 +84,7 @@ export const strategyYVWFTM: IReserveParams = {
 
 export const strategyYVWETH: IReserveParams = {
     strategy: rateStrategyYVWETH,
-    baseLTVAsCollateral: '7000',
+    baseLTVAsCollateral: '0', //'7000',
     liquidationThreshold: '7500',
     liquidationBonus: '10750',
     borrowingEnabled: false,
@@ -98,7 +98,7 @@ export const strategyYVWETH: IReserveParams = {
 
   export const strategyYVWBTC: IReserveParams = {
     strategy: rateStrategyYVWBTC,
-    baseLTVAsCollateral: '7000',
+    baseLTVAsCollateral: '0', //'7000',
     liquidationThreshold: '7500',
     liquidationBonus: '10750',
     borrowingEnabled: false,
@@ -140,7 +140,7 @@ export const strategyYVWETH: IReserveParams = {
 
   export const strategyMOOTOMB_MIMATIC: IReserveParams = {
     strategy: rateStrategyMOOTOMB_MIMATIC,
-    baseLTVAsCollateral: '7000',
+    baseLTVAsCollateral: '0', //'7000',
     liquidationThreshold: '7500',
     liquidationBonus: '10750',
     borrowingEnabled: false,

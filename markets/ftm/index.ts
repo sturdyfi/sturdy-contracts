@@ -11,6 +11,7 @@ import {
   strategyYVWBTC,
   strategyYVBOO,
   strategyMOOTOMB_FTM,
+  strategyMOOTOMB_MIMATIC,
 } from './reservesConfigs';
 
 // ----------------
@@ -32,6 +33,7 @@ export const FantomConfig: IFantomConfiguration = {
     yvWBTC: strategyYVWBTC,
     yvBOO: strategyYVBOO,
     mooTOMB_FTM: strategyMOOTOMB_FTM,
+    mooTOMB_MIMATIC: strategyMOOTOMB_MIMATIC,
   },
   ReserveAssets: {
     [eFantomNetwork.ftm]: {
@@ -43,7 +45,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWETH: '0xCe2Fc0bDc18BD6a4d9A725791A3DEe33F3a23BB7',
       yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
       yvBOO: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
-      mooTOMB_FTM: '0x27c77411074ba90cA35e6f92A79dAd577c05A746'
+      mooTOMB_FTM: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
+      mooTOMB_MIMATIC: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66'
     },
     [eFantomNetwork.ftm_test]: {
       DAI: '0x9440c3bB6Adb5F0D5b8A460d8a8c010690daC2E8',
@@ -53,7 +56,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWETH: '0x5F37179e6714D137C6A196eAd40d79005c5e9A61',
       yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
       yvBOO: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272',
-      mooTOMB_FTM: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d'
+      mooTOMB_FTM: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d',
+      mooTOMB_MIMATIC: '0x53F26e11497A3632CC58F88957C1761925f753B0'
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -64,7 +68,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWETH: '0xCe2Fc0bDc18BD6a4d9A725791A3DEe33F3a23BB7',
       yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
       yvBOO: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
-      mooTOMB_FTM: '0x27c77411074ba90cA35e6f92A79dAd577c05A746'
+      mooTOMB_FTM: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
+      mooTOMB_MIMATIC: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66'
     },
   },
   BOO: {
@@ -77,10 +82,20 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm_test]: '0x81b1E83538Adaa4164156ED43b8081aA97eD197D',
     [eFantomNetwork.tenderlyFTM]: '0x6c021Ae822BEa943b2E66552bDe1D2696a53fbB7',
   },
+  MIMATIC: {
+    [eFantomNetwork.ftm]: '0xfB98B335551a418cD0737375a2ea0ded62Ea213b',
+    [eFantomNetwork.ftm_test]: '0x3420eFfdc6ADd729325B38122904Cfe7F3dD6762',
+    [eFantomNetwork.tenderlyFTM]: '0xfB98B335551a418cD0737375a2ea0ded62Ea213b',
+  },
   TOMB_FTM_LP: {
     [eFantomNetwork.ftm]: '0x2A651563C9d3Af67aE0388a5c8F89b867038089e',
     [eFantomNetwork.ftm_test]: '0x0906E97beB6f422C239627FeFB9198144904327d',
     [eFantomNetwork.tenderlyFTM]: '0x2A651563C9d3Af67aE0388a5c8F89b867038089e',
+  },
+  TOMB_MIMATIC_LP: {
+    [eFantomNetwork.ftm]: '0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b',
+    [eFantomNetwork.ftm_test]: '0x16c8deB0B2a1dfC8Fc44b4b2694ccAfa76dfE6B6',
+    [eFantomNetwork.tenderlyFTM]: '0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b',
   },
   YearnVaultFTM: {
     [eFantomNetwork.ftm]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
@@ -107,6 +122,11 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm_test]: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d',
     [eFantomNetwork.tenderlyFTM]: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
   },
+  BeefyVaultTOMB_MIMATIC: {
+    [eFantomNetwork.ftm]: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
+    [eFantomNetwork.ftm_test]: '0x53F26e11497A3632CC58F88957C1761925f753B0',
+    [eFantomNetwork.tenderlyFTM]: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
+  },
   // BeefyVaultFTM: {
   //   [eFantomNetwork.ftm]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
   //   [eFantomNetwork.ftm_test]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
@@ -116,6 +136,11 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm]: '0xF491e7B69E4244ad4002BC14e878a34207E38c29',
     [eFantomNetwork.ftm_test]: '0xcCAFCf876caB8f9542d6972f87B5D62e1182767d',
     [eFantomNetwork.tenderlyFTM]: '0xF491e7B69E4244ad4002BC14e878a34207E38c29',
+  },
+  TombSwapRouter: {
+    [eFantomNetwork.ftm]: '0x6D0176C5ea1e44b08D3dd001b0784cE42F47a3A7',
+    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x6D0176C5ea1e44b08D3dd001b0784cE42F47a3A7',
   },
 };
 

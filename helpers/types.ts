@@ -56,6 +56,8 @@ export enum eContractid {
   BooOracle = 'BooOracle',
   TombOracle = 'TombOracle',
   TombFtmLPOracle = 'TombFtmLPOracle',
+  MiMaticOracle = 'MiMaticOracle',
+  TombMiMaticLPOracle = 'TombMiMaticLPOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -98,11 +100,14 @@ export enum eContractid {
   YearnBOOVault = 'YearnBOOVault',
   TombFtmBeefyVaultImpl = 'TombFtmBeefyVaultImpl',
   TombFtmBeefyVault = 'TombFtmBeefyVault',
+  TombMiMaticBeefyVaultImpl = 'TombMiMaticBeefyVaultImpl',
+  TombMiMaticBeefyVault = 'TombMiMaticBeefyVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
   MockyvWBTC = 'MockyvWBTC',
   MockyvBOO = 'MockyvBOO',
   MockMooTOMBFTM = 'MockMooTOMBFTM',
+  MockMooTOMBMIMATIC = 'MockMooTOMBMIMATIC',
   MockWETHForFTM = 'MockWETHForFTM',
   MockWBTCForFTM = 'MockWBTCForFTM',
   MockBOOForFTM = 'MockBOOForFTM',
@@ -234,6 +239,7 @@ export interface iAssetBase<T> {
   yvWBTC: T;
   yvBOO: T;
   mooTOMB_FTM: T;
+  mooTOMB_MIMATIC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -252,6 +258,7 @@ export type iFantomPoolAssets<T> = Pick<
   | 'yvWBTC'
   | 'yvBOO'
   | 'mooTOMB_FTM'
+  | 'mooTOMB_MIMATIC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -272,6 +279,7 @@ export enum TokenContractId {
   yvWBTC = 'yvWBTC',
   yvBOO = 'yvBOO',
   mooTOMB_FTM = 'mooTOMB_FTM',
+  mooTOMB_MATIC = 'mooTOMB_MATIC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -422,14 +430,18 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
   BOO: iParamsPerNetwork<tEthereumAddress>;
   TOMB: iParamsPerNetwork<tEthereumAddress>;
+  MIMATIC: iParamsPerNetwork<tEthereumAddress>;
   TOMB_FTM_LP: iParamsPerNetwork<tEthereumAddress>;
+  TOMB_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnBOOVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyVaultTOMB_FTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyVaultTOMB_MIMATIC: iParamsPerNetwork<tEthereumAddress>;
   // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
+  TombSwapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ITokenAddress {

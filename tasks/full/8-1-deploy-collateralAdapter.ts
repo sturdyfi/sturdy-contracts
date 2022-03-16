@@ -50,6 +50,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as IFantomConfiguration).TOMB_FTM_LP,
               network
             ),
+            mooTOMB_MIMATIC: getParamPerNetwork(
+              (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
+              network
+            ),
           };
 
     const acceptableVaults =
@@ -63,6 +67,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvWBTC: (await getYearnWBTCVault()).address,
             yvBOO: (await getYearnBOOVault()).address,
             mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
+            mooTOMB_MIMATIC: (await getTombFtmBeefyVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

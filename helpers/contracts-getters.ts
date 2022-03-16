@@ -45,6 +45,11 @@ import {
   MockyvBOOFactory,
   TombFtmBeefyVaultFactory,
   MockMooTOMBFTMFactory,
+  TombOracleFactory,
+  TombFtmLPOracleFactory,
+  TombMiMaticLPOracleFactory,
+  TombMimaticBeefyVaultFactory,
+  MockMooTOMBMIMATICFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -379,6 +384,30 @@ export const getBooOracle = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getTombOracle = async (address?: tEthereumAddress) =>
+  await TombOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.TombOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmLPOracle = async (address?: tEthereumAddress) =>
+  await TombFtmLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmLPOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombMiMaticLPOracle = async (address?: tEthereumAddress) =>
+  await TombMiMaticLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombMiMaticLPOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getLendingPool = async (address?: tEthereumAddress) =>
   await LendingPoolFactory.connect(
     address ||
@@ -486,6 +515,24 @@ export const getTombFtmBeefyVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.TombFtmBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombMiMaticBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await TombMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombMiMaticBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombMiMaticBeefyVault = async (address?: tEthereumAddress) =>
+  await TombMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombMiMaticBeefyVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );
@@ -601,6 +648,15 @@ export const getMockMooTOMBFTM = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.MockMooTOMBFTM}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getMockMooTOMBMIMATIC = async (address?: tEthereumAddress) =>
+  await MockMooTOMBMIMATICFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooTOMBMIMATIC}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

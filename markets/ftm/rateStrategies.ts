@@ -89,3 +89,14 @@ export const rateStrategyMOOTOMB_FTM: IInterestRateStrategyParams = {
   stableRateSlope1: '0',
   stableRateSlope2: '0',
 };
+
+// mooTOMB_MIMATIC
+export const rateStrategyMOOTOMB_MIMATIC: IInterestRateStrategyParams = {
+  name: 'rateStrategyMOOTOMB_MIMATIC',
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+};

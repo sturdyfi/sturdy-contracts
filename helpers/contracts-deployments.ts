@@ -27,6 +27,7 @@ import {
   getSturdyIncentivesController,
   getSturdyToken,
   getTombFtmBeefyVault,
+  getTombMiMaticBeefyVault,
   getYearnBOOVault,
   getYearnVault,
   getYearnWBTCVault,
@@ -84,6 +85,9 @@ import {
   TombFtmLPOracleFactory,
   TombFtmBeefyVaultFactory,
   MockMooTOMBFTMFactory,
+  TombMiMaticLPOracleFactory,
+  TombMimaticBeefyVaultFactory,
+  MockMooTOMBMIMATICFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -291,6 +295,14 @@ export const deployTombFtmLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new TombFtmLPOracleFactory(await getFirstSigner()).deploy(),
     eContractid.TombFtmLPOracle,
+    [],
+    verify
+  );
+
+export const deployTombMiMaticLPOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TombMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.TombMiMaticLPOracle,
     [],
     verify
   );
@@ -979,6 +991,78 @@ export const deployTombFTMBeefyVault = async (verify?: boolean) => {
   return await getTombFtmBeefyVault();
 };
 
+export const deployTombMiMaticBeefyVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TombMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.TombMiMaticBeefyVaultImpl,
+    [],
+    verify
+  );
+
+export const deployTombMiMaticBeefyVault = async (verify?: boolean) => {
+  const tombMiMaticBeefyVaultImpl = await withSaveAndVerify(
+    await new TombMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.TombMiMaticBeefyVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('BEEFY_TOMB_MIMATIC_VAULT'),
+      tombMiMaticBeefyVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('mooTombTOMB-MIMATIC'),
+      getParamPerNetwork(config.BeefyVaultTOMB_MIMATIC, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('TOMB_MIMATIC_LP'),
+      getParamPerNetwork(config.TOMB_MIMATIC_LP, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('MIMATIC'),
+      getParamPerNetwork(config.MIMATIC, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('USDC'),
+      getParamPerNetwork(config.ReserveAssets, network).USDC
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('tombSwapRouter'),
+      getParamPerNetwork(config.TombSwapRouter, network)
+    )
+  );
+
+  const tombMiMaticBeefyVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('BEEFY_TOMB_MIMATIC_VAULT')
+  );
+  await insertContractAddressInDb(
+    eContractid.TombMiMaticBeefyVault,
+    tombMiMaticBeefyVaultProxyAddress
+  );
+
+  return await getTombMiMaticBeefyVault();
+};
+
 // export const deployBeefyVault = async (verify?: boolean) => {
 //   const beefyVault = await withSaveAndVerify(
 //     await new BeefyVaultFactory(await getFirstSigner()).deploy(),
@@ -1209,6 +1293,17 @@ export const deployMockMooTOMBFTM = async (
   withSaveAndVerify(
     await new MockMooTOMBFTMFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooTOMBFTM,
+    args,
+    verify
+  );
+
+export const deployMockMooTOMBMIMATIC = async (
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockMooTOMBMIMATICFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MockMooTOMBMIMATIC,
     args,
     verify
   );

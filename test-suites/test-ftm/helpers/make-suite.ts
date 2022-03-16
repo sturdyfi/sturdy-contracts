@@ -24,6 +24,7 @@ import {
   getYearnWBTCVault,
   getYearnBOOVault,
   getTombFtmBeefyVault,
+  getTombMiMaticBeefyVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -53,6 +54,7 @@ import {
   YearnWBTCVault,
   YearnBOOVault,
   TombFtmBeefyVault,
+  TombMimaticBeefyVault,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -80,6 +82,7 @@ export interface TestEnv {
   yearnWBTCVault: YearnWBTCVault;
   yearnBOOVault: YearnBOOVault;
   TombFtmBeefyVault: TombFtmBeefyVault;
+  TombMiMaticBeefyVault: TombMimaticBeefyVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -95,18 +98,21 @@ export interface TestEnv {
   aYVWBTC: AToken;
   aYVBOO: AToken;
   aMooTOMB_FTM: AToken;
+  aMooTOMB_MIMATIC: AToken;
   // aMOOWETH: AToken;
   WFTM: MintableERC20;
   WETH: SwapinERC20;
   WBTC: SwapinERC20;
   BOO: MintableERC20;
   TOMB_FTM_LP: MintableERC20;
+  TOMB_MIMATIC_LP: MintableERC20;
   brick: SturdyToken;
   yvwftm: IERC20Detailed;
   yvweth: IERC20Detailed;
   yvwbtc: IERC20Detailed;
   yvboo: IERC20Detailed;
   mootomb_ftm: IERC20Detailed;
+  mootomb_mimatic: IERC20Detailed;
   // mooweth: IERC20Detailed;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
@@ -129,6 +135,7 @@ const testEnv: TestEnv = {
   yearnWBTCVault: {} as YearnWBTCVault,
   yearnBOOVault: {} as YearnBOOVault,
   TombFtmBeefyVault: {} as TombFtmBeefyVault,
+  TombMiMaticBeefyVault: {} as TombMimaticBeefyVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -144,18 +151,21 @@ const testEnv: TestEnv = {
   aYVWBTC: {} as AToken,
   aYVBOO: {} as AToken,
   aMooTOMB_FTM: {} as AToken,
+  aMooTOMB_MIMATIC: {} as AToken,
   // aMOOWETH: {} as AToken,
   WFTM: {} as MintableERC20,
   WETH: {} as SwapinERC20,
   WBTC: {} as SwapinERC20,
   BOO: {} as MintableERC20,
   TOMB_FTM_LP: {} as MintableERC20,
+  TOMB_MIMATIC_LP: {} as MintableERC20,
   brick: {} as SturdyToken,
   yvwftm: {} as IERC20Detailed,
   yvweth: {} as IERC20Detailed,
   yvwbtc: {} as IERC20Detailed,
   yvboo: {} as IERC20Detailed,
   mootomb_ftm: {} as IERC20Detailed,
+  mootomb_mimatic: {} as IERC20Detailed,
   // mooweth: {} as IERC20Detailed,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
@@ -171,11 +181,13 @@ export async function initializeMakeSuite() {
   const yvwbtcAddress = getParamPerNetwork(poolConfig.YearnWBTCVaultFTM, network);
   const yvbooAddress = getParamPerNetwork(poolConfig.YearnBOOVaultFTM, network);
   const mooTombFtmAddress = getParamPerNetwork(poolConfig.BeefyVaultTOMB_FTM, network);
+  const mooTombMiMaticAddress = getParamPerNetwork(poolConfig.BeefyVaultTOMB_MIMATIC, network);
   const wftmAddress = getParamPerNetwork(poolConfig.WFTM, network);
   const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
   const wbtcAddress = getParamPerNetwork(poolConfig.WBTC, network);
   const booAddress = getParamPerNetwork(poolConfig.BOO, network);
   const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
+  const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -249,6 +261,7 @@ export async function initializeMakeSuite() {
   testEnv.yearnWBTCVault = await getYearnWBTCVault();
   testEnv.yearnBOOVault = await getYearnBOOVault();
   testEnv.TombFtmBeefyVault = await getTombFtmBeefyVault();
+  testEnv.TombMiMaticBeefyVault = await getTombMiMaticBeefyVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
@@ -286,6 +299,7 @@ export async function initializeMakeSuite() {
     aYVWBTCAddress = allTokens.find((aToken) => aToken.symbol === 'ayvWBTC' || aToken.symbol === 'syvWBTC')?.tokenAddress;
   const aYVBOOAddress = allTokens.find((aToken) => aToken.symbol === 'ayvBOO' || aToken.symbol === 'syvBOO')?.tokenAddress;
   const aMooTOMB_FTM_Address = allTokens.find((aToken) => aToken.symbol === 'amooTOMB_FTM' || aToken.symbol === 'smooTOMB_FTM')?.tokenAddress;
+  const aMooTOMB_MIMATIC_Address = allTokens.find((aToken) => aToken.symbol === 'amooTOMB_MIMATIC' || aToken.symbol === 'smooTOMB_MIMATIC')?.tokenAddress;
   
   // const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC')?.tokenAddress;
@@ -298,7 +312,8 @@ export async function initializeMakeSuite() {
   const usdtAddress = reservesTokens.find((token) => token.symbol ===  (network == 'ftm_test' ? 'USDT' : 'fUSDT'))?.tokenAddress;
 
   if (!aDaiAddress || !aUsdcAddress || !aUsdtAddress || !aYVWFTMAddress || 
-      !aYVWETHAddress || !aYVWBTCAddress || !aYVBOOAddress || !aMooTOMB_FTM_Address) {
+      !aYVWETHAddress || !aYVWBTCAddress || !aYVBOOAddress || !aMooTOMB_FTM_Address ||
+      !aMooTOMB_MIMATIC_Address) {
     process.exit(1);
   }
   if (!daiAddress || !usdcAddress || !usdtAddress) {
@@ -311,6 +326,7 @@ export async function initializeMakeSuite() {
   testEnv.aYVWBTC = await getAToken(aYVWBTCAddress);
   testEnv.aYVBOO = await getAToken(aYVBOOAddress);
   testEnv.aMooTOMB_FTM = await getAToken(aMooTOMB_FTM_Address)
+  testEnv.aMooTOMB_MIMATIC = await getAToken(aMooTOMB_MIMATIC_Address)
   // testEnv.aMOOWETH = await getAToken(aMOOWETHAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
   testEnv.aUsdt = await getAToken(aUsdtAddress);
@@ -323,12 +339,14 @@ export async function initializeMakeSuite() {
   testEnv.WBTC = await getSwapinERC20(wbtcAddress);
   testEnv.BOO = await getMintableERC20(booAddress);
   testEnv.TOMB_FTM_LP = await getMintableERC20(tombFtmLPAddress);
+  testEnv.TOMB_MIMATIC_LP = await getMintableERC20(tombMiMaticLPAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);
   testEnv.yvweth = IERC20DetailedFactory.connect(yvwethAddress, deployer.signer);
   testEnv.yvwbtc = IERC20DetailedFactory.connect(yvwbtcAddress, deployer.signer);
   testEnv.yvboo = IERC20DetailedFactory.connect(yvbooAddress, deployer.signer);
   testEnv.mootomb_ftm = IERC20DetailedFactory.connect(mooTombFtmAddress, deployer.signer);
+  testEnv.mootomb_mimatic = IERC20DetailedFactory.connect(mooTombMiMaticAddress, deployer.signer);
   // testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);
 }
 

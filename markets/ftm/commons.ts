@@ -120,8 +120,10 @@ export const CommonsConfig: ICommonConfiguration = {
       yvWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWBTC: '0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4',
       yvBOO: '0x4aD9884E676ee2a3F71eC9847C01B4e7755669e8',
-      mooTOMB_FTM: '',
-      TOMB: ''
+      TOMB: '0xa60811d6398EFaCa83D45F58C733EE7C3C4f0e1e',
+      MIMATIC: '0x827863222c9C603960dE6FF2c0dD58D457Dcc363',
+      mooTOMB_FTM: '0x6dB13c9fcEc2D7AE996bb2220d13aa9274005219',
+      mooTOMB_MIMATIC: ''
     },
     [eFantomNetwork.ftm_test]: {},
     [eFantomNetwork.tenderlyFTM]: {
@@ -133,8 +135,10 @@ export const CommonsConfig: ICommonConfiguration = {
       yvWETH: '0x11ddd3d147e5b83d01cee7070027092397d63658',
       yvWBTC: '0x8e94C22142F4A64b99022ccDd994f4e9EC86E4B4',
       yvBOO: '0x4aD9884E676ee2a3F71eC9847C01B4e7755669e8',
-      mooTOMB_FTM: '',
-      TOMB: ''
+      TOMB: '0xa60811d6398EFaCa83D45F58C733EE7C3C4f0e1e',
+      MIMATIC: '0x827863222c9C603960dE6FF2c0dD58D457Dcc363',
+      mooTOMB_FTM: '0x6dB13c9fcEc2D7AE996bb2220d13aa9274005219',
+      mooTOMB_MIMATIC: ''
     },
   },
   ReserveAssets: {

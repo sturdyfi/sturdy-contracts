@@ -3,7 +3,6 @@ import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
   deployTombMiMaticBeefyVault,
   deployTombMiMaticLPOracle,
-  deployMiMaticOracle,
 } from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -33,13 +32,7 @@ task(`full:deploy-tomb-mimatic-beefy-vault`, `Deploys the ${CONTRACT_NAME} contr
     await configurator.registerVault(tombMiMaticBeefyVault.address);
     await tombMiMaticBeefyVault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
 
-    // Deploy MIMATIC, mooTOMB_MIMATIC oracle
-    let miMaticOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).MIMATIC;
-    if (!miMaticOracleAddress) {
-      const miMaticOracle = await deployMiMaticOracle();
-      miMaticOracleAddress = miMaticOracle.address;
-    }
-
+    // Deploy mooTOMB_MIMATIC oracle
     let mooTombMiMaticOracleAddress = getParamPerNetwork(
       ChainlinkAggregator,
       network
@@ -57,7 +50,7 @@ task(`full:deploy-tomb-mimatic-beefy-vault`, `Deploys the ${CONTRACT_NAME} contr
           getParamPerNetwork(MIMATIC, network),
           getParamPerNetwork(ReserveAssets, network).mooTOMB_MIMATIC,
         ],
-        [miMaticOracleAddress, mooTombMiMaticOracleAddress]
+        [getParamPerNetwork(ChainlinkAggregator, network).MIMATIC, mooTombMiMaticOracleAddress]
       )
     );
     console.log(

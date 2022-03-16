@@ -300,14 +300,6 @@ export const deployTombFtmLPOracle = async (verify?: boolean) =>
     verify
   );
 
-export const deployMiMaticOracle = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new MiMaticOracleFactory(await getFirstSigner()).deploy(),
-    eContractid.MiMaticOracle,
-    [],
-    verify
-  );
-
 export const deployTombMiMaticLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new TombMiMaticLPOracleFactory(await getFirstSigner()).deploy(),

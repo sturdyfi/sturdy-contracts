@@ -400,15 +400,6 @@ export const getTombFtmLPOracle = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getMiMaticOracle = async (address?: tEthereumAddress) =>
-  await MiMaticOracleFactory.connect(
-    address ||
-      (
-        await getDb().get(`${eContractid.MiMaticOracle}.${DRE.network.name}`).value()
-      ).address,
-    await getFirstSigner()
-  );
-
 export const getTombMiMaticLPOracle = async (address?: tEthereumAddress) =>
   await TombMiMaticLPOracleFactory.connect(
     address ||

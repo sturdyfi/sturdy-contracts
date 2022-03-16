@@ -14,8 +14,8 @@ contract TombMiMaticLPOracle is IOracle, Ownable {
   using FixedPoint for *;
   using BoringMath for uint256;
   uint256 public constant PERIOD = 10 minutes;
-  IChainlinkAggregator public constant TOMB_USD =
-    IChainlinkAggregator(0xa60811d6398EFaCa83D45F58C733EE7C3C4f0e1e); //TODO
+  IChainlinkAggregator public constant MIMATIC_USD =
+    IChainlinkAggregator(0x827863222c9C603960dE6FF2c0dD58D457Dcc363);
   IUniswapV2Pair public constant TOMB_MIMATIC =
     IUniswapV2Pair(0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b);
   bool isCumulativePrice;
@@ -32,11 +32,11 @@ contract TombMiMaticLPOracle is IOracle, Ownable {
     uint256 priceCumulative = TOMB_MIMATIC.price1CumulativeLast();
 
     // if time has elapsed since the last update on the pair, mock the accumulated price values
-    (uint112 reserve0, , uint32 blockTimestampLast) = TOMB_MIMATIC.getReserves();
+    (, uint112 reserve1, uint32 blockTimestampLast) = TOMB_MIMATIC.getReserves();
     uint256 lpTotalSupply = TOMB_MIMATIC.totalSupply();
 
     priceCumulative +=
-      uint256(FixedPoint.fraction(reserve0 * 2, lpTotalSupply)._x) *
+      uint256(FixedPoint.fraction(reserve1 * 2, lpTotalSupply)._x) *
       (blockTimestamp - blockTimestampLast); // overflows ok
 
     // overflow is desired, casting never truncates
@@ -66,7 +66,7 @@ contract TombMiMaticLPOracle is IOracle, Ownable {
           .uq112x112(uint224((priceCumulative - pairInfo.priceCumulativeLast) / timeElapsed))
           .mul(1e18)
           .decode144()
-      ).mul(uint256(TOMB_USD.latestAnswer())) /
+      ).mul(uint256(MIMATIC_USD.latestAnswer())) /
       1e18;
 
     pairInfo.blockTimestampLast = blockTimestamp;
@@ -94,7 +94,7 @@ contract TombMiMaticLPOracle is IOracle, Ownable {
           .uq112x112(uint224((priceCumulative - pairInfo.priceCumulativeLast) / timeElapsed))
           .mul(1e18)
           .decode144()
-      ).mul(uint256(TOMB_USD.latestAnswer())) / 1e18
+      ).mul(uint256(MIMATIC_USD.latestAnswer())) / 1e18
     );
 
     return (true, priceAverage);
@@ -110,7 +110,7 @@ contract TombMiMaticLPOracle is IOracle, Ownable {
   // Check the current spot exchange rate without any state changes
   /// @inheritdoc IOracle
   function latestAnswer() external view override returns (int256 rate) {
-    (uint256 reserve0, , ) = TOMB_MIMATIC.getReserves();
+    (, uint256 reserve1, ) = TOMB_MIMATIC.getReserves();
     uint256 lpTotalSupply = TOMB_MIMATIC.totalSupply();
     if (isCumulativePrice) {
       (, rate) = peek();
@@ -118,7 +118,7 @@ contract TombMiMaticLPOracle is IOracle, Ownable {
 
     if (rate <= 0) {
       rate = int256(
-        (reserve0.mul(1e18 * 2) / lpTotalSupply).mul(uint256(TOMB_USD.latestAnswer())) / 1e18
+        (reserve1.mul(1e18 * 2) / lpTotalSupply).mul(uint256(MIMATIC_USD.latestAnswer())) / 1e18
       );
     }
   }

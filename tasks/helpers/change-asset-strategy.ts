@@ -1,24 +1,28 @@
 import { task } from 'hardhat/config';
-import { eEthereumNetwork, eNetwork, ICommonConfiguration } from '../../helpers/types';
-import * as marketConfigs from '../../markets/sturdy';
-import * as reserveConfigs from '../../markets/sturdy/reservesConfigs';
+import { eEthereumNetwork, PoolConfiguration } from '../../helpers/types';
 import { getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
 import { setDRE } from '../../helpers/misc-utils';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { getReserveConfigs } from '../../helpers/init-helpers';
 
-const isSymbolValid = (symbol: string, network: eEthereumNetwork) =>
+const isSymbolValid = (
+  symbol: string,
+  network: eEthereumNetwork,
+  poolConfig: PoolConfiguration,
+  reserveConfigs: any
+) =>
   Object.keys(reserveConfigs).includes('strategy' + symbol.toUpperCase()) &&
-  marketConfigs.SturdyConfig.ReserveAssets[network][symbol] &&
-  marketConfigs.SturdyConfig.ReservesConfig[symbol] ===
-    reserveConfigs['strategy' + symbol.toUpperCase()];
+  poolConfig.ReserveAssets[network][symbol] &&
+  poolConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol.toUpperCase()];
 
 task('external:change-asset-strategy', 'Change the assets strategy params')
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ symbol, pool }, localBRE) => {
-    const network = <eNetwork>localBRE.network.name;
-    if (!isSymbolValid(symbol, network as eEthereumNetwork)) {
+    const poolConfig = loadPoolConfig(pool);
+    const reserveConfigs = getReserveConfigs(pool);
+    const network = process.env.FORK || localBRE.network.name;
+    if (!isSymbolValid(symbol, network as eEthereumNetwork, poolConfig, reserveConfigs)) {
       throw new Error(
         `
 WRONG RESERVE ASSET SETUP:
@@ -28,14 +32,12 @@ WRONG RESERVE ASSET SETUP:
         `
       );
     }
+
     setDRE(localBRE);
-    const poolConfig = loadPoolConfig(pool);
-    const { ReserveAssets } = poolConfig as ICommonConfiguration;
-    const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
     const strategyParams = reserveConfigs['strategy' + symbol.toUpperCase()];
     const lendingPoolConf = await getLendingPoolConfiguratorProxy();
     await lendingPoolConf.configureReserveAsCollateral(
-      reserveAssets[symbol],
+      poolConfig.ReserveAssets[network][symbol],
       strategyParams.baseLTVAsCollateral,
       strategyParams.liquidationThreshold,
       strategyParams.liquidationBonus

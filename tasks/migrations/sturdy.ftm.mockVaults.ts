@@ -42,6 +42,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
     const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
 
+    // // Frozen vault on testnet: TOMB_MIMATIC_LP, TOMB_FTM_LP
     // const configurator = await getLendingPoolConfiguratorProxy();
     // await configurator.freezeReserve('0x53F26e11497A3632CC58F88957C1761925f753B0');
 

@@ -31,7 +31,7 @@ const isSymbolValid = (
   poolConfig.ReserveAssets[network][symbol] &&
   poolConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol.toUpperCase()];
 
-// hardhat external:deploy-new-asset --pool Fantom --symbol yvBOO --yieldaddress 0xDc202B24147910484e2D1b6f385FEf886cA87B6F --externalcollateraladdress 0x9dAFB108f0fFd18C1f844C4782F8c7F934f8566E --network ftm_test
+// hardhat external:deploy-new-asset --pool Fantom --symbol mooTOMB_MIMATIC --yieldaddress 0x3C0238B16dBA2D11Af549954abA9bfd75A074236 --externalcollateraladdress 0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b --network ftm
 task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)

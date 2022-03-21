@@ -142,6 +142,11 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm_test]: '',
     [eFantomNetwork.tenderlyFTM]: '0x6D0176C5ea1e44b08D3dd001b0784cE42F47a3A7',
   },
+  AavePool: {
+    [eFantomNetwork.ftm]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+    [eFantomNetwork.ftm_test]: '',
+    [eFantomNetwork.tenderlyFTM]: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+  },
 };
 
 export default FantomConfig;

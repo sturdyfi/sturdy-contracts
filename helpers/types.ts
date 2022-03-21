@@ -115,6 +115,7 @@ export enum eContractid {
   // BeefyVaultImpl = 'BeefyVaultImpl',
   CollateralAdapter = 'CollateralAdapter',
   CollateralAdapterImpl = 'CollateralAdapterImpl',
+  TempLiquidator = 'TempLiquidator',
 }
 
 /*
@@ -442,6 +443,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
   TombSwapRouter: iParamsPerNetwork<tEthereumAddress>;
+  AavePool: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ITokenAddress {

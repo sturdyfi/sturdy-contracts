@@ -25,6 +25,7 @@ import {
   getYearnBOOVault,
   getTombFtmBeefyVault,
   getTombMiMaticBeefyVault,
+  getTempLiquidator,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -55,6 +56,7 @@ import {
   YearnBOOVault,
   TombFtmBeefyVault,
   TombMimaticBeefyVault,
+  TempLiquidator,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -62,6 +64,7 @@ import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
 import { parseEther } from '@ethersproject/units';
+import { ILiquidator } from '../../../types/ILiquidator';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -117,6 +120,7 @@ export interface TestEnv {
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
+  liquidator: ILiquidator;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -169,6 +173,7 @@ const testEnv: TestEnv = {
   // mooweth: {} as IERC20Detailed,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
+  liquidator: {} as ILiquidator,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -263,6 +268,7 @@ export async function initializeMakeSuite() {
   testEnv.TombFtmBeefyVault = await getTombFtmBeefyVault();
   testEnv.TombMiMaticBeefyVault = await getTombMiMaticBeefyVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
+  testEnv.liquidator = await getTempLiquidator();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

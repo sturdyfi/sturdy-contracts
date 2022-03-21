@@ -88,6 +88,7 @@ import {
   TombMiMaticLPOracleFactory,
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
+  TempLiquidatorFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1304,6 +1305,14 @@ export const deployMockMooTOMBMIMATIC = async (
   withSaveAndVerify(
     await new MockMooTOMBMIMATICFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooTOMBMIMATIC,
+    args,
+    verify
+  );
+
+export const deployTempLiquidator = async (args: [string], verify?: boolean) =>
+  withSaveAndVerify(
+    await new TempLiquidatorFactory(await getFirstSigner()).deploy(...args),
+    eContractid.TempLiquidator,
     args,
     verify
   );

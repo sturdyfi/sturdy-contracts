@@ -50,6 +50,7 @@ import {
   TombMiMaticLPOracleFactory,
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
+  TempLiquidatorFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -681,6 +682,15 @@ export const getCollateralATokenImpl = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.ATokenForCollateral}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTempLiquidator = async (address?: tEthereumAddress) =>
+  await TempLiquidatorFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TempLiquidator}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

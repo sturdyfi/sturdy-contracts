@@ -24,6 +24,7 @@ import {
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLidoVault,
+  getLiquidator,
   getSturdyIncentivesController,
   getSturdyToken,
   getTombFtmBeefyVault,
@@ -1309,10 +1310,36 @@ export const deployMockMooTOMBMIMATIC = async (
     verify
   );
 
-export const deployTempLiquidator = async (args: [string], verify?: boolean) =>
-  withSaveAndVerify(
+export const deployLiquidator = async (args: [string], verify?: boolean) => {
+  const liquidatorImpl = await withSaveAndVerify(
     await new TempLiquidatorFactory(await getFirstSigner()).deploy(...args),
-    eContractid.TempLiquidator,
+    eContractid.LiquidatorImpl,
     args,
     verify
   );
+  await insertContractAddressInDb(eContractid.Liquidator, liquidatorImpl.address);
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  // await waitForTx(
+  //   await addressesProvider.setAddressAsProxy(
+  //     DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
+  //     liquidatorImpl.address
+  //   )
+  // );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
+      getParamPerNetwork(config.AavePool, network)
+    )
+  );
+
+  // const liquidatorProxyAddress = await addressesProvider.getAddress(
+  //   DRE.ethers.utils.formatBytes32String('LIQUIDATOR')
+  // );
+  // await insertContractAddressInDb(eContractid.Liquidator, liquidatorProxyAddress);
+
+  return await getLiquidator();
+};

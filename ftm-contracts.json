@@ -504,5 +504,23 @@
     "localhost": {
       "address": "0x7BE637cA0e8B5623345C365A9a8248E5f3550A29"
     }
+  },
+  "LiquidatorImpl": {
+    "ftm": {
+      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "Liquidator": {
+    "ftm": {
+      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37"
+    },
+    "localhost": {
+      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37"
+    }
   }
 }

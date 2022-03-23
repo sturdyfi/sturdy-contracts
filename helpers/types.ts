@@ -115,7 +115,8 @@ export enum eContractid {
   // BeefyVaultImpl = 'BeefyVaultImpl',
   CollateralAdapter = 'CollateralAdapter',
   CollateralAdapterImpl = 'CollateralAdapterImpl',
-  TempLiquidator = 'TempLiquidator',
+  Liquidator = 'Liquidator',
+  LiquidatorImpl = 'LiquidatorImpl',
 }
 
 /*

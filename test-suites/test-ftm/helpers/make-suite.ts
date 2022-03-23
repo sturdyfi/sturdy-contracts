@@ -25,7 +25,7 @@ import {
   getYearnBOOVault,
   getTombFtmBeefyVault,
   getTombMiMaticBeefyVault,
-  getTempLiquidator,
+  getLiquidator,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -268,7 +268,7 @@ export async function initializeMakeSuite() {
   testEnv.TombFtmBeefyVault = await getTombFtmBeefyVault();
   testEnv.TombMiMaticBeefyVault = await getTombMiMaticBeefyVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
-  testEnv.liquidator = await getTempLiquidator();
+  testEnv.liquidator = await getLiquidator();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

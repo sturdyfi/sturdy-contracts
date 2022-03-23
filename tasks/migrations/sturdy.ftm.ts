@@ -60,6 +60,9 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('8-1. Deploy Collateral Adapter');
     await DRE.run('full:deploy-collateral-adapter', { pool: POOL_NAME });
 
+    console.log('8-2. Deploy Liquidator');
+    await DRE.run('full:deploy-liquidator', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('9. Verifying contracts');

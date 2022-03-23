@@ -686,11 +686,8 @@ export const getCollateralATokenImpl = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getTempLiquidator = async (address?: tEthereumAddress) =>
+export const getLiquidator = async (address?: tEthereumAddress) =>
   await TempLiquidatorFactory.connect(
-    address ||
-      (
-        await getDb().get(`${eContractid.TempLiquidator}.${DRE.network.name}`).value()
-      ).address,
+    address || (await getDb().get(`${eContractid.Liquidator}.${DRE.network.name}`).value()).address,
     await getFirstSigner()
   );

@@ -507,20 +507,20 @@
   },
   "LiquidatorImpl": {
     "ftm": {
-      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37",
+      "address": "0x81f8Cf98Fe68053560EfB246ceEbE562b12902b6",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37",
+      "address": "0x81f8Cf98Fe68053560EfB246ceEbE562b12902b6",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "Liquidator": {
     "ftm": {
-      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37"
+      "address": "0x81f8Cf98Fe68053560EfB246ceEbE562b12902b6"
     },
     "localhost": {
-      "address": "0x6A66593b1E832B33897d1A26e8C8A5170201Fd37"
+      "address": "0x81f8Cf98Fe68053560EfB246ceEbE562b12902b6"
     }
   }
 }

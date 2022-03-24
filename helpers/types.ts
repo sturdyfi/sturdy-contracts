@@ -59,6 +59,7 @@ export enum eContractid {
   MiMaticOracle = 'MiMaticOracle',
   TombMiMaticLPOracle = 'TombMiMaticLPOracle',
   FBeetsOracle = 'FBeetsOracle',
+  BeetsOracle = 'BeetsOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',

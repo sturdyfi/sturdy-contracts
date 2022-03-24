@@ -17,8 +17,6 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 
-import 'hardhat/console.sol';
-
 /**
  * @title YearnFBEETSVault
  * @notice yvfBEETS/fBEETS Vault by using Yearn on Fantom
@@ -168,6 +166,26 @@ contract YearnFBEETSVault is GeneralVault {
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
 
+  function _calcSwapMinAmount(uint256 _beetsAmount) internal returns (uint256) {
+    address WFTM = _addressesProvider.getAddress('WFTM');
+    uint256 assetDecimal = IERC20Detailed(WFTM).decimals();
+
+    // Calculate minAmount from price with 2% slippage
+    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    uint256 minAmountFromPrice = _beetsAmount
+      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('BEETS')))
+      .div(10**18)
+      .mul(10**assetDecimal)
+      .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
+      .percentMul(98_00);
+
+    // Substract pool's swap fee
+    (address swapPool, ) = getBeethovenVault().getPool(beethovenSwapPoolId);
+    uint256 swapFee = IBalancerWeightedPool(swapPool).getSwapFeePercentage();
+
+    return minAmountFromPrice.mul(10**18 - swapFee).div(10**18);
+  }
+
   /**
    * @dev Swap BEETS -> WFTM
    */
@@ -178,6 +196,7 @@ contract YearnFBEETSVault is GeneralVault {
     address BEETS = _addressesProvider.getAddress('BEETS');
     address WFTM = _addressesProvider.getAddress('WFTM');
 
+    uint256 limit = _calcSwapMinAmount(_beetsAmount);
     // ToDo: Need to consider batchSwap, but, it's impossible now to implement Smart Order Router on-chain
     // Single Swap using The Fidelio Duetto Pool
     singleSwap.poolId = beethovenSwapPoolId;
@@ -193,7 +212,7 @@ contract YearnFBEETSVault is GeneralVault {
 
     IERC20(BEETS).approve(beethovenVault, _beetsAmount);
 
-    uint256 receivedAmount = getBeethovenVault().swap(singleSwap, funds, 1, uint256(-1));
+    uint256 receivedAmount = getBeethovenVault().swap(singleSwap, funds, limit, uint256(-1));
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     return receivedAmount;

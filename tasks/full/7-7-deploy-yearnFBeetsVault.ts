@@ -1,6 +1,10 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { deployYearnFBeetsVault, deployFBeetsOracle } from '../../helpers/contracts-deployments';
+import {
+  deployYearnFBeetsVault,
+  deployFBeetsOracle,
+  deployBeetsOracle,
+} from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { DRE, waitForTx } from '../../helpers/misc-utils';
@@ -20,7 +24,7 @@ task(`full:deploy-yearn-fbeets-vault`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ReserveAssets, ChainlinkAggregator } =
+    const { ReserveFactorTreasuryAddress, ReserveAssets, ChainlinkAggregator, BEETS } =
       poolConfig as IFantomConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -42,12 +46,19 @@ task(`full:deploy-yearn-fbeets-vault`, `Deploys the ${CONTRACT_NAME} contract`)
       fbeetsOracleAddress = yvfBeetsOracle.address;
     }
 
+    // Deploy BEETS oracle
+    let beetsOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).BEETS;
+    if (!beetsOracleAddress) {
+      const beetsOracle = await deployBeetsOracle();
+      beetsOracleAddress = beetsOracle.address;
+    }
+
     // Register fBEETS oracle
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [getParamPerNetwork(ReserveAssets, network).yvfBEETS],
-        [fbeetsOracleAddress]
+        [getParamPerNetwork(ReserveAssets, network).yvfBEETS, getParamPerNetwork(BEETS, network)],
+        [fbeetsOracleAddress, beetsOracleAddress]
       )
     );
 
@@ -56,6 +67,8 @@ task(`full:deploy-yearn-fbeets-vault`, `Deploys the ${CONTRACT_NAME} contract`)
         await sturdyOracle.getAssetPrice(getParamPerNetwork(ReserveAssets, network).yvfBEETS)
       ).toString()
     );
+
+    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(BEETS, network))).toString());
 
     console.log(`${CONTRACT_NAME}.address`, yearnFBEETSVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

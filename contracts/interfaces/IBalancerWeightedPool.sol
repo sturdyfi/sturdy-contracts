@@ -28,6 +28,11 @@ interface IBalancerWeightedPool {
 
   function getPoolId() external view returns (bytes32);
 
+  /**
+   * @dev Returns the pool's current swap fee.
+   */
+  function getSwapFeePercentage() external view returns (uint256);
+
   enum ExitKind {
     EXACT_BPT_IN_FOR_ONE_TOKEN_OUT,
     EXACT_BPT_IN_FOR_TOKENS_OUT,

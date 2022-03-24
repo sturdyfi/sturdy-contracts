@@ -93,6 +93,7 @@ import {
   TempLiquidatorFactory,
   YearnFBEETSVaultFactory,
   FBeetsOracleFactory,
+  BeetsOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -318,6 +319,14 @@ export const deployFBeetsOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new FBeetsOracleFactory(await getFirstSigner()).deploy(),
     eContractid.FBeetsOracle,
+    [],
+    verify
+  );
+
+export const deployBeetsOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BeetsOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.BeetsOracle,
     [],
     verify
   );

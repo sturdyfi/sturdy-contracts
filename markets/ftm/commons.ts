@@ -123,7 +123,8 @@ export const CommonsConfig: ICommonConfiguration = {
       TOMB: '0xa60811d6398EFaCa83D45F58C733EE7C3C4f0e1e',
       MIMATIC: '0x827863222c9C603960dE6FF2c0dD58D457Dcc363',
       mooTOMB_FTM: '0x6dB13c9fcEc2D7AE996bb2220d13aa9274005219',
-      mooTOMB_MIMATIC: '0xa26a6F2eB4Bc7005aF8eA5a1dd5B7bc1d8973592'
+      mooTOMB_MIMATIC: '0xa26a6F2eB4Bc7005aF8eA5a1dd5B7bc1d8973592',
+      yvfBEETS: '',
     },
     [eFantomNetwork.ftm_test]: {},
     [eFantomNetwork.tenderlyFTM]: {

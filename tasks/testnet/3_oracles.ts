@@ -67,6 +67,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           mooTOMB_MIMATIC: reserveAssets.mooTOMB_MIMATIC,
           // mooWETH: reserveAssets.mooWETH,
           USD: UsdAddress,
+          yvfBEETS: reserveAssets.yvfBEETS,
         },
         fallbackOracle
       );

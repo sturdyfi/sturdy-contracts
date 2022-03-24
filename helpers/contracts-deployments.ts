@@ -33,6 +33,7 @@ import {
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
+  getYearnFBEETSVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -90,6 +91,8 @@ import {
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
   TempLiquidatorFactory,
+  YearnFBEETSVaultFactory,
+  FBeetsOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -106,6 +109,8 @@ import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins'
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import BigNumber from 'bignumber.js';
+import { verify } from 'crypto';
+import { boolean } from 'hardhat/internal/core/params/argumentTypes';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -305,6 +310,14 @@ export const deployTombMiMaticLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new TombMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
     eContractid.TombMiMaticLPOracle,
+    [],
+    verify
+  );
+
+export const deployFBeetsOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new FBeetsOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.FBeetsOracle,
     [],
     verify
   );
@@ -1063,6 +1076,61 @@ export const deployTombMiMaticBeefyVault = async (verify?: boolean) => {
   );
 
   return await getTombMiMaticBeefyVault();
+};
+
+export const deployYearnFBeetsVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnFBEETSVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnFBEETSVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnFBeetsVault = async (verify?: boolean) => {
+  const yearnFBEETSVaultImpl = await withSaveAndVerify(
+    await new YearnFBEETSVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnFBEETSVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_FBEETS_VAULT'),
+      yearnFBEETSVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVFBEETS'),
+      getParamPerNetwork(config.YearnFBEETSVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('fBEETS'),
+      getParamPerNetwork(config.fBEETS, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('BEETS'),
+      getParamPerNetwork(config.BEETS, network)
+    )
+  );
+
+  const yearnFBEETSVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_FBEETS_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnFBEETSVault, yearnFBEETSVaultProxyAddress);
+
+  return await getYearnFBEETSVault();
 };
 
 // export const deployBeefyVault = async (verify?: boolean) => {

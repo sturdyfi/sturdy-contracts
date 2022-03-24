@@ -20,6 +20,7 @@ import {
   getYearnBOOVault,
   getTombFtmBeefyVault,
   getTombMiMaticBeefyVault,
+  getYearnFBEETSVault,
   // getBeefyVault,
 } from '../../helpers/contracts-getters';
 
@@ -66,6 +67,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvBOO: (await getYearnBOOVault()).address,
               mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
               mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
+              yvfBEETS: (await getYearnFBEETSVault()).address,
               // mooWETH: (await getBeefyVault()).address,
             };
 

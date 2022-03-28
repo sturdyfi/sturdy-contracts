@@ -156,7 +156,7 @@ export const strategyYVWETH: IReserveParams = {
 
   export const strategyYVFBEETS: IReserveParams = {
     strategy: rateStrategyYVFBEETS,
-    baseLTVAsCollateral: '6000',
+    baseLTVAsCollateral: '0', //'6000',
     liquidationThreshold: '7000',
     liquidationBonus: '11000',
     borrowingEnabled: false,

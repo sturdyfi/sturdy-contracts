@@ -65,7 +65,7 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.buidlerevm]: 65 * GWEI,
   [eEthereumNetwork.tenderly]: 0.01 * GWEI,
   [eEthereumNetwork.goerli]: 65 * GWEI,
-  [eFantomNetwork.ftm]: 500 * GWEI,
+  [eFantomNetwork.ftm]: 300 * GWEI,
   [eFantomNetwork.ftm_test]: 300 * GWEI,
 };
 

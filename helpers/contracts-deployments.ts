@@ -33,6 +33,7 @@ import {
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
+  getYearnLINKVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -90,6 +91,8 @@ import {
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
   TempLiquidatorFactory,
+  YearnLINKVaultFactory,
+  MockYearnVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1065,6 +1068,53 @@ export const deployTombMiMaticBeefyVault = async (verify?: boolean) => {
   return await getTombMiMaticBeefyVault();
 };
 
+export const deployYearnLINKVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnLINKVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnLINKVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnLINKVault = async (verify?: boolean) => {
+  const yearnLINKVaultImpl = await withSaveAndVerify(
+    await new YearnLINKVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnLINKVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_LINK_VAULT'),
+      yearnLINKVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVLINK'),
+      getParamPerNetwork(config.YearnLINKVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('LINK'),
+      getParamPerNetwork(config.LINK, network)
+    )
+  );
+
+  const yearnLINKVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_LINK_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnLINKVault, yearnLINKVaultProxyAddress);
+
+  return await getYearnLINKVault();
+};
 // export const deployBeefyVault = async (verify?: boolean) => {
 //   const beefyVault = await withSaveAndVerify(
 //     await new BeefyVaultFactory(await getFirstSigner()).deploy(),
@@ -1306,6 +1356,18 @@ export const deployMockMooTOMBMIMATIC = async (
   withSaveAndVerify(
     await new MockMooTOMBMIMATICFactory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooTOMBMIMATIC,
+    args,
+    verify
+  );
+
+export const deployMockYearnVault = async (
+  id: string,
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockYearnVaultFactory(await getFirstSigner()).deploy(...args),
+    id,
     args,
     verify
   );

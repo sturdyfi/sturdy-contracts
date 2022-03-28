@@ -595,5 +595,41 @@
     "localhost": {
       "address": "0x6EcB9C1f2c93Cd01FD9D92dbe6bFc1e0297144ae"
     }
+  },
+  "MockLINKForFTM": {
+    "ftm_test": {
+      "address": "0x9170EaE627687feb87Adfa71B43318A6565c440f",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x9170EaE627687feb87Adfa71B43318A6565c440f"
+    }
+  },
+  "YearnLINKVaultImpl": {
+    "ftm_test": {
+      "address": "0xaF4C991B598db0247dcD1de7491f0d83b25c45f0",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xaF4C991B598db0247dcD1de7491f0d83b25c45f0"
+    }
+  },
+  "YearnLINKVault": {
+    "ftm_test": {
+      "address": "0x341ea9c2F16437a19853bb15Bb568081954f9e90",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x341ea9c2F16437a19853bb15Bb568081954f9e90"
+    }
+  },
+  "rateStrategyYVLINK": {
+    "ftm_test": {
+      "address": "0xBA79a2ec187806EB8B4a0E8a0bb1AC50235214AC",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xBA79a2ec187806EB8B4a0E8a0bb1AC50235214AC"
+    }
   }
 }

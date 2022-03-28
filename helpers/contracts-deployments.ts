@@ -1098,6 +1098,53 @@ export const deployYearnFBeetsVaultImpl = async (verify?: boolean) =>
     verify
   );
 
+export const deployYearnFBeetsVault = async (verify?: boolean) => {
+  const yearnFBEETSVaultImpl = await withSaveAndVerify(
+    await new YearnFBEETSVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnFBEETSVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_FBEETS_VAULT'),
+      yearnFBEETSVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVFBEETS'),
+      getParamPerNetwork(config.YearnFBEETSVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('fBEETS'),
+      getParamPerNetwork(config.fBEETS, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('BEETS'),
+      getParamPerNetwork(config.BEETS, network)
+    )
+  );
+
+  const yearnFBEETSVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_FBEETS_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnFBEETSVault, yearnFBEETSVaultProxyAddress);
+
+  return await getYearnFBEETSVault();
+};
+
 export const deployYearnLINKVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
     await new YearnLINKVaultFactory(await getFirstSigner()).deploy(),
@@ -1144,53 +1191,6 @@ export const deployYearnLINKVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.YearnLINKVault, yearnLINKVaultProxyAddress);
 
   return await getYearnLINKVault();
-};
-
-export const deployYearnFBeetsVault = async (verify?: boolean) => {
-  const yearnFBEETSVaultImpl = await withSaveAndVerify(
-    await new YearnFBEETSVaultFactory(await getFirstSigner()).deploy(),
-    eContractid.YearnFBEETSVaultImpl,
-    [],
-    verify
-  );
-
-  const addressesProvider = await getLendingPoolAddressesProvider();
-  await waitForTx(
-    await addressesProvider.setAddressAsProxy(
-      DRE.ethers.utils.formatBytes32String('YEARN_FBEETS_VAULT'),
-      yearnFBEETSVaultImpl.address
-    )
-  );
-
-  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
-  const network = <eNetwork>DRE.network.name;
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('YVLINK'),
-      getParamPerNetwork(config.YearnLINKVaultFTM, network)
-    )
-  );
-
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('fBEETS'),
-      getParamPerNetwork(config.fBEETS, network)
-    )
-  );
-
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('BEETS'),
-      getParamPerNetwork(config.BEETS, network)
-    )
-  );
-
-  const yearnFBEETSVaultProxyAddress = await addressesProvider.getAddress(
-    DRE.ethers.utils.formatBytes32String('YEARN_FBEETS_VAULT')
-  );
-  await insertContractAddressInDb(eContractid.YearnFBEETSVault, yearnFBEETSVaultProxyAddress);
-
-  return await getYearnFBEETSVault();
 };
 
 // export const deployBeefyVault = async (verify?: boolean) => {

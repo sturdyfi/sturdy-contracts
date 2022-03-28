@@ -6,6 +6,8 @@ import {
   getTombFtmBeefyVault,
   getTombMiMaticBeefyVault,
   getYearnBOOVault,
+  getYearnFBEETSVault,
+  getYearnLINKVault,
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
@@ -54,6 +56,8 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
               (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
               network
             ),
+            yvFBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
+            yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
           };
 
     const acceptableVaults =
@@ -68,6 +72,8 @@ task(`testnet:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract
             yvBOO: (await getYearnBOOVault()).address,
             mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
             mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
+            yvFBEETS: (await getYearnFBEETSVault()).address,
+            yvLINK: (await getYearnLINKVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

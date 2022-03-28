@@ -51,6 +51,9 @@ task('sturdy:ftm:testnet', 'Deploy development enviroment')
     console.log('7-6. Deploy TOMB-MIMATIC Beefy vault');
     await DRE.run('testnet:deploy-tomb-mimatic-beefy-vault', { pool: POOL_NAME });
 
+    console.log('7-7. Deploy Yearn fBEETS vault');
+    await DRE.run('testnet:deploy-yearn-fbeets-vault', { pool: POOL_NAME });
+
     console.log('7-8. Deploy Yearn LINK vault');
     await DRE.run('testnet:deploy-yearn-link-vault', { pool: POOL_NAME });
 

@@ -254,7 +254,8 @@ export async function initializeMakeSuite() {
 
     await _deployer.sendTransaction({ value: parseEther('9000'), to: emergencyAddress });
   } else if (network == 'ftm' && process.env.SKIP_DEPLOY) {
-    const deployerAddress = '0xb4124ceb3451635dacedd11767f004d8a28c6ee7';
+    const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
+    // const deployerAddress = '0xb4124ceb3451635dacedd11767f004d8a28c6ee7';
     const ethers = (DRE as any).ethers;
     await impersonateAccountsHardhat([deployerAddress]);
     let signer = await ethers.provider.getSigner(deployerAddress);
@@ -349,7 +350,7 @@ export async function initializeMakeSuite() {
 
   if (!aDaiAddress || !aUsdcAddress || !aUsdtAddress || !aYVWFTMAddress || 
       !aYVWETHAddress || !aYVWBTCAddress || !aYVBOOAddress || !aMooTOMB_FTM_Address ||
-      !aMooTOMB_MIMATIC_Address || !aYVLINKAddress) {
+      !aMooTOMB_MIMATIC_Address || !aYVFBEETSAddress || !aYVLINKAddress) {
     process.exit(1);
   }
   if (!daiAddress || !usdcAddress || !usdtAddress) {

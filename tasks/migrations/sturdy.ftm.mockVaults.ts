@@ -43,6 +43,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
     const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
     const linkAddress = getParamPerNetwork(poolConfig.LINK, network);
+    const fbeetsAddress = getParamPerNetwork(poolConfig.fBEETS, network);
 
     // // Frozen vault on testnet: TOMB_MIMATIC_LP, TOMB_FTM_LP
     // const configurator = await getLendingPoolConfiguratorProxy();
@@ -97,6 +98,14 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockyvLINK`, yvLINK.address);
+
+    console.log('Deploying MockyvfBEETS started\n');
+    const yvfBEETS = await deployMockYearnVault(
+      eContractid.MockFBEETSForFTM,
+      [fbeetsAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockyvfBEETS`, yvfBEETS.address);
 
     // console.log('Deploying MockTOMBMIMATICLP started\n');
     // const TOMB_MIMATIC_LP = await deployMintableERC20(

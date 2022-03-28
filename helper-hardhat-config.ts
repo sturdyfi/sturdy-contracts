@@ -65,7 +65,7 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.buidlerevm]: 65 * GWEI,
   [eEthereumNetwork.tenderly]: 0.01 * GWEI,
   [eEthereumNetwork.goerli]: 65 * GWEI,
-  [eFantomNetwork.ftm]: 500 * GWEI,
+  [eFantomNetwork.ftm]: 300 * GWEI,
   [eFantomNetwork.ftm_test]: 300 * GWEI,
 };
 
@@ -81,5 +81,5 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eEthereumNetwork.tenderly]: 12406069,
   [eEthereumNetwork.goerli]: 6365888, //6055821,
   [eFantomNetwork.ftm]: 34239888, //33596997, //33596303, //33430562, //33172433, //32538096, //31634864, //29874440,
-  [eFantomNetwork.ftm_test]: 8584100, //8454718, //8407553, //8244571, //7562913, //7241687, //6901960,
+  [eFantomNetwork.ftm_test]: 8586850, //8584100, //8454718, //8407553, //8244571, //7562913, //7241687, //6901960,
 };

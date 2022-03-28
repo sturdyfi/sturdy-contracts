@@ -631,5 +631,41 @@
     "localhost": {
       "address": "0xBA79a2ec187806EB8B4a0E8a0bb1AC50235214AC"
     }
+  },
+  "MockFBEETSForFTM": {
+    "ftm_test": {
+      "address": "0xb61fc41e813a0f783aBFaF9B93ba5DC22Ad30B0D",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xb61fc41e813a0f783aBFaF9B93ba5DC22Ad30B0D"
+    }
+  },
+  "YearnFBEETSVaultImpl": {
+    "ftm_test": {
+      "address": "0xF85CeE3cbeba9805FB3E6e9D24D766FB2410A2DF",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xF85CeE3cbeba9805FB3E6e9D24D766FB2410A2DF"
+    }
+  },
+  "YearnFBEETSVault": {
+    "ftm_test": {
+      "address": "0x2760f83BcBbC00D9A713A456F6BA1CA771a97377",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x2760f83BcBbC00D9A713A456F6BA1CA771a97377"
+    }
+  },
+  "rateStrategyYVFBEETS": {
+    "ftm_test": {
+      "address": "0x8a1449BF5583e2E6F7E7ccdaFFFFFAd511825d41",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x8a1449BF5583e2E6F7E7ccdaFFFFFAd511825d41"
+    }
   }
 }

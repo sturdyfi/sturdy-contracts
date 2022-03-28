@@ -5,6 +5,7 @@ import {
   getLidoVault,
   getTombFtmBeefyVault,
   getYearnBOOVault,
+  getYearnFBEETSVault,
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
@@ -55,6 +56,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
               network
             ),
+            yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
             yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
           };
 
@@ -70,6 +72,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvBOO: (await getYearnBOOVault()).address,
             mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
             mooTOMB_MIMATIC: (await getTombFtmBeefyVault()).address,
+            yvfBEETS: (await getYearnFBEETSVault()).address,
             yvLINK: (await getYearnLINKVault()).address,
           };
 

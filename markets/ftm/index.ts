@@ -12,6 +12,7 @@ import {
   strategyYVBOO,
   strategyMOOTOMB_FTM,
   strategyMOOTOMB_MIMATIC,
+  strategyYVLINK,
 } from './reservesConfigs';
 
 // ----------------
@@ -34,6 +35,7 @@ export const FantomConfig: IFantomConfiguration = {
     yvBOO: strategyYVBOO,
     mooTOMB_FTM: strategyMOOTOMB_FTM,
     mooTOMB_MIMATIC: strategyMOOTOMB_MIMATIC,
+    yvLINK: strategyYVLINK,
   },
   ReserveAssets: {
     [eFantomNetwork.ftm]: {
@@ -46,7 +48,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
       yvBOO: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
       mooTOMB_FTM: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
-      mooTOMB_MIMATIC: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66'
+      mooTOMB_MIMATIC: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
+      yvLINK: '0xf2d323621785A066E64282d2B407eAc79cC04966',
     },
     [eFantomNetwork.ftm_test]: {
       DAI: '0x9440c3bB6Adb5F0D5b8A460d8a8c010690daC2E8',
@@ -57,7 +60,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
       yvBOO: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272',
       mooTOMB_FTM: '0x6Ea737e951c0079A0F4a38DFebe8B9Db7f29d17d',
-      mooTOMB_MIMATIC: '0x53F26e11497A3632CC58F88957C1761925f753B0'
+      mooTOMB_MIMATIC: '0x53F26e11497A3632CC58F88957C1761925f753B0',
+      yvLINK: '0x9170EaE627687feb87Adfa71B43318A6565c440f',
     },
     [eFantomNetwork.tenderlyFTM]: {
       DAI: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
@@ -69,7 +73,8 @@ export const FantomConfig: IFantomConfiguration = {
       yvWBTC: '0xd817A100AB8A29fE3DBd925c2EB489D67F758DA9',
       yvBOO: '0x0fBbf9848D969776a5Eb842EdAfAf29ef4467698',
       mooTOMB_FTM: '0x27c77411074ba90cA35e6f92A79dAd577c05A746',
-      mooTOMB_MIMATIC: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66'
+      mooTOMB_MIMATIC: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
+      yvLINK: '0xf2d323621785A066E64282d2B407eAc79cC04966',
     },
   },
   BOO: {
@@ -96,6 +101,11 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm]: '0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b',
     [eFantomNetwork.ftm_test]: '0x16c8deB0B2a1dfC8Fc44b4b2694ccAfa76dfE6B6',
     [eFantomNetwork.tenderlyFTM]: '0x45f4682B560d4e3B8FF1F1b3A38FDBe775C7177b',
+  },
+  LINK: {
+    [eFantomNetwork.ftm]: '0xb3654dc3D10Ea7645f8319668E8F54d2574FBdC8',
+    [eFantomNetwork.ftm_test]: '0x62d652e4F5E805A1Fb5B6e90B168Ff03a3A6efFF',
+    [eFantomNetwork.tenderlyFTM]: '0xb3654dc3D10Ea7645f8319668E8F54d2574FBdC8',
   },
   YearnVaultFTM: {
     [eFantomNetwork.ftm]: '0x0DEC85e74A92c52b7F708c4B10207D9560CEFaf0',
@@ -126,6 +136,11 @@ export const FantomConfig: IFantomConfiguration = {
     [eFantomNetwork.ftm]: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
     [eFantomNetwork.ftm_test]: '0x53F26e11497A3632CC58F88957C1761925f753B0',
     [eFantomNetwork.tenderlyFTM]: '0xb2be5Cd33DBFf412Bce9587E44b5647a4BdA6a66',
+  },
+  YearnLINKVaultFTM: {
+    [eFantomNetwork.ftm]: '0xf2d323621785A066E64282d2B407eAc79cC04966',
+    [eFantomNetwork.ftm_test]: '0x9170EaE627687feb87Adfa71B43318A6565c440f',
+    [eFantomNetwork.tenderlyFTM]: '0xf2d323621785A066E64282d2B407eAc79cC04966',
   },
   // BeefyVaultFTM: {
   //   [eFantomNetwork.ftm]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',

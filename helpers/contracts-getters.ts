@@ -51,6 +51,7 @@ import {
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
   TempLiquidatorFactory,
+  YearnLINKVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -538,6 +539,14 @@ export const getTombMiMaticBeefyVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYearnLINKVault = async (address?: tEthereumAddress) =>
+  await YearnLINKVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnLINKVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
 // export const getBeefyVault = async (address?: tEthereumAddress) =>
 //   await BeefyVaultFactory.connect(
 //     address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,

@@ -106,6 +106,8 @@ export enum eContractid {
   TombMiMaticBeefyVault = 'TombMiMaticBeefyVault',
   YearnFBEETSVaultImpl = 'YearnFBEETSVaultImpl',
   YearnFBEETSVault = 'YearnFBEETSVault',
+  YearnLINKVaultImpl = 'YearnLINKVaultImpl',
+  YearnLINKVault = 'YearnLINKVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
   MockyvWBTC = 'MockyvWBTC',
@@ -121,6 +123,7 @@ export enum eContractid {
   CollateralAdapterImpl = 'CollateralAdapterImpl',
   Liquidator = 'Liquidator',
   LiquidatorImpl = 'LiquidatorImpl',
+  MockLINKForFTM = 'MockLINKForFTM',
 }
 
 /*
@@ -247,6 +250,7 @@ export interface iAssetBase<T> {
   mooTOMB_FTM: T;
   mooTOMB_MIMATIC: T;
   yvfBEETS: T;
+  yvLINK: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -267,6 +271,7 @@ export type iFantomPoolAssets<T> = Pick<
   | 'mooTOMB_FTM'
   | 'mooTOMB_MIMATIC'
   | 'yvfBEETS'
+  | 'yvLINK'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -289,6 +294,7 @@ export enum TokenContractId {
   mooTOMB_FTM = 'mooTOMB_FTM',
   mooTOMB_MATIC = 'mooTOMB_MATIC',
   yvfBEETS = 'yvfBEETS',
+  yvLINK = 'yvLINK',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -444,6 +450,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   TOMB_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
   fBEETS: iParamsPerNetwork<tEthereumAddress>;
   BEETS: iParamsPerNetwork<tEthereumAddress>;
+  LINK: iParamsPerNetwork<tEthereumAddress>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
@@ -451,6 +458,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   BeefyVaultTOMB_FTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyVaultTOMB_MIMATIC: iParamsPerNetwork<tEthereumAddress>;
   YearnFBEETSVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnLINKVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
   TombSwapRouter: iParamsPerNetwork<tEthereumAddress>;

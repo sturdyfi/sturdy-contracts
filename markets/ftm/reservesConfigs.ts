@@ -11,6 +11,7 @@ import {
   rateStrategyMOOTOMB_FTM,
   rateStrategyMOOTOMB_MIMATIC,
   rateStrategyYVFBEETS,
+  rateStrategyYVLINK,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -167,3 +168,16 @@ export const strategyYVWETH: IReserveParams = {
     emissionPerSecond: '0',
   };
 
+  export const strategyYVLINK: IReserveParams = {
+    strategy: rateStrategyYVLINK,
+    baseLTVAsCollateral: '7000',
+    liquidationThreshold: '7500',
+    liquidationBonus: '10750',
+    borrowingEnabled: false,
+    stableBorrowRateEnabled: false,
+    reserveDecimals: '18',
+    aTokenImpl: eContractid.ATokenForCollateral,
+    reserveFactor: '0',
+    collateralEnabled: true,
+    emissionPerSecond: '0',
+  };  

@@ -9,6 +9,7 @@ import {
   getYearnVault,
   getYearnWBTCVault,
   getYearnWETHVault,
+  getYearnLINKVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -56,6 +57,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               network
             ),
             yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
+            yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
           };
 
     const acceptableVaults =
@@ -71,6 +73,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
             mooTOMB_MIMATIC: (await getTombFtmBeefyVault()).address,
             yvfBEETS: (await getYearnFBEETSVault()).address,
+            yvLINK: (await getYearnLINKVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

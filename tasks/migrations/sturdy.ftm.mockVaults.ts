@@ -12,6 +12,7 @@ import {
   deployMockyvWBTC,
   deployMockyvWETH,
   deployMockyvWFTM,
+  deployMockYearnVault,
 } from '../../helpers/contracts-deployments';
 import {
   getFirstSigner,
@@ -24,7 +25,7 @@ import {
   getParamPerNetwork,
   verifyContract,
 } from '../../helpers/contracts-helpers';
-import { eNetwork, IFantomConfiguration } from '../../helpers/types';
+import { eNetwork, IFantomConfiguration, eContractid } from '../../helpers/types';
 import { DaiFactory } from '../../types';
 
 task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
@@ -41,6 +42,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const booAddress = getParamPerNetwork(poolConfig.BOO, network);
     const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
     const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
+    const linkAddress = getParamPerNetwork(poolConfig.LINK, network);
 
     // // Frozen vault on testnet: TOMB_MIMATIC_LP, TOMB_FTM_LP
     // const configurator = await getLendingPoolConfiguratorProxy();
@@ -87,6 +89,14 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockMooTOMBMIMATIC address `, mooTOMB_MIMATIC.address);
+
+    console.log('Deploying MockyvLINK started\n');
+    const yvLINK = await deployMockYearnVault(
+      eContractid.MockLINKForFTM,
+      [linkAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockyvLINK`, yvLINK.address);
 
     // console.log('Deploying MockTOMBMIMATICLP started\n');
     // const TOMB_MIMATIC_LP = await deployMintableERC20(

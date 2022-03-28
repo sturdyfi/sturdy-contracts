@@ -29,6 +29,11 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
   ILendingPoolAddressesProvider internal _addressesProvider;
 
   /**
+   * @dev Receive FTM
+   */
+  receive() external payable {}
+
+  /**
    * @dev Function is invoked by the proxy contract when the Adapter contract is deployed.
    * @param _provider The address of the provider
    **/
@@ -56,6 +61,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     (address collateralAddress, address borrowerAddress) = abi.decode(params, (address, address));
 
     // call liquidation
+    IERC20(assets[0]).approve(_addressesProvider.getLendingPool(), amounts[0]);
     ILendingPool(_addressesProvider.getLendingPool()).liquidationCall(
       collateralAddress,
       assets[0],
@@ -68,7 +74,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
     // Approve the LendingPool contract allowance to *pull* the owed amount
     uint256 amountOwing = amounts[0].add(premiums[0]);
-    IERC20(assets[0]).approve(address(_addressesProvider.getLendingPool()), amountOwing);
+    IERC20(assets[0]).approve(_addressesProvider.getAddress('AAVE_LENDING_POOL'), amountOwing);
 
     return true;
   }

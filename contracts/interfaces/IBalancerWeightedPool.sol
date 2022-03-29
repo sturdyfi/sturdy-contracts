@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.6.12;
+pragma experimental ABIEncoderV2;
 
 enum Variable {
   PAIR_PRICE,
@@ -25,6 +26,44 @@ interface IBalancerWeightedPool {
    * @dev Returns latest sample of `variable`. Prices are represented as 18 decimal fixed point values.
    */
   function getLatest(Variable variable) external view returns (uint256);
+
+  /**
+   * @dev Returns the time average weighted price corresponding to each of `queries`. Prices are represented as 18
+   * decimal fixed point values.
+   */
+  function getTimeWeightedAverage(OracleAverageQuery[] memory queries)
+    external
+    view
+    returns (uint256[] memory results);
+
+  /**
+   * @dev Information for a Time Weighted Average query.
+   *
+   * Each query computes the average over a window of duration `secs` seconds that ended `ago` seconds ago. For
+   * example, the average over the past 30 minutes is computed by settings secs to 1800 and ago to 0. If secs is 1800
+   * and ago is 1800 as well, the average between 60 and 30 minutes ago is computed instead.
+   */
+  struct OracleAverageQuery {
+    Variable variable;
+    uint256 secs;
+    uint256 ago;
+  }
+
+  /**
+   * @dev Returns the raw data of the sample at `index`.
+   */
+  function getSample(uint256 index)
+    external
+    view
+    returns (
+      int256 logPairPrice,
+      int256 accLogPairPrice,
+      int256 logBptPrice,
+      int256 accLogBptPrice,
+      int256 logInvariant,
+      int256 accLogInvariant,
+      uint256 timestamp
+    );
 
   function getPoolId() external view returns (bytes32);
 

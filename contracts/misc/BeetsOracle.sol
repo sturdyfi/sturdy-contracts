@@ -15,13 +15,22 @@ import '../lib/FixedPoint.sol';
 contract BeetsOracle is IOracle, Ownable {
   using FixedPoint for *;
   using BoringMath for uint256;
-  uint256 public constant PERIOD = 10 minutes;
+  uint256 public secs = 600;
+  uint256 public ago = 1;
   IChainlinkAggregator public constant FTM_USD =
     IChainlinkAggregator(0xf4766552D15AE4d256Ad41B6cf2933482B0680dc);
   // IBalancerVault public constant BeethOven_Vault =
   //   IBalancerVault(0x20dd72Ed959b6147912C2e529F0a0C651c33c9ce);
   IBalancerWeightedPool public constant BEETS_FTM =
     IBalancerWeightedPool(0xcdE5a11a4ACB4eE4c805352Cec57E236bdBC3837);
+
+  function setSecs(uint256 _secs) public onlyOwner {
+    secs = _secs;
+  }
+
+  function setAgo(uint256 _ago) public onlyOwner {
+    ago = _ago;
+  }
 
   function get() public override returns (bool, uint256) {
     return (false, 0);
@@ -34,7 +43,23 @@ contract BeetsOracle is IOracle, Ownable {
   // Check the current spot exchange rate without any state changes
   /// @inheritdoc IOracle
   function latestAnswer() external view override returns (int256 rate) {
-    uint256 _latestAnswer = BEETS_FTM.getLatest(Variable.PAIR_PRICE);
-    rate = int256(_latestAnswer.mul(uint256(FTM_USD.latestAnswer())) / 1e18);
+    uint256 _price;
+    (, , , , , , uint256 timestamp) = BEETS_FTM.getSample(1023);
+
+    if (timestamp > 0) {
+      IBalancerWeightedPool.OracleAverageQuery[]
+        memory queries = new IBalancerWeightedPool.OracleAverageQuery[](1);
+
+      queries[0].variable = Variable.PAIR_PRICE;
+      queries[0].secs = secs;
+      queries[0].ago = ago;
+
+      uint256[] memory results = BEETS_FTM.getTimeWeightedAverage(queries);
+      _price = results[0];
+    } else {
+      _price = BEETS_FTM.getLatest(Variable.PAIR_PRICE);
+    }
+
+    rate = int256(_price.mul(uint256(FTM_USD.latestAnswer())) / 1e18);
   }
 }

@@ -15,6 +15,7 @@ import '../lib/FixedPoint.sol';
 contract BeetsOracle is IOracle, Ownable {
   using FixedPoint for *;
   using BoringMath for uint256;
+
   uint256 public secs = 600;
   uint256 public ago = 1;
   IChainlinkAggregator public constant FTM_USD =
@@ -23,14 +24,6 @@ contract BeetsOracle is IOracle, Ownable {
   //   IBalancerVault(0x20dd72Ed959b6147912C2e529F0a0C651c33c9ce);
   IBalancerWeightedPool public constant BEETS_FTM =
     IBalancerWeightedPool(0xcdE5a11a4ACB4eE4c805352Cec57E236bdBC3837);
-
-  function setSecs(uint256 _secs) public onlyOwner {
-    secs = _secs;
-  }
-
-  function setAgo(uint256 _ago) public onlyOwner {
-    ago = _ago;
-  }
 
   function get() public override returns (bool, uint256) {
     return (false, 0);

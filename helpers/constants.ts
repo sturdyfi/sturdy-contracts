@@ -36,7 +36,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   fUSDT: oneEther.multipliedBy('0.000267347358572').toFixed(),
   stETH: oneEther.toFixed(),
   WETH: oneEther.toFixed(),
-  // mooWETH: oneEther.toFixed(),
+  mooWETH: oneEther.toFixed(),
   yvWFTM: oneEther.multipliedBy('0.00075589352654034').toFixed(),
   yvWETH: oneEther.toFixed(),
   yvWBTC: oneEther.multipliedBy('10.721894060489825').toFixed(),

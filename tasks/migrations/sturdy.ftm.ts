@@ -36,8 +36,8 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('7. Deploy Yearn vault');
     await DRE.run('full:deploy-yearn-vault', { pool: POOL_NAME });
 
-    // console.log('7-1. Deploy Beefy vault');
-    // await DRE.run('full:deploy-beefy-vault', { pool: POOL_NAME });
+    console.log('7-1. Deploy Beefy ETH vault');
+    await DRE.run('full:deploy-beefy-eth-vault', { pool: POOL_NAME });
 
     console.log('7-2. Deploy Yearn WETH vault');
     await DRE.run('full:deploy-yearn-weth-vault', { pool: POOL_NAME });

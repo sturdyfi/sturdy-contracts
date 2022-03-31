@@ -117,14 +117,15 @@ export enum eContractid {
   MockWETHForFTM = 'MockWETHForFTM',
   MockWBTCForFTM = 'MockWBTCForFTM',
   MockBOOForFTM = 'MockBOOForFTM',
-  // BeefyVault = 'BeefyVault',
-  // BeefyVaultImpl = 'BeefyVaultImpl',
+  BeefyETHVault = 'BeefyETHVault',
+  BeefyETHVaultImpl = 'BeefyETHVaultImpl',
   CollateralAdapter = 'CollateralAdapter',
   CollateralAdapterImpl = 'CollateralAdapterImpl',
   Liquidator = 'Liquidator',
   LiquidatorImpl = 'LiquidatorImpl',
   MockLINKForFTM = 'MockLINKForFTM',
   MockFBEETSForFTM = 'MockFBEETSForFTM',
+  MockBeeefyETHForFTM = 'MockBeeefyETHForFTM',
 }
 
 /*
@@ -244,7 +245,7 @@ export interface iAssetBase<T> {
   USD: T;
   stETH: T;
   yvWFTM: T;
-  // mooWETH: T;
+  mooWETH: T;
   yvWETH: T;
   yvWBTC: T;
   yvBOO: T;
@@ -265,7 +266,8 @@ export type iFantomPoolAssets<T> = Pick<
   | 'DAI'
   | 'USDC'
   | 'yvWFTM'
-  | /* 'mooWETH' | */ 'fUSDT'
+  | 'mooWETH'
+  | 'fUSDT'
   | 'yvWETH'
   | 'yvWBTC'
   | 'yvBOO'
@@ -288,7 +290,7 @@ export enum TokenContractId {
   USDT = 'USDT',
   stETH = 'stETH',
   yvWFTM = 'yvWFTM',
-  // mooWETH = 'mooWETH',
+  mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
   yvWBTC = 'yvWBTC',
   yvBOO = 'yvBOO',
@@ -460,7 +462,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   BeefyVaultTOMB_MIMATIC: iParamsPerNetwork<tEthereumAddress>;
   YearnFBEETSVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnLINKVaultFTM: iParamsPerNetwork<tEthereumAddress>;
-  // BeefyVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyETHVault: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
   TombSwapRouter: iParamsPerNetwork<tEthereumAddress>;
   AavePool: iParamsPerNetwork<tEthereumAddress>;

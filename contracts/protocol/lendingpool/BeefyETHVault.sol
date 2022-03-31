@@ -13,13 +13,14 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import 'hardhat/console.sol';
 
 /**
- * @title BeefyVault
+ * @title BeefyETHVault
  * @notice mooScreamETH/WETH Vault by using Beefy on Fantom
  * @author Sturdy
  **/
-contract BeefyVault is GeneralVault {
+contract BeefyETHVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
@@ -52,6 +53,9 @@ contract BeefyVault is GeneralVault {
     emit ProcessYield(WETH, yieldWETH);
   }
 
+  /**
+   * @dev Swap 'WETH' using SpookySwap
+   */
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
     address WETH = _addressesProvider.getAddress('WETH');
@@ -59,6 +63,7 @@ contract BeefyVault is GeneralVault {
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+
     uint256 minAmountFromPrice = _wethAmount
       .mul(oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH')))
       .div(10**18)
@@ -69,7 +74,7 @@ contract BeefyVault is GeneralVault {
     // Exchange WETH -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
     path[0] = address(WETH);
-    path[1] = _addressesProvider.getAddress('WFTM');
+    path[1] = address(_addressesProvider.getAddress('WFTM'));
     path[2] = _tokenOut;
 
     IERC20(WETH).approve(uniswapRouter, _wethAmount);
@@ -81,6 +86,7 @@ contract BeefyVault is GeneralVault {
       address(this),
       block.timestamp
     );
+
     require(receivedAmounts[2] > 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[2],

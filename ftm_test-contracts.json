@@ -667,5 +667,41 @@
     "localhost": {
       "address": "0x8a1449BF5583e2E6F7E7ccdaFFFFFAd511825d41"
     }
+  },
+  "MockBeeefyETHForFTM": {
+    "ftm_test": {
+      "address": "0xDD7eEE411FF990561A679646e9d1E08861D6486d",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xDD7eEE411FF990561A679646e9d1E08861D6486d"
+    }
+  },
+  "BeefyETHVaultImpl": {
+    "ftm_test": {
+      "address": "0x33fdbe85950B339bB6562CFb3bfB1925e74A00c8",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x33fdbe85950B339bB6562CFb3bfB1925e74A00c8"
+    }
+  },
+  "BeefyETHVault": {
+    "ftm_test": {
+      "address": "0x6724EEC79445b6d21856CC17b653c7311989fEc6",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x6724EEC79445b6d21856CC17b653c7311989fEc6"
+    }
+  },
+  "rateStrategyMOOWETH": {
+    "ftm_test": {
+      "address": "0x58009A0A37e2FBFfb396D51dcCD920544a3D88B9",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x58009A0A37e2FBFfb396D51dcCD920544a3D88B9"
+    }
   }
 }

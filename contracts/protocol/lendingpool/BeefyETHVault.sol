@@ -40,7 +40,7 @@ contract BeefyETHVault is GeneralVault {
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).withdraw(yieldMOOWETH);
-    uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)) - before;
+    uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)).sub(before);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWETH);
     for (uint256 i = 0; i < assetYields.length; i++) {
@@ -97,6 +97,27 @@ contract BeefyETHVault is GeneralVault {
     IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
+  }
+
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    override
+    returns (uint256)
+  {
+    address WETH = _addressesProvider.getAddress('WETH');
+
+    require(_asset == WETH, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+
+    // Withdraw from Beefy Vault and receive WETH
+    uint256 before = IERC20(WETH).balanceOf(address(this));
+    IBeefyVault(_addressesProvider.getAddress('MOOWETH')).withdraw(_amount);
+    uint256 assetAmount = IERC20(WETH).balanceOf(address(this)).sub(before);
+
+    // Deliver LINK to user
+    TransferHelper.safeTransfer(WETH, msg.sender, assetAmount);
+
+    return assetAmount;
   }
 
   /**

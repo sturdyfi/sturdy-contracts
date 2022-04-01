@@ -13,6 +13,7 @@ import {
   deployMockyvWETH,
   deployMockyvWFTM,
   deployMockYearnVault,
+  deployMockBeefyVault,
 } from '../../helpers/contracts-deployments';
 import {
   getFirstSigner,
@@ -107,6 +108,13 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     );
     console.log(`MockyvfBEETS`, yvfBEETS.address);
 
+    console.log('Deploying MockMooETH started\n');
+    const mooWETH = await deployMockBeefyVault(
+      eContractid.MockBeeefyETHForFTM,
+      [wethAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockMooETH`, mooWETH.address);
     // console.log('Deploying MockTOMBMIMATICLP started\n');
     // const TOMB_MIMATIC_LP = await deployMintableERC20(
     //   ['TOMB-MIMATIC LP', 'TOMB-MIMATIC', '18'],

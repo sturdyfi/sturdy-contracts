@@ -98,6 +98,7 @@ import {
   BeetsOracleFactory,
   YearnLINKVaultFactory,
   MockYearnVaultFactory,
+  MockBeefyVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1446,6 +1447,18 @@ export const deployMockYearnVault = async (
 ) =>
   withSaveAndVerify(
     await new MockYearnVaultFactory(await getFirstSigner()).deploy(...args),
+    id,
+    args,
+    verify
+  );
+
+export const deployMockBeefyVault = async (
+  id: string,
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockBeefyVaultFactory(await getFirstSigner()).deploy(...args),
     id,
     args,
     verify

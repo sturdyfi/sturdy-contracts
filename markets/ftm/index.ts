@@ -59,7 +59,7 @@ export const FantomConfig: IFantomConfiguration = {
       USDC: '0x8f785910e0cc96f854450DFb53be6492daff0b15',
       fUSDT: '0x211554151F2f00305f33530Fdd3a5d0354927A65',
       yvWFTM: '0x5a18d89Ad063C1AEd5B3c30741333c1a1116CFE3',
-      mooWETH: '',
+      mooWETH: '0xDD7eEE411FF990561A679646e9d1E08861D6486d',
       yvWETH: '0x5F37179e6714D137C6A196eAd40d79005c5e9A61',
       yvWBTC: '0xf0074B10f63c7002A2254e8E310c60D72b13Ed91',
       yvBOO: '0x62aaa32a0AD45BE19ca418aC9e0CE9dB01d6A272',
@@ -165,7 +165,7 @@ export const FantomConfig: IFantomConfiguration = {
   },
   BeefyETHVault: {
     [eFantomNetwork.ftm]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
-    [eFantomNetwork.ftm_test]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
+    [eFantomNetwork.ftm_test]: '0xDD7eEE411FF990561A679646e9d1E08861D6486d',
     [eFantomNetwork.tenderlyFTM]: '0x0a03D2C1cFcA48075992d810cc69Bd9FE026384a',
   },
   UniswapRouter: {

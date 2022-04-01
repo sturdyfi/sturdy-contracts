@@ -569,21 +569,21 @@
   },
   "FBeetsOracle": {
     "ftm": {
-      "address": "0x47006901Bf4C3Dc61c66D6C66c56A7b5160C6a78",
+      "address": "0x7eD6f3f22Fb3F85E1071b5F6e616d5f0E0E32a49",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x47006901Bf4C3Dc61c66D6C66c56A7b5160C6a78",
+      "address": "0x7eD6f3f22Fb3F85E1071b5F6e616d5f0E0E32a49",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "BeetsOracle": {
     "ftm": {
-      "address": "0x652AbC3398051fd24C4131dbAC12685c5098419F",
+      "address": "0x0C073077eB4277d18EA10796188e07ab886032BD",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x652AbC3398051fd24C4131dbAC12685c5098419F",
+      "address": "0x0C073077eB4277d18EA10796188e07ab886032BD",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

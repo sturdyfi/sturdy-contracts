@@ -53,6 +53,7 @@ import {
   TempLiquidatorFactory,
   YearnFBEETSVaultFactory,
   YearnLINKVaultFactory,
+  DeployVaultHelperFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -720,5 +721,14 @@ export const getCollateralATokenImpl = async (address?: tEthereumAddress) =>
 export const getLiquidator = async (address?: tEthereumAddress) =>
   await TempLiquidatorFactory.connect(
     address || (await getDb().get(`${eContractid.Liquidator}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getDeployVaultHelper = async (address?: tEthereumAddress) =>
+  await DeployVaultHelperFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.DeployVaultHelper}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );

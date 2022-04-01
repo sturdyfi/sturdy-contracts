@@ -99,6 +99,7 @@ import {
   YearnLINKVaultFactory,
   MockYearnVaultFactory,
   MockBeefyVaultFactory,
+  DeployVaultHelperFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1497,3 +1498,11 @@ export const deployLiquidator = async (args: [string], verify?: boolean) => {
 
   return await getLiquidator();
 };
+
+export const deployVaultHelper = async (args: [string], verify?: boolean) =>
+  withSaveAndVerify(
+    await new DeployVaultHelperFactory(await getFirstSigner()).deploy(...args),
+    eContractid.DeployVaultHelper,
+    args,
+    verify
+  );

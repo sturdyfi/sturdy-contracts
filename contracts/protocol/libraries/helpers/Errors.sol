@@ -115,6 +115,7 @@ library Errors {
   string public constant VT_FEE_TOO_BIG = '90'; //Fee is too big
   string public constant VT_COLLATERAL_DEPOSIT_VAULT_UNAVAILABLE = '91';
   string public constant LP_LIQUIDATION_CONVERT_FAILED = '92';
+  string public constant VT_DEPLOY_FAILED = '93'; // Vault deploy failed
 
   enum CollateralManagerErrors {
     NO_ERROR,

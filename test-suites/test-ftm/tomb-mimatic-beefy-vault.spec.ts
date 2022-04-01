@@ -28,9 +28,9 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
     let signer = await ethers.provider.getSigner(tombMiMaticLPOwnerAddress);
     await TOMB_MIMATIC_LP.connect(signer).transfer(deployer.address, amountTombMiMaticLPtoDeposit);
     
-    await TOMB_MIMATIC_LP.approve(TombMiMaticBeefyVault.address, amountTombMiMaticLPtoDeposit);
+    await TOMB_MIMATIC_LP.connect(deployer.signer).approve(TombMiMaticBeefyVault.address, amountTombMiMaticLPtoDeposit);
 
-    await TombMiMaticBeefyVault.depositCollateral(TOMB_MIMATIC_LP.address, amountTombMiMaticLPtoDeposit);
+    await TombMiMaticBeefyVault.connect(deployer.signer).depositCollateral(TOMB_MIMATIC_LP.address, amountTombMiMaticLPtoDeposit);
 
     expect(await mootomb_mimatic.balanceOf(TombMiMaticBeefyVault.address)).to.be.equal(0);
     expect(await aMooTOMB_MIMATIC.balanceOf(TombMiMaticBeefyVault.address)).to.be.equal(0);
@@ -39,14 +39,14 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
   });
 
   it('transferring aMooTOMB_MIMATIC should be success after deposit TOMB_MIMATIC_LP', async () => {
-    const { aMooTOMB_MIMATIC, users } = testEnv;
-    await expect(aMooTOMB_MIMATIC.transfer(users[0].address, await convertToCurrencyDecimals(aMooTOMB_MIMATIC.address, '50'))).to.not.be.reverted;
+    const { aMooTOMB_MIMATIC, users, deployer } = testEnv;
+    await expect(aMooTOMB_MIMATIC.connect(deployer.signer).transfer(users[0].address, await convertToCurrencyDecimals(aMooTOMB_MIMATIC.address, '50'))).to.not.be.reverted;
   });
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, TombMiMaticBeefyVault, TOMB_MIMATIC_LP } = testEnv;
     const amountTombMiMaticLPtoDeposit = await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '2500');
-    await expect(TombMiMaticBeefyVault.withdrawCollateral(TOMB_MIMATIC_LP.address, amountTombMiMaticLPtoDeposit, deployer.address))
+    await expect(TombMiMaticBeefyVault.connect(deployer.address).withdrawCollateral(TOMB_MIMATIC_LP.address, amountTombMiMaticLPtoDeposit, deployer.address))
       .to.be.reverted;
   });
 
@@ -56,7 +56,7 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
     const tombMiMaticLPBeforeBalanceOfUser = await TOMB_MIMATIC_LP.balanceOf(deployer.address);
     const tombMiMaticLPWithdrawAmount = await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '2449');
 
-    await TombMiMaticBeefyVault.withdrawCollateral(TOMB_MIMATIC_LP.address, tombMiMaticLPWithdrawAmount, deployer.address);
+    await TombMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(TOMB_MIMATIC_LP.address, tombMiMaticLPWithdrawAmount, deployer.address);
 
     const tombMiMaticLPCurrentBalanceOfUser = await TOMB_MIMATIC_LP.balanceOf(deployer.address);
     expect(mootombmimaticBalanceOfPool).to.be.equal(0);
@@ -77,7 +77,7 @@ makeSuite('TombMiMaticBeefyVault - use other coin as collateral', (testEnv) => {
 
 makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
   it('distribute yield to supplier for single asset', async () => {
-    const { pool, TombMiMaticBeefyVault, usdc, users, TOMB_MIMATIC_LP, mootomb_mimatic, aMooTOMB_MIMATIC, aUsdc } = testEnv;
+    const { pool, TombMiMaticBeefyVault, usdc, users, TOMB_MIMATIC_LP, mootomb_mimatic, aMooTOMB_MIMATIC, aUsdc, deployer } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
@@ -127,7 +127,7 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
     expect(await aUsdc.balanceOf(depositor.address)).to.be.equal(amountUSDCtoDeposit);
 
     // process yield, so all yield should be converted to usdc
-    await TombMiMaticBeefyVault.processYield();
+    await TombMiMaticBeefyVault.connect(deployer.signer).processYield();
     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '11700');
     expect(await aUsdc.balanceOf(depositor.address)).to.be.gt(yieldUSDC);
   });
@@ -135,7 +135,7 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
 
 makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
   it('distribute yield to supplier for multiple asset', async () => {
-    const { pool, TombMiMaticBeefyVault, usdc, usdt, users, mootomb_mimatic, aUsdc, aUsdt, aMooTOMB_MIMATIC, TOMB_MIMATIC_LP, dai, aDai } = testEnv;
+    const { pool, TombMiMaticBeefyVault, usdc, usdt, users, mootomb_mimatic, aUsdc, aUsdt, aMooTOMB_MIMATIC, TOMB_MIMATIC_LP, dai, aDai, deployer } = testEnv;
     const depositor = users[0];
     const depositor1 = users[1];
     const depositor2 = users[2];
@@ -227,7 +227,7 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
     expect(await aUsdt.balanceOf(depositor2.address)).to.be.equal(amountUSDTtoDeposit);
 
     // process yield, so all yield should be converted to usdc and dai
-    await TombMiMaticBeefyVault.processYield();
+    await TombMiMaticBeefyVault.connect(deployer.signer).processYield();
     const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '8800');
     const yieldDAI = await convertToCurrencyDecimals(dai.address, '8800');
     const yieldUSDT = await convertToCurrencyDecimals(usdt.address, '4300');

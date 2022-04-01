@@ -69,6 +69,9 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('8-2. Deploy Liquidator');
     await DRE.run('full:deploy-liquidator', { pool: POOL_NAME });
 
+    console.log('8-3. Deploy Vault Helper');
+    await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('9. Verifying contracts');

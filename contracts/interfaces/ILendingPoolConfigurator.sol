@@ -190,4 +190,8 @@ interface ILendingPoolConfigurator {
     address indexed proxy,
     address indexed implementation
   );
+
+  function registerVault(address _vaultAddress) external;
+
+  function batchInitReserve(InitReserveInput[] calldata input) external;
 }

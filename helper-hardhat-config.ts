@@ -50,7 +50,7 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.buidlerevm]: 'http://localhost:8545',
   [eEthereumNetwork.tenderly]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
   [eEthereumNetwork.localhost]: 'http://localhost:8545',
-  [eFantomNetwork.ftm]: 'https://rpc.ftm.tools/',
+  [eFantomNetwork.ftm]: 'https://rpc2.fantom.network/', //'https://rpc.ftm.tools/',
   [eFantomNetwork.ftm_test]: 'https://rpc.testnet.fantom.network/',
 };
 

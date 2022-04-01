@@ -29,7 +29,7 @@ import {
   UiPoolDataProviderFactory,
   UiIncentiveDataProviderFactory,
   YearnVaultFactory,
-  BeefyVaultFactory,
+  BeefyETHVaultFactory,
   MockyvWFTMFactory,
   SwapinERC20Factory,
   YearnWETHVaultFactory,
@@ -567,11 +567,14 @@ export const getYearnLINKVault = async (address?: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
-// export const getBeefyVault = async (address?: tEthereumAddress) =>
-//   await BeefyVaultFactory.connect(
-//     address || (await getDb().get(`${eContractid.BeefyVault}.${DRE.network.name}`).value()).address,
-//     await getFirstSigner()
-//   );
+export const getBeefyETHVault = async (address?: tEthereumAddress) =>
+  await BeefyETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BeefyETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
 
 export const getWalletProvider = async (address?: tEthereumAddress) =>
   await WalletBalanceProviderFactory.connect(

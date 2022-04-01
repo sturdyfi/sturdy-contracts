@@ -25,10 +25,10 @@ import {
   deploySturdyIncentivesController,
   deploySturdyToken,
   deployYearnVault,
+  // deployBeefyETHVault,
   deployTombMiMaticBeefyVaultImpl,
   deployDefaultReserveInterestRateStrategy,
   deployTombMiMaticLPOracle,
-  // deployBeefyVault,
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, SturdyPools, eNetwork, IFantomConfiguration } from '../../helpers/types';
@@ -160,12 +160,14 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       USD: USD_ADDRESS,
       stETH: mockTokens.stETH.address,
       yvWFTM: mockTokens.yvWFTM.address,
-      // mooWETH: mockTokens.mooWETH.address,
+      mooWETH: mockTokens.mooWETH.address,
       yvWETH: mockTokens.yvWETH.address,
       yvWBTC: mockTokens.yvWBTC.address,
       yvBOO: mockTokens.yvBOO.address,
       mooTOMB_FTM: mockTokens.mooTOMB_FTM.address,
       mooTOMB_MIMATIC: mockTokens.mooTOMB_MIMATIC.address,
+      yvfBEETS: mockTokens.yvfBEETS.address,
+      yvLINK: mockTokens.yvLINK.address,
     },
     fallbackOracle
   );
@@ -262,7 +264,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   // console.log(`\tFinished Yearn Vault deployment`);
 
   // console.log('Beefy Vault');
-  // const beefyVault = await deployBeefyVault();
+  // const beefyVault = await deployBeefyETHVault();
   // await configurator.registerVault(beefyVault.address);
   // console.log('Beefy Vault', beefyVault.address);
   // console.log(`\tFinished Beefy Vault deployment`);

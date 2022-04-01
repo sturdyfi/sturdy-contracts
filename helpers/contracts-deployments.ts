@@ -35,6 +35,7 @@ import {
   getYearnWETHVault,
   getYearnFBEETSVault,
   getYearnLINKVault,
+  getBeefyETHVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -69,7 +70,7 @@ import {
   DaiFactory,
   ATokenForCollateralFactory,
   YearnVaultFactory,
-  BeefyVaultFactory,
+  BeefyETHVaultFactory,
   MockyvWFTMFactory,
   UsdcFactory,
   UsdtFactory,
@@ -97,6 +98,7 @@ import {
   BeetsOracleFactory,
   YearnLINKVaultFactory,
   MockYearnVaultFactory,
+  MockBeefyVaultFactory,
   DeployVaultHelperFactory,
 } from '../types';
 import {
@@ -1194,45 +1196,45 @@ export const deployYearnLINKVault = async (verify?: boolean) => {
   return await getYearnLINKVault();
 };
 
-// export const deployBeefyVault = async (verify?: boolean) => {
-//   const beefyVault = await withSaveAndVerify(
-//     await new BeefyVaultFactory(await getFirstSigner()).deploy(),
-//     eContractid.BeefyVaultImpl,
-//     [],
-//     verify
-//   );
+export const deployBeefyETHVault = async (verify?: boolean) => {
+  const beefyETHVault = await withSaveAndVerify(
+    await new BeefyETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.BeefyETHVaultImpl,
+    [],
+    verify
+  );
 
-//   const addressesProvider = await getLendingPoolAddressesProvider();
-//   await waitForTx(
-//     await addressesProvider.setAddressAsProxy(
-//       DRE.ethers.utils.formatBytes32String('BEEFY_VAULT'),
-//       beefyVault.address
-//     )
-//   );
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('BEEFY_ETH_VAULT'),
+      beefyETHVault.address
+    )
+  );
 
-//   const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
-//   const network = <eNetwork>DRE.network.name;
-//   await waitForTx(
-//     await addressesProvider.setAddress(
-//       DRE.ethers.utils.formatBytes32String('MOOWETH'),
-//       getParamPerNetwork(config.BeefyVaultFTM, network)
-//     )
-//   );
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('MOOWETH'),
+      getParamPerNetwork(config.BeefyETHVault, network)
+    )
+  );
 
-//   await waitForTx(
-//     await addressesProvider.setAddress(
-//       DRE.ethers.utils.formatBytes32String('WETH'),
-//       getParamPerNetwork(config.WETH, network)
-//     )
-//   );
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WETH'),
+      getParamPerNetwork(config.WETH, network)
+    )
+  );
 
-//   const beefyVaultProxyAddress = await addressesProvider.getAddress(
-//     DRE.ethers.utils.formatBytes32String('BEEFY_VAULT')
-//   );
-//   await insertContractAddressInDb(eContractid.BeefyVault, beefyVaultProxyAddress);
+  const beefyVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('BEEFY_ETH_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.BeefyETHVault, beefyVaultProxyAddress);
 
-//   return await getBeefyVault();
-// };
+  return await getBeefyETHVault();
+};
 
 export const deploySturdyIncentivesControllerImpl = async (
   args: [tEthereumAddress],
@@ -1446,6 +1448,18 @@ export const deployMockYearnVault = async (
 ) =>
   withSaveAndVerify(
     await new MockYearnVaultFactory(await getFirstSigner()).deploy(...args),
+    id,
+    args,
+    verify
+  );
+
+export const deployMockBeefyVault = async (
+  id: string,
+  args: [string, string, string, string, string, string, string],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MockBeefyVaultFactory(await getFirstSigner()).deploy(...args),
     id,
     args,
     verify

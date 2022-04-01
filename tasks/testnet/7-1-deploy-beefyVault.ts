@@ -1,14 +1,14 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployBeefyETHVault } from '../../helpers/contracts-deployments';
-import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
+import { getLendingPoolConfiguratorProxy, getPriceOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { eNetwork, IFantomConfiguration } from '../../helpers/types';
 
 const CONTRACT_NAME = 'BeefyETHVault';
 
-task(`full:deploy-beefy-eth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
+task(`testnet:deploy-beefy-eth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .addFlag('verify', `Verify ${CONTRACT_NAME} contract via Etherscan API.`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -20,28 +20,22 @@ task(`full:deploy-beefy-eth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ReserveAssets, ChainlinkAggregator } =
-      poolConfig as IFantomConfiguration;
-    const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
+    const { ReserveAssets } = poolConfig as IFantomConfiguration;
 
     const beefyETHVault = await deployBeefyETHVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(beefyETHVault.address);
-    await beefyETHVault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
 
-    // // Register mooWETH oracle
-    const mooWETHOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).mooWETH;
-    const sturdyOracle = await getSturdyOracle();
+    const priceOracleInstance = await getPriceOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources(
-        [getParamPerNetwork(ReserveAssets, network).mooWETH],
-        [mooWETHOracleAddress]
+      await priceOracleInstance.setAssetPrice(
+        poolConfig.ReserveAssets[network]['mooWETH'],
+        poolConfig.Mocks.AllAssetsInitialPrices['mooWETH']
       )
     );
-
     console.log(
       (
-        await sturdyOracle.getAssetPrice(getParamPerNetwork(ReserveAssets, network).mooWETH)
+        await priceOracleInstance.getAssetPrice(getParamPerNetwork(ReserveAssets, network).mooWETH)
       ).toString()
     );
 

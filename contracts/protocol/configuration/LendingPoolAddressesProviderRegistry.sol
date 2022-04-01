@@ -11,7 +11,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
  * - Used for indexing purposes of Sturdy protocol's markets
  * - The id assigned to a LendingPoolAddressesProvider refers to the market it is connected with,
  *   for example with `0` for the Sturdy main market and `1` for the next created
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesProviderRegistry {
   mapping(address => uint256) private _addressesProviders;

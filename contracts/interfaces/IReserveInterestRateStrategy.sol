@@ -4,9 +4,13 @@ pragma solidity 0.6.12;
 /**
  * @title IReserveInterestRateStrategyInterface interface
  * @dev Interface for the calculation of the interest rates
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  */
 interface IReserveInterestRateStrategy {
+  function variableRateSlope1() external view returns (uint256);
+
+  function variableRateSlope2() external view returns (uint256);
+
   function baseVariableBorrowRate() external view returns (uint256);
 
   function getMaxVariableBorrowRate() external view returns (uint256);

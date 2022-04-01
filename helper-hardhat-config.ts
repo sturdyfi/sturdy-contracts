@@ -50,7 +50,8 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
   [eEthereumNetwork.buidlerevm]: 'http://localhost:8545',
   [eEthereumNetwork.tenderly]: `https://rpc.tenderly.co/fork/${TENDERLY_FORK_ID}`,
   [eEthereumNetwork.localhost]: 'http://localhost:8545',
-  [eFantomNetwork.ftm]: 'https://rpc.ftm.tools/',
+  [eFantomNetwork.ftm]: 'https://rpc2.fantom.network/', //'https://rpc.ftm.tools/',
+  [eFantomNetwork.ftm_test]: 'https://rpc.testnet.fantom.network/',
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
@@ -64,7 +65,8 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
   [eEthereumNetwork.buidlerevm]: 65 * GWEI,
   [eEthereumNetwork.tenderly]: 0.01 * GWEI,
   [eEthereumNetwork.goerli]: 65 * GWEI,
-  [eFantomNetwork.ftm]: 0.01 * GWEI,
+  [eFantomNetwork.ftm]: 300 * GWEI,
+  [eFantomNetwork.ftm_test]: 300 * GWEI,
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
@@ -77,6 +79,7 @@ export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
   [eEthereumNetwork.localhost]: undefined,
   [eEthereumNetwork.buidlerevm]: undefined,
   [eEthereumNetwork.tenderly]: 12406069,
-  [eEthereumNetwork.goerli]: 6055821,
-  [eFantomNetwork.ftm]: 26893669,
+  [eEthereumNetwork.goerli]: 6365888, //6055821,
+  [eFantomNetwork.ftm]: 34787100, //34239888, //33596997, //33596303, //33430562, //33172433, //32538096, //31634864, //29874440,
+  [eFantomNetwork.ftm_test]: 8605200, //8586850, //8584100, //8454718, //8407553, //8244571, //7562913, //7241687, //6901960,
 };

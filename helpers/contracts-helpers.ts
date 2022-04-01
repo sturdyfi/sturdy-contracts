@@ -140,7 +140,7 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
   const { main, ropsten, kovan, coverage, buidlerevm, tenderly, goerli } =
     param as iEthereumParamsPerNetwork<T>;
-  const { ftm, tenderlyFTM } = param as iFantomParamsPerNetwork<T>;
+  const { ftm, ftm_test, tenderlyFTM } = param as iFantomParamsPerNetwork<T>;
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
   }
@@ -170,13 +170,17 @@ export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNet
       return ftm;
     case eFantomNetwork.tenderlyFTM:
       return tenderlyFTM;
+    case eFantomNetwork.ftm_test:
+      return ftm_test;
   }
 };
 
-export const getParamPerPool = <T>({ proto }: iParamsPerPool<T>, pool: SturdyPools) => {
+export const getParamPerPool = <T>({ proto, fantom }: iParamsPerPool<T>, pool: SturdyPools) => {
   switch (pool) {
     case SturdyPools.proto:
       return proto;
+    case SturdyPools.fantom:
+      return fantom;
     default:
       return proto;
   }

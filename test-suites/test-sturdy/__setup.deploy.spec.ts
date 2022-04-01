@@ -44,7 +44,7 @@ import {
 import { DRE, waitForTx } from '../../helpers/misc-utils';
 import { initReservesByHelper, configureReservesByHelper } from '../../helpers/init-helpers';
 import SturdyConfig from '../../markets/sturdy';
-import { ZERO_ADDRESS } from '../../helpers/constants';
+import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getLendingPool,
   getLendingPoolAddressesProvider,
@@ -93,7 +93,6 @@ const deployAllMockTokens = async (deployer: Signer) => {
 const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   console.time('setup');
   const sturdyAdmin = await deployer.getAddress();
-
   const mockTokens = await deployAllMockTokens(deployer);
   console.log('Deployed mocks');
   const addressesProvider = await deployLendingPoolAddressesProvider(SturdyConfig.MarketId);
@@ -145,53 +144,17 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {
       WETH: mockTokens.WETH.address,
       DAI: mockTokens.DAI.address,
-      //   TUSD: mockTokens.TUSD.address,
       USDC: mockTokens.USDC.address,
-      // USDT: mockTokens.USDT.address,
-      /*
-      SUSD: mockTokens.SUSD.address,
-      AAVE: mockTokens.AAVE.address,
-      BAT: mockTokens.BAT.address,
-      MKR: mockTokens.MKR.address,
-      LINK: mockTokens.LINK.address,
-      KNC: mockTokens.KNC.address,
-      WBTC: mockTokens.WBTC.address,
-      MANA: mockTokens.MANA.address,
-      ZRX: mockTokens.ZRX.address,
-      SNX: mockTokens.SNX.address,
-      BUSD: mockTokens.BUSD.address,
-      YFI: mockTokens.BUSD.address,
-      REN: mockTokens.REN.address,
-      UNI: mockTokens.UNI.address,
-      ENJ: mockTokens.ENJ.address,
-       DAI: mockTokens.LpDAI.address,
-       USDC: mockTokens.LpUSDC.address,
-       USDT: mockTokens.LpUSDT.address,
-       WBTC: mockTokens.LpWBTC.address,
-       WETH: mockTokens.LpWETH.address,
-       UniDAIWETH: mockTokens.UniDAIWETH.address,
-      UniWBTCWETH: mockTokens.UniWBTCWETH.address,
-      UniAAVEWETH: mockTokens.UniAAVEWETH.address,
-      UniBATWETH: mockTokens.UniBATWETH.address,
-      UniDAIUSDC: mockTokens.UniDAIUSDC.address,
-      UniCRVWETH: mockTokens.UniCRVWETH.address,
-      UniLINKWETH: mockTokens.UniLINKWETH.address,
-      UniMKRWETH: mockTokens.UniMKRWETH.address,
-      UniRENWETH: mockTokens.UniRENWETH.address,
-      UniSNXWETH: mockTokens.UniSNXWETH.address,
-      UniUNIWETH: mockTokens.UniUNIWETH.address,
-      UniUSDCWETH: mockTokens.UniUSDCWETH.address,
-      UniWBTCUSDC: mockTokens.UniWBTCUSDC.address,
-      UniYFIWETH: mockTokens.UniYFIWETH.address,
-      BptWBTCWETH: mockTokens.BptWBTCWETH.address,
-      BptBALWETH: mockTokens.BptBALWETH.address,
-      WMATIC: mockTokens.WMATIC.address, */
+      fUSDT: ZERO_ADDRESS,
       USD: USD_ADDRESS,
-      /*       
-      STAKE: mockTokens.STAKE.address,
-      xSUSHI: mockTokens.xSUSHI.address, 
-*/
       stETH: mockTokens.stETH.address,
+      yvWFTM: mockTokens.yvWFTM.address,
+      yvWETH: mockTokens.yvWETH.address,
+      yvWBTC: mockTokens.yvWBTC.address,
+      yvBOO: mockTokens.yvBOO.address,
+      mooTOMB_FTM: mockTokens.mooTOMB_FTM.address,
+      mooTOMB_MIMATIC: mockTokens.mooTOMB_MIMATIC.address,
+      // mooWETH: mockTokens.mooWETH.address,
     },
     fallbackOracle
   );
@@ -213,9 +176,19 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
     {}
   );
 
-  const [tokens, aggregators] = getPairsTokenAggregator(allTokenAddresses, allAggregatorsAddresses);
+  const [tokens, aggregators] = getPairsTokenAggregator(
+    allTokenAddresses,
+    allAggregatorsAddresses,
+    SturdyConfig.OracleQuoteCurrency
+  );
 
-  await deploySturdyOracle([tokens, aggregators, fallbackOracle.address, mockTokens.WETH.address]);
+  await deploySturdyOracle([
+    tokens,
+    aggregators,
+    fallbackOracle.address,
+    mockTokens.WETH.address,
+    oneEther.toString(),
+  ]);
   await waitForTx(await addressesProvider.setPriceOracle(fallbackOracle.address));
 
   const lendingRateOracle = await deployLendingRateOracle();

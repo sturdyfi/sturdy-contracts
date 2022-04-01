@@ -5,7 +5,7 @@ import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title WadRayMath library
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @dev Provides mul and div function for wads (decimal numbers with 18 digits precision) and rays (decimals with 27 digits)
  **/
 

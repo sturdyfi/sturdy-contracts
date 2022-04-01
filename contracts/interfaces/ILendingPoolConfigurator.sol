@@ -11,6 +11,7 @@ interface ILendingPoolConfigurator {
     address interestRateStrategyAddress;
     address underlyingAsset;
     address treasury;
+    address yieldAddress;
     address incentivesController;
     string underlyingAssetName;
     string aTokenName;
@@ -189,4 +190,8 @@ interface ILendingPoolConfigurator {
     address indexed proxy,
     address indexed implementation
   );
+
+  function registerVault(address _vaultAddress) external;
+
+  function batchInitReserve(InitReserveInput[] calldata input) external;
 }

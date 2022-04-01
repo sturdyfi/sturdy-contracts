@@ -16,7 +16,7 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
  * point of utilization and another from that one to 100%
  * - An instance of this same contract, can't be used across different Sturdy markets, due to the caching
  *   of the LendingPoolAddressesProvider
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   using WadRayMath for uint256;
@@ -73,11 +73,11 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     _stableRateSlope2 = stableRateSlope2;
   }
 
-  function variableRateSlope1() external view returns (uint256) {
+  function variableRateSlope1() external view override returns (uint256) {
     return _variableRateSlope1;
   }
 
-  function variableRateSlope2() external view returns (uint256) {
+  function variableRateSlope2() external view override returns (uint256) {
     return _variableRateSlope2;
   }
 

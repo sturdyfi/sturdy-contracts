@@ -6,7 +6,7 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveConfiguration library
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @notice Implements the bitmap logic to handle the reserve configuration
  */
 library ReserveConfiguration {

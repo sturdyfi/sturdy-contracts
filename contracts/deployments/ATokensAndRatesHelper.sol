@@ -7,6 +7,7 @@ import {LendingPoolAddressesProvider} from '../protocol/configuration/LendingPoo
 import {LendingPoolConfigurator} from '../protocol/lendingpool/LendingPoolConfigurator.sol';
 import {AToken} from '../protocol/tokenization/AToken.sol';
 import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {IATokensAndRatesHelper} from '../interfaces/IATokensAndRatesHelper.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {StringLib} from './StringLib.sol';
 
@@ -19,17 +20,6 @@ contract ATokensAndRatesHelper is Ownable {
   struct InitDeploymentInput {
     address asset;
     uint256[6] rates;
-  }
-
-  struct ConfigureReserveInput {
-    address asset;
-    uint256 baseLTV;
-    uint256 liquidationThreshold;
-    uint256 liquidationBonus;
-    uint256 reserveFactor;
-    bool stableBorrowingEnabled;
-    bool borrowingEnabled;
-    bool collateralEnabled;
   }
 
   constructor(
@@ -61,7 +51,10 @@ contract ATokensAndRatesHelper is Ownable {
     }
   }
 
-  function configureReserves(ConfigureReserveInput[] calldata inputParams) external onlyOwner {
+  function configureReserves(IATokensAndRatesHelper.ConfigureReserveInput[] calldata inputParams)
+    external
+    onlyOwner
+  {
     LendingPoolConfigurator configurator = LendingPoolConfigurator(poolConfigurator);
     for (uint256 i = 0; i < inputParams.length; i++) {
       configurator.configureReserveAsCollateral(

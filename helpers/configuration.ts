@@ -14,6 +14,8 @@ import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
 import { deployWETHMocked } from './contracts-deployments';
+import { getYearnVault } from './contracts-getters';
+import { ZERO_ADDRESS } from './constants';
 
 export enum ConfigNames {
   Commons = 'Commons',
@@ -43,6 +45,9 @@ export const getReservesConfigByPool = (pool: SturdyPools): iMultiPoolsAssets<IR
     {
       [SturdyPools.proto]: {
         ...SturdyConfig.ReservesConfig,
+      },
+      [SturdyPools.fantom]: {
+        ...FantomConfig.ReservesConfig,
       },
     },
     pool
@@ -86,21 +91,8 @@ export const getATokenDomainSeparatorPerNetwork = (
   config: ICommonConfiguration
 ): tEthereumAddress => getParamPerNetwork<tEthereumAddress>(config.ATokenDomainSeparator, network);
 
-export const getWethAddress = async (config: ICommonConfiguration) => {
-  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
-  const wethAddress = getParamPerNetwork(config.WETH, <eNetwork>currentNetwork);
-  if (wethAddress) {
-    return wethAddress;
-  }
-  if (currentNetwork.includes('main')) {
-    throw new Error('WETH not set at mainnet configuration.');
-  }
-  const weth = await deployWETHMocked();
-  return weth.address;
-};
-
 export const getWrappedNativeTokenAddress = async (config: ICommonConfiguration) => {
-  const currentNetwork = process.env.MAINNET_FORK === 'true' ? 'main' : DRE.network.name;
+  const currentNetwork = process.env.FORK ? process.env.FORK : DRE.network.name;
   const wethAddress = getParamPerNetwork(config.WrappedNativeToken, <eNetwork>currentNetwork);
   if (wethAddress) {
     return wethAddress;
@@ -123,4 +115,16 @@ export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {
   return filterMapBy(LendingRateOracleRatesCommon, (key) =>
     Object.keys(ReserveAssets[network]).includes(key)
   );
+};
+
+export const getQuoteCurrency = async (config: ICommonConfiguration) => {
+  switch (config.OracleQuoteCurrency) {
+    case 'ETH':
+    case 'WETH':
+      return getWrappedNativeTokenAddress(config);
+    case 'USD':
+      return config.ProtocolGlobalParams.UsdAddress;
+    default:
+      throw `Quote ${config.OracleQuoteCurrency} currency not set. Add a new case to getQuoteCurrency switch`;
+  }
 };

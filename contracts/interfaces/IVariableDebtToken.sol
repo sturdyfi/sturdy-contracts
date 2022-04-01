@@ -7,7 +7,7 @@ import {ISturdyIncentivesController} from './ISturdyIncentivesController.sol';
 
 /**
  * @title IVariableDebtToken
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @notice Defines the basic interface for a variable debt token.
  **/
 interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {

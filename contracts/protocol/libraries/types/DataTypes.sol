@@ -23,6 +23,8 @@ library DataTypes {
     address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;
+    //address of the yield contract
+    address yieldAddress;
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
   }

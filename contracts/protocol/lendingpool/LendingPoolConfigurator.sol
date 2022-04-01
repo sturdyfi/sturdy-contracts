@@ -19,7 +19,7 @@ import {ILendingPoolConfigurator} from '../../interfaces/ILendingPoolConfigurato
 
 /**
  * @title LendingPoolConfigurator contract
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @dev Implements the configuration methods for the Sturdy protocol
  **/
 
@@ -58,14 +58,14 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev register vault
    **/
-  function registerVault(address _vaultAddress) external onlyPoolAdmin {
+  function registerVault(address _vaultAddress) external override onlyPoolAdmin {
     pool.registerVault(_vaultAddress);
   }
 
   /**
    * @dev Initializes reserves in batch
    **/
-  function batchInitReserve(InitReserveInput[] calldata input) external onlyPoolAdmin {
+  function batchInitReserve(InitReserveInput[] calldata input) external override onlyPoolAdmin {
     ILendingPool cachedPool = pool;
     for (uint256 i = 0; i < input.length; i++) {
       _initReserve(cachedPool, input[i]);
@@ -118,6 +118,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
     pool.initReserve(
       input.underlyingAsset,
+      input.yieldAddress,
       aTokenProxyAddress,
       stableDebtTokenProxyAddress,
       variableDebtTokenProxyAddress,

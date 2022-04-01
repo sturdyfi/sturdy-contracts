@@ -21,6 +21,7 @@ export enum eEthereumNetwork {
 
 export enum eFantomNetwork {
   ftm = 'ftm',
+  ftm_test = 'ftm_test',
   tenderlyFTM = 'tenderlyFTM',
 }
 
@@ -52,10 +53,18 @@ export enum eContractid {
   MockAggregator = 'MockAggregator',
   LendingRateOracle = 'LendingRateOracle',
   SturdyOracle = 'SturdyOracle',
+  BooOracle = 'BooOracle',
+  TombOracle = 'TombOracle',
+  TombFtmLPOracle = 'TombFtmLPOracle',
+  MiMaticOracle = 'MiMaticOracle',
+  TombMiMaticLPOracle = 'TombMiMaticLPOracle',
+  FBeetsOracle = 'FBeetsOracle',
+  BeetsOracle = 'BeetsOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
   AToken = 'AToken',
+  ATokenForCollateral = 'ATokenForCollateral',
   MockAToken = 'MockAToken',
   MockStableDebtToken = 'MockStableDebtToken',
   MockVariableDebtToken = 'MockVariableDebtToken',
@@ -68,19 +77,56 @@ export enum eContractid {
   UiIncentiveDataProvider = 'UiIncentiveDataProvider',
   UiPoolDataProvider = 'UiPoolDataProvider',
   IERC20Detailed = 'IERC20Detailed',
+  SwapinERC20 = 'SwapinERC20',
   StableDebtToken = 'StableDebtToken',
   VariableDebtToken = 'VariableDebtToken',
   StableAndVariableTokensHelper = 'StableAndVariableTokensHelper',
   ATokensAndRatesHelper = 'ATokensAndRatesHelper',
   DAIToken = 'DAIToken',
+  USDCToken = 'USDCToken',
+  USDTToken = 'USDTToken',
   WETHMocked = 'WETHMocked',
-  SelfdestructTransferMock = 'SelfdestructTransferMock',
   LendingPoolImpl = 'LendingPoolImpl',
   LendingPoolConfiguratorImpl = 'LendingPoolConfiguratorImpl',
   LendingPoolCollateralManagerImpl = 'LendingPoolCollateralManagerImpl',
   LendingPool = 'LendingPool',
   LidoVaultImpl = 'LidoVaultImpl',
   LidoVault = 'LidoVault',
+  YearnVaultImpl = 'YearnVaultImpl',
+  YearnVault = 'YearnVault',
+  YearnWETHVaultImpl = 'YearnWETHVaultImpl',
+  YearnWETHVault = 'YearnWETHVault',
+  YearnWBTCVaultImpl = 'YearnWBTCVaultImpl',
+  YearnWBTCVault = 'YearnWBTCVault',
+  YearnBOOVaultImpl = 'YearnBOOVaultImpl',
+  YearnBOOVault = 'YearnBOOVault',
+  TombFtmBeefyVaultImpl = 'TombFtmBeefyVaultImpl',
+  TombFtmBeefyVault = 'TombFtmBeefyVault',
+  TombMiMaticBeefyVaultImpl = 'TombMiMaticBeefyVaultImpl',
+  TombMiMaticBeefyVault = 'TombMiMaticBeefyVault',
+  YearnFBEETSVaultImpl = 'YearnFBEETSVaultImpl',
+  YearnFBEETSVault = 'YearnFBEETSVault',
+  YearnLINKVaultImpl = 'YearnLINKVaultImpl',
+  YearnLINKVault = 'YearnLINKVault',
+  MockyvWFTM = 'MockyvWFTM',
+  MockyvWETH = 'MockyvWETH',
+  MockyvWBTC = 'MockyvWBTC',
+  MockyvBOO = 'MockyvBOO',
+  MockMooTOMBFTM = 'MockMooTOMBFTM',
+  MockMooTOMBMIMATIC = 'MockMooTOMBMIMATIC',
+  MockWETHForFTM = 'MockWETHForFTM',
+  MockWBTCForFTM = 'MockWBTCForFTM',
+  MockBOOForFTM = 'MockBOOForFTM',
+  BeefyETHVault = 'BeefyETHVault',
+  BeefyETHVaultImpl = 'BeefyETHVaultImpl',
+  CollateralAdapter = 'CollateralAdapter',
+  CollateralAdapterImpl = 'CollateralAdapterImpl',
+  Liquidator = 'Liquidator',
+  LiquidatorImpl = 'LiquidatorImpl',
+  MockLINKForFTM = 'MockLINKForFTM',
+  MockFBEETSForFTM = 'MockFBEETSForFTM',
+  MockBeeefyETHForFTM = 'MockBeeefyETHForFTM',
+  DeployVaultHelper = 'DeployVaultHelper',
 }
 
 /*
@@ -196,9 +242,18 @@ export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
   USDC: T;
+  fUSDT: T;
   USD: T;
   stETH: T;
   yvWFTM: T;
+  mooWETH: T;
+  yvWETH: T;
+  yvWBTC: T;
+  yvBOO: T;
+  mooTOMB_FTM: T;
+  mooTOMB_MIMATIC: T;
+  yvfBEETS: T;
+  yvLINK: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -207,7 +262,21 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'stETH'>;
 
-export type iFantomPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'yvWFTM'>;
+export type iFantomPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  | 'DAI'
+  | 'USDC'
+  | 'yvWFTM'
+  | 'mooWETH'
+  | 'fUSDT'
+  | 'yvWETH'
+  | 'yvWBTC'
+  | 'yvBOO'
+  | 'mooTOMB_FTM'
+  | 'mooTOMB_MIMATIC'
+  | 'yvfBEETS'
+  | 'yvLINK'
+>;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
 
@@ -219,8 +288,17 @@ export enum TokenContractId {
   DAI = 'DAI',
   WETH = 'WETH',
   USDC = 'USDC',
+  USDT = 'USDT',
   stETH = 'stETH',
   yvWFTM = 'yvWFTM',
+  mooWETH = 'mooWETH',
+  yvWETH = 'yvWETH',
+  yvWBTC = 'yvWBTC',
+  yvBOO = 'yvBOO',
+  mooTOMB_FTM = 'mooTOMB_FTM',
+  mooTOMB_MATIC = 'mooTOMB_MATIC',
+  yvfBEETS = 'yvfBEETS',
+  yvLINK = 'yvLINK',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -275,11 +353,13 @@ export interface iEthereumParamsPerNetwork<T> {
 
 export interface iFantomParamsPerNetwork<T> {
   [eFantomNetwork.ftm]: T;
+  [eFantomNetwork.ftm_test]: T;
   [eFantomNetwork.tenderlyFTM]: T;
 }
 
 export interface iParamsPerPool<T> {
   [SturdyPools.proto]: T;
+  [SturdyPools.fantom]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -344,7 +424,9 @@ export interface IBaseConfiguration {
   EmergencyAdminIndex: number;
   ReserveAssets: iParamsPerNetwork<SymbolMap<tEthereumAddress>>;
   ATokenDomainSeparator: iParamsPerNetwork<string>;
+  WFTM: iParamsPerNetwork<tEthereumAddress>;
   WETH: iParamsPerNetwork<tEthereumAddress>;
+  WBTC: iParamsPerNetwork<tEthereumAddress>;
   WrappedNativeToken: iParamsPerNetwork<tEthereumAddress>;
   ReserveFactorTreasuryAddress: iParamsPerNetwork<tEthereumAddress>;
   IncentivesController: iParamsPerNetwork<tEthereumAddress>;
@@ -352,6 +434,8 @@ export interface IBaseConfiguration {
 
 export interface ICommonConfiguration extends IBaseConfiguration {
   ReservesConfig: iMultiPoolsAssets<IReserveParams>;
+  OracleQuoteCurrency: string;
+  OracleQuoteUnit: string;
 }
 
 export interface ISturdyConfiguration extends ICommonConfiguration {
@@ -363,11 +447,30 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
 
 export interface IFantomConfiguration extends ICommonConfiguration {
   ReservesConfig: iFantomPoolAssets<IReserveParams>;
+  BOO: iParamsPerNetwork<tEthereumAddress>;
+  TOMB: iParamsPerNetwork<tEthereumAddress>;
+  MIMATIC: iParamsPerNetwork<tEthereumAddress>;
+  TOMB_FTM_LP: iParamsPerNetwork<tEthereumAddress>;
+  TOMB_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
+  fBEETS: iParamsPerNetwork<tEthereumAddress>;
+  BEETS: iParamsPerNetwork<tEthereumAddress>;
+  LINK: iParamsPerNetwork<tEthereumAddress>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnBOOVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyVaultTOMB_FTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyVaultTOMB_MIMATIC: iParamsPerNetwork<tEthereumAddress>;
+  YearnFBEETSVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnLINKVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  BeefyETHVault: iParamsPerNetwork<tEthereumAddress>;
+  UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
+  TombSwapRouter: iParamsPerNetwork<tEthereumAddress>;
+  AavePool: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | ISturdyConfiguration;
+export type PoolConfiguration = ICommonConfiguration | ISturdyConfiguration | IFantomConfiguration;

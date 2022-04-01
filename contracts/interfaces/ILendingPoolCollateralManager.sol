@@ -3,7 +3,7 @@ pragma solidity 0.6.12;
 
 /**
  * @title ILendingPoolCollateralManager
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @notice Defines the actions involving management of collateral in the protocol.
  **/
 interface ILendingPoolCollateralManager {

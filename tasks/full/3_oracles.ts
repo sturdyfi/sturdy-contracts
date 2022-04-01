@@ -7,9 +7,9 @@ import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
 import {
   ConfigNames,
   loadPoolConfig,
-  getWethAddress,
   getGenesisPoolAdmin,
   getLendingRateOracles,
+  getQuoteCurrency,
 } from '../../helpers/configuration';
 import {
   getSturdyOracle,
@@ -46,7 +46,11 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         ...reserveAssets,
         USD: UsdAddress,
       };
-      const [tokens, aggregators] = getPairsTokenAggregator(tokensToWatch, chainlinkAggregators);
+      const [tokens, aggregators] = getPairsTokenAggregator(
+        tokensToWatch,
+        chainlinkAggregators,
+        poolConfig.OracleQuoteCurrency
+      );
 
       let sturdyOracle: SturdyOracle;
       let lendingRateOracle: LendingRateOracle;
@@ -55,10 +59,16 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
         sturdyOracle = await await getSturdyOracle(sturdyOracleAddress);
       } else {
         sturdyOracle = await deploySturdyOracle(
-          [tokens, aggregators, fallbackOracleAddress, await getWethAddress(poolConfig)],
+          [
+            tokens,
+            aggregators,
+            fallbackOracleAddress,
+            await getQuoteCurrency(poolConfig),
+            poolConfig.OracleQuoteUnit,
+          ],
           verify
         );
-        await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));
+        // await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));
       }
 
       if (notFalsyOrZeroAddress(lendingRateOracleAddress)) {

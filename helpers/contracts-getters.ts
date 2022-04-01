@@ -17,7 +17,6 @@ import {
   MockVariableDebtTokenFactory,
   PriceOracleFactory,
   ReserveLogicFactory,
-  SelfdestructTransferFactory,
   StableAndVariableTokensHelperFactory,
   StableDebtTokenFactory,
   VariableDebtTokenFactory,
@@ -29,10 +28,37 @@ import {
   WalletBalanceProviderFactory,
   UiPoolDataProviderFactory,
   UiIncentiveDataProviderFactory,
+  YearnVaultFactory,
+  BeefyETHVaultFactory,
+  MockyvWFTMFactory,
+  SwapinERC20Factory,
+  YearnWETHVaultFactory,
+  MockyvWETHFactory,
+  MockWETHForFTMFactory,
+  ATokenForCollateralFactory,
+  YearnWBTCVaultFactory,
+  MockyvWBTCFactory,
+  MockWBTCForFTMFactory,
+  CollateralAdapterFactory,
+  YearnBOOVaultFactory,
+  BooOracleFactory,
+  MockyvBOOFactory,
+  TombFtmBeefyVaultFactory,
+  MockMooTOMBFTMFactory,
+  TombOracleFactory,
+  TombFtmLPOracleFactory,
+  TombMiMaticLPOracleFactory,
+  TombMimaticBeefyVaultFactory,
+  MockMooTOMBMIMATICFactory,
+  TempLiquidatorFactory,
+  YearnFBEETSVaultFactory,
+  YearnLINKVaultFactory,
+  DeployVaultHelperFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
+import { IWETHFactory } from '../types/IWETHFactory';
 import { getEthersSigners, MockTokenMap } from './contracts-helpers';
-import { DRE, getDb, notFalsyOrZeroAddress } from './misc-utils';
+import { DRE, getDb, notFalsyOrZeroAddress, omit } from './misc-utils';
 import { eContractid, PoolConfiguration, tEthereumAddress, TokenContractId } from './types';
 
 export const getFirstSigner = async () => (await getEthersSigners())[0];
@@ -98,6 +124,15 @@ export const getMintableERC20 = async (address: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getSwapinERC20 = async (address: tEthereumAddress) =>
+  await SwapinERC20Factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.SwapinERC20}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getIErc20Detailed = async (address: tEthereumAddress) =>
   await IERC20DetailedFactory.connect(
     address ||
@@ -106,6 +141,9 @@ export const getIErc20Detailed = async (address: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
+
+export const getIWETH = async (address: tEthereumAddress) =>
+  await IWETHFactory.connect(address, await getFirstSigner());
 
 export const getSturdyProtocolDataProvider = async (address?: tEthereumAddress) =>
   await SturdyProtocolDataProviderFactory.connect(
@@ -165,25 +203,42 @@ export const getAllMockedTokens = async () => {
   return tokens;
 };
 
+export const getQuoteCurrencies = (oracleQuoteCurrency: string): string[] => {
+  switch (oracleQuoteCurrency) {
+    case 'USD':
+      return ['USD'];
+    case 'ETH':
+    case 'WETH':
+    default:
+      return ['ETH', 'WETH'];
+  }
+};
+
 export const getPairsTokenAggregator = (
   allAssetsAddresses: {
     [tokenSymbol: string]: tEthereumAddress;
   },
-  aggregatorsAddresses: { [tokenSymbol: string]: tEthereumAddress }
+  aggregatorsAddresses: { [tokenSymbol: string]: tEthereumAddress },
+  oracleQuoteCurrency: string
 ): [string[], string[]] => {
-  const { ETH, WETH, ...assetsAddressesWithoutEth } = allAssetsAddresses;
+  const assetsWithoutQuoteCurrency = omit(
+    allAssetsAddresses,
+    getQuoteCurrencies(oracleQuoteCurrency)
+  );
 
-  const pairs = Object.entries(assetsAddressesWithoutEth).map(([tokenSymbol, tokenAddress]) => {
-    //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
-    const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
-      (value) => value === tokenSymbol
-    );
-    const [, aggregatorAddress] = (
-      Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
-    )[aggregatorAddressIndex];
-    return [tokenAddress, aggregatorAddress];
-    //}
-  }) as [string, string][];
+  const pairs = Object.entries(assetsWithoutQuoteCurrency)
+    .map(([tokenSymbol, tokenAddress]) => {
+      //if (true/*tokenSymbol !== 'WETH' && tokenSymbol !== 'ETH' && tokenSymbol !== 'LpWETH'*/) {
+      const aggregatorAddressIndex = Object.keys(aggregatorsAddresses).findIndex(
+        (value) => value === tokenSymbol
+      );
+      const [, aggregatorAddress] = (
+        Object.entries(aggregatorsAddresses) as [string, tEthereumAddress][]
+      )[aggregatorAddressIndex];
+      return [tokenAddress, aggregatorAddress];
+      //}
+    })
+    .filter(([tokenAddress, aggregatorsAddresses]) => aggregatorsAddresses) as [string, string][];
 
   const mappedPairs = pairs.map(([asset]) => asset);
   const mappedAggregators = pairs.map(([, source]) => source);
@@ -271,15 +326,6 @@ export const getMockStableDebtToken = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getSelfdestructTransferMock = async (address?: tEthereumAddress) =>
-  await SelfdestructTransferFactory.connect(
-    address ||
-      (
-        await getDb().get(`${eContractid.SelfdestructTransferMock}.${DRE.network.name}`).value()
-      ).address,
-    await getFirstSigner()
-  );
-
 export const getProxy = async (address: tEthereumAddress) =>
   await InitializableImmutableAdminUpgradeabilityProxyFactory.connect(
     address,
@@ -336,6 +382,36 @@ export const getSturdyOracle = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getBooOracle = async (address?: tEthereumAddress) =>
+  await BooOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.BooOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getTombOracle = async (address?: tEthereumAddress) =>
+  await TombOracleFactory.connect(
+    address || (await getDb().get(`${eContractid.TombOracle}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmLPOracle = async (address?: tEthereumAddress) =>
+  await TombFtmLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmLPOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombMiMaticLPOracle = async (address?: tEthereumAddress) =>
+  await TombMiMaticLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombMiMaticLPOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getLendingPool = async (address?: tEthereumAddress) =>
   await LendingPoolFactory.connect(
     address ||
@@ -357,6 +433,146 @@ export const getLidoVaultImpl = async (address?: tEthereumAddress) =>
 export const getLidoVault = async (address?: tEthereumAddress) =>
   await LidoVaultFactory.connect(
     address || (await getDb().get(`${eContractid.LidoVault}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnVault = async (address?: tEthereumAddress) =>
+  await YearnVaultFactory.connect(
+    address || (await getDb().get(`${eContractid.YearnVault}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getYearnWETHVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnWETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWETHVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnWETHVault = async (address?: tEthereumAddress) =>
+  await YearnWETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnWBTCVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnWBTCVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWBTCVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnWBTCVault = async (address?: tEthereumAddress) =>
+  await YearnWBTCVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnWBTCVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnBOOVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnBOOVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnBOOVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnBOOVault = async (address?: tEthereumAddress) =>
+  await YearnBOOVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnBOOVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await TombFtmBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombFtmBeefyVault = async (address?: tEthereumAddress) =>
+  await TombFtmBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombFtmBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombMiMaticBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await TombMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombMiMaticBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getTombMiMaticBeefyVault = async (address?: tEthereumAddress) =>
+  await TombMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.TombMiMaticBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnFBEETSVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnFBEETSVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnFBEETSVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnFBEETSVault = async (address?: tEthereumAddress) =>
+  await YearnFBEETSVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnFBEETSVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnLINKVault = async (address?: tEthereumAddress) =>
+  await YearnLINKVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnLINKVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+export const getBeefyETHVault = async (address?: tEthereumAddress) =>
+  await BeefyETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BeefyETHVault}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 
@@ -423,6 +639,96 @@ export const getSturdyToken = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.SturdyToken}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getCollateralAdapter = async (address?: tEthereumAddress) =>
+  await CollateralAdapterFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.CollateralAdapter}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvWFTM = async (address?: tEthereumAddress) =>
+  await MockyvWFTMFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvWFTM}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvWETH = async (address?: tEthereumAddress) =>
+  await MockyvWETHFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvWETH}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvWBTC = async (address?: tEthereumAddress) =>
+  await MockyvWBTCFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvWBTC}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockyvBOO = async (address?: tEthereumAddress) =>
+  await MockyvBOOFactory.connect(
+    address || (await getDb().get(`${eContractid.MockyvBOO}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getMockMooTOMBFTM = async (address?: tEthereumAddress) =>
+  await MockMooTOMBFTMFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooTOMBFTM}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getMockMooTOMBMIMATIC = async (address?: tEthereumAddress) =>
+  await MockMooTOMBMIMATICFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooTOMBMIMATIC}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getMockWBTCForFTM = async (address?: tEthereumAddress) =>
+  await MockWBTCForFTMFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockWBTCForFTM}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getGenericATokenImpl = async (address?: tEthereumAddress) =>
+  await ATokenFactory.connect(
+    address || (await getDb().get(`${eContractid.AToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getCollateralATokenImpl = async (address?: tEthereumAddress) =>
+  await ATokenForCollateralFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ATokenForCollateral}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getLiquidator = async (address?: tEthereumAddress) =>
+  await TempLiquidatorFactory.connect(
+    address || (await getDb().get(`${eContractid.Liquidator}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getDeployVaultHelper = async (address?: tEthereumAddress) =>
+  await DeployVaultHelperFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.DeployVaultHelper}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
-import 'hardhat/console.sol';
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
@@ -13,6 +13,7 @@ import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
@@ -40,7 +41,7 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  * - To be covered by a proxy contract, owned by the LendingPoolAddressesProvider of the specific market
  * - All admin functions are callable by the LendingPoolConfigurator contract defined also in the
  *   LendingPoolAddressesProvider
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  **/
 contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage {
   using SafeMath for uint256;
@@ -113,6 +114,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    bool isFirstDeposit = false;
 
     if (isCollateral) {
       require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -121,9 +123,22 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+      reserve.updateInterestRates(asset, aToken, amount, 0);
+    }
+
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
-    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      isFirstDeposit = IAToken(aToken).mint(
+        onBehalfOf,
+        amount,
+        reserve.getIndexFromPricePerShare()
+      );
+    } else {
+      isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    }
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, isCollateral);
@@ -178,10 +193,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     returns (uint256, uint256)
   {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
     // collateral assetBalance should increase overtime based on vault strategy
     uint256 assetBalance = IERC20(asset).balanceOf(reserve.aTokenAddress);
     // aTokenBalance should not increase overtime because of no borrower.
     uint256 aTokenBalance = IAToken(reserve.aTokenAddress).totalSupply();
+
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18) aTokenBalance = aTokenBalance.div(10**(18 - decimal));
+    }
+
     return (assetBalance, aTokenBalance);
   }
 
@@ -209,7 +232,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       DataTypes.ReserveData storage reserve = _reserves[_reservesList[i]];
       (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
       if (isActive && !isFrozen && isBorrowing) {
-        volumes[pos] = IERC20(_reservesList[i]).balanceOf(reserve.aTokenAddress);
+        volumes[pos] = IERC20(reserve.aTokenAddress).totalSupply();
+        volumes[pos] = volumes[pos].div(10**reserve.configuration.getDecimals());
         assets[pos] = _reservesList[i];
         totalVolume = totalVolume.add(volumes[pos]);
         pos = pos.add(1);
@@ -255,10 +279,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-
-    address aToken = reserve.aTokenAddress;
-
-    uint256 userBalance = IAToken(aToken).balanceOf(from);
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    uint256 userBalance = IAToken(reserve.aTokenAddress).balanceOf(from);
 
     uint256 amountToWithdraw = amount;
 
@@ -278,12 +300,29 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+      reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, amountToWithdraw);
+    }
+
     if (amountToWithdraw == userBalance) {
       _usersConfig[from].setUsingAsCollateral(reserve.id, false);
       emit ReserveUsedAsCollateralDisabled(asset, from);
     }
 
-    IAToken(aToken).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      IAToken(reserve.aTokenAddress).burn(
+        from,
+        to,
+        amountToWithdraw,
+        reserve.getIndexFromPricePerShare()
+      );
+      amountToWithdraw = amountToWithdraw.rayDiv(reserve.getIndexFromPricePerShare());
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18) amountToWithdraw = amountToWithdraw.div(10**(18 - decimal));
+    } else {
+      IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
+    }
 
     emit Withdraw(asset, from, to, amountToWithdraw);
 
@@ -369,6 +408,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       paybackAmount = amount;
     }
 
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+    }
+
     if (interestRateMode == DataTypes.InterestRateMode.STABLE) {
       IStableDebtToken(reserve.stableDebtTokenAddress).burn(onBehalfOf, paybackAmount);
     } else {
@@ -380,6 +423,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
+    }
 
     if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
@@ -679,6 +725,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * interest rate strategy
    * - Only callable by the LendingPoolConfigurator contract
    * @param asset The address of the underlying asset of the reserve
+   * @param yieldAddress The address of the underlying asset's yield contract of the reserve
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
    * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
@@ -686,6 +733,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function initReserve(
     address asset,
+    address yieldAddress,
     address aTokenAddress,
     address stableDebtAddress,
     address variableDebtAddress,
@@ -695,6 +743,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(IERC20(aTokenAddress).totalSupply() == 0, Errors.LP_ATOKEN_INIT_INVALID);
     _reserves[asset].init(
       aTokenAddress,
+      yieldAddress,
       stableDebtAddress,
       variableDebtAddress,
       interestRateStrategyAddress
@@ -780,6 +829,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateState();
+    }
+
     uint256 currentStableRate = 0;
 
     bool isFirstBorrowing = false;
@@ -803,6 +856,15 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (isFirstBorrowing) {
       userConfig.setBorrowing(reserve.id, true);
+    }
+
+    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+      reserve.updateInterestRates(
+        vars.asset,
+        vars.aTokenAddress,
+        0,
+        vars.releaseUnderlying ? vars.amount : 0
+      );
     }
 
     if (vars.releaseUnderlying) {
@@ -835,5 +897,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
       _reservesCount = reservesCount + 1;
     }
+  }
+
+  function _isInterestRateAvailable(address interestRateStrategyAddress)
+    internal
+    view
+    returns (bool)
+  {
+    return
+      IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope1() == 0 &&
+      IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope2() == 0 &&
+      IReserveInterestRateStrategy(interestRateStrategyAddress).baseVariableBorrowRate() == 0;
   }
 }

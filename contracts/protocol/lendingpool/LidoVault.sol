@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import 'hardhat/console.sol';
 import {GeneralVault} from './GeneralVault.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -21,7 +20,6 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
  * @notice stETH/ETH Vault by using Lido, Uniswap, Curve
  * @author Sturdy
  **/
-
 contract LidoVault is GeneralVault {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
@@ -62,6 +60,8 @@ contract LidoVault is GeneralVault {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
+
+    emit ProcessYield(_addressesProvider.getAddress('WETH'), receivedETHAmount);
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {

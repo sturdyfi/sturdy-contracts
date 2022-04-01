@@ -16,7 +16,7 @@ contract SturdyToken is ERC20, VersionedInitializable {
   uint8 internal constant DECIMALS = 18;
 
   /// @dev the amount being distributed for supplier and borrower
-  uint256 internal constant DISTRIBUTION_AMOUNT = 3000000 ether;
+  uint256 internal constant DISTRIBUTION_AMOUNT = 100000000 ether;
 
   uint256 public constant REVISION = 1;
 

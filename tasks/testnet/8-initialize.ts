@@ -14,9 +14,18 @@ import { exit } from 'process';
 import {
   getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
+  getSturdyIncentivesController,
+  getYearnVault,
+  getYearnWETHVault,
+  getYearnWBTCVault,
+  getYearnBOOVault,
+  getTombFtmBeefyVault,
+  getTombMiMaticBeefyVault,
+  getYearnFBEETSVault,
+  getYearnLINKVault,
 } from '../../helpers/contracts-getters';
 
-task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
+task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.')
   .addFlag('verify', 'Verify contracts at Etherscan')
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -35,20 +44,35 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         IncentivesController,
       } = poolConfig as ICommonConfiguration;
 
-      const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
-      const incentivesController = await getParamPerNetwork(IncentivesController, network);
+      const reserveAssets = getParamPerNetwork(ReserveAssets, network);
+      let incentivesController = getParamPerNetwork(IncentivesController, network);
+      if (!incentivesController)
+        incentivesController = (await getSturdyIncentivesController()).address;
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       const testHelpers = await getSturdyProtocolDataProvider();
 
       const admin = await addressesProvider.getPoolAdmin();
       const oracle = await addressesProvider.getPriceOracle();
-
       if (!reserveAssets) {
         throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
       }
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
+      const yieldAddresses =
+        pool == ConfigNames.Sturdy
+          ? {}
+          : {
+              yvWFTM: (await getYearnVault()).address,
+              yvWETH: (await getYearnWETHVault()).address,
+              yvWBTC: (await getYearnWBTCVault()).address,
+              yvBOO: (await getYearnBOOVault()).address,
+              mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
+              mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
+              yvFBEETS: (await getYearnFBEETSVault()).address,
+              yvLINK: (await getYearnLINKVault()).address,
+              // mooWETH: (await getBeefyVault()).address,
+            };
 
       await initReservesByHelper(
         ReservesConfig,
@@ -59,15 +83,12 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         SymbolPrefix,
         admin,
         treasuryAddress,
-        incentivesController,
+        yieldAddresses,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
-      let collateralManagerAddress = await getParamPerNetwork(
-        LendingPoolCollateralManager,
-        network
-      );
+      let collateralManagerAddress = getParamPerNetwork(LendingPoolCollateralManager, network);
       if (!notFalsyOrZeroAddress(collateralManagerAddress)) {
         const collateralManager = await deployLendingPoolCollateralManager(verify);
         collateralManagerAddress = collateralManager.address;

@@ -2,7 +2,6 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import 'hardhat/console.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -19,6 +18,11 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
 contract GeneralVault is VersionedInitializable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
+
+  event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
+  event DepositCollateral(address indexed collateralAsset, address indexed from, uint256 amount);
+  event WithdrawCollateral(address indexed collateralAsset, address indexed to, uint256 amount);
+  event SetTreasuryInfo(address indexed treasuryAddress, uint256 fee);
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -58,7 +62,7 @@ contract GeneralVault is VersionedInitializable {
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
     // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH TODO No Lido
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset
@@ -68,6 +72,8 @@ contract GeneralVault is VersionedInitializable {
       msg.sender,
       0
     );
+
+    emit DepositCollateral(_asset, msg.sender, _amount);
   }
 
   /**
@@ -99,12 +105,33 @@ contract GeneralVault is VersionedInitializable {
     // Withdraw from vault, it will convert stAsset to asset and send to user
     // Ex: In Lido vault, it will return ETH or stETH to user
     _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+
+    emit WithdrawCollateral(_asset, _to, _amount);
+  }
+
+  /**
+   * @dev Withdraw an `amount` of asset used as collateral to user on liquidation.
+   * @param _asset The asset address for collateral
+   *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
+   * @param _amount The amount to be withdrawn
+   */
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    virtual
+    returns (uint256)
+  {
+    return _amount;
   }
 
   /**
    * @dev Get yield based on strategy and re-deposit
    */
   function processYield() external virtual {}
+
+  /**
+   * @dev Get price per share based on yield strategy
+   */
+  function pricePerShare() external view virtual returns (uint256) {}
 
   /**
    * @dev Set treasury address and vault fee
@@ -116,6 +143,8 @@ contract GeneralVault is VersionedInitializable {
     require(_fee <= 30_00, Errors.VT_FEE_TOO_BIG);
     _treasuryAddress = _treasury;
     _vaultFee = _fee;
+
+    emit SetTreasuryInfo(_treasury, _fee);
   }
 
   /**

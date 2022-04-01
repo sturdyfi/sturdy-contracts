@@ -16,7 +16,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD,
     INVALID_HF,
     LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER,
-    LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED,
+    LP_LIQUIDATION_CALL_FAILED,
     LP_IS_PAUSED,
   } = ProtocolErrors;
 
@@ -87,7 +87,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await oracle.setAssetPrice(
       dai.address,
-      new BigNumber(daiPrice.toString()).multipliedBy(1.5).toFixed(0)
+      new BigNumber(daiPrice.toString()).multipliedBy(1.2).toFixed(0)
     );
 
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -113,7 +113,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await expect(
       pool.liquidationCall(dai.address, dai.address, borrower.address, oneEther.toString(), true)
-    ).revertedWith(LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED);
+    ).revertedWith(LP_LIQUIDATION_CALL_FAILED);
   });
 
   it('Liquidates the borrow', async () => {
@@ -277,7 +277,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await oracle.setAssetPrice(
       usdc.address,
-      new BigNumber(usdcPrice.toString()).multipliedBy(1.5).toFixed(0)
+      new BigNumber(usdcPrice.toString()).multipliedBy(1.2).toFixed(0)
     );
 
     await impersonateAccountsHardhat([usdcOwnerAddress]);

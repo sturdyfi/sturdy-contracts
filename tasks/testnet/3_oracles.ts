@@ -12,7 +12,12 @@ import {
 } from '../../helpers/oracles-helpers';
 import { ICommonConfiguration, eNetwork, tEthereumAddress } from '../../helpers/types';
 import { waitForTx, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
-import { ConfigNames, loadPoolConfig, getGenesisPoolAdmin } from '../../helpers/configuration';
+import {
+  ConfigNames,
+  loadPoolConfig,
+  getGenesisPoolAdmin,
+  getQuoteCurrency,
+} from '../../helpers/configuration';
 import {
   getSturdyOracle,
   getLendingPoolAddressesProvider,
@@ -34,6 +39,8 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         ReserveAssets,
         LendingRateOracleRatesCommon,
         Mocks: { AllAssetsInitialPrices },
+        OracleQuoteCurrency,
+        OracleQuoteUnit,
       } = poolConfig as ICommonConfiguration;
       const addressesProvider = await getLendingPoolAddressesProvider();
       const admin = await getGenesisPoolAdmin(poolConfig);
@@ -49,39 +56,58 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         {
           DAI: reserveAssets.DAI,
           USDC: reserveAssets.USDC,
+          fUSDT: reserveAssets.fUSDT,
           stETH: reserveAssets.stETH,
-          WETH: '',
-          yvWFTM: '',
+          WETH: reserveAssets.WETH,
+          yvWFTM: reserveAssets.yvWFTM,
+          yvWETH: reserveAssets.yvWETH,
+          yvWBTC: reserveAssets.yvWBTC,
+          yvBOO: reserveAssets.yvBOO,
+          mooTOMB_FTM: reserveAssets.mooTOMB_FTM,
+          mooTOMB_MIMATIC: reserveAssets.mooTOMB_MIMATIC,
+          yvfBEETS: reserveAssets.yvfBEETS,
+          yvLINK: reserveAssets.yvLINK,
+          mooWETH: reserveAssets.mooWETH,
           USD: UsdAddress,
         },
         fallbackOracle
       );
 
-      const mockAggregators = await deployAllMockAggregators(AllAssetsInitialPrices);
-      console.log('Mock aggs deployed');
+      // const mockAggregators = await deployAllMockAggregators(AllAssetsInitialPrices);
+      // console.log('Mock aggs deployed');
 
-      const allAggregatorsAddresses = Object.entries(mockAggregators).reduce(
-        (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, aggregator]) => ({
-          ...accum,
-          [tokenSymbol]: aggregator.address,
-        }),
-        {}
-      );
+      // const allAggregatorsAddresses = Object.entries(mockAggregators).reduce(
+      //   (accum: { [tokenSymbol: string]: tEthereumAddress }, [tokenSymbol, aggregator]) => ({
+      //     ...accum,
+      //     [tokenSymbol]: aggregator.address,
+      //   }),
+      //   {}
+      // );
 
-      const [tokens, aggregators] = getPairsTokenAggregator(reserveAssets, allAggregatorsAddresses);
+      // const [tokens, aggregators] = getPairsTokenAggregator(
+      //   reserveAssets,
+      //   allAggregatorsAddresses,
+      //   OracleQuoteCurrency
+      // );
 
-      let sturdyOracle: SturdyOracle;
+      // let sturdyOracle: SturdyOracle;
       let lendingRateOracle: LendingRateOracle;
 
-      if (notFalsyOrZeroAddress(sturdyOracleAddress)) {
-        sturdyOracle = await await getSturdyOracle(sturdyOracleAddress);
-      } else {
-        sturdyOracle = await deploySturdyOracle(
-          [tokens, aggregators, fallbackOracle.address, reserveAssets.WETH],
-          verify
-        );
-        await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));
-      }
+      // if (notFalsyOrZeroAddress(sturdyOracleAddress)) {
+      //   sturdyOracle = await await getSturdyOracle(sturdyOracleAddress);
+      // } else {
+      //   sturdyOracle = await deploySturdyOracle(
+      //     [
+      //       tokens,
+      //       aggregators,
+      //       fallbackOracle.address,
+      //       await getQuoteCurrency(poolConfig),
+      //       OracleQuoteUnit,
+      //     ],
+      //     verify
+      //   );
+      //   await waitForTx(await sturdyOracle.setAssetSources(tokens, aggregators));
+      // }
 
       if (notFalsyOrZeroAddress(lendingRateOracleAddress)) {
         lendingRateOracle = await getLendingRateOracle(lendingRateOracleAddress);
@@ -95,7 +121,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
         );
       }
 
-      console.log('Sturdy Oracle: %s', lendingRateOracle.address);
+      // console.log('Sturdy Oracle: %s', sturdyOracle.address);
       console.log('Lending Rate Oracle: %s', lendingRateOracle.address);
 
       // Register the proxy price provider on the addressesProvider

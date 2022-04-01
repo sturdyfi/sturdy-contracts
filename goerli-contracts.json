@@ -4,7 +4,7 @@
       "address": "0xf7895a2be7082980E60C427E3E5F32067c9ED333",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xf7895a2be7082980E60C427E3E5F32067c9ED333",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -14,54 +14,54 @@
       "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x5a3aE44704D95CcAffe608c808308c850bDec94d",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "ReserveLogic": {
     "goerli": {
-      "address": "0x3Bdf1225bd3e7e70fe5399349c5AE7E8bC3dAA89",
+      "address": "0xB07F2D6299B2F9a645C867AeC2BD6385a6E4D76e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
-      "address": "0x3Bdf1225bd3e7e70fe5399349c5AE7E8bC3dAA89",
+    "localhost": {
+      "address": "0xB07F2D6299B2F9a645C867AeC2BD6385a6E4D76e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "GenericLogic": {
     "goerli": {
-      "address": "0x1F164A927B5558F46f1471aB43B673b6d776CC13",
+      "address": "0xFd5500bE0Ea3A3a24A34cFfa143AACeEdAFb8959",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
-      "address": "0x1F164A927B5558F46f1471aB43B673b6d776CC13",
+    "localhost": {
+      "address": "0xFd5500bE0Ea3A3a24A34cFfa143AACeEdAFb8959",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "ValidationLogic": {
     "goerli": {
-      "address": "0x881Ae53CC59BC8BD70Cf7CE2F7C0A6Bd16Adce04",
+      "address": "0x3df280E0588bD52a9A65BF3795F4CFd218c6051e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
-      "address": "0x881Ae53CC59BC8BD70Cf7CE2F7C0A6Bd16Adce04",
+    "localhost": {
+      "address": "0x3df280E0588bD52a9A65BF3795F4CFd218c6051e",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "LendingPoolImpl": {
     "goerli": {
-      "address": "0xF4a451Ff50dc150c47F2c4968b8ec45DBCcc306A"
+      "address": "0xbF30702E5b293CC9CaB4EC25e6d2da1E7f4F8611"
     },
-    "forked_goerli": {
-      "address": "0xF4a451Ff50dc150c47F2c4968b8ec45DBCcc306A"
+    "localhost": {
+      "address": "0xbF30702E5b293CC9CaB4EC25e6d2da1E7f4F8611"
     }
   },
   "LendingPool": {
     "goerli": {
       "address": "0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x53f4569958A9487598e2aa9db6c1E9BCaF81ea4c"
     }
   },
@@ -69,7 +69,7 @@
     "goerli": {
       "address": "0x52Ab0779090a1C0bB6d6EBb17f6e632d370AfFCd"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x52Ab0779090a1C0bB6d6EBb17f6e632d370AfFCd"
     }
   },
@@ -77,7 +77,7 @@
     "goerli": {
       "address": "0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xFA81C6cfF67D9958A20b2c1D1C93a5936B217cDd"
     }
   },
@@ -86,7 +86,7 @@
       "address": "0xF23dD2aa2e26a0521d44773DbCbEE125d0Ac8BE0",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xF23dD2aa2e26a0521d44773DbCbEE125d0Ac8BE0",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -96,7 +96,7 @@
       "address": "0x189fC75c01c6587C7505Fc0E55f3F8A6a27BB520",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x189fC75c01c6587C7505Fc0E55f3F8A6a27BB520",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -106,7 +106,7 @@
       "address": "0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x1460B491Db8E28A986f5ccb1c3Ee09E0A5757ed6",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -116,7 +116,7 @@
       "address": "0xe7FA5eeEfEef078A44663504b6342210346601fF",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xe7FA5eeEfEef078A44663504b6342210346601fF",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -126,7 +126,7 @@
       "address": "0x46D33E339bDAB4a5C2301Bc136aAD5177f6b819a",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x46D33E339bDAB4a5C2301Bc136aAD5177f6b819a",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -136,7 +136,7 @@
       "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x54f550a7798541F8469636EA94Fd7564ea6e9027",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -146,7 +146,7 @@
       "address": "0x8f99b93A3b5EFD437dD1F298acC0Cddb7d89C979",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x8f99b93A3b5EFD437dD1F298acC0Cddb7d89C979",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -156,7 +156,7 @@
       "address": "0xB1e7dEC831d9432095a331dAA25839d806128d29",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xB1e7dEC831d9432095a331dAA25839d806128d29",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -165,7 +165,7 @@
     "goerli": {
       "address": "0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xf1eeA72fF022bE0DC8DFB97b1f398380A5CAFC3E"
     }
   },
@@ -174,7 +174,7 @@
       "address": "0x600Fd47A378068F36aa579cCeE9De2E8a0daf394",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x600Fd47A378068F36aa579cCeE9De2E8a0daf394",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -183,7 +183,7 @@
     "goerli": {
       "address": "0xa8f6fCCc603254fdeF8c222BC02F7BcD5d5ee1c4"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0xa8f6fCCc603254fdeF8c222BC02F7BcD5d5ee1c4"
     }
   },
@@ -192,7 +192,7 @@
       "address": "0x86C2a4878da5e4F848fFa2B2B47E1cfbfE6d45dC",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x86C2a4878da5e4F848fFa2B2B47E1cfbfE6d45dC",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -202,7 +202,7 @@
       "address": "0x5C41F6fC0c32B823E8889D87EFf940fF202180c2",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x5C41F6fC0c32B823E8889D87EFf940fF202180c2",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -212,7 +212,7 @@
       "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -221,7 +221,7 @@
     "goerli": {
       "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x3d72e92327f008E4971e11473e8934aDEcc015C7"
     }
   },
@@ -230,7 +230,7 @@
       "address": "0x864506a3749df2805d15E2156858EB965C1f726f",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x864506a3749df2805d15E2156858EB965C1f726f",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -239,7 +239,7 @@
     "goerli": {
       "address": "0x475A1E28D2D4275fba0f1B59B2706C86c950D9C5"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x475A1E28D2D4275fba0f1B59B2706C86c950D9C5"
     }
   },
@@ -247,7 +247,7 @@
     "goerli": {
       "address": "0x916189e5de8e647022251e228705AA33c1B1D548"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x916189e5de8e647022251e228705AA33c1B1D548"
     }
   },
@@ -255,7 +255,7 @@
     "goerli": {
       "address": "0x3C3879aE989A24Aa7da440b261893ea6a7629847"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x3C3879aE989A24Aa7da440b261893ea6a7629847"
     }
   },
@@ -263,25 +263,25 @@
     "goerli": {
       "address": "0x864506a3749df2805d15E2156858EB965C1f726f"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x864506a3749df2805d15E2156858EB965C1f726f"
     }
   },
   "LendingPoolCollateralManagerImpl": {
     "goerli": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655"
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777"
     },
-    "forked_goerli": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655"
+    "localhost": {
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777"
     }
   },
   "LendingPoolCollateralManager": {
     "goerli": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655",
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
-      "address": "0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655",
+    "localhost": {
+      "address": "0x7A22E327067E0811c1d51ccE81af66e148A52777",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -290,7 +290,7 @@
       "address": "0x085c4AcAA09A0561385A2d937e766059683Bd594",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x085c4AcAA09A0561385A2d937e766059683Bd594",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -300,7 +300,7 @@
       "address": "0x4976E4C7F61124747F7f7496d157B538C8DbeD63",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x4976E4C7F61124747F7f7496d157B538C8DbeD63",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
@@ -310,18 +310,18 @@
       "address": "0x1917a39241cc1bEEa1e503DDC5B94fDBbfBE2731",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x1917a39241cc1bEEa1e503DDC5B94fDBbfBE2731",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
   "LidoVaultImpl": {
     "goerli": {
-      "address": "0x019D8174D62F843be3e4f08a7B161fD04d2c871c",
+      "address": "0x406a940bAC270C2dEE26D884A13E733B9F91Ceaf",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
-    "forked_goerli": {
-      "address": "0x019D8174D62F843be3e4f08a7B161fD04d2c871c",
+    "localhost": {
+      "address": "0x406a940bAC270C2dEE26D884A13E733B9F91Ceaf",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -329,8 +329,26 @@
     "goerli": {
       "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
     },
-    "forked_goerli": {
+    "localhost": {
       "address": "0x43b0aB1DacBFB33bd558444344F0Ed6515153b52"
+    }
+  },
+  "CollateralAdapterImpl": {
+    "goerli": {
+      "address": "0x018f3460b435B7C695703c3318a8A6685F86aBcA",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x018f3460b435B7C695703c3318a8A6685F86aBcA",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "CollateralAdapter": {
+    "goerli": {
+      "address": "0x7D7010dA0dA6A611e39004efA8FA5Ee8EA848638"
+    },
+    "localhost": {
+      "address": "0x7D7010dA0dA6A611e39004efA8FA5Ee8EA848638"
     }
   }
 }

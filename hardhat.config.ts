@@ -32,6 +32,7 @@ const ETHERSCAN_KEY = process.env.ETHERSCAN_KEY || '';
 const MNEMONIC_PATH = "m/44'/60'/0'/0";
 const MNEMONIC = process.env.MNEMONIC || '';
 const UNLIMITED_BYTECODE_SIZE = process.env.UNLIMITED_BYTECODE_SIZE === 'true';
+const FORK = process.env.FORK || 'main';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
@@ -106,13 +107,15 @@ const buidlerConfig: HardhatUserConfig = {
     // tenderly: getCommonNetworkConfig(eFantomNetwork.tenderlyFTM, 250),   // Fantom
     geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
     goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
+    ftm: getCommonNetworkConfig(eFantomNetwork.ftm, 250),
+    ftm_test: getCommonNetworkConfig(eFantomNetwork.ftm_test, 4002),
     hardhat: {
       hardfork: 'berlin',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
-      chainId: BUIDLEREVM_CHAINID,
+      chainId: BUIDLEREVM_CHAINID[FORK],
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       accounts: accounts.map(({ secretKey, balance }: { secretKey: string; balance: string }) => ({
@@ -123,14 +126,7 @@ const buidlerConfig: HardhatUserConfig = {
     },
 
     localhost: {
-      chainId: 1337,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
-    },
-
-    forked_main: {
-      chainId: 1337,
+      chainId: BUIDLEREVM_CHAINID[FORK],
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',
@@ -139,30 +135,7 @@ const buidlerConfig: HardhatUserConfig = {
       gasPrice: 8000000000,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
       forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
-    },
-
-    forked_goerli: {
-      chainId: 1337,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
-      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-      gas: DEFAULT_BLOCK_GAS_LIMIT,
-      gasPrice: 8000000000,
-      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
-      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
-    },
-
-    forked_fantom: {
-      chainId: 250,
-      throwOnTransactionFailures: true,
-      throwOnCallFailures: true,
-      url: 'http://localhost:8545',
-      blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
-      gas: DEFAULT_BLOCK_GAS_LIMIT,
-      gasPrice: 8000000000,
-      allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
-      forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
+      timeout: 1200000
     },
 
     buidlerevm_docker: {
@@ -170,7 +143,7 @@ const buidlerConfig: HardhatUserConfig = {
       blockGasLimit: 9500000,
       gas: 9500000,
       gasPrice: 8000000000,
-      chainId: BUIDLEREVM_CHAINID,
+      chainId: BUIDLEREVM_CHAINID[FORK],
       throwOnTransactionFailures: true,
       throwOnCallFailures: true,
       url: 'http://localhost:8545',

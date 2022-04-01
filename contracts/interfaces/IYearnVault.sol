@@ -9,4 +9,6 @@ interface IYearnVault {
     address recipient,
     uint256 maxLoss
   ) external returns (uint256);
+
+  function pricePerShare() external view returns (uint256);
 }

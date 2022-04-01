@@ -3,6 +3,7 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ISturdyIncentivesController} from '../interfaces/ISturdyIncentivesController.sol';
 import {IUiPoolDataProvider} from './interfaces/IUiPoolDataProvider.sol';
@@ -16,9 +17,12 @@ import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveC
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
+import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
+  using SafeMath for uint256;
+  using ReserveLogic for DataTypes.ReserveData;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
@@ -83,6 +87,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
         reserveData.underlyingAsset
       );
+      (, , , , bool isCollateral) = baseData.configuration.getFlagsMemory();
+
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;
@@ -98,6 +104,17 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
       );
+      if (isCollateral && baseData.yieldAddress != address(0)) {
+        uint256 pricePerShare = baseData.getIndexFromPricePerShareMemory();
+        uint256 decimal = IERC20Detailed(reserveData.aTokenAddress).decimals();
+        if (decimal < 18)
+          reserveData.availableLiquidity = reserveData
+            .availableLiquidity
+            .mul(10**(18 - decimal))
+            .rayMul(pricePerShare);
+        else reserveData.availableLiquidity = reserveData.availableLiquidity.rayMul(pricePerShare);
+      }
+
       (
         reserveData.totalPrincipalStableDebt,
         ,
@@ -257,6 +274,8 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
         reserveData.underlyingAsset
       );
+      (, , , , bool isCollateral) = baseData.configuration.getFlagsMemory();
+
       reserveData.liquidityIndex = baseData.liquidityIndex;
       reserveData.variableBorrowIndex = baseData.variableBorrowIndex;
       reserveData.liquidityRate = baseData.currentLiquidityRate;
@@ -272,6 +291,17 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       reserveData.availableLiquidity = IERC20Detailed(reserveData.underlyingAsset).balanceOf(
         reserveData.aTokenAddress
       );
+      if (isCollateral && baseData.yieldAddress != address(0)) {
+        uint256 pricePerShare = baseData.getIndexFromPricePerShareMemory();
+        uint256 decimal = IERC20Detailed(reserveData.aTokenAddress).decimals();
+        if (decimal < 18)
+          reserveData.availableLiquidity = reserveData
+            .availableLiquidity
+            .mul(10**(18 - decimal))
+            .rayMul(pricePerShare);
+        else reserveData.availableLiquidity = reserveData.availableLiquidity.rayMul(pricePerShare);
+      }
+
       (
         reserveData.totalPrincipalStableDebt,
         ,

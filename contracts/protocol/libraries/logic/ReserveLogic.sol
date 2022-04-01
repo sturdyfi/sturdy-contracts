@@ -7,6 +7,7 @@ import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.
 import {IAToken} from '../../../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
 import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
+import {IGeneralVault} from '../../../interfaces/IGeneralVault.sol';
 import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {MathUtils} from '../math/MathUtils.sol';
@@ -22,7 +23,7 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveLogic library
- * @author Sturdy
+ * @author Sturdy, inspiration from Aave
  * @notice Implements the logic to update the reserves state
  */
 library ReserveLogic {
@@ -137,10 +138,10 @@ library ReserveLogic {
 
   /**
    * @dev Accumulates a predefined amount of asset to the reserve as a fixed, instantaneous income. Used for example to accumulate
-   * the flashloan fee to the reserve, and spread it between all the depositors
+   * the flash loan fee to the reserve, and spread it between all the depositors
    * @param reserve The reserve object
    * @param totalLiquidity The total liquidity available in the reserve
-   * @param amount The amount to accomulate
+   * @param amount The amount to accumulate
    **/
   function cumulateToLiquidityIndex(
     DataTypes.ReserveData storage reserve,
@@ -161,11 +162,13 @@ library ReserveLogic {
    * @dev Initializes a reserve
    * @param reserve The reserve object
    * @param aTokenAddress The address of the overlying atoken contract
+   * @param yieldAddress The address of the underlying asset's yield contract of the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function init(
     DataTypes.ReserveData storage reserve,
     address aTokenAddress,
+    address yieldAddress,
     address stableDebtTokenAddress,
     address variableDebtTokenAddress,
     address interestRateStrategyAddress
@@ -175,6 +178,7 @@ library ReserveLogic {
     reserve.liquidityIndex = uint128(WadRayMath.ray());
     reserve.variableBorrowIndex = uint128(WadRayMath.ray());
     reserve.aTokenAddress = aTokenAddress;
+    reserve.yieldAddress = yieldAddress;
     reserve.stableDebtTokenAddress = stableDebtTokenAddress;
     reserve.variableDebtTokenAddress = variableDebtTokenAddress;
     reserve.interestRateStrategyAddress = interestRateStrategyAddress;
@@ -375,5 +379,29 @@ library ReserveLogic {
     //solium-disable-next-line
     reserve.lastUpdateTimestamp = uint40(block.timestamp);
     return (newLiquidityIndex, newVariableBorrowIndex);
+  }
+
+  /**
+   * @dev Get the reserve indexes from the pricePerShare of yield contract
+   * @param reserve The reserve reserve to be updated
+   **/
+  function getIndexFromPricePerShare(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint128)
+  {
+    return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
+  }
+
+  /**
+   * @dev Get the memory reserve indexes from the pricePerShare of yield contract
+   * @param reserve The reserve reserve to be updated
+   **/
+  function getIndexFromPricePerShareMemory(DataTypes.ReserveData memory reserve)
+    internal
+    view
+    returns (uint128)
+  {
+    return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 }

@@ -17,8 +17,9 @@ import {
   getLidoVault,
   getSturdyIncentivesController,
   getSturdyToken,
+  getFirstSigner,
 } from '../../../helpers/contracts-getters';
-import { eNetwork, tEthereumAddress } from '../../../helpers/types';
+import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
 import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
 import { MintableERC20 } from '../../../types/MintableERC20';
@@ -104,7 +105,7 @@ const testEnv: TestEnv = {
 
 export async function initializeMakeSuite() {
   // Mainnet missing addresses
-  const poolConfig = loadPoolConfig(ConfigNames.Sturdy);
+  const poolConfig = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const lidoAddress = getParamPerNetwork(poolConfig.Lido, network);
 
@@ -169,7 +170,8 @@ export async function initializeMakeSuite() {
       poolConfig.ProviderRegistryOwner,
       process.env.FORK as eNetwork
     );
-    testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
+    if (!providerRegistryOwner) testEnv.registryOwnerSigner = await getFirstSigner();
+    else testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     testEnv.oracle = await getPriceOracle();
@@ -178,10 +180,16 @@ export async function initializeMakeSuite() {
   testEnv.helpersContract = await getSturdyProtocolDataProvider();
 
   const allTokens = await testEnv.helpersContract.getAllATokens();
-  const aDaiAddress = allTokens.find((aToken) => aToken.symbol === 'aDAI')?.tokenAddress;
+  const aDaiAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'aDAI' || aToken.symbol === 'sDAI'
+  )?.tokenAddress;
 
-  const aStETHAddress = allTokens.find((aToken) => aToken.symbol === 'astETH')?.tokenAddress;
-  const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC')?.tokenAddress;
+  const aStETHAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'astETH' || aToken.symbol === 'sstETH'
+  )?.tokenAddress;
+  const aUsdcAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC'
+  )?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 

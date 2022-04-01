@@ -58,14 +58,14 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev register vault
    **/
-  function registerVault(address _vaultAddress) external onlyPoolAdmin {
+  function registerVault(address _vaultAddress) external override onlyPoolAdmin {
     pool.registerVault(_vaultAddress);
   }
 
   /**
    * @dev Initializes reserves in batch
    **/
-  function batchInitReserve(InitReserveInput[] calldata input) external onlyPoolAdmin {
+  function batchInitReserve(InitReserveInput[] calldata input) external override onlyPoolAdmin {
     ILendingPool cachedPool = pool;
     for (uint256 i = 0; i < input.length; i++) {
       _initReserve(cachedPool, input[i]);

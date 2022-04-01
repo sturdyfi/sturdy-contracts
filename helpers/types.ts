@@ -125,6 +125,7 @@ export enum eContractid {
   LiquidatorImpl = 'LiquidatorImpl',
   MockLINKForFTM = 'MockLINKForFTM',
   MockFBEETSForFTM = 'MockFBEETSForFTM',
+  DeployVaultHelper = 'DeployVaultHelper',
 }
 
 /*

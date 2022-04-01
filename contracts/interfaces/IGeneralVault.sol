@@ -9,4 +9,6 @@ interface IGeneralVault {
   function processYield() external;
 
   function getYieldAmount() external view returns (uint256);
+
+  function setTreasuryInfo(address _treasury, uint256 _fee) external;
 }

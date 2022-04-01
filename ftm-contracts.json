@@ -474,7 +474,7 @@
       "address": "0xBc6205F61bB8DB1E68c96752d5CFC6CC8EDc1f07",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
-    "locahost": {
+    "localhost": {
       "address": "0xBc6205F61bB8DB1E68c96752d5CFC6CC8EDc1f07",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
@@ -593,6 +593,16 @@
     },
     "localhost": {
       "address": "0x08c9ee169E51f9c52Cf14477D035AAbC97Fb64f9"
+    }
+  },
+  "DeployVaultHelper": {
+    "ftm": {
+      "address": "0x77B830Bfa2073e8Af985dB9f99391e88C63517d6",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x77B830Bfa2073e8Af985dB9f99391e88C63517d6",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }
 }

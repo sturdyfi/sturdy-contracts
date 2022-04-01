@@ -10,4 +10,10 @@ interface ICollateralAdapter {
   function getAcceptableVault(address _externalAsset) external view returns (address);
 
   function getInternalCollateralAsset(address _externalAsset) external view returns (address);
+
+  function addCollateralAsset(
+    address _externalAsset,
+    address _internalAsset,
+    address _acceptVault
+  ) external;
 }

@@ -54,6 +54,8 @@ import {
   YearnFBEETSVaultFactory,
   YearnLINKVaultFactory,
   DeployVaultHelperFactory,
+  BeetsOracleFactory,
+  FBeetsOracleFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -729,6 +731,24 @@ export const getDeployVaultHelper = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.DeployVaultHelper}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBeetsOracle = async (address?: tEthereumAddress) =>
+  await BeetsOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BeetsOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getFBeetsOracle = async (address?: tEthereumAddress) =>
+  await FBeetsOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.FBeetsOracle}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

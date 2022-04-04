@@ -17,7 +17,7 @@ contract BeetsOracle is IOracle, Ownable {
   using BoringMath for uint256;
 
   uint256 public secs = 3600;
-  uint256 public ago = 0;
+  uint256 public ago = 30;
   IChainlinkAggregator public constant FTM_USD =
     IChainlinkAggregator(0xf4766552D15AE4d256Ad41B6cf2933482B0680dc);
   // IBalancerVault public constant BeethOven_Vault =

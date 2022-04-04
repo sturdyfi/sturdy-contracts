@@ -16,7 +16,7 @@ contract FBeetsOracle is IOracle, Ownable {
   using FixedPoint for *;
   using BoringMath for uint256;
 
-  uint256 public secs = 1800;
+  uint256 public secs = 3600;
   uint256 public ago = 0;
 
   IChainlinkAggregator public constant FTM_USD =

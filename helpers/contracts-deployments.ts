@@ -36,6 +36,7 @@ import {
   getYearnFBEETSVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getBasedMiMaticBeefyVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -100,6 +101,9 @@ import {
   MockYearnVaultFactory,
   MockBeefyVaultFactory,
   DeployVaultHelperFactory,
+  BasedOracleFactory,
+  BasedMiMaticLPOracleFactory,
+  BasedMimaticBeefyVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -333,6 +337,22 @@ export const deployBeetsOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BeetsOracleFactory(await getFirstSigner()).deploy(),
     eContractid.BeetsOracle,
+    [],
+    verify
+  );
+
+export const deployBasedOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BasedOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.BasedOracle,
+    [],
+    verify
+  );
+
+export const deployBasedMiMaticLPOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BasedMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.BasedMiMaticLPOracle,
     [],
     verify
   );
@@ -1091,6 +1111,64 @@ export const deployTombMiMaticBeefyVault = async (verify?: boolean) => {
   );
 
   return await getTombMiMaticBeefyVault();
+};
+
+export const deployBasedMiMaticBeefyVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BasedMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.BasedMiMaticBeefyVaultImpl,
+    [],
+    verify
+  );
+
+export const deployBasedMiMaticBeefyVault = async (verify?: boolean) => {
+  const basedMiMaticBeefyVaultImpl = await withSaveAndVerify(
+    await new BasedMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.BasedMiMaticBeefyVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('BEEFY_BASED_MIMATIC_VAULT'),
+      basedMiMaticBeefyVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('mooTombBASED-MIMATIC'),
+      getParamPerNetwork(config.BeefyVaultBASED_MIMATIC, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('BASED_MIMATIC_LP'),
+      getParamPerNetwork(config.BASED_MIMATIC_LP, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('BASED'),
+      getParamPerNetwork(config.BASED, network)
+    )
+  );
+
+  const basedMiMaticBeefyVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('BEEFY_BASED_MIMATIC_VAULT')
+  );
+  await insertContractAddressInDb(
+    eContractid.BasedMiMaticBeefyVault,
+    basedMiMaticBeefyVaultProxyAddress
+  );
+
+  return await getBasedMiMaticBeefyVault();
 };
 
 export const deployYearnFBeetsVaultImpl = async (verify?: boolean) =>

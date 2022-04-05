@@ -56,6 +56,9 @@ import {
   DeployVaultHelperFactory,
   BeetsOracleFactory,
   FBeetsOracleFactory,
+  BasedOracleFactory,
+  BasedMiMaticLPOracleFactory,
+  BasedMimaticBeefyVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -414,6 +417,24 @@ export const getTombMiMaticLPOracle = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getBasedOracle = async (address?: tEthereumAddress) =>
+  await BasedOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBasedMiMaticLPOracle = async (address?: tEthereumAddress) =>
+  await BasedMiMaticLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedMiMaticLPOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getLendingPool = async (address?: tEthereumAddress) =>
   await LendingPoolFactory.connect(
     address ||
@@ -539,6 +560,24 @@ export const getTombMiMaticBeefyVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.TombMiMaticBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBasedMiMaticBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await BasedMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedMiMaticBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBasedMiMaticBeefyVault = async (address?: tEthereumAddress) =>
+  await BasedMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedMiMaticBeefyVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

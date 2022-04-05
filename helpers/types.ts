@@ -60,6 +60,8 @@ export enum eContractid {
   TombMiMaticLPOracle = 'TombMiMaticLPOracle',
   FBeetsOracle = 'FBeetsOracle',
   BeetsOracle = 'BeetsOracle',
+  BasedOracle = 'BasedOracle',
+  BasedMiMaticLPOracle = 'BasedMiMaticLPOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -108,6 +110,8 @@ export enum eContractid {
   YearnFBEETSVault = 'YearnFBEETSVault',
   YearnLINKVaultImpl = 'YearnLINKVaultImpl',
   YearnLINKVault = 'YearnLINKVault',
+  BasedMiMaticBeefyVaultImpl = 'BasedMiMaticBeefyVaultImpl',
+  BasedMiMaticBeefyVault = 'BasedMiMaticBeefyVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
   MockyvWBTC = 'MockyvWBTC',
@@ -254,6 +258,7 @@ export interface iAssetBase<T> {
   mooTOMB_MIMATIC: T;
   yvfBEETS: T;
   yvLINK: T;
+  mooBASED_MIMATIC: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -276,6 +281,7 @@ export type iFantomPoolAssets<T> = Pick<
   | 'mooTOMB_MIMATIC'
   | 'yvfBEETS'
   | 'yvLINK'
+  | 'mooBASED_MIMATIC'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -299,6 +305,7 @@ export enum TokenContractId {
   mooTOMB_MATIC = 'mooTOMB_MATIC',
   yvfBEETS = 'yvfBEETS',
   yvLINK = 'yvLINK',
+  mooBASED_MATIC = 'mooBASED_MATIC',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -450,8 +457,10 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   BOO: iParamsPerNetwork<tEthereumAddress>;
   TOMB: iParamsPerNetwork<tEthereumAddress>;
   MIMATIC: iParamsPerNetwork<tEthereumAddress>;
+  BASED: iParamsPerNetwork<tEthereumAddress>;
   TOMB_FTM_LP: iParamsPerNetwork<tEthereumAddress>;
   TOMB_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
+  BASED_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
   fBEETS: iParamsPerNetwork<tEthereumAddress>;
   BEETS: iParamsPerNetwork<tEthereumAddress>;
   LINK: iParamsPerNetwork<tEthereumAddress>;
@@ -461,6 +470,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   YearnBOOVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyVaultTOMB_FTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyVaultTOMB_MIMATIC: iParamsPerNetwork<tEthereumAddress>;
+  BeefyVaultBASED_MIMATIC: iParamsPerNetwork<tEthereumAddress>;
   YearnFBEETSVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnLINKVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyETHVault: iParamsPerNetwork<tEthereumAddress>;

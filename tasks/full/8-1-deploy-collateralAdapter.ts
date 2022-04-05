@@ -11,6 +11,8 @@ import {
   getYearnWETHVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getBasedMiMaticBeefyVault,
+  getTombMiMaticBeefyVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -57,6 +59,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
               network
             ),
+            mooBASED_MIMATIC: getParamPerNetwork(
+              (poolConfig as IFantomConfiguration).BASED_MIMATIC_LP,
+              network
+            ),
             yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
             yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
             mooWETH: getParamPerNetwork((poolConfig as IFantomConfiguration).WETH, network),
@@ -73,7 +79,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvWBTC: (await getYearnWBTCVault()).address,
             yvBOO: (await getYearnBOOVault()).address,
             mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
-            mooTOMB_MIMATIC: (await getTombFtmBeefyVault()).address,
+            mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
+            mooBASED_MIMATIC: (await getBasedMiMaticBeefyVault()).address,
             yvfBEETS: (await getYearnFBEETSVault()).address,
             yvLINK: (await getYearnLINKVault()).address,
             mooWETH: (await getBeefyETHVault()).address,

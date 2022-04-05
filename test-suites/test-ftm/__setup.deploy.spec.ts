@@ -166,6 +166,7 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
       yvBOO: mockTokens.yvBOO.address,
       mooTOMB_FTM: mockTokens.mooTOMB_FTM.address,
       mooTOMB_MIMATIC: mockTokens.mooTOMB_MIMATIC.address,
+      mooBASED_MIMATIC: mockTokens.mooBASED_MIMATIC.address,
       yvfBEETS: mockTokens.yvfBEETS.address,
       yvLINK: mockTokens.yvLINK.address,
     },

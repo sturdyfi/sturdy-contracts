@@ -99,4 +99,9 @@ contract DeployVaultHelper is Ownable {
     Ownable(address(_addressProvider)).transferOwnership(msg.sender);
     Ownable(_aTokenHelper).transferOwnership(msg.sender);
   }
+
+  function removeHelperAsOwner(address _aTokenHelper) external onlyOwner {
+    Ownable(address(_addressProvider)).transferOwnership(msg.sender);
+    Ownable(_aTokenHelper).transferOwnership(msg.sender);
+  }
 }

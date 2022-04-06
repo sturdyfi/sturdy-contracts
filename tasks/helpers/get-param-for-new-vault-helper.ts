@@ -41,7 +41,7 @@ const isSymbolValid = (
   poolConfig.ReserveAssets[network][symbol] &&
   poolConfig.ReservesConfig[symbol] === reserveConfigs['strategy' + symbol.toUpperCase()];
 
-// hardhat external:get-param-for-new-vault --pool Fantom --symbol mooTOMB_MIMATIC --impladdress 0xBc6205F61bB8DB1E68c96752d5CFC6CC8EDc1f07 --network ftm
+// hardhat external:get-param-for-new-vault --pool Fantom --symbol mooTOMB_MIMATIC --network ftm/ftm_test
 task('external:get-param-for-new-vault', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
@@ -171,7 +171,7 @@ WRONG RESERVE ASSET SETUP:
     // mooBASED_MIMATIC reserve
     {
       // Deploy vault impl
-      const impladdress = (await deployBasedMiMaticBeefyVaultImpl()).address;
+      const impladdress = (await deployBasedMiMaticBeefyVaultImpl(verify)).address;
 
       // Deploy and Register new oracle for new vault
       if (network === 'ftm_test') {
@@ -191,7 +191,7 @@ WRONG RESERVE ASSET SETUP:
       } else {
         let basedOracleAddress = getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).BASED;
         if (!basedOracleAddress) {
-          const basedOracle = await deployBasedOracle();
+          const basedOracle = await deployBasedOracle(verify);
           basedOracleAddress = basedOracle.address;
         }
         let mooBasedMiMaticOracleAddress = getParamPerNetwork(
@@ -199,7 +199,7 @@ WRONG RESERVE ASSET SETUP:
           <eNetwork>network
         ).mooBASED_MIMATIC;
         if (!mooBasedMiMaticOracleAddress) {
-          const mooBasedMiMaticOracle = await deployBasedMiMaticLPOracle();
+          const mooBasedMiMaticOracle = await deployBasedMiMaticLPOracle(verify);
           mooBasedMiMaticOracleAddress = mooBasedMiMaticOracle.address;
         }
         const sturdyOracle = await getSturdyOracle();

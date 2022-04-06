@@ -187,9 +187,9 @@ export const strategyYVLINK: IReserveParams = {
 
 export const strategyYVCRV: IReserveParams = {
   strategy: rateStrategyYVCRV,
-  baseLTVAsCollateral: '0', //'7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '10700',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11000',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -201,9 +201,9 @@ export const strategyYVCRV: IReserveParams = {
 
 export const strategyYVSPELL: IReserveParams = {
   strategy: rateStrategyYVSPELL,
-  baseLTVAsCollateral: '0', //'7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '10700',
+  baseLTVAsCollateral: '6000',
+  liquidationThreshold: '7000',
+  liquidationBonus: '11000',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',

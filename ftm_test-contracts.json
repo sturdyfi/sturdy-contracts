@@ -343,11 +343,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "ftm_test": {
-      "address": "0x6EcB9C1f2c93Cd01FD9D92dbe6bFc1e0297144ae",
+      "address": "0x007AAe40561ba9aBA3B2c2DA7D078CB8e16a1c13",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     },
     "localhost": {
-      "address": "0x965bC99833a549364C9237d8D2160B36d3303aDD",
+      "address": "0x007AAe40561ba9aBA3B2c2DA7D078CB8e16a1c13",
       "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
     }
   },
@@ -702,6 +702,52 @@
     },
     "localhost": {
       "address": "0x58009A0A37e2FBFfb396D51dcCD920544a3D88B9"
+    }
+  },
+  "MockMooBASEDMIMATIC": {
+    "ftm_test": {
+      "address": "0x316C7c7e783A1d91806A069cF91aA048FD4a86dC",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x316C7c7e783A1d91806A069cF91aA048FD4a86dC",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "DeployVaultHelper": {
+    "ftm_test": {
+      "address": "0xD29300F8b6c1176047Aa52F215774D1Cb59Af809",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xD29300F8b6c1176047Aa52F215774D1Cb59Af809",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "rateStrategyMOOBASED_MIMATIC": {
+    "ftm_test": {
+      "address": "0x007AAe40561ba9aBA3B2c2DA7D078CB8e16a1c13"
+    },
+    "localhost": {
+      "address": "0x007AAe40561ba9aBA3B2c2DA7D078CB8e16a1c13"
+    }
+  },
+  "BasedMiMaticBeefyVaultImpl": {
+    "ftm_test": {
+      "address": "0x21d7D4B68b766Ff2508b53EBaa928b9CC581e506",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x21d7D4B68b766Ff2508b53EBaa928b9CC581e506",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "BasedMiMaticBeefyVault": {
+    "ftm_test": {
+      "address": "0x8706C35bDD49c6029b8113cf02C5544AA5E2375d"
+    },
+    "localhost": {
+      "address": "0x8706C35bDD49c6029b8113cf02C5544AA5E2375d"
     }
   }
 }

@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "ftm": {
-      "address": "0x08c9ee169E51f9c52Cf14477D035AAbC97Fb64f9",
+      "address": "0x19E0cfcf484e5c523d61384de36E2f6af5B9cfd8",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x08c9ee169E51f9c52Cf14477D035AAbC97Fb64f9",
+      "address": "0x19E0cfcf484e5c523d61384de36E2f6af5B9cfd8",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -597,12 +597,58 @@
   },
   "DeployVaultHelper": {
     "ftm": {
-      "address": "0x77B830Bfa2073e8Af985dB9f99391e88C63517d6",
+      "address": "0x312556c548431c39A40a3748C8C72A0f931CEF39",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x77B830Bfa2073e8Af985dB9f99391e88C63517d6",
+      "address": "0x312556c548431c39A40a3748C8C72A0f931CEF39",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "rateStrategyMOOBASED_MIMATIC": {
+    "ftm": {
+      "address": "0x19E0cfcf484e5c523d61384de36E2f6af5B9cfd8"
+    },
+    "localhost": {
+      "address": "0x19E0cfcf484e5c523d61384de36E2f6af5B9cfd8"
+    }
+  },
+  "BasedMiMaticBeefyVaultImpl": {
+    "ftm": {
+      "address": "0x33B9A5a418C90c254Ae93784247201e424aC23BD",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x33B9A5a418C90c254Ae93784247201e424aC23BD",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "BasedOracle": {
+    "ftm": {
+      "address": "0x6cC542d4cD29Aa9528d1af83A196aBeCfEE61a8b",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x6cC542d4cD29Aa9528d1af83A196aBeCfEE61a8b",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "BasedMiMaticLPOracle": {
+    "ftm": {
+      "address": "0x86A42b7A448c1568d21b00C90eaB53B8417eEaDc",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x86A42b7A448c1568d21b00C90eaB53B8417eEaDc",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "BasedMiMaticBeefyVault": {
+    "ftm": {
+      "address": "0xbF9Cc228AEC3D5A80cA44E295E8f029E2D84d0AE"
+    },
+    "localhost": {
+      "address": "0xbF9Cc228AEC3D5A80cA44E295E8f029E2D84d0AE"
     }
   }
 }

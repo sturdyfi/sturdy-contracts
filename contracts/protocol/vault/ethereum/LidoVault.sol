@@ -2,18 +2,18 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {GeneralVault} from './GeneralVault.sol';
-import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {IWETH} from '../../misc/interfaces/IWETH.sol';
-import {ICurveSwap} from '../../interfaces/ICurveSwap.sol';
-import {Errors} from '../libraries/helpers/Errors.sol';
-import {ISwapRouter} from '../../interfaces/ISwapRouter.sol';
-import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {GeneralVault} from '../GeneralVault.sol';
+import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IWETH} from '../../../misc/interfaces/IWETH.sol';
+import {ICurveSwap} from '../../../interfaces/ICurveSwap.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
+import {ISwapRouter} from '../../../interfaces/ISwapRouter.sol';
+import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
+import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title LidoVault

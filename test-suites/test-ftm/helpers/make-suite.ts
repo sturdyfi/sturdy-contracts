@@ -30,6 +30,7 @@ import {
   getYearnLINKVault,
   getYearnCRVVault,
   getYearnSPELLVault,
+  getBasedMiMaticBeefyVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -65,6 +66,7 @@ import {
   YearnLINKVault,
   YearnCRVVault,
   YearnSPELLVault,
+  BasedMimaticBeefyVault,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -94,6 +96,7 @@ export interface TestEnv {
   yearnBOOVault: YearnBOOVault;
   TombFtmBeefyVault: TombFtmBeefyVault;
   TombMiMaticBeefyVault: TombMimaticBeefyVault;
+  BasedMiMaticBeefyVault: BasedMimaticBeefyVault;
   yearnFBEETSVault: YearnFBEETSVault;
   yearnLINKVault: YearnLINKVault;
   yearnCRVVault: YearnCRVVault;
@@ -114,6 +117,7 @@ export interface TestEnv {
   aYVBOO: AToken;
   aMooTOMB_FTM: AToken;
   aMooTOMB_MIMATIC: AToken;
+  aMooBASED_MIMATIC: AToken;
   aYVFBEETS: AToken;
   aYVLINK: AToken;
   aYVCRV: AToken;
@@ -125,6 +129,7 @@ export interface TestEnv {
   BOO: MintableERC20;
   TOMB_FTM_LP: MintableERC20;
   TOMB_MIMATIC_LP: MintableERC20;
+  BASED_MIMATIC_LP: MintableERC20;
   fBEETS: MintableERC20;
   BEETS: MintableERC20;
   LINK: MintableERC20;
@@ -137,6 +142,7 @@ export interface TestEnv {
   yvboo: IERC20Detailed;
   mootomb_ftm: IERC20Detailed;
   mootomb_mimatic: IERC20Detailed;
+  moobased_mimatic: IERC20Detailed;
   yvfbeets: IERC20Detailed;
   yvlink: IERC20Detailed;
   yvcrv: IERC20Detailed;
@@ -165,6 +171,7 @@ const testEnv: TestEnv = {
   yearnBOOVault: {} as YearnBOOVault,
   TombFtmBeefyVault: {} as TombFtmBeefyVault,
   TombMiMaticBeefyVault: {} as TombMimaticBeefyVault,
+  BasedMiMaticBeefyVault: {} as BasedMimaticBeefyVault,
   yearnLINKVault: {} as YearnLINKVault,
   yearnCRVVault: {} as YearnCRVVault,
   yearnSPELLVault: {} as YearnSPELLVault,
@@ -184,6 +191,7 @@ const testEnv: TestEnv = {
   aYVBOO: {} as AToken,
   aMooTOMB_FTM: {} as AToken,
   aMooTOMB_MIMATIC: {} as AToken,
+  aMooBASED_MIMATIC: {} as AToken,
   aYVFBEETS: {} as AToken,
   aYVLINK: {} as AToken,
   aYVCRV: {} as AToken,
@@ -195,6 +203,7 @@ const testEnv: TestEnv = {
   BOO: {} as MintableERC20,
   TOMB_FTM_LP: {} as MintableERC20,
   TOMB_MIMATIC_LP: {} as MintableERC20,
+  BASED_MIMATIC_LP: {} as MintableERC20,
   fBEETS: {} as MintableERC20,
   BEETS: {} as MintableERC20,
   LINK: {} as MintableERC20,
@@ -207,6 +216,7 @@ const testEnv: TestEnv = {
   yvboo: {} as IERC20Detailed,
   mootomb_ftm: {} as IERC20Detailed,
   mootomb_mimatic: {} as IERC20Detailed,
+  moobased_mimatic: {} as IERC20Detailed,
   yvfbeets: {} as IERC20Detailed,
   yvlink: {} as IERC20Detailed,
   yvcrv: {} as IERC20Detailed,
@@ -228,6 +238,7 @@ export async function initializeMakeSuite() {
   const yvbooAddress = getParamPerNetwork(poolConfig.YearnBOOVaultFTM, network);
   const mooTombFtmAddress = getParamPerNetwork(poolConfig.BeefyVaultTOMB_FTM, network);
   const mooTombMiMaticAddress = getParamPerNetwork(poolConfig.BeefyVaultTOMB_MIMATIC, network);
+  const mooBasedMiMaticAddress = getParamPerNetwork(poolConfig.BeefyVaultBASED_MIMATIC, network);
   const yvfbeetsAddress = getParamPerNetwork(poolConfig.YearnFBEETSVaultFTM, network);
   const yvlinkAddress = getParamPerNetwork(poolConfig.YearnLINKVaultFTM, network);
   const yvcrvAddress = getParamPerNetwork(poolConfig.YearnCRVVaultFTM, network);
@@ -238,6 +249,7 @@ export async function initializeMakeSuite() {
   const booAddress = getParamPerNetwork(poolConfig.BOO, network);
   const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
   const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
+  const basedMiMaticLPAddress = getParamPerNetwork(poolConfig.BASED_MIMATIC_LP, network);
   const fbeetsAddress = getParamPerNetwork(poolConfig.fBEETS, network);
   const beetsAddress = getParamPerNetwork(poolConfig.BEETS, network);
   const linkAddress = getParamPerNetwork(poolConfig.LINK, network);
@@ -318,6 +330,7 @@ export async function initializeMakeSuite() {
   testEnv.yearnBOOVault = await getYearnBOOVault();
   testEnv.TombFtmBeefyVault = await getTombFtmBeefyVault();
   testEnv.TombMiMaticBeefyVault = await getTombMiMaticBeefyVault();
+  testEnv.BasedMiMaticBeefyVault = await getBasedMiMaticBeefyVault();
   testEnv.yearnFBEETSVault = await getYearnFBEETSVault();
   testEnv.yearnLINKVault = await getYearnLINKVault();
   testEnv.yearnCRVVault = await getYearnCRVVault();
@@ -361,6 +374,7 @@ export async function initializeMakeSuite() {
   const aYVBOOAddress = allTokens.find((aToken) => aToken.symbol === 'ayvBOO' || aToken.symbol === 'syvBOO')?.tokenAddress;
   const aMooTOMB_FTM_Address = allTokens.find((aToken) => aToken.symbol === 'amooTOMB_FTM' || aToken.symbol === 'smooTOMB_FTM')?.tokenAddress;
   const aMooTOMB_MIMATIC_Address = allTokens.find((aToken) => aToken.symbol === 'amooTOMB_MIMATIC' || aToken.symbol === 'smooTOMB_MIMATIC')?.tokenAddress;
+  const aMooBASED_MIMATIC_Address = allTokens.find((aToken) => aToken.symbol === 'amooBASED_MIMATIC' || aToken.symbol === 'smooBASED_MIMATIC')?.tokenAddress;
   const aYVFBEETSAddress = allTokens.find((aToken) => aToken.symbol === 'ayvfBEETS' || aToken.symbol === 'syvfBEETS')?.tokenAddress;
   const aYVLINKAddress = allTokens.find((aToken) => aToken.symbol === 'ayvLINK' || aToken.symbol === 'syvLINK')?.tokenAddress;
   const aYVCRVAddress = allTokens.find((aToken) => aToken.symbol === 'ayvCRV' || aToken.symbol === 'syvCRV')?.tokenAddress;
@@ -378,7 +392,7 @@ export async function initializeMakeSuite() {
 
   if (!aDaiAddress || !aUsdcAddress || !aUsdtAddress || !aYVWFTMAddress || 
       !aYVWETHAddress || !aYVWBTCAddress || !aYVBOOAddress || !aMooTOMB_FTM_Address ||
-      !aMooTOMB_MIMATIC_Address || !aYVFBEETSAddress || !aYVLINKAddress ||
+      !aMooTOMB_MIMATIC_Address || !aMooBASED_MIMATIC_Address  || !aYVFBEETSAddress || !aYVLINKAddress ||
       !aYVCRVAddress || !aYVSPELLAddress) {
     process.exit(1);
   }
@@ -393,6 +407,7 @@ export async function initializeMakeSuite() {
   testEnv.aYVBOO = await getAToken(aYVBOOAddress);
   testEnv.aMooTOMB_FTM = await getAToken(aMooTOMB_FTM_Address)
   testEnv.aMooTOMB_MIMATIC = await getAToken(aMooTOMB_MIMATIC_Address)
+  testEnv.aMooBASED_MIMATIC = await getAToken(aMooBASED_MIMATIC_Address)
   testEnv.aYVFBEETS = await getAToken(aYVFBEETSAddress);
   testEnv.aYVLINK = await getAToken(aYVLINKAddress);
   testEnv.aYVCRV = await getAToken(aYVCRVAddress);
@@ -410,6 +425,7 @@ export async function initializeMakeSuite() {
   testEnv.BOO = await getMintableERC20(booAddress);
   testEnv.TOMB_FTM_LP = await getMintableERC20(tombFtmLPAddress);
   testEnv.TOMB_MIMATIC_LP = await getMintableERC20(tombMiMaticLPAddress);
+  testEnv.BASED_MIMATIC_LP = await getMintableERC20(basedMiMaticLPAddress);
   testEnv.fBEETS = await getMintableERC20(fbeetsAddress);
   testEnv.BEETS = await getMintableERC20(beetsAddress);
   testEnv.LINK = await getMintableERC20(linkAddress);
@@ -422,6 +438,7 @@ export async function initializeMakeSuite() {
   testEnv.yvboo = IERC20DetailedFactory.connect(yvbooAddress, deployer.signer);
   testEnv.mootomb_ftm = IERC20DetailedFactory.connect(mooTombFtmAddress, deployer.signer);
   testEnv.mootomb_mimatic = IERC20DetailedFactory.connect(mooTombMiMaticAddress, deployer.signer);
+  testEnv.moobased_mimatic = IERC20DetailedFactory.connect(mooBasedMiMaticAddress, deployer.signer);
   testEnv.yvfbeets = IERC20DetailedFactory.connect(yvfbeetsAddress, deployer.signer);
   testEnv.yvlink = IERC20DetailedFactory.connect(yvlinkAddress, deployer.signer);
   testEnv.yvcrv = IERC20DetailedFactory.connect(yvcrvAddress, deployer.signer);

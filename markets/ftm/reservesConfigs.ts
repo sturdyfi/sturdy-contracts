@@ -14,6 +14,7 @@ import {
   rateStrategyYVLINK,
   rateStrategyYVCRV,
   rateStrategyYVSPELL,
+  rateStrategyMOOBASED_MIMATIC,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -211,3 +212,17 @@ export const strategyYVSPELL: IReserveParams = {
   collateralEnabled: true,
   emissionPerSecond: '0',
 };  
+
+export const strategyMOOBASED_MIMATIC: IReserveParams = {
+  strategy: rateStrategyMOOBASED_MIMATIC,
+  baseLTVAsCollateral: '0', //'7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+};

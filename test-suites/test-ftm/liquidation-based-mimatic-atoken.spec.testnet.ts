@@ -21,8 +21,8 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     LP_IS_PAUSED,
   } = ProtocolErrors;
 
-  it('Deposits TOMB_MIMATIC_LP, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
-    const { dai, users, pool, oracle, TombMiMaticBeefyVault, deployer, TOMB_MIMATIC_LP } = testEnv;
+  it('Deposits BASED_MIMATIC_LP, borrows DAI/Check liquidation fails because health factor is above 1', async () => {
+    const { dai, users, pool, oracle, BasedMiMaticBeefyVault, deployer, BASED_MIMATIC_LP } = testEnv;
     const depositor = users[0];
     const borrower = users[1];
 
@@ -38,16 +38,16 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .connect(depositor.signer)
       .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
 
-    const amountTomnbMiMaticLPtoDeposit = await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '1');
+    const amountBasedMiMaticLPtoDeposit = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '1');
 
-    //prepare TOMB_MIMATIC_LP to deposit
-    await TOMB_MIMATIC_LP.connect(deployer.signer).transfer(borrower.address, amountTomnbMiMaticLPtoDeposit);
+    //prepare BASED_MIMATIC_LP to deposit
+    await BASED_MIMATIC_LP.connect(deployer.signer).transfer(borrower.address, amountBasedMiMaticLPtoDeposit);
 
     //approve protocol to access borrower wallet
-    await TOMB_MIMATIC_LP.connect(borrower.signer).approve(TombMiMaticBeefyVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await BASED_MIMATIC_LP.connect(borrower.signer).approve(BasedMiMaticBeefyVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //user 2 deposits 1 TOMB_MIMATIC_LP
-    await TombMiMaticBeefyVault.connect(borrower.signer).depositCollateral(TOMB_MIMATIC_LP.address, amountTomnbMiMaticLPtoDeposit);
+    //user 2 deposits 1 BASED_MIMATIC_LP
+    await BasedMiMaticBeefyVault.connect(borrower.signer).depositCollateral(BASED_MIMATIC_LP.address, amountBasedMiMaticLPtoDeposit);
 
     //user 2 borrows
     const userGlobalData = await pool.connect(depositor.signer).getUserAccountData(borrower.address);
@@ -73,7 +73,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //someone tries to liquidate user 2
     await expect(
-      pool.liquidationCall(TOMB_MIMATIC_LP.address, dai.address, borrower.address, 1, true)
+      pool.liquidationCall(BASED_MIMATIC_LP.address, dai.address, borrower.address, 1, true)
     ).to.be.revertedWith(LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD);
   });
 
@@ -97,11 +97,11 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('Tries to liquidate a different currency than the loan principal', async () => {
-    const { pool, users, TOMB_MIMATIC_LP, usdc } = testEnv;
+    const { pool, users, BASED_MIMATIC_LP, usdc } = testEnv;
     const borrower = users[1];
     //user 2 tries to borrow
     await expect(
-      pool.liquidationCall(TOMB_MIMATIC_LP.address, usdc.address, borrower.address, oneEther.toString(), true)
+      pool.liquidationCall(BASED_MIMATIC_LP.address, usdc.address, borrower.address, oneEther.toString(), true)
     ).revertedWith(LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER);
   });
 
@@ -115,7 +115,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
   });
 
   it('Liquidates the borrow', async () => {
-    const { pool, dai, TOMB_MIMATIC_LP, mootomb_mimatic, users, oracle, helpersContract, deployer } = testEnv;
+    const { pool, dai, BASED_MIMATIC_LP, moobased_mimatic, users, oracle, helpersContract, deployer } = testEnv;
     const borrower = users[1];
     const ethers = (DRE as any).ethers;
 
@@ -123,7 +123,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     await dai.connect(deployer.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
     const daiReserveDataBefore = await getReserveData(helpersContract, dai.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(mootomb_mimatic.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(moobased_mimatic.address);
 
     const userReserveDataBefore = await getUserData(
       pool,
@@ -138,7 +138,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     const tx = await pool
       .connect(deployer.signer)
-      .liquidationCall(TOMB_MIMATIC_LP.address, dai.address, borrower.address, amountToLiquidate, true);
+      .liquidationCall(BASED_MIMATIC_LP.address, dai.address, borrower.address, amountToLiquidate, true);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       dai.address,
@@ -148,13 +148,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const daiReserveDataAfter = await helpersContract.getReserveData(dai.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(mootomb_mimatic.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(moobased_mimatic.address);
 
-    const collateralPrice = (await oracle.getAssetPrice(TOMB_MIMATIC_LP.address)).toString();
+    const collateralPrice = (await oracle.getAssetPrice(BASED_MIMATIC_LP.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(dai.address)).toString();
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(mootomb_mimatic.address)
+      await helpersContract.getReserveConfigurationData(moobased_mimatic.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(dai.address)
@@ -214,13 +214,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     expect(
-      (await helpersContract.getUserReserveData(mootomb_mimatic.address, deployer.address))
+      (await helpersContract.getUserReserveData(moobased_mimatic.address, deployer.address))
         .usageAsCollateralEnabled
     ).to.be.true;
   });
 
-  it('User 3 deposits 7000 USDC, user 4 1 TOMB_MIMATIC_LP, user 4 borrows - drops HF, liquidates the borrow', async () => {
-    const { users, pool, usdc, oracle, TOMB_MIMATIC_LP, mootomb_mimatic, helpersContract, TombMiMaticBeefyVault, deployer } = testEnv;
+  it('User 3 deposits 7000 USDC, user 4 1 BASED_MIMATIC_LP, user 4 borrows - drops HF, liquidates the borrow', async () => {
+    const { users, pool, usdc, oracle, BASED_MIMATIC_LP, moobased_mimatic, helpersContract, BasedMiMaticBeefyVault, deployer } = testEnv;
     const depositor = users[3];
     const borrower = users[4];
 
@@ -239,14 +239,14 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    //user 4 deposits 1 TOMB_MIMATIC_LP
-    const amountTomnbMiMaticLPtoDeposit = await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '1');
-    await TOMB_MIMATIC_LP.connect(deployer.signer).transfer(borrower.address, amountTomnbMiMaticLPtoDeposit);
+    //user 4 deposits 1 BASED_MIMATIC_LP
+    const amountBasedMiMaticLPtoDeposit = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '1');
+    await BASED_MIMATIC_LP.connect(deployer.signer).transfer(borrower.address, amountBasedMiMaticLPtoDeposit);
 
     //approve protocol to access borrower wallet
-    await TOMB_MIMATIC_LP.connect(borrower.signer).approve(TombMiMaticBeefyVault.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await BASED_MIMATIC_LP.connect(borrower.signer).approve(BasedMiMaticBeefyVault.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    await TombMiMaticBeefyVault.connect(borrower.signer).depositCollateral(TOMB_MIMATIC_LP.address, amountTomnbMiMaticLPtoDeposit);
+    await BasedMiMaticBeefyVault.connect(borrower.signer).depositCollateral(BASED_MIMATIC_LP.address, amountBasedMiMaticLPtoDeposit);
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);
@@ -284,7 +284,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     );
 
     const usdcReserveDataBefore = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataBefore = await helpersContract.getReserveData(mootomb_mimatic.address);
+    const ethReserveDataBefore = await helpersContract.getReserveData(moobased_mimatic.address);
 
     const amountToLiquidate = new BigNumber(userReserveDataBefore.currentVariableDebt.toString())
       .multipliedBy(0.5)
@@ -292,7 +292,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     await pool
       .connect(deployer.signer)
-      .liquidationCall(TOMB_MIMATIC_LP.address, usdc.address, borrower.address, amountToLiquidate, true);
+      .liquidationCall(BASED_MIMATIC_LP.address, usdc.address, borrower.address, amountToLiquidate, true);
 
     const userReserveDataAfter = await helpersContract.getUserReserveData(
       usdc.address,
@@ -302,13 +302,13 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
     const usdcReserveDataAfter = await helpersContract.getReserveData(usdc.address);
-    const ethReserveDataAfter = await helpersContract.getReserveData(mootomb_mimatic.address);
+    const ethReserveDataAfter = await helpersContract.getReserveData(moobased_mimatic.address);
 
-    const collateralPrice = (await oracle.getAssetPrice(TOMB_MIMATIC_LP.address)).toString();
+    const collateralPrice = (await oracle.getAssetPrice(BASED_MIMATIC_LP.address)).toString();
     const principalPrice = (await oracle.getAssetPrice(usdc.address)).toString();
 
     const collateralDecimals = (
-      await helpersContract.getReserveConfigurationData(mootomb_mimatic.address)
+      await helpersContract.getReserveConfigurationData(moobased_mimatic.address)
     ).decimals.toString();
     const principalDecimals = (
       await helpersContract.getReserveConfigurationData(usdc.address)

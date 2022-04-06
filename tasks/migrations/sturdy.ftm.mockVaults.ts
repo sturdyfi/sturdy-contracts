@@ -14,6 +14,7 @@ import {
   deployMockyvWFTM,
   deployMockYearnVault,
   deployMockBeefyVault,
+  deployMockMooBASEDMIMATIC,
 } from '../../helpers/contracts-deployments';
 import {
   getFirstSigner,
@@ -43,6 +44,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const booAddress = getParamPerNetwork(poolConfig.BOO, network);
     const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
     const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
+    const basedMiMaticLPAddress = getParamPerNetwork(poolConfig.BASED_MIMATIC_LP, network);
     const linkAddress = getParamPerNetwork(poolConfig.LINK, network);
     const fbeetsAddress = getParamPerNetwork(poolConfig.fBEETS, network);
     const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
@@ -94,6 +96,13 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     );
     console.log(`MockMooTOMBMIMATIC address `, mooTOMB_MIMATIC.address);
 
+    console.log('Deploying MockMooBASEDMIMATIC started\n');
+    const mooBASED_MIMATIC = await deployMockMooBASEDMIMATIC(
+      [basedMiMaticLPAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockMooBASEDMIMATIC address `, mooBASED_MIMATIC.address);
+
     console.log('Deploying MockyvLINK started\n');
     const yvLINK = await deployMockYearnVault(
       eContractid.MockLINKForFTM,
@@ -133,6 +142,27 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockyvSPELL`, yvSPELL.address);
+    // console.log('Deploying MockBASEDMIMATICLP started\n');
+    // const BASED_MIMATIC_LP = await deployMintableERC20(
+    //   ['BASED-MIMATIC LP', 'BASED-MIMATIC', '18'],
+    //   verify
+    // );
+
+    // await BASED_MIMATIC_LP.mint(
+    //   await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '20000000')
+    // );
+    // console.log(`MockBASEDMIMATICLP address `, BASED_MIMATIC_LP.address);
+
+    // console.log('Deploying MockBASED started\n');
+    // const BASED = await deployMintableERC20(
+    //   ['BASED', 'BASED', '18'],
+    //   verify
+    // );
+
+    // await BASED.mint(
+    //   await convertToCurrencyDecimals(BASED.address, '20000000')
+    // );
+    // console.log(`MockBASED address `, BASED.address);
 
     // console.log('Deploying MockTOMBMIMATICLP started\n');
     // const TOMB_MIMATIC_LP = await deployMintableERC20(

@@ -56,6 +56,12 @@ import {
   DeployVaultHelperFactory,
   YearnCRVVaultFactory,
   YearnSPELLVaultFactory,
+  BeetsOracleFactory,
+  FBeetsOracleFactory,
+  BasedOracleFactory,
+  BasedMiMaticLPOracleFactory,
+  BasedMimaticBeefyVaultFactory,
+  MockMooBASEDMIMATICFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -414,6 +420,24 @@ export const getTombMiMaticLPOracle = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getBasedOracle = async (address?: tEthereumAddress) =>
+  await BasedOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBasedMiMaticLPOracle = async (address?: tEthereumAddress) =>
+  await BasedMiMaticLPOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedMiMaticLPOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getLendingPool = async (address?: tEthereumAddress) =>
   await LendingPoolFactory.connect(
     address ||
@@ -539,6 +563,24 @@ export const getTombMiMaticBeefyVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.TombMiMaticBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBasedMiMaticBeefyVaultImpl = async (address?: tEthereumAddress) =>
+  await BasedMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedMiMaticBeefyVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBasedMiMaticBeefyVault = async (address?: tEthereumAddress) =>
+  await BasedMimaticBeefyVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BasedMiMaticBeefyVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );
@@ -715,6 +757,15 @@ export const getMockMooTOMBMIMATIC = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getMockMooBASEDMIMATIC = async (address?: tEthereumAddress) =>
+  await MockMooBASEDMIMATICFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooBASEDMIMATIC}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getMockWBTCForFTM = async (address?: tEthereumAddress) =>
   await MockWBTCForFTMFactory.connect(
     address ||
@@ -750,6 +801,24 @@ export const getDeployVaultHelper = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.DeployVaultHelper}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBeetsOracle = async (address?: tEthereumAddress) =>
+  await BeetsOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BeetsOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getFBeetsOracle = async (address?: tEthereumAddress) =>
+  await FBeetsOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.FBeetsOracle}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

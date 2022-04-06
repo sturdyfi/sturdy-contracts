@@ -34,7 +34,7 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
 
     expect(await moobased_mimatic.balanceOf(BasedMiMaticBeefyVault.address)).to.be.equal(0);
     expect(await aMooBASED_MIMATIC.balanceOf(BasedMiMaticBeefyVault.address)).to.be.equal(0);
-    expect(await aMooBASED_MIMATIC.balanceOf(deployer.address)).to.be.gte(await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2499.99'));
+    expect(await aMooBASED_MIMATIC.balanceOf(deployer.address)).to.be.gte(await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2494.99'));
     expect(await BASED_MIMATIC_LP.balanceOf(deployer.address)).to.be.equal(0);
   });
 
@@ -54,14 +54,14 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
     const { deployer, moobased_mimatic, BasedMiMaticBeefyVault, BASED_MIMATIC_LP } = testEnv;
     const moobasedmimaticBalanceOfPool = await moobased_mimatic.balanceOf(BasedMiMaticBeefyVault.address);
     const BasedMiMaticLPBeforeBalanceOfUser = await BASED_MIMATIC_LP.balanceOf(deployer.address);
-    const BasedMiMaticLPWithdrawAmount = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2449');
+    const BasedMiMaticLPWithdrawAmount = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2444');
 
     await BasedMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(BASED_MIMATIC_LP.address, BasedMiMaticLPWithdrawAmount, deployer.address);
 
     const BasedMiMaticLPCurrentBalanceOfUser = await BASED_MIMATIC_LP.balanceOf(deployer.address);
     expect(moobasedmimaticBalanceOfPool).to.be.equal(0);
     expect(BasedMiMaticLPCurrentBalanceOfUser.sub(BasedMiMaticLPBeforeBalanceOfUser)).to.be.gte(
-      await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2447.5')
+      await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2443.5')
     );
     expect(await BASED_MIMATIC_LP.balanceOf(BasedMiMaticBeefyVault.address)).to.be.equal(0);
   });
@@ -116,7 +116,7 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
     expect(await BasedMiMaticBeefyVault.getYieldAmount()).to.be.equal(0);
 
     // To simulate yield in lendingPool, deposit some moobased_mimatic to aMooBASED_MIMATIC contract
-    const moobasedmimaticOwnerAddress = '0x482445ba429B7Bfd7B640ada3d68b8Bb1876cf78';
+    const moobasedmimaticOwnerAddress = '0xb01BF93D6c59Ce2beF0eE8eA2619f6B5057fA464';
     const yieldmoobasedmimaticAmount = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2500');
     await impersonateAccountsHardhat([moobasedmimaticOwnerAddress]);
     signer = await ethers.provider.getSigner(moobasedmimaticOwnerAddress);
@@ -161,7 +161,7 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    const daiOwnerAddress = '0x4188663a85C92EEa35b5AD3AA5cA7CeB237C6fe9';
+    const daiOwnerAddress = '0x7182a1b9cf88e87b83e936d3553c91f9e7bebdd7';
     const depositDAI = '7000';
     //Make some test DAI for depositor
     await impersonateAccountsHardhat([daiOwnerAddress]);
@@ -211,7 +211,7 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
     expect(await BasedMiMaticBeefyVault.getYieldAmount()).to.be.equal(0);
 
     //To simulate yield in lendingPool, deposit some moobased_mimatic to aMooBASED_MIMATIC contract
-    const moobasedmimaticOwnerAddress = '0x482445ba429B7Bfd7B640ada3d68b8Bb1876cf78';
+    const moobasedmimaticOwnerAddress = '0xb01BF93D6c59Ce2beF0eE8eA2619f6B5057fA464';
     const yieldmoobasedmimatic = '2500';
     const yieldmoobasedmimaticAmount = await convertToCurrencyDecimals(moobased_mimatic.address, yieldmoobasedmimatic);
     //Make some test moobased_mimatic

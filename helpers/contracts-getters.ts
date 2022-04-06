@@ -59,6 +59,7 @@ import {
   BasedOracleFactory,
   BasedMiMaticLPOracleFactory,
   BasedMimaticBeefyVaultFactory,
+  MockMooBASEDMIMATICFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -731,6 +732,15 @@ export const getMockMooTOMBMIMATIC = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.MockMooTOMBMIMATIC}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getMockMooBASEDMIMATIC = async (address?: tEthereumAddress) =>
+  await MockMooBASEDMIMATICFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.MockMooBASEDMIMATIC}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

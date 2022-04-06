@@ -703,5 +703,74 @@
     "localhost": {
       "address": "0x58009A0A37e2FBFfb396D51dcCD920544a3D88B9"
     }
+  },
+  "MockCRVForFTM": {
+    "ftm_test": {
+      "address": "0x113D668aEB0205aa4EC9e3bAC47c9b4d6b66E674",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x113D668aEB0205aa4EC9e3bAC47c9b4d6b66E674"
+    }
+  },
+  "YearnCRVVaultImpl": {
+    "ftm_test": {
+      "address": "0xDb2F717148667046c377E0cEFa744fe468D08D31",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    }
+  },
+  "YearnCRVVault": {
+    "ftm_test": {
+      "address": "0xdB003b12FC674E6De2BEED5320Ea067c44d7e7de",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xdB003b12FC674E6De2BEED5320Ea067c44d7e7de"
+    }
+  },
+  "rateStrategyYVCRV": {
+    "ftm_test": {
+      "address": "0x65A7d2dB6068c47F402334c2980CB2883C49E9C2",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x65A7d2dB6068c47F402334c2980CB2883C49E9C2"
+    }
+  },
+  "MockSPELLForFTM": {
+    "ftm_test": {
+      "address": "0x7fc436Eec9b6688A5ba46812C76051e87EB00998",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x7fc436Eec9b6688A5ba46812C76051e87EB00998"
+    }
+  },
+  "YearnSPELLVaultImpl": {
+    "ftm_test": {
+      "address": "0xF5bbC2B4fFafAFdB10fD258DaC4Dd6fA2AFa2235",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xF5bbC2B4fFafAFdB10fD258DaC4Dd6fA2AFa2235"
+    }
+  },
+  "YearnSPELLVault": {
+    "ftm_test": {
+      "address": "0x9b01C1E24Be92eC408B417B26087eF9A3B8161d9",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0x9b01C1E24Be92eC408B417B26087eF9A3B8161d9"
+    }
+  },
+  "rateStrategyYVSPELL": {
+    "ftm_test": {
+      "address": "0xcA9C6F12be773ADd0618E3325Eb865b32226E124",
+      "deployer": "0x661fB502E24Deb30e927E39A38Bd2CC44D67339F"
+    },
+    "localhost": {
+      "address": "0xcA9C6F12be773ADd0618E3325Eb865b32226E124"
+    }
   }
 }

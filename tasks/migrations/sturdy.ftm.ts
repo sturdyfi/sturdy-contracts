@@ -60,6 +60,12 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('7-8. Deploy Yearn LINK vault');
     await DRE.run('full:deploy-yearn-link-vault', { pool: POOL_NAME });
 
+    console.log('7-9. Deploy Yearn CRV vault');
+    await DRE.run('full:deploy-yearn-crv-vault', { pool: POOL_NAME });
+
+    console.log('7-10. Deploy Yearn SPELL vault');
+    await DRE.run('full:deploy-yearn-spell-vault', { pool: POOL_NAME });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 

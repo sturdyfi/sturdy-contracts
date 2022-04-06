@@ -36,6 +36,8 @@ import {
   getYearnFBEETSVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getYearnCRVVault,
+  getYearnSPELLVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -99,6 +101,8 @@ import {
   YearnLINKVaultFactory,
   MockYearnVaultFactory,
   MockBeefyVaultFactory,
+  YearnCRVVaultFactory,
+  YearnSPELLVaultFactory,
   DeployVaultHelperFactory,
 } from '../types';
 import {
@@ -1234,6 +1238,102 @@ export const deployBeefyETHVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.BeefyETHVault, beefyVaultProxyAddress);
 
   return await getBeefyETHVault();
+};
+
+export const deployYearnCRVVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnCRVVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnCRVVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnCRVVault = async (verify?: boolean) => {
+  const yearnCRVVaultImpl = await withSaveAndVerify(
+    await new YearnCRVVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnCRVVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_CRV_VAULT'),
+      yearnCRVVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVCRV'),
+      getParamPerNetwork(config.YearnCRVVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CRV'),
+      getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  const yearnCRVVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_CRV_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnCRVVault, yearnCRVVaultProxyAddress);
+
+  return await getYearnCRVVault();
+};
+
+export const deployYearnSPELLVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnSPELLVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnSPELLVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnSPELLVault = async (verify?: boolean) => {
+  const yearnSPELLVaultImpl = await withSaveAndVerify(
+    await new YearnSPELLVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnSPELLVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_SPELL_VAULT'),
+      yearnSPELLVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVSPELL'),
+      getParamPerNetwork(config.YearnSPELLVaultFTM, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('SPELL'),
+      getParamPerNetwork(config.SPELL, network)
+    )
+  );
+
+  const yearnSPELLVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_SPELL_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnSPELLVault, yearnSPELLVaultProxyAddress);
+
+  return await getYearnSPELLVault();
 };
 
 export const deploySturdyIncentivesControllerImpl = async (

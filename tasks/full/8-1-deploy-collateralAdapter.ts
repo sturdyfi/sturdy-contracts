@@ -11,6 +11,8 @@ import {
   getYearnWETHVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getYearnCRVVault,
+  getYearnSPELLVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -60,6 +62,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
             yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
             mooWETH: getParamPerNetwork((poolConfig as IFantomConfiguration).WETH, network),
+            yvCRV: getParamPerNetwork((poolConfig as IFantomConfiguration).CRV, network),
+            yvSPELL: getParamPerNetwork((poolConfig as IFantomConfiguration).SPELL, network),
           };
 
     const acceptableVaults =
@@ -77,6 +81,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvfBEETS: (await getYearnFBEETSVault()).address,
             yvLINK: (await getYearnLINKVault()).address,
             mooWETH: (await getBeefyETHVault()).address,
+            yvCRV: (await getYearnCRVVault()).address,
+            yvSPELL: (await getYearnSPELLVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

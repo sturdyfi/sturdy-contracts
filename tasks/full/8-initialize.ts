@@ -23,6 +23,8 @@ import {
   getYearnFBEETSVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getYearnCRVVault,
+  getYearnSPELLVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -71,6 +73,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvfBEETS: (await getYearnFBEETSVault()).address,
               mooWETH: (await getBeefyETHVault()).address,
               yvLINK: (await getYearnLINKVault()).address,
+              yvCRV: (await getYearnCRVVault()).address,
+              yvSPELL: (await getYearnSPELLVault()).address,
             };
 
       await initReservesByHelper(

@@ -54,6 +54,8 @@ import {
   YearnFBEETSVaultFactory,
   YearnLINKVaultFactory,
   DeployVaultHelperFactory,
+  YearnCRVVaultFactory,
+  YearnSPELLVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -567,11 +569,30 @@ export const getYearnLINKVault = async (address?: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
+
 export const getBeefyETHVault = async (address?: tEthereumAddress) =>
   await BeefyETHVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.BeefyETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnCRVVault = async (address?: tEthereumAddress) =>
+  await YearnCRVVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnCRVVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnSPELLVault = async (address?: tEthereumAddress) =>
+  await YearnSPELLVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnSPELLVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

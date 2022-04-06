@@ -127,6 +127,8 @@ export const CommonsConfig: ICommonConfiguration = {
       yvfBEETS: '0x7eD6f3f22Fb3F85E1071b5F6e616d5f0E0E32a49',
       BEETS: '0x0C073077eB4277d18EA10796188e07ab886032BD',
       yvLINK: '0x221C773d8647BC3034e91a0c47062e26D20d97B4',
+      yvCRV: '0xa141D7E3B44594cc65142AE5F2C7844Abea66D2B',
+      yvSPELL: '0x02E48946849e0BFDD7bEa5daa80AF77195C7E24c',
     },
     [eFantomNetwork.ftm_test]: {},
     [eFantomNetwork.tenderlyFTM]: {
@@ -145,6 +147,8 @@ export const CommonsConfig: ICommonConfiguration = {
       yvfBEETS: '0x7eD6f3f22Fb3F85E1071b5F6e616d5f0E0E32a49',
       BEETS: '0x0C073077eB4277d18EA10796188e07ab886032BD',
       yvLINK: '0x221C773d8647BC3034e91a0c47062e26D20d97B4',
+      yvCRV: '0xa141D7E3B44594cc65142AE5F2C7844Abea66D2B',
+      yvSPELL: '0x02E48946849e0BFDD7bEa5daa80AF77195C7E24c',
     },
   },
   ReserveAssets: {

@@ -45,6 +45,8 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
     const linkAddress = getParamPerNetwork(poolConfig.LINK, network);
     const fbeetsAddress = getParamPerNetwork(poolConfig.fBEETS, network);
+    const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
+    const spellAddress = getParamPerNetwork(poolConfig.SPELL, network);
 
     // // Frozen vault on testnet: TOMB_MIMATIC_LP, TOMB_FTM_LP
     // const configurator = await getLendingPoolConfiguratorProxy();
@@ -115,6 +117,23 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
       verify
     );
     console.log(`MockMooETH`, mooWETH.address);
+
+    console.log('Deploying MockyvCRV started\n');
+    const yvCRV = await deployMockYearnVault(
+      eContractid.MockCRVForFTM,
+      [crvAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockyvCRV`, yvCRV.address);
+
+    console.log('Deploying MockyvSPELL started\n');
+    const yvSPELL = await deployMockYearnVault(
+      eContractid.MockSPELLForFTM,
+      [spellAddress, sender, sender, '', '', sender, sender],
+      verify
+    );
+    console.log(`MockyvSPELL`, yvSPELL.address);
+
     // console.log('Deploying MockTOMBMIMATICLP started\n');
     // const TOMB_MIMATIC_LP = await deployMintableERC20(
     //   ['TOMB-MIMATIC LP', 'TOMB-MIMATIC', '18'],

@@ -60,6 +60,12 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('7-8. Deploy Yearn LINK vault');
     await DRE.run('full:deploy-yearn-link-vault', { pool: POOL_NAME });
 
+    console.log('7-9. Deploy Yearn CRV vault');
+    await DRE.run('full:deploy-yearn-crv-vault', { pool: POOL_NAME });
+
+    console.log('7-10. Deploy Yearn SPELL vault');
+    await DRE.run('full:deploy-yearn-spell-vault', { pool: POOL_NAME });
+
     console.log('7-9. Deploy BASED-MIMATIC Beefy vault');
     await DRE.run('full:deploy-based-mimatic-beefy-vault', { pool: POOL_NAME });
 

@@ -110,6 +110,10 @@ export enum eContractid {
   YearnFBEETSVault = 'YearnFBEETSVault',
   YearnLINKVaultImpl = 'YearnLINKVaultImpl',
   YearnLINKVault = 'YearnLINKVault',
+  YearnCRVVaultImpl = 'YearnCRVVaultImpl',
+  YearnCRVVault = 'YearnCRVVault',
+  YearnSPELLVaultImpl = 'YearnSPELLVaultImpl',
+  YearnSPELLVault = 'YearnSPELLVault',
   BasedMiMaticBeefyVaultImpl = 'BasedMiMaticBeefyVaultImpl',
   BasedMiMaticBeefyVault = 'BasedMiMaticBeefyVault',
   MockyvWFTM = 'MockyvWFTM',
@@ -131,6 +135,8 @@ export enum eContractid {
   MockLINKForFTM = 'MockLINKForFTM',
   MockFBEETSForFTM = 'MockFBEETSForFTM',
   MockBeeefyETHForFTM = 'MockBeeefyETHForFTM',
+  MockCRVForFTM = 'MockCRVForFTM',
+  MockSPELLForFTM = 'MockSPELLForFTM',
   DeployVaultHelper = 'DeployVaultHelper',
 }
 
@@ -259,6 +265,8 @@ export interface iAssetBase<T> {
   mooTOMB_MIMATIC: T;
   yvfBEETS: T;
   yvLINK: T;
+  yvCRV: T;
+  yvSPELL: T;
   mooBASED_MIMATIC: T;
 }
 
@@ -282,6 +290,8 @@ export type iFantomPoolAssets<T> = Pick<
   | 'mooTOMB_MIMATIC'
   | 'yvfBEETS'
   | 'yvLINK'
+  | 'yvCRV'
+  | 'yvSPELL'
   | 'mooBASED_MIMATIC'
 >;
 
@@ -306,6 +316,8 @@ export enum TokenContractId {
   mooTOMB_MATIC = 'mooTOMB_MATIC',
   yvfBEETS = 'yvfBEETS',
   yvLINK = 'yvLINK',
+  yvCRV = 'yvCRV',
+  yvSPELL = 'yvSPELL',
   mooBASED_MATIC = 'mooBASED_MATIC',
 }
 
@@ -465,6 +477,8 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   fBEETS: iParamsPerNetwork<tEthereumAddress>;
   BEETS: iParamsPerNetwork<tEthereumAddress>;
   LINK: iParamsPerNetwork<tEthereumAddress>;
+  CRV: iParamsPerNetwork<tEthereumAddress>;
+  SPELL: iParamsPerNetwork<tEthereumAddress>;
   YearnVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWETHVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnWBTCVaultFTM: iParamsPerNetwork<tEthereumAddress>;
@@ -475,6 +489,8 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   YearnFBEETSVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnLINKVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyETHVault: iParamsPerNetwork<tEthereumAddress>;
+  YearnCRVVaultFTM: iParamsPerNetwork<tEthereumAddress>;
+  YearnSPELLVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
   TombSwapRouter: iParamsPerNetwork<tEthereumAddress>;
   AavePool: iParamsPerNetwork<tEthereumAddress>;

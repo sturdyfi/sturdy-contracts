@@ -507,20 +507,20 @@
   },
   "LiquidatorImpl": {
     "ftm": {
-      "address": "0x904290A4e88b984Bab24527601a3d83fF1B7450E",
+      "address": "0x8AB23aE0Ae30427811c021571f6DF3f0b4936a79",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x904290A4e88b984Bab24527601a3d83fF1B7450E",
+      "address": "0x8AB23aE0Ae30427811c021571f6DF3f0b4936a79",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "Liquidator": {
     "ftm": {
-      "address": "0x904290A4e88b984Bab24527601a3d83fF1B7450E"
+      "address": "0x8AB23aE0Ae30427811c021571f6DF3f0b4936a79"
     },
     "localhost": {
-      "address": "0x904290A4e88b984Bab24527601a3d83fF1B7450E"
+      "address": "0x8AB23aE0Ae30427811c021571f6DF3f0b4936a79"
     }
   },
   "YearnLINKVaultImpl": {

@@ -154,6 +154,63 @@ const { parseEther } = ethers.utils;
 //   });
 // });
 
+// // should pass on block number 35486157 on forked ftm without deploy case
+// makeSuite('Liquidator', (testEnv: TestEnv) => {
+//   it('call liquidator for SPELL', async () => {
+//     const { liquidator, deployer, usdc, SPELL, yearnSPELLVault, pool, oracle, yvspell } = testEnv;
+//     const ethers = (DRE as any).ethers;
+//     const borrower = (await getEthersSigners())[0];
+//     const borrowerAddress = await borrower.getAddress();
+//     const abiEncoder = new ethers.utils.AbiCoder();
+//     const encodedData = abiEncoder.encode(
+//       ["address", "address"],
+//       [SPELL.address, borrowerAddress]
+//     );
+
+//     // Make some test SPELL for depositor
+//     const amountSPELLtoDeposit = await convertToCurrencyDecimals(SPELL.address, '20000');
+//     const spellOwnerAddress = '0x0249fbbd411944249a2625dfc0fdee6bd1c41b36';
+//     await impersonateAccountsHardhat([spellOwnerAddress]);
+//     let signer = await ethers.provider.getSigner(spellOwnerAddress);
+//     await SPELL.connect(signer).transfer(borrowerAddress, amountSPELLtoDeposit);
+    
+//     await SPELL.connect(borrower).approve(yearnSPELLVault.address, amountSPELLtoDeposit);
+
+//     await yearnSPELLVault.connect(borrower).depositCollateral(SPELL.address, amountSPELLtoDeposit);
+
+//     // borrow
+//     const userGlobalData = await pool.getUserAccountData(borrowerAddress);
+//     const usdcPrice = await oracle.getAssetPrice(usdc.address);
+
+//     const amountUSDCToBorrow = await convertToCurrencyDecimals(
+//       usdc.address,
+//       new BigNumber(userGlobalData.availableBorrowsETH.toString())
+//         .div(usdcPrice.toString())
+//         .multipliedBy(0.95)
+//         .toFixed(0)
+//     );
+
+//     await pool
+//       .connect(borrower)
+//       .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrowerAddress);
+
+//     // set liquidation threshold 35%
+//     await impersonateAccountsHardhat(['0x154D73802a6B3324c017481AC818050afE4a0b0A']);
+//     signer = await ethers.provider.getSigner('0x154D73802a6B3324c017481AC818050afE4a0b0A');
+//     const configurator = await getLendingPoolConfiguratorProxy();
+//     await configurator.connect(signer).configureReserveAsCollateral(yvspell.address, '3000', '3500', '10500');
+
+//     // process liquidation by using flashloan contract
+//     await liquidator.liquidation(usdc.address, await convertToCurrencyDecimals(usdc.address, '600'), encodedData);
+    
+//     // withdraw remained usdc from flashloan contract
+//     const beforeUsdcBalance = await usdc.balanceOf(deployer.address);
+//     await liquidator.connect(deployer.signer).withdraw(usdc.address);
+//     const usdcBalance = await usdc.balanceOf(deployer.address);
+//     expect(usdcBalance.sub(beforeUsdcBalance).gt(await convertToCurrencyDecimals(usdc.address, '0.03'))).to.eq(true);
+//   });
+// });
+
 // makeSuite('Liquidator', (testEnv: TestEnv) => {
 //   it('call liquidator for WFTM', async () => {
 //     const { liquidator, deployer, usdc, WFTM, yvwftm } = testEnv;

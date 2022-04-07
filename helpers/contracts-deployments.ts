@@ -1672,14 +1672,14 @@ export const deployLiquidator = async (args: [string], verify?: boolean) => {
   //   )
   // );
 
-  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
-  const network = <eNetwork>DRE.network.name;
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
-      getParamPerNetwork(config.AavePool, network)
-    )
-  );
+  // const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  // const network = <eNetwork>DRE.network.name;
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
+  //     getParamPerNetwork(config.AavePool, network)
+  //   )
+  // );
 
   // const liquidatorProxyAddress = await addressesProvider.getAddress(
   //   DRE.ethers.utils.formatBytes32String('LIQUIDATOR')

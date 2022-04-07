@@ -26,6 +26,7 @@ import {
   deployDefaultReserveInterestRateStrategy,
   deployTombMiMaticBeefyVaultImpl,
   deployTombMiMaticLPOracle,
+  deployYearnSPELLVaultImpl,
 } from '../../helpers/contracts-deployments';
 import { impersonateAccountsHardhat, setDRE, waitForTx } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from '../../helpers/constants';
@@ -129,13 +130,8 @@ WRONG RESERVE ASSET SETUP:
     //       mooTombMiMaticOracleAddress = mooTombMiMaticOracle.address;
     //     }
     //     const sturdyOracle = await getSturdyOracle();
-    //     const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
-    //     const ethers = (localBRE as any).ethers;
-    //     await impersonateAccountsHardhat([deployerAddress]);
-    //     let signer = await ethers.provider.getSigner(deployerAddress);
     //     await waitForTx(
     //       await sturdyOracle
-    //         .connect(signer)
     //         .setAssetSources(
     //           [
     //             getParamPerNetwork(config.MIMATIC, <eNetwork>network),
@@ -168,70 +164,102 @@ WRONG RESERVE ASSET SETUP:
     //   ]);
     // }
 
-    // mooBASED_MIMATIC reserve
+    // // mooBASED_MIMATIC reserve
+    // {
+    //   // Deploy vault impl
+    //   const impladdress = (await deployBasedMiMaticBeefyVaultImpl(verify)).address;
+
+    //   // Deploy and Register new oracle for new vault
+    //   if (network === 'ftm_test') {
+    //     const priceOracleInstance = await getPriceOracle();
+    //     await waitForTx(
+    //       await priceOracleInstance.setAssetPrice(
+    //         config.BASED[network],
+    //         config.Mocks.AllAssetsInitialPrices['BASED']
+    //       )
+    //     );
+    //     await waitForTx(
+    //       await priceOracleInstance.setAssetPrice(
+    //         config.ReserveAssets[network]['mooBASED_MIMATIC'],
+    //         config.Mocks.AllAssetsInitialPrices['mooBASED_MIMATIC']
+    //       )
+    //     );
+    //   } else {
+    //     let basedOracleAddress = getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).BASED;
+    //     if (!basedOracleAddress) {
+    //       const basedOracle = await deployBasedOracle(verify);
+    //       basedOracleAddress = basedOracle.address;
+    //     }
+    //     let mooBasedMiMaticOracleAddress = getParamPerNetwork(
+    //       ChainlinkAggregator,
+    //       <eNetwork>network
+    //     ).mooBASED_MIMATIC;
+    //     if (!mooBasedMiMaticOracleAddress) {
+    //       const mooBasedMiMaticOracle = await deployBasedMiMaticLPOracle(verify);
+    //       mooBasedMiMaticOracleAddress = mooBasedMiMaticOracle.address;
+    //     }
+    //     const sturdyOracle = await getSturdyOracle();
+    //     await waitForTx(
+    //       await sturdyOracle
+    //         .setAssetSources(
+    //           [
+    //             getParamPerNetwork(config.BASED, <eNetwork>network),
+    //             getParamPerNetwork(ReserveAssets, <eNetwork>network).mooBASED_MIMATIC,
+    //           ],
+    //           [basedOracleAddress, mooBasedMiMaticOracleAddress]
+    //         )
+    //     );
+    //   }
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('BEEFY_BASED_MIMATIC_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('mooTombBASED-MIMATIC').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('BASED_MIMATIC_LP').toString(), //external asset id
+    //     //etc...
+    //     localBRE.ethers.utils.formatBytes32String('BASED').toString(),
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     impladdress, //implement address
+    //     getParamPerNetwork(config.BeefyVaultBASED_MIMATIC, <eNetwork>network), //internal asset
+    //     getParamPerNetwork(config.BASED_MIMATIC_LP, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //     getParamPerNetwork(config.BASED, <eNetwork>network),
+    //   ]);
+    // }
+
+    // yvSPELL reserve
     {
       // Deploy vault impl
-      const impladdress = (await deployBasedMiMaticBeefyVaultImpl(verify)).address;
+      const impladdress = (await deployYearnSPELLVaultImpl(verify)).address;
 
       // Deploy and Register new oracle for new vault
       if (network === 'ftm_test') {
         const priceOracleInstance = await getPriceOracle();
         await waitForTx(
           await priceOracleInstance.setAssetPrice(
-            config.BASED[network],
-            config.Mocks.AllAssetsInitialPrices['BASED']
-          )
-        );
-        await waitForTx(
-          await priceOracleInstance.setAssetPrice(
-            config.ReserveAssets[network]['mooBASED_MIMATIC'],
-            config.Mocks.AllAssetsInitialPrices['mooBASED_MIMATIC']
+            config.ReserveAssets[network]['yvSPELL'],
+            config.Mocks.AllAssetsInitialPrices['yvSPELL']
           )
         );
       } else {
-        let basedOracleAddress = getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).BASED;
-        if (!basedOracleAddress) {
-          const basedOracle = await deployBasedOracle(verify);
-          basedOracleAddress = basedOracle.address;
-        }
-        let mooBasedMiMaticOracleAddress = getParamPerNetwork(
-          ChainlinkAggregator,
-          <eNetwork>network
-        ).mooBASED_MIMATIC;
-        if (!mooBasedMiMaticOracleAddress) {
-          const mooBasedMiMaticOracle = await deployBasedMiMaticLPOracle(verify);
-          mooBasedMiMaticOracleAddress = mooBasedMiMaticOracle.address;
-        }
         const sturdyOracle = await getSturdyOracle();
-        // const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
-        // const ethers = (localBRE as any).ethers;
-        // await impersonateAccountsHardhat([deployerAddress]);
-        // let signer = await ethers.provider.getSigner(deployerAddress);
         await waitForTx(
-          await sturdyOracle
-            /*.connect(signer)*/
-            .setAssetSources(
-              [
-                getParamPerNetwork(config.BASED, <eNetwork>network),
-                getParamPerNetwork(ReserveAssets, <eNetwork>network).mooBASED_MIMATIC,
-              ],
-              [basedOracleAddress, mooBasedMiMaticOracleAddress]
-            )
+          await sturdyOracle.setAssetSources(
+            [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvSPELL],
+            [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvSPELL]
+          )
         );
       }
       console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('BEEFY_BASED_MIMATIC_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('mooTombBASED-MIMATIC').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('BASED_MIMATIC_LP').toString(), //external asset id
+        localBRE.ethers.utils.formatBytes32String('YEARN_SPELL_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('YVSPELL').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('SPELL').toString(), //external asset id
         //etc...
-        localBRE.ethers.utils.formatBytes32String('BASED').toString(),
       ]);
       console.log('_addresses: ', [
         impladdress, //implement address
-        getParamPerNetwork(config.BeefyVaultBASED_MIMATIC, <eNetwork>network), //internal asset
-        getParamPerNetwork(config.BASED_MIMATIC_LP, <eNetwork>network), //exterenal asset
+        getParamPerNetwork(config.YearnSPELLVaultFTM, <eNetwork>network), //internal asset
+        getParamPerNetwork(config.SPELL, <eNetwork>network), //exterenal asset
         //etc...
-        getParamPerNetwork(config.BASED, <eNetwork>network),
       ]);
     }
 

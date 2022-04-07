@@ -13,7 +13,6 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
-import 'hardhat/console.sol';
 
 /**
  * @title BeefyETHVault

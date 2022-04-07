@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "ftm": {
-      "address": "0x19E0cfcf484e5c523d61384de36E2f6af5B9cfd8",
+      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x19E0cfcf484e5c523d61384de36E2f6af5B9cfd8",
+      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -649,6 +649,32 @@
     },
     "localhost": {
       "address": "0xbF9Cc228AEC3D5A80cA44E295E8f029E2D84d0AE"
+    }
+  },
+  "rateStrategyYVSPELL": {
+    "ftm": {
+      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be"
+    },
+    "localhost": {
+      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be"
+    }
+  },
+  "YearnSPELLVaultImpl": {
+    "ftm": {
+      "address": "0xD7BC0dcb0B6ee14BDB204172ABA01458Abe91aC3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xD7BC0dcb0B6ee14BDB204172ABA01458Abe91aC3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "YearnSPELLVault": {
+    "ftm": {
+      "address": "0x015DE603a68F2EC3A783bc609E1d20906D8Ec675"
+    },
+    "localhost": {
+      "address": "0x015DE603a68F2EC3A783bc609E1d20906D8Ec675"
     }
   }
 }

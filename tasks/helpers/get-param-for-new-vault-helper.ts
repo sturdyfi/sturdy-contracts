@@ -26,6 +26,7 @@ import {
   deployDefaultReserveInterestRateStrategy,
   deployTombMiMaticBeefyVaultImpl,
   deployTombMiMaticLPOracle,
+  deployYearnCRVVaultImpl,
   deployYearnSPELLVaultImpl,
 } from '../../helpers/contracts-deployments';
 import { impersonateAccountsHardhat, setDRE, waitForTx } from '../../helpers/misc-utils';
@@ -226,39 +227,76 @@ WRONG RESERVE ASSET SETUP:
     //   ]);
     // }
 
-    // yvSPELL reserve
+    // // yvSPELL reserve
+    // {
+    //   // Deploy vault impl
+    //   const impladdress = (await deployYearnSPELLVaultImpl(verify)).address;
+
+    //   // Deploy and Register new oracle for new vault
+    //   if (network === 'ftm_test') {
+    //     const priceOracleInstance = await getPriceOracle();
+    //     await waitForTx(
+    //       await priceOracleInstance.setAssetPrice(
+    //         config.ReserveAssets[network]['yvSPELL'],
+    //         config.Mocks.AllAssetsInitialPrices['yvSPELL']
+    //       )
+    //     );
+    //   } else {
+    //     const sturdyOracle = await getSturdyOracle();
+    //     await waitForTx(
+    //       await sturdyOracle.setAssetSources(
+    //         [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvSPELL],
+    //         [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvSPELL]
+    //       )
+    //     );
+    //   }
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('YEARN_SPELL_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('YVSPELL').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('SPELL').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     impladdress, //implement address
+    //     getParamPerNetwork(config.YearnSPELLVaultFTM, <eNetwork>network), //internal asset
+    //     getParamPerNetwork(config.SPELL, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
+
+    // yvCRV reserve
     {
       // Deploy vault impl
-      const impladdress = (await deployYearnSPELLVaultImpl(verify)).address;
+      const impladdress = (await deployYearnCRVVaultImpl(verify)).address;
 
       // Deploy and Register new oracle for new vault
       if (network === 'ftm_test') {
         const priceOracleInstance = await getPriceOracle();
         await waitForTx(
           await priceOracleInstance.setAssetPrice(
-            config.ReserveAssets[network]['yvSPELL'],
-            config.Mocks.AllAssetsInitialPrices['yvSPELL']
+            config.ReserveAssets[network]['yvCRV'],
+            config.Mocks.AllAssetsInitialPrices['yvCRV']
           )
         );
       } else {
         const sturdyOracle = await getSturdyOracle();
         await waitForTx(
           await sturdyOracle.setAssetSources(
-            [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvSPELL],
-            [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvSPELL]
+            [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvCRV],
+            [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvCRV]
           )
         );
       }
       console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('YEARN_SPELL_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('YVSPELL').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('SPELL').toString(), //external asset id
+        localBRE.ethers.utils.formatBytes32String('YEARN_CRV_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('YVCRV').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('CRV').toString(), //external asset id
         //etc...
       ]);
       console.log('_addresses: ', [
         impladdress, //implement address
-        getParamPerNetwork(config.YearnSPELLVaultFTM, <eNetwork>network), //internal asset
-        getParamPerNetwork(config.SPELL, <eNetwork>network), //exterenal asset
+        getParamPerNetwork(config.YearnCRVVaultFTM, <eNetwork>network), //internal asset
+        getParamPerNetwork(config.CRV, <eNetwork>network), //exterenal asset
         //etc...
       ]);
     }

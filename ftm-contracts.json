@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "ftm": {
-      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be",
+      "address": "0x2c512929D946266613773d8b7b9e843186070E1e",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be",
+      "address": "0x2c512929D946266613773d8b7b9e843186070E1e",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -675,6 +675,32 @@
     },
     "localhost": {
       "address": "0x015DE603a68F2EC3A783bc609E1d20906D8Ec675"
+    }
+  },
+  "rateStrategyYVCRV": {
+    "ftm": {
+      "address": "0x2c512929D946266613773d8b7b9e843186070E1e"
+    },
+    "localhost": {
+      "address": "0x2c512929D946266613773d8b7b9e843186070E1e"
+    }
+  },
+  "YearnCRVVaultImpl": {
+    "ftm": {
+      "address": "0x19c481Ba9a10637cA87fEE5E0Dea58059d67AaC9",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x19c481Ba9a10637cA87fEE5E0Dea58059d67AaC9",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "YearnCRVVault": {
+    "ftm": {
+      "address": "0x5A427C7dE1E27133D292D23a00EBF365c672c87E"
+    },
+    "localhost": {
+      "address": "0x5A427C7dE1E27133D292D23a00EBF365c672c87E"
     }
   }
 }

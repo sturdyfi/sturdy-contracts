@@ -122,6 +122,8 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
       _convertLINK(collateralAsset, asset, collateralAmount);
     } else if (collateralAsset == _addressesProvider.getAddress('SPELL')) {
       _convertSPELL(collateralAsset, asset, collateralAmount);
+    } else if (collateralAsset == _addressesProvider.getAddress('CRV')) {
+      _convertCRV(collateralAsset, asset, collateralAmount);
     }
   }
 
@@ -217,6 +219,45 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
       .percentMul(98_00);
 
     // Exchange SPELL -> Asset via UniswapV2
+    address[] memory path = new address[](3);
+    path[0] = collateralAsset;
+    path[1] = _addressesProvider.getAddress('WFTM');
+    path[2] = asset;
+
+    IERC20(collateralAsset).approve(uniswapRouter, collateralAmount);
+
+    uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
+      collateralAmount,
+      minAmountFromPrice,
+      path,
+      address(this),
+      block.timestamp
+    );
+    require(receivedAmounts[2] > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(
+      IERC20(asset).balanceOf(address(this)) >= receivedAmounts[2],
+      Errors.LP_LIQUIDATION_CONVERT_FAILED
+    );
+  }
+
+  function _convertCRV(
+    address collateralAsset,
+    address asset,
+    uint256 collateralAmount
+  ) internal {
+    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
+
+    // Calculate minAmount from price with 2% slippage
+    uint256 assetDecimal = IERC20Detailed(asset).decimals();
+    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    uint256 minAmountFromPrice = collateralAmount
+      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVCRV')))
+      .div(10**18)
+      .mul(10**assetDecimal)
+      .div(oracle.getAssetPrice(asset))
+      .percentMul(98_00);
+
+    // Exchange CRV -> Asset via UniswapV2
     address[] memory path = new address[](3);
     path[0] = collateralAsset;
     path[1] = _addressesProvider.getAddress('WFTM');

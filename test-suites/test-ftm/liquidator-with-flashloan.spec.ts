@@ -211,6 +211,63 @@ const { parseEther } = ethers.utils;
 //   });
 // });
 
+// // should pass on block number 35816195 on forked ftm without deploy case
+// makeSuite('Liquidator', (testEnv: TestEnv) => {
+//   it('call liquidator for CRV', async () => {
+//     const { liquidator, deployer, usdc, CRV, yearnCRVVault, pool, oracle, yvcrv } = testEnv;
+//     const ethers = (DRE as any).ethers;
+//     const borrower = (await getEthersSigners())[0];
+//     const borrowerAddress = await borrower.getAddress();
+//     const abiEncoder = new ethers.utils.AbiCoder();
+//     const encodedData = abiEncoder.encode(
+//       ["address", "address"],
+//       [CRV.address, borrowerAddress]
+//     );
+
+//     // Make some test CRV for depositor
+//     const amountCRVtoDeposit = await convertToCurrencyDecimals(CRV.address, '100');
+//     const crvOwnerAddress = '0xf39C7F98121cc31840942D374Ca9969CB3B1Bf3b';
+//     await impersonateAccountsHardhat([crvOwnerAddress]);
+//     let signer = await ethers.provider.getSigner(crvOwnerAddress);
+//     await CRV.connect(signer).transfer(borrowerAddress, amountCRVtoDeposit);
+    
+//     await CRV.connect(borrower).approve(yearnCRVVault.address, amountCRVtoDeposit);
+
+//     await yearnCRVVault.connect(borrower).depositCollateral(CRV.address, amountCRVtoDeposit);
+
+//     // borrow
+//     const userGlobalData = await pool.getUserAccountData(borrowerAddress);
+//     const usdcPrice = await oracle.getAssetPrice(usdc.address);
+
+//     const amountUSDCToBorrow = await convertToCurrencyDecimals(
+//       usdc.address,
+//       new BigNumber(userGlobalData.availableBorrowsETH.toString())
+//         .div(usdcPrice.toString())
+//         .multipliedBy(0.95)
+//         .toFixed(0)
+//     );
+
+//     await pool
+//       .connect(borrower)
+//       .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrowerAddress);
+
+//     // set liquidation threshold 35%
+//     await impersonateAccountsHardhat(['0x154D73802a6B3324c017481AC818050afE4a0b0A']);
+//     signer = await ethers.provider.getSigner('0x154D73802a6B3324c017481AC818050afE4a0b0A');
+//     const configurator = await getLendingPoolConfiguratorProxy();
+//     await configurator.connect(signer).configureReserveAsCollateral(yvcrv.address, '3000', '3500', '10500');
+
+//     // process liquidation by using flashloan contract
+//     await liquidator.liquidation(usdc.address, await convertToCurrencyDecimals(usdc.address, '100'), encodedData);
+    
+//     // withdraw remained usdc from flashloan contract
+//     const beforeUsdcBalance = await usdc.balanceOf(deployer.address);
+//     await liquidator.connect(deployer.signer).withdraw(usdc.address);
+//     const usdcBalance = await usdc.balanceOf(deployer.address);
+//     expect(usdcBalance.sub(beforeUsdcBalance).gt(await convertToCurrencyDecimals(usdc.address, '0.03'))).to.eq(true);
+//   });
+// });
+
 // makeSuite('Liquidator', (testEnv: TestEnv) => {
 //   it('call liquidator for WFTM', async () => {
 //     const { liquidator, deployer, usdc, WFTM, yvwftm } = testEnv;

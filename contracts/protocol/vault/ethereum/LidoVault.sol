@@ -57,14 +57,18 @@ contract LidoVault is GeneralVault {
     for (uint256 i = 0; i < assetYields.length; i++) {
       // WETH -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
-        _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
+        _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount, true);
       }
     }
 
     emit ProcessYield(_addressesProvider.getAddress('WETH'), receivedETHAmount);
   }
 
-  function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
+  function _convertAndDepositYield(
+    address _tokenOut,
+    uint256 _wethAmount,
+    bool _isDeposit
+  ) internal {
     // Approve the uniswapRouter to spend WETH.
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
     address WETH = _addressesProvider.getAddress('WETH');
@@ -99,10 +103,32 @@ contract LidoVault is GeneralVault {
       Errors.VT_PROCESS_YIELD_INVALID
     );
 
-    // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
-    // Deposit Yield to pool
-    _depositYield(_tokenOut, receivedAmount);
+    if (_isDeposit) {
+      // Make lendingPool to transfer required amount
+      IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
+      // Deposit Yield to pool
+      _depositYield(_tokenOut, receivedAmount);
+    } else {
+      TransferHelper.safeTransfer(_tokenOut, msg.sender, receivedAmount);
+    }
+  }
+
+  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+    require(
+      msg.sender == _addressesProvider.getAddress('Liquidator'),
+      Errors.LP_LIQUIDATION_CONVERT_FAILED
+    );
+
+    // Exchange stETH -> ETH via Curve
+    uint256 receivedETHAmount = _convertAssetByCurve(
+      _addressesProvider.getAddress('LIDO'),
+      _amountIn
+    );
+    // ETH -> WETH
+    IWETH(_addressesProvider.getAddress('WETH')).deposit{value: receivedETHAmount}();
+
+    // WETH -> Asset
+    _convertAndDepositYield(_assetOut, receivedETHAmount, false);
   }
 
   /**

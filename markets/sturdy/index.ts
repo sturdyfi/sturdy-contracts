@@ -86,6 +86,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
   },
+  AavePool: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
 };
 
 export default SturdyConfig;

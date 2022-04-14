@@ -6,6 +6,8 @@ interface IGeneralVault {
 
   function withdrawOnLiquidation(address _asset, uint256 _amount) external returns (uint256);
 
+  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external;
+
   function processYield() external;
 
   function getYieldAmount() external view returns (uint256);

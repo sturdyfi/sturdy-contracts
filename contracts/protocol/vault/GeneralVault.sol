@@ -124,6 +124,13 @@ contract GeneralVault is VersionedInitializable {
   }
 
   /**
+   * @dev Convert an `amount` of asset used as collateral to borrowable asset on liquidation.
+   * @param _assetOut The borrowable asset address
+   * @param _amountIn The amount of collateral asset
+   */
+  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external virtual {}
+
+  /**
    * @dev Get yield based on strategy and re-deposit
    */
   function processYield() external virtual {}

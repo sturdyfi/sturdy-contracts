@@ -109,6 +109,7 @@ import {
   BasedMiMaticLPOracleFactory,
   BasedMimaticBeefyVaultFactory,
   MockMooBASEDMIMATICFactory,
+  LiquidatorFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1655,7 +1656,7 @@ export const deployMockBeefyVault = async (
     verify
   );
 
-export const deployLiquidator = async (args: [string], verify?: boolean) => {
+export const deployTempLiquidator = async (args: [string], verify?: boolean) => {
   const liquidatorImpl = await withSaveAndVerify(
     await new TempLiquidatorFactory(await getFirstSigner()).deploy(...args),
     eContractid.LiquidatorImpl,
@@ -1665,12 +1666,12 @@ export const deployLiquidator = async (args: [string], verify?: boolean) => {
   await insertContractAddressInDb(eContractid.Liquidator, liquidatorImpl.address);
 
   const addressesProvider = await getLendingPoolAddressesProvider();
-  // await waitForTx(
-  //   await addressesProvider.setAddressAsProxy(
-  //     DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
-  //     liquidatorImpl.address
-  //   )
-  // );
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
+      liquidatorImpl.address
+    )
+  );
 
   // const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
   // const network = <eNetwork>DRE.network.name;
@@ -1685,6 +1686,39 @@ export const deployLiquidator = async (args: [string], verify?: boolean) => {
   //   DRE.ethers.utils.formatBytes32String('LIQUIDATOR')
   // );
   // await insertContractAddressInDb(eContractid.Liquidator, liquidatorProxyAddress);
+
+  return await getLiquidator();
+};
+
+export const deployLiquidator = async (args: [string], configName: string, verify?: boolean) => {
+  const liquidatorImpl = await withSaveAndVerify(
+    await new LiquidatorFactory(await getFirstSigner()).deploy(...args),
+    eContractid.LiquidatorImpl,
+    args,
+    verify
+  );
+  await insertContractAddressInDb(eContractid.Liquidator, liquidatorImpl.address);
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
+      liquidatorImpl.address
+    )
+  );
+
+  const config =
+    configName == ConfigNames.Fantom
+      ? (loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration)
+      : (loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration);
+
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
+      getParamPerNetwork(config.AavePool, network)
+    )
+  );
 
   return await getLiquidator();
 };

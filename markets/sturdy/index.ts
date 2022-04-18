@@ -5,6 +5,7 @@ import {
   strategyDAI,
   strategyUSDC,
   strategySTETH,
+  strategyYVRETH_WSTETH,
 } from './reservesConfigs';
 
 // ----------------
@@ -18,7 +19,8 @@ export const SturdyConfig: ISturdyConfiguration = {
   ReservesConfig: {
     DAI: strategyDAI,
     USDC: strategyUSDC,
-    stETH: strategySTETH
+    stETH: strategySTETH,
+    yvRETH_WSTETH: strategyYVRETH_WSTETH
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -38,6 +40,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       stETH: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+      yvRETH_WSTETH: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -61,6 +64,42 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.main]: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F',
+  },
+  WSTETH: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  RETH_WSTETH_LP: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x447Ddd4960d9fdBF6af9a790560d0AF76795CB08',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  YearnRETHWstETHVault: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
   },
   CurveswapLidoPool: {
     [eEthereumNetwork.coverage]: '',
@@ -94,7 +133,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.buidlerevm]: '',
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '',
+    [eEthereumNetwork.main]: '0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB',
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '',
   },

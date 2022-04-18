@@ -30,6 +30,11 @@ contract YearnRETHWstETHVault is GeneralVault {
   // uniswap pool fee to 0.05%.
   uint24 constant uniswapFee = 500;
 
+  /**
+   * @dev Receive Ether
+   */
+  receive() external payable {}
+
   function processYield() external override onlyAdmin {
     // Get yield from lendingPool
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');

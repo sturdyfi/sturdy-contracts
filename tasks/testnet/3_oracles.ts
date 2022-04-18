@@ -71,6 +71,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           yvCRV: reserveAssets.yvCRV,
           yvSPELL: reserveAssets.yvSPELL,
           mooWETH: reserveAssets.mooWETH,
+          yvRETH_WSTETH: reserveAssets.yvRETH_WSTETH,
           USD: UsdAddress,
         },
         fallbackOracle

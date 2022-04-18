@@ -53,4 +53,5 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   yvfBEETS: oneEther.multipliedBy('0.0002205').toFixed(),
   yvCRV: oneEther.multipliedBy('0.000081').toFixed(),
   yvSPELL: oneEther.multipliedBy('0.000001508').toFixed(),
+  yvRETH_WSTETH: oneEther.multipliedBy('1.0000826607431204').toFixed(),
 };

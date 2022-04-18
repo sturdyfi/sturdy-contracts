@@ -18,6 +18,7 @@ import {
   getSturdyIncentivesController,
   getSturdyToken,
   getFirstSigner,
+  getYearnRETHWstETHVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -37,13 +38,20 @@ import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
 import { SturdyConfig } from '../../../markets/sturdy';
-import { LidoVault, StakedTokenIncentivesController, SturdyToken } from '../../../types';
+import {
+  LidoVault,
+  StakedTokenIncentivesController,
+  SturdyToken,
+  YearnRETHWstETHVault,
+} from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ILido } from '../../../types/ILido';
 import { ILidoFactory } from '../../../types/ILidoFactory';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { parseEther } from '@ethersproject/units';
+import { IERC20Detailed } from '../../../types/IERC20Detailed';
+import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -59,6 +67,7 @@ export interface TestEnv {
   users: SignerWithAddress[];
   pool: LendingPool;
   lidoVault: LidoVault;
+  yearnRETHWstETHVault: YearnRETHWstETHVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -69,8 +78,11 @@ export interface TestEnv {
   aUsdc: AToken;
   aave: MintableERC20;
   aStETH: AToken;
+  aYVRETH_WSTETH: AToken;
   brick: SturdyToken;
   lido: ILido;
+  RETH_WSTETH_LP: MintableERC20;
+  yvreth_wsteth: IERC20Detailed;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
@@ -87,6 +99,7 @@ const testEnv: TestEnv = {
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   lidoVault: {} as LidoVault,
+  yearnRETHWstETHVault: {} as YearnRETHWstETHVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -97,8 +110,11 @@ const testEnv: TestEnv = {
   aUsdc: {} as AToken,
   aave: {} as MintableERC20,
   aStETH: {} as AToken,
+  aYVRETH_WSTETH: {} as AToken,
   brick: {} as SturdyToken,
   lido: {} as ILido,
+  RETH_WSTETH_LP: {} as MintableERC20,
+  yvreth_wsteth: {} as IERC20Detailed,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
 } as TestEnv;
@@ -108,6 +124,8 @@ export async function initializeMakeSuite() {
   const poolConfig = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const lidoAddress = getParamPerNetwork(poolConfig.Lido, network);
+  const rEthWstEthLPAddress = getParamPerNetwork(poolConfig.RETH_WSTETH_LP, network);
+  const yvrethwstethAddress = getParamPerNetwork(poolConfig.YearnRETHWstETHVault, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -154,6 +172,7 @@ export async function initializeMakeSuite() {
   testEnv.emergencyUser = emergencyUser;
   testEnv.pool = await getLendingPool();
   testEnv.lidoVault = await getLidoVault();
+  testEnv.yearnRETHWstETHVault = await getYearnRETHWstETHVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
@@ -187,6 +206,9 @@ export async function initializeMakeSuite() {
   const aStETHAddress = allTokens.find(
     (aToken) => aToken.symbol === 'astETH' || aToken.symbol === 'sstETH'
   )?.tokenAddress;
+  const aYVRETH_WSTETHAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'ayvRETH_WSTETH' || aToken.symbol === 'syvRETH_WSTETH'
+  )?.tokenAddress;
   const aUsdcAddress = allTokens.find(
     (aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC'
   )?.tokenAddress;
@@ -196,7 +218,7 @@ export async function initializeMakeSuite() {
   const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
   const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
 
-  if (!aDaiAddress || !aStETHAddress) {
+  if (!aDaiAddress || !aStETHAddress || !aYVRETH_WSTETHAddress) {
     process.exit(1);
   }
   if (!daiAddress || !usdcAddress) {
@@ -205,12 +227,15 @@ export async function initializeMakeSuite() {
 
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aStETH = await getAToken(aStETHAddress);
+  testEnv.aYVRETH_WSTETH = await getAToken(aYVRETH_WSTETHAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.brick = await getSturdyToken();
   testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
+  testEnv.RETH_WSTETH_LP = await getMintableERC20(rEthWstEthLPAddress);
+  testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

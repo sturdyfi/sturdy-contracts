@@ -15,6 +15,7 @@ import {
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
   getTombMiMaticBeefyVault,
+  getYearnRETHWstETHVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -47,6 +48,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
       pool == ConfigNames.Sturdy
         ? {
             stETH: getParamPerNetwork((poolConfig as ISturdyConfiguration).Lido, network),
+            yvRETH_WSTETH: getParamPerNetwork(
+              (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
+              network
+            ),
           }
         : {
             yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
@@ -76,6 +81,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
       pool == ConfigNames.Sturdy
         ? {
             stETH: (await getLidoVault()).address,
+            yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
           }
         : {
             yvWFTM: (await getYearnVault()).address,

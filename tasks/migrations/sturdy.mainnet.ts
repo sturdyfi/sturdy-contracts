@@ -42,6 +42,12 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('8-1. Deploy Collateral Adapter');
     await DRE.run('full:deploy-collateral-adapter', { pool: POOL_NAME });
 
+    console.log('8-2. Deploy Liquidator');
+    await DRE.run('full:deploy-liquidator', { pool: POOL_NAME });
+
+    console.log('8-3. Deploy Vault Helper');
+    await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('9. Veryfing contracts');

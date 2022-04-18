@@ -463,6 +463,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   Lido: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
+  AavePool: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface IFantomConfiguration extends ICommonConfiguration {

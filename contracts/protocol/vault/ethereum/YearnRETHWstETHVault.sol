@@ -188,7 +188,7 @@ contract YearnRETHWstETHVault is GeneralVault {
 
   function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
     require(
-      msg.sender == _addressesProvider.getAddress('Liquidator'),
+      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
       Errors.LP_LIQUIDATION_CONVERT_FAILED
     );
 

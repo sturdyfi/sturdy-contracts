@@ -19,6 +19,7 @@ import {
   getSturdyToken,
   getFirstSigner,
   getYearnRETHWstETHVault,
+  getLiquidator,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -52,6 +53,7 @@ import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { parseEther } from '@ethersproject/units';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
+import { ILiquidator } from '../../../types/ILiquidator';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -86,6 +88,7 @@ export interface TestEnv {
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
+  liquidator: ILiquidator;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -117,6 +120,7 @@ const testEnv: TestEnv = {
   yvreth_wsteth: {} as IERC20Detailed,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
+  liquidator: {} as ILiquidator,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -174,6 +178,7 @@ export async function initializeMakeSuite() {
   testEnv.lidoVault = await getLidoVault();
   testEnv.yearnRETHWstETHVault = await getYearnRETHWstETHVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
+  // testEnv.liquidator = await getLiquidator();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

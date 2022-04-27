@@ -3,17 +3,17 @@ pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
 import {ConvexCurveLPVault} from './ConvexCurveLPVault.sol';
-import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
-import {IWstETH} from '../../../interfaces/IWstETH.sol';
-import {IWETH} from '../../../misc/interfaces/IWETH.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
-import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
-import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
-import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
+import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {ICurvePool} from '../../../../interfaces/ICurvePool.sol';
+import {IWstETH} from '../../../../interfaces/IWstETH.sol';
+import {IWETH} from '../../../../misc/interfaces/IWETH.sol';
+import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
+import {Errors} from '../../../libraries/helpers/Errors.sol';
+import {SafeMath} from '../../../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
+import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IPriceOracleGetter} from '../../../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title ConvexRocketPoolETHVault
@@ -32,7 +32,7 @@ contract ConvexRocketPoolETHVault is ConvexCurveLPVault {
    */
   function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
     require(
-      msg.sender == _addressesProvider.getAddress('Liquidator'),
+      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
       Errors.LP_LIQUIDATION_CONVERT_FAILED
     );
 

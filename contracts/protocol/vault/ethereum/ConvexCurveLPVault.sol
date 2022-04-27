@@ -6,12 +6,10 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IConvexBooster} from '../../../interfaces/IConvexBooster.sol';
 import {IConvexBaseRewardPool} from '../../../interfaces/IConvexBaseRewardPool.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {ISwapRouter} from '../../../interfaces/ISwapRouter.sol';
-import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
@@ -74,12 +72,11 @@ contract ConvexCurveLPVault is GeneralVault {
   }
 
   function processYield() external override onlyAdmin {
-    address crvRewards = getCrvRewards();
     address CRV = _addressesProvider.getAddress('CRV');
+    address crvRewards = getCrvRewards();
 
-    uint256 balanceBefore = IERC20(CRV).balanceOf(address(this));
     IConvexBaseRewardPool(crvRewards).getReward();
-    uint256 yieldCRV = IERC20(CRV).balanceOf(address(this)).sub(balanceBefore);
+    uint256 yieldCRV = IERC20(CRV).balanceOf(address(this));
 
     if (_vaultFee > 0) {
       uint256 treasuryCRV = _processTreasury(yieldCRV);
@@ -288,6 +285,9 @@ contract ConvexCurveLPVault is GeneralVault {
 
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
     address crvRewards = getCrvRewards();
+
+    // Get Reward before withdraw
+    IConvexBaseRewardPool(crvRewards).getReward();
 
     // Withdraw from Convex
     IConvexBaseRewardPool(crvRewards).withdrawAndUnwrap(_amount, true);

@@ -101,12 +101,12 @@ makeSuite('ConvexRocketPoolETHVault', (testEnv: TestEnv) => {
 });
 
 makeSuite('convexRocketPoolETHVault - use other coin as collateral', (testEnv) => {
-  it('Should revert to use any of coin other than TOMB_MIMATIC_LP as collateral', async () => {
+  it('Should revert to use any of coin other than rETHwstETH-f as collateral', async () => {
     const { usdc, convexRocketPoolETHVault, cvxreth_wsteth } = testEnv;
     // TODO @bshevchenko: use Error const instead of 82
-    await expect(
-      convexRocketPoolETHVault.depositCollateral(cvxreth_wsteth.address, 1000)
-    ).to.be.revertedWith('82');
+    await expect(convexRocketPoolETHVault.depositCollateral(usdc.address, 1000)).to.be.revertedWith(
+      '82'
+    );
   });
 });
 

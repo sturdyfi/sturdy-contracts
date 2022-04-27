@@ -6,6 +6,7 @@ import {
   strategyUSDC,
   strategySTETH,
   strategyYVRETH_WSTETH,
+  strategyCVXRETH_WSTETH,
 } from './reservesConfigs';
 
 // ----------------
@@ -20,7 +21,8 @@ export const SturdyConfig: ISturdyConfiguration = {
     DAI: strategyDAI,
     USDC: strategyUSDC,
     stETH: strategySTETH,
-    yvRETH_WSTETH: strategyYVRETH_WSTETH
+    yvRETH_WSTETH: strategyYVRETH_WSTETH,
+    cvxRETH_WSTETH: strategyCVXRETH_WSTETH,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -41,6 +43,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       stETH: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
       yvRETH_WSTETH: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',
+      cvxRETH_WSTETH: '',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -74,6 +77,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  CRV: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0xD533a949740bb3306d119CC777fa900bA034cd52',
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '',
   },

@@ -116,6 +116,7 @@ library Errors {
   string public constant VT_COLLATERAL_DEPOSIT_VAULT_UNAVAILABLE = '91';
   string public constant LP_LIQUIDATION_CONVERT_FAILED = '92';
   string public constant VT_DEPLOY_FAILED = '93'; // Vault deploy failed
+  string public constant VT_INVALID_CONFIGURATION = '94'; // Invalid vault configuration
 
   enum CollateralManagerErrors {
     NO_ERROR,

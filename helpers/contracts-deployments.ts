@@ -40,6 +40,7 @@ import {
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
   getYearnRETHWstETHVault,
+  getConvexRocketPoolETHVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -113,6 +114,7 @@ import {
   LiquidatorFactory,
   YearnRETHWstETHVaultFactory,
   CrvREthWstETHOracleFactory,
+  ConvexRocketPoolETHVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -858,6 +860,62 @@ export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.YearnRETHWstETHVault, proxyAddress);
 
   return await getYearnRETHWstETHVault();
+};
+
+export const deployConvexRocketPoolETHVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ConvexRocketPoolETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexRocketPoolETHVaulttImpl,
+    [],
+    verify
+  );
+
+export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  const network = <eNetwork>DRE.network.name;
+
+  const vaultImpl = await withSaveAndVerify(
+    await new ConvexRocketPoolETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexRocketPoolETHVaulttImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('CONVEX_ROCKET_POOL_ETH_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('RETH_WSTETH'),
+      getParamPerNetwork(config.RETH_WSTETH_LP, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WSTETH'),
+      getParamPerNetwork(config.WSTETH, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CRV'),
+      getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('CONVEX_ROCKET_POOL_ETH_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.ConvexRocketPoolETHVault, proxyAddress);
+
+  return await getConvexRocketPoolETHVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

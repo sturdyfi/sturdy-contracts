@@ -202,7 +202,9 @@ export const CommonsConfig: ICommonConfiguration = {
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
       stETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
       yvRETH_WSTETH: '',
+      cvxRETH_WSTETH: '',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',

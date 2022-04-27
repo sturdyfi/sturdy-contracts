@@ -26,6 +26,7 @@ import {
   getYearnCRVVault,
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
+  getYearnRETHWstETHVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -63,7 +64,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const treasuryAddress = await getTreasuryAddress(poolConfig);
       const yieldAddresses =
         pool == ConfigNames.Sturdy
-          ? {}
+          ? {
+              yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
+            }
           : {
               yvWFTM: (await getYearnVault()).address,
               yvWETH: (await getYearnWETHVault()).address,

@@ -54,6 +54,7 @@ contract Liquidator is IFlashLoanReceiver, Ownable {
     (address collateralAddress, address borrowerAddress) = abi.decode(params, (address, address));
 
     // call liquidation
+    IERC20(assets[0]).approve(_addressesProvider.getLendingPool(), amounts[0]);
     ILendingPool(_addressesProvider.getLendingPool()).liquidationCall(
       collateralAddress,
       assets[0],

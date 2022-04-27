@@ -134,7 +134,7 @@ export const mint = async (
     ownerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
     token = usdc;
   } else if (reserveSymbol == 'DAI') {
-    ownerAddress = '0x1e3D6eAb4BCF24bcD04721caA11C478a2e59852D';
+    ownerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
     token = dai;
   } else if (reserveSymbol == 'stETH') {
     ownerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';

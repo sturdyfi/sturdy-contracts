@@ -35,3 +35,13 @@ export const rateStrategySTETH: IInterestRateStrategyParams = {
     stableRateSlope2: '0',
   }
 
+// yvRETH_WSTETH
+export const rateStrategyYVRETH_WSTETH: IInterestRateStrategyParams = {
+  name: "rateStrategyYVRETH_WSTETH",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+}

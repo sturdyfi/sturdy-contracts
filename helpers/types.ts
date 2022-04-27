@@ -62,6 +62,7 @@ export enum eContractid {
   BeetsOracle = 'BeetsOracle',
   BasedOracle = 'BasedOracle',
   BasedMiMaticLPOracle = 'BasedMiMaticLPOracle',
+  RETHWstETHLPOracle = 'RETHWstETHLPOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -94,6 +95,8 @@ export enum eContractid {
   LendingPool = 'LendingPool',
   LidoVaultImpl = 'LidoVaultImpl',
   LidoVault = 'LidoVault',
+  YearnRETHWstETHVaultImpl = 'YearnRETHWstETHVaultImpl',
+  YearnRETHWstETHVault = 'YearnRETHWstETHVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -256,6 +259,7 @@ export interface iAssetBase<T> {
   fUSDT: T;
   USD: T;
   stETH: T;
+  yvRETH_WSTETH: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -274,7 +278,10 @@ export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
 
 export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
-export type iSturdyPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'DAI' | 'USDC' | 'stETH'>;
+export type iSturdyPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'DAI' | 'USDC' | 'stETH' | 'yvRETH_WSTETH'
+>;
 
 export type iFantomPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
@@ -307,6 +314,7 @@ export enum TokenContractId {
   USDC = 'USDC',
   USDT = 'USDT',
   stETH = 'stETH',
+  yvRETH_WSTETH = 'yvRETH_WSTETH',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -461,6 +469,9 @@ export interface ICommonConfiguration extends IBaseConfiguration {
 export interface ISturdyConfiguration extends ICommonConfiguration {
   ReservesConfig: iSturdyPoolAssets<IReserveParams>;
   Lido: iParamsPerNetwork<tEthereumAddress>;
+  WSTETH: iParamsPerNetwork<tEthereumAddress>;
+  RETH_WSTETH_LP: iParamsPerNetwork<tEthereumAddress>;
+  YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
   AavePool: iParamsPerNetwork<tEthereumAddress>;

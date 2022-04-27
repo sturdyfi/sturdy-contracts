@@ -39,6 +39,7 @@ import {
   getYearnCRVVault,
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
+  getYearnRETHWstETHVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -110,6 +111,8 @@ import {
   BasedMimaticBeefyVaultFactory,
   MockMooBASEDMIMATICFactory,
   LiquidatorFactory,
+  YearnRETHWstETHVaultFactory,
+  CrvREthWstETHOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -359,6 +362,14 @@ export const deployBasedMiMaticLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BasedMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
     eContractid.BasedMiMaticLPOracle,
+    [],
+    verify
+  );
+
+export const deployRETHWstETHLPOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new CrvREthWstETHOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.RETHWstETHLPOracle,
     [],
     verify
   );
@@ -791,6 +802,62 @@ export const deployLidoVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.LidoVault, lidoVaultProxyAddress);
 
   return await getLidoVault();
+};
+
+export const deployYearnRETHWstETHVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new YearnRETHWstETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnRETHWstETHVaultImpl,
+    [],
+    verify
+  );
+
+export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new YearnRETHWstETHVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.YearnRETHWstETHVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YEARN_RETH_WSTETH_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  const network = <eNetwork>DRE.network.name;
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YVRETH_WSTETH'),
+      getParamPerNetwork(config.YearnRETHWstETHVault, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('RETH_WSTETH'),
+      getParamPerNetwork(config.RETH_WSTETH_LP, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('WSTETH'),
+      getParamPerNetwork(config.WSTETH, network)
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YEARN_RETH_WSTETH_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.YearnRETHWstETHVault, proxyAddress);
+
+  return await getYearnRETHWstETHVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

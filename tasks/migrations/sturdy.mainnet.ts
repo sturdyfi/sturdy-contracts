@@ -36,6 +36,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6. Deploy Lido vault');
     await DRE.run('full:deploy-lido-vault', { pool: POOL_NAME });
 
+    console.log('6-1. Deploy Yearn RETH_WSTETH vault');
+    await DRE.run('full:deploy-yearn-reth-wsteth-vault', { pool: POOL_NAME });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 

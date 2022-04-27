@@ -62,6 +62,8 @@ import {
   BasedMiMaticLPOracleFactory,
   BasedMimaticBeefyVaultFactory,
   MockMooBASEDMIMATICFactory,
+  YearnRETHWstETHVaultFactory,
+  CrvREthWstETHOracleFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -462,6 +464,24 @@ export const getLidoVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYearnRETHWstETHVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnRETHWstETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnRETHWstETHVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnRETHWstETHVault = async (address?: tEthereumAddress) =>
+  await YearnRETHWstETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnRETHWstETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVaultFactory.connect(
     address ||
@@ -819,6 +839,15 @@ export const getFBeetsOracle = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.FBeetsOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getRETHWstETHLPOracle = async (address?: tEthereumAddress) =>
+  await CrvREthWstETHOracleFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.RETHWstETHLPOracle}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

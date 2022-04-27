@@ -28,7 +28,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     expect(currentPooledEther.sub(beforePooledEther)).to.be.equal(parseEther('1.1'));
     expect(await lido.balanceOf(lidoVault.address)).to.be.equal(0);
     expect(await aStETH.balanceOf(lidoVault.address)).to.be.equal(0);
-    expect((await aStETH.balanceOf(deployer.address)).gt(parseEther('0.9'))).to.be.equal(true);
+    expect((await aStETH.balanceOf(deployer.address)).gt(parseEther('1.099'))).to.be.equal(true);
     expect(await ethers.getDefaultProvider().getBalance(lidoVault.address)).to.be.equal(0);
   });
 
@@ -47,7 +47,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, lidoVault } = testEnv;
-    await expect(lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1.2'), deployer.address)).to
+    await expect(lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1.1'), deployer.address)).to
       .be.reverted;
   });
 
@@ -69,44 +69,9 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
 makeSuite('LidoVault - use other coin as collateral', (testEnv) => {
   it('Should revert to use any of coin other than ETH, stETH as collateral. ', async () => {
-    const { lido, usdc, users, lidoVault } = testEnv;
-    const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
-    const depositor = users[0];
-    const depositor2 = users[1];
-    printDivider();
+    const { usdc, lidoVault } = testEnv;
 
-    //Make some test USDC for depositor
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    let signer = await ethers.provider.getSigner(usdcOwnerAddress);
-    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, '1000');
-    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
-
-    //approve protocol to access depositor wallet
-    await usdc.connect(depositor.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    //depositor deposits 1000 usdc as collateral
-    await expect(
-      lidoVault.connect(depositor.signer).depositCollateral(usdc.address, amountUSDCtoDeposit)
-    ).to.be.reverted;
-
-    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
-    const depositStETH = '10';
-    //Make some test stETH for depositor2
-    await impersonateAccountsHardhat([stETHOwnerAddress]);
-    signer = await ethers.provider.getSigner(stETHOwnerAddress);
-    await lido
-      .connect(signer)
-      .transfer(depositor2.address, await convertToCurrencyDecimals(lido.address, depositStETH));
-
-    //approve protocol to access depositor wallet
-    await lido.connect(depositor2.signer).approve(lidoVault.address, APPROVAL_AMOUNT_LENDING_POOL);
-
-    //deposits 5 stETH for collateral
-    const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, '5');
-    await expect(
-      lidoVault.connect(depositor2.signer).depositCollateral(lido.address, amountStETHtoDeposit)
-    ).to.not.be.reverted;
+    await expect(lidoVault.depositCollateral(usdc.address, 1000)).to.be.revertedWith('82');
   });
 });
 
@@ -158,7 +123,8 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
     // process yield, so all yield should be converted to usdc
     await lidoVault.processYield();
-    expect((await aUsdc.balanceOf(depositor.address)).gt(amountUSDCtoDeposit)).to.be.equal(true);
+    const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '33000');
+    expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
   });
 });
 
@@ -185,8 +151,8 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
       .connect(depositor.signer)
       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    const daiOwnerAddress = '0x1e3D6eAb4BCF24bcD04721caA11C478a2e59852D';
-    const depositDAI = '7000';
+    const daiOwnerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
+    const depositDAI = '3500';
     //Make some test DAI for depositor
     await impersonateAccountsHardhat([daiOwnerAddress]);
     signer = await ethers.provider.getSigner(daiOwnerAddress);
@@ -196,7 +162,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     //approve protocol to access depositor wallet
     await dai.connect(other_depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //Supplier  deposits 7000 DAI
+    //Supplier  deposits 3500 DAI
     await pool
       .connect(other_depositor.signer)
       .deposit(dai.address, amountDAItoDeposit, other_depositor.address, '0');
@@ -229,10 +195,10 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
     // process yield, so all yield should be converted to usdc and dai
     await lidoVault.processYield();
-    expect((await aUsdc.balanceOf(depositor.address)).gt(amountUSDCtoDeposit)).to.be.equal(true);
-    expect((await aDai.balanceOf(other_depositor.address)).gt(amountDAItoDeposit)).to.be.equal(
-      true
-    );
+    const yieldUSDC = await convertToCurrencyDecimals(usdc.address, '24000');
+    const yieldDAI = await convertToCurrencyDecimals(dai.address, '11500');
+    expect((await aUsdc.balanceOf(depositor.address)).gt(yieldUSDC)).to.be.equal(true);
+    expect((await aDai.balanceOf(other_depositor.address)).gt(yieldDAI)).to.be.equal(true);
   });
 });
 

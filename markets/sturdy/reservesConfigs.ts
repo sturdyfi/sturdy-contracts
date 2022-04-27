@@ -3,7 +3,8 @@ import { eContractid, IReserveParams } from '../../helpers/types';
 import { 
   rateStrategyStableTwo,
   rateStrategyStableThree,
-  rateStrategySTETH
+  rateStrategySTETH,
+  rateStrategyYVRETH_WSTETH
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -36,6 +37,20 @@ export const strategyUSDC: IReserveParams = {
 
 export const strategySTETH: IReserveParams = {
   strategy: rateStrategySTETH,
+  baseLTVAsCollateral: '7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+  };
+
+export const strategyYVRETH_WSTETH: IReserveParams = {
+  strategy: rateStrategyYVRETH_WSTETH,
   baseLTVAsCollateral: '7000',
   liquidationThreshold: '7500',
   liquidationBonus: '10750',

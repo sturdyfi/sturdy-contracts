@@ -6,7 +6,7 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
-import {ICurveSwap} from '../../../interfaces/ICurveSwap.sol';
+import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {ISwapRouter} from '../../../interfaces/ISwapRouter.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
@@ -115,7 +115,7 @@ contract LidoVault is GeneralVault {
 
   function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
     require(
-      msg.sender == _addressesProvider.getAddress('Liquidator'),
+      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
       Errors.LP_LIQUIDATION_CONVERT_FAILED
     );
 
@@ -206,11 +206,14 @@ contract LidoVault is GeneralVault {
   /**
    * @dev convert asset via curve
    */
-  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount) private returns (uint256) {
+  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
+    internal
+    returns (uint256)
+  {
     // Exchange stETH -> ETH via curve
     address CurveswapLidoPool = _addressesProvider.getAddress('CurveswapLidoPool');
     IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
-    uint256 minAmount = ICurveSwap(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
+    uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
 
     // Calculate minAmount from price with 1% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
@@ -219,7 +222,7 @@ contract LidoVault is GeneralVault {
 
     if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
 
-    uint256 receivedAmount = ICurveSwap(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
+    uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
     return receivedAmount;
   }
 

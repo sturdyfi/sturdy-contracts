@@ -16,6 +16,7 @@ import {
   getBasedMiMaticBeefyVault,
   getTombMiMaticBeefyVault,
   getYearnRETHWstETHVault,
+  getConvexRocketPoolETHVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -52,6 +53,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
               network
             ),
+            cvxRETH_WSTETH: getParamPerNetwork(
+              (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
+              network
+            ),
           }
         : {
             yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
@@ -82,6 +87,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
         ? {
             stETH: (await getLidoVault()).address,
             yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
+            cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
           }
         : {
             yvWFTM: (await getYearnVault()).address,

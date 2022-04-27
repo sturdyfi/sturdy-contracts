@@ -4,7 +4,8 @@ import {
   rateStrategyStableTwo,
   rateStrategyStableThree,
   rateStrategySTETH,
-  rateStrategyYVRETH_WSTETH
+  rateStrategyYVRETH_WSTETH,
+  rateStrategyCVXRETH_WSTETH,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -62,3 +63,18 @@ export const strategyYVRETH_WSTETH: IReserveParams = {
   collateralEnabled: true,
   emissionPerSecond: '0',
   };
+
+export const strategyCVXRETH_WSTETH: IReserveParams = {
+  strategy: rateStrategyCVXRETH_WSTETH,
+  baseLTVAsCollateral: '7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+  };
+  

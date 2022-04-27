@@ -97,6 +97,8 @@ export enum eContractid {
   LidoVault = 'LidoVault',
   YearnRETHWstETHVaultImpl = 'YearnRETHWstETHVaultImpl',
   YearnRETHWstETHVault = 'YearnRETHWstETHVault',
+  ConvexRocketPoolETHVaulttImpl = 'ConvexRocketPoolETHVaulttImpl',
+  ConvexRocketPoolETHVault = 'ConvexRocketPoolETHVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -260,6 +262,7 @@ export interface iAssetBase<T> {
   USD: T;
   stETH: T;
   yvRETH_WSTETH: T;
+  cvxRETH_WSTETH: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -280,7 +283,7 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iSturdyPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'stETH' | 'yvRETH_WSTETH'
+  'DAI' | 'USDC' | 'stETH' | 'yvRETH_WSTETH' | 'cvxRETH_WSTETH'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -315,6 +318,7 @@ export enum TokenContractId {
   USDT = 'USDT',
   stETH = 'stETH',
   yvRETH_WSTETH = 'yvRETH_WSTETH',
+  cvxRETH_WSTETH = 'cvxRETH_WSTETH',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -471,6 +475,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   Lido: iParamsPerNetwork<tEthereumAddress>;
   WSTETH: iParamsPerNetwork<tEthereumAddress>;
   RETH_WSTETH_LP: iParamsPerNetwork<tEthereumAddress>;
+  CRV: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

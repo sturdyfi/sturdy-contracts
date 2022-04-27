@@ -64,6 +64,7 @@ import {
   MockMooBASEDMIMATICFactory,
   YearnRETHWstETHVaultFactory,
   CrvREthWstETHOracleFactory,
+  ConvexRocketPoolETHVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -478,6 +479,26 @@ export const getYearnRETHWstETHVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.YearnRETHWstETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getConvexRocketPoolETHVaultImpl = async (address?: tEthereumAddress) =>
+  await ConvexRocketPoolETHVaultFactory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.ConvexRocketPoolETHVaulttImpl}.${DRE.network.name}`)
+          .value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getConvexRocketPoolETHVault = async (address?: tEthereumAddress) =>
+  await ConvexRocketPoolETHVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ConvexRocketPoolETHVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

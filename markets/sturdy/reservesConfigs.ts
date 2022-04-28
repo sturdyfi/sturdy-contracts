@@ -6,6 +6,7 @@ import {
   rateStrategySTETH,
   rateStrategyYVRETH_WSTETH,
   rateStrategyCVXRETH_WSTETH,
+  rateStrategyCVXFRAX_3CRV,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -77,4 +78,18 @@ export const strategyCVXRETH_WSTETH: IReserveParams = {
   collateralEnabled: true,
   emissionPerSecond: '0',
   };
-  
+
+export const strategyCVXFRAX_3CRV: IReserveParams = {
+  strategy: rateStrategyCVXFRAX_3CRV,
+  baseLTVAsCollateral: '7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+  };
+    

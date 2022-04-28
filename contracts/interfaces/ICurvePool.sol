@@ -4,6 +4,8 @@ pragma solidity 0.6.12;
 interface ICurvePool {
   function get_virtual_price() external view returns (uint256 price);
 
+  function coins(uint256) external view returns (address);
+
   function calc_withdraw_one_coin(
     uint256 _burn_amount,
     int128 i,

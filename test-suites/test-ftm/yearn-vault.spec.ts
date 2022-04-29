@@ -8,7 +8,10 @@ import { ethers } from 'ethers';
 import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { printDivider } from './helpers/utils/helpers';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
-import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
+import { APPROVAL_AMOUNT_LENDING_POOL, oneRay, ZERO_ADDRESS } from '../../helpers/constants';
+import { deployDefaultReserveInterestRateStrategy } from '../../helpers/contracts-deployments';
+import { getLendingPoolAddressesProvider, getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
+import BigNumber from 'bignumber.js';
 
 const { parseEther } = ethers.utils;
 
@@ -315,3 +318,41 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     ).to.be.equal(true);
   });
 });
+
+// // checked on block number 35816195 with limit collateral capacity feature
+// makeSuite('yearnVault - limit the deposit amount', (testEnv) => {
+//   it('Should revert when overflow the total deposit capacity. ', async () => {
+//     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
+//     const ethers = (DRE as any).ethers;
+
+//     const addressProvider = await getLendingPoolAddressesProvider();
+//     const configurator = await getLendingPoolConfiguratorProxy();
+//     const rates = await deployDefaultReserveInterestRateStrategy(
+//       [
+//         addressProvider.address,
+//         new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+//         '0',
+//         '0',
+//         '0',
+//         '0',
+//         '0',
+//       ],
+//       false
+//     );
+//     const poolAdmin = '0x154D73802a6B3324c017481AC818050afE4a0b0A';
+//     //Make some test WFTM for borrower
+//     await impersonateAccountsHardhat([poolAdmin]);
+//     const signer = await ethers.provider.getSigner(poolAdmin);
+
+//     const currentCapacity = await aYVWFTM.totalSupply();
+//     await rates.connect(signer).setReserveCapacity(currentCapacity.add(await convertToCurrencyDecimals(yvwftm.address, '100')))
+//     await configurator.connect(signer).setReserveInterestRateStrategyAddress(yvwftm.address, rates.address);
+
+//     await expect(
+//       yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('101') })
+//     ).to.be.reverted;
+//     await expect(
+//       yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('99') })
+//     ).to.not.be.reverted;
+//   });
+// });

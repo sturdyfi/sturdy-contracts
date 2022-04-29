@@ -8,6 +8,7 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingRateOracle} from '../../interfaces/ILendingRateOracle.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {Errors} from '../libraries/helpers/Errors.sol';
 
 /**
  * @title DefaultReserveInterestRateStrategy contract
@@ -54,6 +55,14 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   // Slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _stableRateSlope2;
 
+  // Available total reserve amount which user can deposit.
+  uint256 internal _reserveCapacity;
+
+  modifier onlyAdmin() {
+    require(addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+    _;
+  }
+
   constructor(
     ILendingPoolAddressesProvider provider,
     uint256 optimalUtilizationRate,
@@ -91,6 +100,14 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
   function baseVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate;
+  }
+
+  function reserveCapacity() external view override returns (uint256) {
+    return _reserveCapacity;
+  }
+
+  function setReserveCapacity(uint256 amount) external onlyAdmin {
+    _reserveCapacity = amount;
   }
 
   function getMaxVariableBorrowRate() external view override returns (uint256) {

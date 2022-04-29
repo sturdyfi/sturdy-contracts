@@ -13,6 +13,8 @@ interface IReserveInterestRateStrategy {
 
   function baseVariableBorrowRate() external view returns (uint256);
 
+  function reserveCapacity() external view returns (uint256);
+
   function getMaxVariableBorrowRate() external view returns (uint256);
 
   function calculateInterestRates(

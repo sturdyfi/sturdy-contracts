@@ -265,7 +265,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombTOMB-MIMATIC');
     address TOMB_MIMATIC_LP = _addressesProvider.getAddress('TOMB_MIMATIC_LP');
 
@@ -278,6 +278,7 @@ contract TombMimaticBeefyVault is GeneralVault {
 
     // Deliver TOMB_MIMATIC_LP to user
     TransferHelper.safeTransfer(TOMB_MIMATIC_LP, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

@@ -296,9 +296,13 @@ contract LendingPoolCollateralManager is
     );
     uint256 decimal = IERC20Detailed(collateralReserve.aTokenAddress).decimals();
     if (decimal < 18) amountCollateral = amountCollateral.div(10**(18 - decimal));
-    amountCollateral = IGeneralVault(vault).withdrawOnLiquidation(
+    uint256 withdrawAmount = IGeneralVault(vault).withdrawOnLiquidation(
       collateralAsset,
       amountCollateral
+    );
+    require(
+      withdrawAmount >= amountCollateral.percentMul(99_00),
+      Errors.VT_WITHDRAW_AMOUNT_MISMATCH
     );
 
     TransferHelper.safeTransfer(collateralAsset, msg.sender, amountCollateral);

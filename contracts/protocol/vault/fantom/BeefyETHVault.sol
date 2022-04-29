@@ -179,7 +179,7 @@ contract BeefyETHVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address MOOWETH = _addressesProvider.getAddress('MOOWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
@@ -192,6 +192,7 @@ contract BeefyETHVault is GeneralVault {
 
     // Deliver WETH to user
     TransferHelper.safeTransfer(WETH, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

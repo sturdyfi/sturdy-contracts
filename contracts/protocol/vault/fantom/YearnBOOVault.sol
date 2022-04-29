@@ -171,7 +171,7 @@ contract YearnBOOVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVBOO = _addressesProvider.getAddress('YVBOO');
     address BOO = _addressesProvider.getAddress('BOO');
 
@@ -182,6 +182,7 @@ contract YearnBOOVault is GeneralVault {
 
     // Deliver BOO to user
     TransferHelper.safeTransfer(BOO, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

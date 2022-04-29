@@ -272,7 +272,7 @@ contract BasedMimaticBeefyVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombBASED-MIMATIC');
     address BASED_MIMATIC_LP = _addressesProvider.getAddress('BASED_MIMATIC_LP');
 
@@ -285,6 +285,7 @@ contract BasedMimaticBeefyVault is GeneralVault {
 
     // Deliver BASED_MIMATIC_LP to user
     TransferHelper.safeTransfer(BASED_MIMATIC_LP, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

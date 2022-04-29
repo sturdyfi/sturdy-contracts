@@ -171,7 +171,7 @@ contract YearnCRVVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVCRV = _addressesProvider.getAddress('YVCRV');
     address CRV = _addressesProvider.getAddress('CRV');
 
@@ -182,6 +182,7 @@ contract YearnCRVVault is GeneralVault {
 
     // Deliver CRV to user
     TransferHelper.safeTransfer(CRV, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

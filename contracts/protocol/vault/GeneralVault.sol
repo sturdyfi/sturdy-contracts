@@ -8,6 +8,7 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 
 /**
  * @title GeneralVault
@@ -40,7 +41,7 @@ contract GeneralVault is VersionedInitializable {
   uint256 internal _vaultFee;
   address internal _treasuryAddress;
 
-  uint256 public constant VAULT_REVISION = 0x1;
+  uint256 public constant VAULT_REVISION = 0x2;
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
@@ -104,7 +105,8 @@ contract GeneralVault is VersionedInitializable {
 
     // Withdraw from vault, it will convert stAsset to asset and send to user
     // Ex: In Lido vault, it will return ETH or stETH to user
-    _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+    uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+    require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);
 
     emit WithdrawCollateral(_asset, _to, _amount);
   }
@@ -129,6 +131,17 @@ contract GeneralVault is VersionedInitializable {
    * @param _amountIn The amount of collateral asset
    */
   function convertOnLiquidation(address _assetOut, uint256 _amountIn) external virtual {}
+
+  /**
+   * @dev Withdraw the assets which is remained in vault.
+   *      To remove the remained asset when withdraw from external vault because of some reason
+   *      and then refund to user
+   * @param _asset The asset address
+   */
+  function withdrawAsset(address _asset) external virtual onlyAdmin {
+    uint256 amount = IERC20(_asset).balanceOf(address(this));
+    IERC20(_asset).transfer(_treasuryAddress, amount);
+  }
 
   /**
    * @dev Get yield based on strategy and re-deposit
@@ -235,7 +248,7 @@ contract GeneralVault is VersionedInitializable {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal virtual {}
+  ) internal virtual returns (uint256) {}
 
   /**
    * @dev Get Withdrawal amount of stAsset based on strategy

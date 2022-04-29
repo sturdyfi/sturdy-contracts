@@ -117,6 +117,7 @@ library Errors {
   string public constant LP_LIQUIDATION_CONVERT_FAILED = '92';
   string public constant VT_DEPLOY_FAILED = '93'; // Vault deploy failed
   string public constant VT_INVALID_CONFIGURATION = '94'; // Invalid vault configuration
+  string public constant VL_OVERFLOW_MAX_RESERVE_CAPACITY = '95'; // overflow max capacity of reserve
 
   enum CollateralManagerErrors {
     NO_ERROR,

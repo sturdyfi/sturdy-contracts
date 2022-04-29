@@ -4,6 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
@@ -39,11 +40,28 @@ library ValidationLogic {
    * @param amount The amount to be deposited
    */
   function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
-    (bool isActive, bool isFrozen, , , ) = reserve.configuration.getFlags();
+    (bool isActive, bool isFrozen, , , bool isCollateral) = reserve.configuration.getFlags();
 
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
+
+    uint256 maxCapacity = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress)
+      .reserveCapacity();
+
+    uint256 currentCapacity = IERC20(reserve.aTokenAddress).totalSupply();
+    uint256 depositAmount = amount;
+    if (isCollateral && reserve.yieldAddress != address(0)) {
+      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      if (decimal < 18)
+        depositAmount = amount.mul(10**(18 - decimal)).rayMul(reserve.getIndexFromPricePerShare());
+      else depositAmount = amount.rayMul(reserve.getIndexFromPricePerShare());
+    }
+
+    require(
+      currentCapacity + depositAmount <= maxCapacity,
+      Errors.VL_OVERFLOW_MAX_RESERVE_CAPACITY
+    );
   }
 
   /**

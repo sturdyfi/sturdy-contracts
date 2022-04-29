@@ -5,6 +5,7 @@ pragma experimental ABIEncoderV2;
 import {ConvexCurveLPVault} from './ConvexCurveLPVault.sol';
 import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ICurvePool} from '../../../../interfaces/ICurvePool.sol';
+import {ICurveSwap} from '../../../../interfaces/ICurveSwap.sol';
 import {IWstETH} from '../../../../interfaces/IWstETH.sol';
 import {IWETH} from '../../../../misc/interfaces/IWETH.sol';
 import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
@@ -25,14 +26,14 @@ contract ConvexFRAX3CRVVault is ConvexCurveLPVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  address internal convex3PoolSwap;
+  address internal curve3PoolSwap;
   mapping(address => uint256) internal poolCoins;
 
-  function setConvex3PoolSwap(address _address) external onlyAdmin {
-    convex3PoolSwap = _address;
-    poolCoins[ICurvePool(_address).coins(0)] = 0;
-    poolCoins[ICurvePool(_address).coins(1)] = 1;
-    poolCoins[ICurvePool(_address).coins(2)] = 2;
+  function setCurve3PoolSwap(address _address) external onlyAdmin {
+    curve3PoolSwap = _address;
+    poolCoins[ICurveSwap(_address).coins(0)] = 0;
+    poolCoins[ICurveSwap(_address).coins(1)] = 1;
+    poolCoins[ICurveSwap(_address).coins(2)] = 2;
   }
 
   /**
@@ -83,22 +84,19 @@ contract ConvexFRAX3CRVVault is ConvexCurveLPVault {
    * @return assetAmount amount of the stable asset received
    */
   function _swap3CRV(address _assetOut, uint256 _amount) internal returns (uint256 assetAmount) {
-    require(convex3PoolSwap != address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(curve3PoolSwap != address(0), Errors.VT_INVALID_CONFIGURATION);
     uint256 _coin_index = poolCoins[_assetOut];
     require(
-      ICurvePool(convex3PoolSwap).coins(_coin_index) == _assetOut,
+      ICurveSwap(curve3PoolSwap).coins(_coin_index) == _assetOut,
       Errors.VT_LIQUIDITY_DEPOSIT_INVALID
     );
-    uint256 _minAmount = ICurvePool(curveLPToken).calc_withdraw_one_coin(
+    uint256 _minAmount = ICurveSwap(curve3PoolSwap).calc_withdraw_one_coin(
       _amount,
-      int128(_coin_index),
-      false
+      int128(_coin_index)
     );
-    assetAmount = ICurvePool(curveLPToken).remove_liquidity_one_coin(
-      _amount,
-      int128(_coin_index),
-      _minAmount,
-      address(this)
-    );
+
+    uint256 balanceBefore = IERC20(_assetOut).balanceOf(address(this));
+    ICurveSwap(curve3PoolSwap).remove_liquidity_one_coin(_amount, int128(_coin_index), _minAmount);
+    assetAmount = IERC20(_assetOut).balanceOf(address(this)).sub(balanceBefore);
   }
 }

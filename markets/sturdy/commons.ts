@@ -204,6 +204,7 @@ export const CommonsConfig: ICommonConfiguration = {
       yvRETH_WSTETH: '',
       cvxRETH_WSTETH: '',
       cvxFRAX_3CRV: '',
+      cvxSTECRV: '',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
     },

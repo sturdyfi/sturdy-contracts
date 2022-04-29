@@ -67,3 +67,14 @@ export const rateStrategyCVXFRAX_3CRV: IInterestRateStrategyParams = {
   stableRateSlope1: '0',
   stableRateSlope2: '0',
 }
+
+// cvxSTECRV
+export const rateStrategyCVXSTECRV: IInterestRateStrategyParams = {
+  name: "rateStrategyCVXSTECRV",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+}

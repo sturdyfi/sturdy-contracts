@@ -64,6 +64,7 @@ export enum eContractid {
   BasedMiMaticLPOracle = 'BasedMiMaticLPOracle',
   RETHWstETHLPOracle = 'RETHWstETHLPOracle',
   FRAX3CRVOracle = 'FRAX3CRVOracle',
+  STECRVOracle = 'STECRVOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -102,6 +103,8 @@ export enum eContractid {
   ConvexRocketPoolETHVault = 'ConvexRocketPoolETHVault',
   ConvexFRAX3CRVVaultImpl = 'ConvexFRAX3CRVVaultImpl',
   ConvexFRAX3CRVVault = 'ConvexFRAX3CRVVault',
+  ConvexSTETHVaultImpl = 'ConvexSTETHVaultImpl',
+  ConvexSTETHVault = 'ConvexSTETHVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -267,6 +270,7 @@ export interface iAssetBase<T> {
   yvRETH_WSTETH: T;
   cvxRETH_WSTETH: T;
   cvxFRAX_3CRV: T;
+  cvxSTECRV: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -287,7 +291,7 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iSturdyPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'DAI' | 'USDC' | 'stETH' | 'yvRETH_WSTETH' | 'cvxRETH_WSTETH' | 'cvxFRAX_3CRV'
+  'DAI' | 'USDC' | 'stETH' | 'yvRETH_WSTETH' | 'cvxRETH_WSTETH' | 'cvxFRAX_3CRV' | 'cvxSTECRV'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -324,6 +328,7 @@ export enum TokenContractId {
   yvRETH_WSTETH = 'yvRETH_WSTETH',
   cvxRETH_WSTETH = 'cvxRETH_WSTETH',
   cvxFRAX_3CRV = 'cvxFRAX_3CRV',
+  cvxSTECRV = 'cvxSTECRV',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -481,6 +486,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   WSTETH: iParamsPerNetwork<tEthereumAddress>;
   RETH_WSTETH_LP: iParamsPerNetwork<tEthereumAddress>;
   FRAX_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
+  STECRV_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;

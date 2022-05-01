@@ -41,7 +41,7 @@ contract GeneralVault is VersionedInitializable {
   uint256 internal _vaultFee;
   address internal _treasuryAddress;
 
-  uint256 public constant VAULT_REVISION = 0x1;
+  uint256 public constant VAULT_REVISION = 0x2;
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
@@ -131,17 +131,6 @@ contract GeneralVault is VersionedInitializable {
    * @param _amountIn The amount of collateral asset
    */
   function convertOnLiquidation(address _assetOut, uint256 _amountIn) external virtual {}
-
-  /**
-   * @dev Withdraw the assets which is remained in vault.
-   *      To remove the remained asset when withdraw from external vault because of some reason
-   *      and then refund to user
-   * @param _asset The asset address
-   */
-  function withdrawAsset(address _asset) external virtual onlyAdmin {
-    uint256 amount = IERC20(_asset).balanceOf(address(this));
-    IERC20(_asset).transfer(_treasuryAddress, amount);
-  }
 
   /**
    * @dev Get yield based on strategy and re-deposit

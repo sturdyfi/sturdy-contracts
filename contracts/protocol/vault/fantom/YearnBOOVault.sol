@@ -128,6 +128,17 @@ contract YearnBOOVault is GeneralVault {
   }
 
   /**
+   * @dev Withdraw the assets which is remained in vault.
+   *      To remove the remained asset when withdraw from external vault because of some reason
+   *      and then refund to user
+   * @param _asset The asset address
+   */
+  function withdrawAsset(address _asset) external virtual onlyAdmin {
+    uint256 amount = IERC20(_asset).balanceOf(address(this));
+    IERC20(_asset).transfer(_treasuryAddress, amount);
+  }
+
+  /**
    * @dev Deposit to yield pool based on strategy and receive yvBOO
    */
   function _depositToYieldPool(address _asset, uint256 _amount)

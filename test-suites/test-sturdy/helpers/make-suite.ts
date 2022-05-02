@@ -22,6 +22,7 @@ import {
   getConvexRocketPoolETHVault,
   getLiquidator,
   getConvexFRAX3CRVVault,
+  getConvexSTETHVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -48,6 +49,7 @@ import {
   YearnRETHWstETHVault,
   ConvexRocketPoolETHVault,
   ConvexFRAX3CRVVault,
+  ConvexSTETHVault,
   SturdyInternalAssetFactory,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
@@ -78,6 +80,7 @@ export interface TestEnv {
   yearnRETHWstETHVault: YearnRETHWstETHVault;
   convexRocketPoolETHVault: ConvexRocketPoolETHVault;
   convexFRAX3CRVVault: ConvexFRAX3CRVVault;
+  convexSTETHVault: ConvexSTETHVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -91,13 +94,16 @@ export interface TestEnv {
   aYVRETH_WSTETH: AToken;
   aCVXRETH_WSTETH: AToken;
   aCVXFRAX_3CRV: AToken;
+  aCVXSTECRV: AToken;
   brick: SturdyToken;
   lido: ILido;
   RETH_WSTETH_LP: MintableERC20;
   FRAX_3CRV_LP: MintableERC20;
+  STECRV_LP: MintableERC20;
   yvreth_wsteth: IERC20Detailed;
   cvxreth_wsteth: SturdyInternalAsset;
   cvxfrax_3crv: SturdyInternalAsset;
+  cvxstecrv: SturdyInternalAsset;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
@@ -118,6 +124,7 @@ const testEnv: TestEnv = {
   yearnRETHWstETHVault: {} as YearnRETHWstETHVault,
   convexRocketPoolETHVault: {} as ConvexRocketPoolETHVault,
   convexFRAX3CRVVault: {} as ConvexFRAX3CRVVault,
+  convexSTETHVault: {} as ConvexSTETHVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -131,13 +138,16 @@ const testEnv: TestEnv = {
   aYVRETH_WSTETH: {} as AToken,
   aCVXRETH_WSTETH: {} as AToken,
   aCVXFRAX_3CRV: {} as AToken,
+  aCVXSTECRV: {} as AToken,
   brick: {} as SturdyToken,
   lido: {} as ILido,
   RETH_WSTETH_LP: {} as MintableERC20,
   FRAX_3CRV_LP: {} as MintableERC20,
+  STECRV_LP: {} as MintableERC20,
   yvreth_wsteth: {} as IERC20Detailed,
   cvxreth_wsteth: {} as SturdyInternalAsset,
   cvxfrax_3crv: {} as SturdyInternalAsset,
+  cvxstecrv: {} as SturdyInternalAsset,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
   liquidator: {} as ILiquidator,
@@ -150,6 +160,7 @@ export async function initializeMakeSuite() {
   const lidoAddress = getParamPerNetwork(poolConfig.Lido, network);
   const rEthWstEthLPAddress = getParamPerNetwork(poolConfig.RETH_WSTETH_LP, network);
   const Frax3CrvLPAddress = getParamPerNetwork(poolConfig.FRAX_3CRV_LP, network);
+  const SteCrvLPAddress = getParamPerNetwork(poolConfig.STECRV_LP, network);
   const yvrethwstethAddress = getParamPerNetwork(poolConfig.YearnRETHWstETHVault, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
@@ -200,8 +211,10 @@ export async function initializeMakeSuite() {
   testEnv.yearnRETHWstETHVault = await getYearnRETHWstETHVault();
   testEnv.convexRocketPoolETHVault = await getConvexRocketPoolETHVault();
   testEnv.convexFRAX3CRVVault = await getConvexFRAX3CRVVault();
+  testEnv.convexSTETHVault = await getConvexSTETHVault();
   const cvxrethwstethAddress = await testEnv.convexRocketPoolETHVault.getInternalAsset();
   const cvxfrax3crvAddress = await testEnv.convexFRAX3CRVVault.getInternalAsset();
+  const cvxstecrvAddress = await testEnv.convexSTETHVault.getInternalAsset();
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getLiquidator();
 
@@ -245,6 +258,9 @@ export async function initializeMakeSuite() {
   const aCVXFRAX_3CRVAddress = allTokens.find(
     (aToken) => aToken.symbol === 'acvxFRAX_3CRV' || aToken.symbol === 'scvxFRAX_3CRV'
   )?.tokenAddress;
+  const aCVXSTECRVAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'acvxSTECRV' || aToken.symbol === 'scvxSTECRV'
+  )?.tokenAddress;
   const aUsdcAddress = allTokens.find(
     (aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC'
   )?.tokenAddress;
@@ -259,7 +275,8 @@ export async function initializeMakeSuite() {
     !aStETHAddress ||
     !aYVRETH_WSTETHAddress ||
     !aCVXRETH_WSTETHAddress ||
-    !aCVXFRAX_3CRVAddress
+    !aCVXFRAX_3CRVAddress ||
+    !aCVXSTECRVAddress
   ) {
     process.exit(1);
   }
@@ -272,6 +289,7 @@ export async function initializeMakeSuite() {
   testEnv.aYVRETH_WSTETH = await getAToken(aYVRETH_WSTETHAddress);
   testEnv.aCVXRETH_WSTETH = await getAToken(aCVXRETH_WSTETHAddress);
   testEnv.aCVXFRAX_3CRV = await getAToken(aCVXFRAX_3CRVAddress);
+  testEnv.aCVXSTECRV = await getAToken(aCVXSTECRVAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
 
   testEnv.dai = await getMintableERC20(daiAddress);
@@ -280,12 +298,14 @@ export async function initializeMakeSuite() {
   testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
   testEnv.RETH_WSTETH_LP = await getMintableERC20(rEthWstEthLPAddress);
   testEnv.FRAX_3CRV_LP = await getMintableERC20(Frax3CrvLPAddress);
+  testEnv.STECRV_LP = await getMintableERC20(SteCrvLPAddress);
   testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
   testEnv.cvxreth_wsteth = SturdyInternalAssetFactory.connect(
     cvxrethwstethAddress,
     deployer.signer
   );
   testEnv.cvxfrax_3crv = SturdyInternalAssetFactory.connect(cvxfrax3crvAddress, deployer.signer);
+  testEnv.cvxstecrv = SturdyInternalAssetFactory.connect(cvxstecrvAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

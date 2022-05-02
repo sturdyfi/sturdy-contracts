@@ -45,6 +45,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6-3. Deploy Convex FRAX 3CRV vault');
     await DRE.run('full:deploy-convex-frax-3crv-vault', { pool: POOL_NAME });
 
+    console.log('6-4. Deploy Convex STETH vault');
+    await DRE.run('full:deploy-convex-steth-vault', { pool: POOL_NAME });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 

@@ -73,6 +73,8 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           mooWETH: reserveAssets.mooWETH,
           yvRETH_WSTETH: reserveAssets.yvRETH_WSTETH,
           cvxRETH_WSTETH: reserveAssets.cvxRETH_WSTETH,
+          cvxFRAX_3CRV: reserveAssets.cvxFRAX_3CRV,
+          cvxSTECRV: reserveAssets.cvxSTECRV,
           USD: UsdAddress,
         },
         fallbackOracle

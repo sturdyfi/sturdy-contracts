@@ -14,6 +14,8 @@ interface IConvexBooster {
 
   function poolInfo(uint256 _poolId) external view returns (PoolInfo memory);
 
+  function poolLength() external view returns (uint256);
+
   //deposit lp tokens and stake
   function deposit(
     uint256 _pid,

@@ -139,6 +139,13 @@ contract LidoVault is GeneralVault {
   }
 
   /**
+   * @dev Get price per share based on yield strategy
+   */
+  function pricePerShare() external view override returns (uint256) {
+    return 1e18;
+  }
+
+  /**
    * @dev Deposit to yield pool based on strategy and receive stAsset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)

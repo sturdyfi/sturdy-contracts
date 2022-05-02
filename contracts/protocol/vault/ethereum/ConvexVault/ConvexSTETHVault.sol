@@ -14,7 +14,6 @@ import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC
 import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../../interfaces/IPriceOracleGetter.sol';
-import 'hardhat/console.sol';
 
 /**
  * @title ConvexSTETHVault

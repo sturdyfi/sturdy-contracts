@@ -9,6 +9,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 
 /**
  * @title GeneralVault
@@ -41,7 +42,7 @@ contract GeneralVault is VersionedInitializable {
   uint256 internal _vaultFee;
   address internal _treasuryAddress;
 
-  uint256 public constant VAULT_REVISION = 0x2;
+  uint256 public constant VAULT_REVISION = 0x1;
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
@@ -106,6 +107,10 @@ contract GeneralVault is VersionedInitializable {
     // Withdraw from vault, it will convert stAsset to asset and send to user
     // Ex: In Lido vault, it will return ETH or stETH to user
     uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+    if (_amount == type(uint256).max) {
+      uint256 decimal = IERC20Detailed(_asset).decimals();
+      _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
+    }
     require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);
 
     emit WithdrawCollateral(_asset, _to, _amount);

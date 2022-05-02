@@ -171,7 +171,7 @@ contract YearnLINKVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVLINK = _addressesProvider.getAddress('YVLINK');
     address LINK = _addressesProvider.getAddress('LINK');
 
@@ -182,6 +182,7 @@ contract YearnLINKVault is GeneralVault {
 
     // Deliver LINK to user
     TransferHelper.safeTransfer(LINK, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

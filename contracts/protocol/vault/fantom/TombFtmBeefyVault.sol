@@ -260,7 +260,7 @@ contract TombFtmBeefyVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address MOO_TOMB_FTM = _addressesProvider.getAddress('mooTombTOMB-FTM');
     address TOMB_FTM_LP = _addressesProvider.getAddress('TOMB_FTM_LP');
 
@@ -273,6 +273,7 @@ contract TombFtmBeefyVault is GeneralVault {
 
     // Deliver TOMB_FTM_LP to user
     TransferHelper.safeTransfer(TOMB_FTM_LP, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

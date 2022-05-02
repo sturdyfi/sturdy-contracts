@@ -319,10 +319,10 @@ contract ConvexCurveLPVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
-    _withdraw(_amount, _to);
+    return _withdraw(_amount, _to);
   }
 
   /**

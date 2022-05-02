@@ -46,22 +46,22 @@ library ValidationLogic {
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
-    uint256 maxCapacity = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress)
-      .reserveCapacity();
+    // uint256 maxCapacity = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress)
+    //   .reserveCapacity();
 
-    uint256 currentCapacity = IERC20(reserve.aTokenAddress).totalSupply();
-    uint256 depositAmount = amount;
-    if (isCollateral && reserve.yieldAddress != address(0)) {
-      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
-      if (decimal < 18)
-        depositAmount = amount.mul(10**(18 - decimal)).rayMul(reserve.getIndexFromPricePerShare());
-      else depositAmount = amount.rayMul(reserve.getIndexFromPricePerShare());
-    }
+    // uint256 currentCapacity = IERC20(reserve.aTokenAddress).totalSupply();
+    // uint256 depositAmount = amount;
+    // if (isCollateral && reserve.yieldAddress != address(0)) {
+    //   uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+    //   if (decimal < 18)
+    //     depositAmount = amount.mul(10**(18 - decimal)).rayMul(reserve.getIndexFromPricePerShare());
+    //   else depositAmount = amount.rayMul(reserve.getIndexFromPricePerShare());
+    // }
 
-    require(
-      currentCapacity + depositAmount <= maxCapacity,
-      Errors.VL_OVERFLOW_MAX_RESERVE_CAPACITY
-    );
+    // require(
+    //   currentCapacity + depositAmount <= maxCapacity,
+    //   Errors.VL_OVERFLOW_MAX_RESERVE_CAPACITY
+    // );
   }
 
   /**

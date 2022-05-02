@@ -323,7 +323,7 @@ contract YearnFBEETSVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVFBEETS = _addressesProvider.getAddress('YVFBEETS');
     address fBEETS = _addressesProvider.getAddress('fBEETS');
 
@@ -334,6 +334,7 @@ contract YearnFBEETSVault is GeneralVault {
 
     // Deliver fBEETS to user
     TransferHelper.safeTransfer(fBEETS, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

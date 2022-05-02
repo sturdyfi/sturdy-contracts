@@ -271,7 +271,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
     address RETH_WSTETH = _addressesProvider.getAddress('RETH_WSTETH');
 
@@ -282,6 +282,7 @@ contract YearnRETHWstETHVault is GeneralVault {
 
     // Deliver RETH_WSTETH to user
     TransferHelper.safeTransfer(RETH_WSTETH, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

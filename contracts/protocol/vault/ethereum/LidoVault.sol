@@ -139,6 +139,13 @@ contract LidoVault is GeneralVault {
   }
 
   /**
+   * @dev Get price per share based on yield strategy
+   */
+  function pricePerShare() external view override returns (uint256) {
+    return 1e18;
+  }
+
+  /**
    * @dev Deposit to yield pool based on strategy and receive stAsset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
@@ -188,19 +195,21 @@ contract LidoVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address LIDO = _addressesProvider.getAddress('LIDO');
     if (_asset == address(0)) {
       // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = _convertAssetByCurve(LIDO, _amount);
       // send ETH to user
       (bool sent, bytes memory data) = address(_to).call{value: receivedETHAmount}('');
+      return receivedETHAmount;
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     } else {
       // Case of stETH withdraw request from user, so directly send
       require(_asset == LIDO, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
       IERC20(LIDO).safeTransfer(_to, _amount);
     }
+    return _amount;
   }
 
   /**

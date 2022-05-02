@@ -216,7 +216,7 @@ export async function initializeMakeSuite() {
   const cvxfrax3crvAddress = await testEnv.convexFRAX3CRVVault.getInternalAsset();
   const cvxstecrvAddress = await testEnv.convexSTETHVault.getInternalAsset();
   testEnv.incentiveController = await getSturdyIncentivesController();
-  // testEnv.liquidator = await getLiquidator();
+  testEnv.liquidator = await getLiquidator();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

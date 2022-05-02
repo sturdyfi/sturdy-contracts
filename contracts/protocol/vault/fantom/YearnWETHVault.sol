@@ -177,7 +177,7 @@ contract YearnWETHVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVWETH = _addressesProvider.getAddress('YVWETH');
     address WETH = _addressesProvider.getAddress('WETH');
 
@@ -188,6 +188,7 @@ contract YearnWETHVault is GeneralVault {
 
     // Deliver WETH to user
     TransferHelper.safeTransfer(WETH, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

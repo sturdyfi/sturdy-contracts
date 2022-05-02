@@ -171,7 +171,7 @@ contract YearnSPELLVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVSPELL = _addressesProvider.getAddress('YVSPELL');
     address SPELL = _addressesProvider.getAddress('SPELL');
 
@@ -182,6 +182,7 @@ contract YearnSPELLVault is GeneralVault {
 
     // Deliver SPELL to user
     TransferHelper.safeTransfer(SPELL, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

@@ -171,7 +171,7 @@ contract YearnWBTCVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVWBTC = _addressesProvider.getAddress('YVWBTC');
     address WBTC = _addressesProvider.getAddress('WBTC');
 
@@ -182,6 +182,7 @@ contract YearnWBTCVault is GeneralVault {
 
     // Deliver WBTC to user
     TransferHelper.safeTransfer(WBTC, _to, assetAmount);
+    return assetAmount;
   }
 
   /**

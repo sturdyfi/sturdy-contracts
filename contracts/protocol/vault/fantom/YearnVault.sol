@@ -184,7 +184,7 @@ contract YearnVault is GeneralVault {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal override {
+  ) internal override returns (uint256) {
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
     address WFTM = _addressesProvider.getAddress('WFTM');
 
@@ -203,6 +203,7 @@ contract YearnVault is GeneralVault {
       // Deliver WFTM to user
       TransferHelper.safeTransfer(WFTM, _to, assetAmount);
     }
+    return assetAmount;
   }
 
   /**

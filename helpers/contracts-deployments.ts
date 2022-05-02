@@ -43,6 +43,7 @@ import {
   getConvexRocketPoolETHVault,
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
+  getConvexDOLA3CRVVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -120,8 +121,9 @@ import {
   FRAX3CRVOracleFactory,
   ConvexFRAX3CRVVaultFactory,
   STECRVOracleFactory,
-  ConvexSTETHVault,
   ConvexSTETHVaultFactory,
+  DOLA3CRVOracleFactory,
+  ConvexDOLA3CRVVaultFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -395,6 +397,14 @@ export const deploySTECRVOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new STECRVOracleFactory(await getFirstSigner()).deploy(),
     eContractid.STECRVOracle,
+    [],
+    verify
+  );
+
+export const deployDOLA3CRVOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new DOLA3CRVOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.DOLA3CRVOracle,
     [],
     verify
   );
@@ -1023,6 +1033,48 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexSTETHVault, proxyAddress);
 
   return await getConvexSTETHVault();
+};
+
+export const deployConvexDOLA3CRVVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ConvexDOLA3CRVVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexDOLA3CRVVaultImpl,
+    [],
+    verify
+  );
+
+export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  const network = <eNetwork>DRE.network.name;
+
+  const vaultImpl = await withSaveAndVerify(
+    await new ConvexDOLA3CRVVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexDOLA3CRVVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('CONVEX_DOLA_3CRV_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CRV'),
+      getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('CONVEX_DOLA_3CRV_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.ConvexDOLA3CRVVault, proxyAddress);
+
+  return await getConvexDOLA3CRVVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

@@ -191,6 +191,7 @@ contract YieldManager is VersionedInitializable, Ownable {
     returns (uint256 receivedAmount)
   {
     address _pool = _curvePools[_exchangeToken][_tokenOut];
+    require(_pool != address(0), Errors.VT_INVALID_CONFIGURATION);
     CurveswapAdapter.swapExactTokensForTokens(
       _addressesProvider,
       _pool,

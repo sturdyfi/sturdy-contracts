@@ -27,8 +27,8 @@ contract YearnRETHWstETHVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  // uniswap pool fee to 0.05%.
-  uint24 constant uniswapFee = 500;
+  // // uniswap pool fee to 0.05%.
+  // uint24 constant uniswapFee = 500;
 
   /**
    * @dev Receive Ether
@@ -63,10 +63,15 @@ contract YearnRETHWstETHVault is GeneralVault {
     uint256 yieldStETH = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(yieldWstETH);
 
     // Exchange stETH -> ETH via Curve
-    uint256 receivedETHAmount = _convertAssetByCurve(
+    uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(
+      _addressesProvider,
+      _addressesProvider.getAddress('STETH_ETH_POOL'),
       _addressesProvider.getAddress('LIDO'),
-      yieldStETH
+      ETH,
+      yieldStETH,
+      200
     );
+
     // ETH -> WETH
     address weth = _addressesProvider.getAddress('WETH');
     IWETH(weth).deposit{value: receivedETHAmount}();
@@ -122,25 +127,25 @@ contract YearnRETHWstETHVault is GeneralVault {
     );
   }
 
-  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
-    internal
-    returns (uint256)
-  {
-    // Exchange stETH -> ETH via curve
-    address CurveswapLidoPool = _addressesProvider.getAddress('CurveswapLidoPool');
-    IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
-    uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
+  // function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
+  //   internal
+  //   returns (uint256)
+  // {
+  //   // Exchange stETH -> ETH via curve
+  //   address CurveswapLidoPool = _addressesProvider.getAddress('STETH_ETH_POOL');
+  //   IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
+  //   uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
 
-    // Calculate minAmount from price with 1% slippage
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
-    uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
+  //   // Calculate minAmount from price with 1% slippage
+  //   IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+  //   uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
+  //   uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
 
-    if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
+  //   if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
 
-    uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
-    return receivedAmount;
-  }
+  //   uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
+  //   return receivedAmount;
+  // }
 
   // function _convertAndDepositYield(
   //   address _tokenOut,

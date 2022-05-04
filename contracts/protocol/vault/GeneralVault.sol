@@ -36,6 +36,8 @@ contract GeneralVault is VersionedInitializable {
     uint256 amount;
   }
 
+  address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
   ILendingPoolAddressesProvider internal _addressesProvider;
 
   // vault fee 20%

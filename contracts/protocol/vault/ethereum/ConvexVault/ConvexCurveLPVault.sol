@@ -98,30 +98,30 @@ contract ConvexCurveLPVault is GeneralVault {
     emit ProcessYield(CRV, yieldCRV);
   }
 
-  /**
-   * @dev Exchange stETH -> ETH via Curve
-   * @param _fromAsset address of stETH
-   * @param _fromAmount amount of stETH
-   */
-  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
-    internal
-    returns (uint256)
-  {
-    // Exchange stETH -> ETH via curve
-    address CurveswapLidoPool = _addressesProvider.getAddress('CurveswapLidoPool');
-    IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
-    uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
+  // /**
+  //  * @dev Exchange stETH -> ETH via Curve
+  //  * @param _fromAsset address of stETH
+  //  * @param _fromAmount amount of stETH
+  //  */
+  // function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
+  //   internal
+  //   returns (uint256)
+  // {
+  //   // Exchange stETH -> ETH via curve
+  //   address CurveswapLidoPool = _addressesProvider.getAddress('STETH_ETH_POOL');
+  //   IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
+  //   uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
 
-    // Calculate minAmount from price with 1% slippage
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
-    uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
+  //   // Calculate minAmount from price with 1% slippage
+  //   IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+  //   uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
+  //   uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
 
-    if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
+  //   if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
 
-    uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
-    return receivedAmount;
-  }
+  //   uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
+  //   return receivedAmount;
+  // }
 
   // /**
   //  * @dev Convert WETH to Stable coins using UniSwap

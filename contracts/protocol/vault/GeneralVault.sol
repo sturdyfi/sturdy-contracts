@@ -133,11 +133,11 @@ contract GeneralVault is VersionedInitializable {
     return _amount;
   }
 
-  /**
-   * @dev Convert an `amount` of asset used as collateral to swappable asset on liquidation.
-   * @param _amountIn The amount of collateral asset
-   */
-  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external virtual {}
+  // /**
+  //  * @dev Convert an `amount` of asset used as collateral to swappable asset on liquidation.
+  //  * @param _amountIn The amount of collateral asset
+  //  */
+  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external virtual {}
 
   /**
    * @dev Get yield based on strategy and re-deposit

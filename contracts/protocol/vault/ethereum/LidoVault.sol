@@ -13,6 +13,7 @@ import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 
 /**

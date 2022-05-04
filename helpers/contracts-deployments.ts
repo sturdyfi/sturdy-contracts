@@ -812,7 +812,7 @@ export const deployLidoVault = async (verify?: boolean) => {
 
   await waitForTx(
     await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('CurveswapLidoPool'),
+      DRE.ethers.utils.formatBytes32String('STETH_ETH_POOL'),
       getParamPerNetwork(config.CurveswapLidoPool, network)
     )
   );

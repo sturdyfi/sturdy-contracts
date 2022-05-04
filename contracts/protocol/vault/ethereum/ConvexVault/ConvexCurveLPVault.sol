@@ -8,13 +8,8 @@ import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC
 import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IConvexBooster} from '../../../../interfaces/IConvexBooster.sol';
 import {IConvexBaseRewardPool} from '../../../../interfaces/IConvexBaseRewardPool.sol';
-import {ICurvePool} from '../../../../interfaces/ICurvePool.sol';
-import {ISwapRouter} from '../../../../interfaces/ISwapRouter.sol';
 import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../../dependencies/openzeppelin/contracts/SafeMath.sol';
-import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
-import {IPriceOracleGetter} from '../../../../interfaces/IPriceOracleGetter.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 
 /**
@@ -23,19 +18,12 @@ import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol
  * @author Sturdy
  **/
 contract ConvexCurveLPVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
-  using PercentageMath for uint256;
 
   address public convexBooster;
   address internal curveLPToken;
   address internal internalAssetToken;
   uint256 internal convexPoolId;
-
-  /**
-   * @dev Receive Ether
-   */
-  receive() external payable {}
 
   /**
    * @dev The function to set parameters related to convex/curve
@@ -87,154 +75,8 @@ contract ConvexCurveLPVault is GeneralVault {
     address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
     TransferHelper.safeTransfer(CRV, yieldManager, yieldCRV);
 
-    // AssetYield[] memory assetYields = _getAssetYields(yieldCRV);
-    // for (uint256 i = 0; i < assetYields.length; i++) {
-    //   // CRV -> Asset and Deposit to pool
-    //   if (assetYields[i].amount > 0) {
-    //     _convertCRVToStableCoin(assetYields[i].asset, assetYields[i].amount);
-    //   }
-    // }
-
     emit ProcessYield(CRV, yieldCRV);
   }
-
-  /**
-   * @dev Exchange stETH -> ETH via Curve
-   * @param _fromAsset address of stETH
-   * @param _fromAmount amount of stETH
-   */
-  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
-    internal
-    returns (uint256)
-  {
-    // Exchange stETH -> ETH via curve
-    address CurveswapLidoPool = _addressesProvider.getAddress('CurveswapLidoPool');
-    IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
-    uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
-
-    // Calculate minAmount from price with 1% slippage
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
-    uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
-
-    if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
-
-    uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
-    return receivedAmount;
-  }
-
-  // /**
-  //  * @dev Convert WETH to Stable coins using UniSwap
-  //  * @param _tokenOut address of stable coin
-  //  * @param _wethAmount amount of WETH
-  //  * @param _isDeposit flag if it should be deposited to Lending Pool
-  //  */
-  // function _convertWETHAndDepositYield(
-  //   address _tokenOut,
-  //   uint256 _wethAmount,
-  //   bool _isDeposit
-  // ) internal {
-  //   // Approve the uniswapRouter to spend WETH.
-  //   address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-  //   address WETH = _addressesProvider.getAddress('WETH');
-  //   TransferHelper.safeApprove(WETH, uniswapRouter, _wethAmount);
-
-  //   // Calculate minAmount from price with 1% slippage
-  //   uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-  //   IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-  //   uint256 assetPrice = oracle.getAssetPrice(_tokenOut);
-  //   uint256 minAmountFromPrice = _wethAmount.div(assetPrice).percentMul(99_00).mul(
-  //     10**assetDecimal
-  //   );
-
-  //   // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
-  //   // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
-
-  //   // uniswap pool fee to 0.05%.
-  //   uint24 uniswapFee = 500;
-
-  //   ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
-  //     tokenIn: WETH,
-  //     tokenOut: _tokenOut,
-  //     fee: uniswapFee,
-  //     recipient: address(this),
-  //     deadline: block.timestamp,
-  //     amountIn: _wethAmount,
-  //     amountOutMinimum: minAmountFromPrice,
-  //     sqrtPriceLimitX96: 0
-  //   });
-
-  //   // Exchange WETH -> _tokenOut via UniswapV3
-  //   uint256 receivedAmount = ISwapRouter(uniswapRouter).exactInputSingle(params);
-  //   require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
-  //   require(
-  //     IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmount,
-  //     Errors.VT_PROCESS_YIELD_INVALID
-  //   );
-
-  //   if (_isDeposit) {
-  //     // Make lendingPool to transfer required amount
-  //     IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
-  //     // Deposit Yield to pool
-  //     _depositYield(_tokenOut, receivedAmount);
-  //   } else {
-  //     TransferHelper.safeTransfer(_tokenOut, msg.sender, receivedAmount);
-  //   }
-  // }
-
-  // /**
-  //  * @dev Calculate Amount from price with 5% slippage
-  //  */
-  // function _calcAmountFromPrice(
-  //   address _tokenIn,
-  //   uint256 _amountIn,
-  //   address _tokenOut
-  // ) internal returns (uint256 minAmount) {
-  //   IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-  //   uint256 inDecimals = IERC20Detailed(_tokenIn).decimals();
-  //   uint256 outDecimals = IERC20Detailed(_tokenOut).decimals();
-  //   minAmount = _amountIn.mul(oracle.getAssetPrice(_tokenIn)).mul(10**outDecimals).div(
-  //     oracle.getAssetPrice(_tokenOut)
-  //   );
-  //   minAmount = minAmount.percentMul(95_00).div(10**inDecimals);
-  // }
-
-  // /**
-  //  * @dev Convert CRV to Stable coin using 1inch
-  //  * @param _tokenOut address of stable coin
-  //  * @param _crvAmount amount of CRV token
-  //  */
-  // function _convertCRVToStableCoin(address _tokenOut, uint256 _crvAmount) internal {
-  //   // Approve the uniswapRouter to spend CRV.
-  //   address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-  //   address CRV = _addressesProvider.getAddress('CRV');
-  //   address WETH = _addressesProvider.getAddress('WETH');
-  //   TransferHelper.safeApprove(CRV, uniswapRouter, _crvAmount);
-
-  //   uint256 minAmountFromPrice = _calcAmountFromPrice(CRV, _crvAmount, _tokenOut);
-
-  //   uint24 poolFee = 3000; // 0.3%
-  //   ISwapRouter.ExactInputParams memory params = ISwapRouter.ExactInputParams({
-  //     path: abi.encodePacked(CRV, poolFee, WETH, poolFee, _tokenOut),
-  //     recipient: address(this),
-  //     deadline: block.timestamp,
-  //     amountIn: _crvAmount,
-  //     amountOutMinimum: minAmountFromPrice
-  //   });
-
-  //   // Exchange CRV -> _tokenOut via UniswapV3
-  //   uint256 receivedAmount = ISwapRouter(uniswapRouter).exactInput(params);
-  //   require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
-  //   require(
-  //     IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmount,
-  //     Errors.VT_PROCESS_YIELD_INVALID
-  //   );
-
-  //   // Make lendingPool to transfer required amount
-  //   IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
-  //   // Deposit Yield to pool
-  //   _depositYield(_tokenOut, receivedAmount);
-  // }
 
   /**
    * @dev Get yield amount based on strategy
@@ -264,12 +106,12 @@ contract ConvexCurveLPVault is GeneralVault {
     TransferHelper.safeTransferFrom(curveLPToken, msg.sender, address(this), _amount);
 
     // Deposit Curve LP Token to Convex
-    IERC20(curveLPToken).approve(convexBooster, _amount);
+    IERC20(curveLPToken).safeApprove(convexBooster, _amount);
     IConvexBooster(convexBooster).deposit(convexPoolId, _amount, true);
 
     // mint
     SturdyInternalAsset(internalAssetToken).mint(address(this), _amount);
-    IERC20(internalAssetToken).approve(address(_addressesProvider.getLendingPool()), _amount);
+    IERC20(internalAssetToken).safeApprove(address(_addressesProvider.getLendingPool()), _amount);
 
     return (internalAssetToken, _amount);
   }

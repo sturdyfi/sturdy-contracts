@@ -4,17 +4,11 @@ pragma experimental ABIEncoderV2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
-import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {ISwapRouter} from '../../../interfaces/ISwapRouter.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
-import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 
 /**
  * @title LidoVault
@@ -22,12 +16,7 @@ import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
  * @author Sturdy
  **/
 contract LidoVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
-  using PercentageMath for uint256;
-
-  // // uniswap pool fee to 0.05%.
-  // uint24 constant uniswapFee = 500;
 
   /**
    * @dev Receive Ether
@@ -67,83 +56,8 @@ contract LidoVault is GeneralVault {
     address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
     TransferHelper.safeTransfer(weth, yieldManager, receivedETHAmount);
 
-    // AssetYield[] memory assetYields = _getAssetYields(receivedETHAmount);
-    // for (uint256 i = 0; i < assetYields.length; i++) {
-    //   // WETH -> Asset and Deposit to pool
-    //   if (assetYields[i].amount > 0) {
-    //     _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount, true);
-    //   }
-    // }
-
     emit ProcessYield(_addressesProvider.getAddress('WETH'), receivedETHAmount);
   }
-
-  // function _convertAndDepositYield(
-  //   address _tokenOut,
-  //   uint256 _wethAmount,
-  //   bool _isDeposit
-  // ) internal {
-  //   // Approve the uniswapRouter to spend WETH.
-  //   address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-  //   address WETH = _addressesProvider.getAddress('WETH');
-  //   TransferHelper.safeApprove(WETH, uniswapRouter, _wethAmount);
-
-  //   // Calculate minAmount from price with 1% slippage
-  //   uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-  //   IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-  //   uint256 assetPrice = oracle.getAssetPrice(_tokenOut);
-  //   uint256 minAmountFromPrice = _wethAmount.div(assetPrice).percentMul(99_00).mul(
-  //     10**assetDecimal
-  //   );
-
-  //   // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
-  //   // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
-  //   ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
-  //     tokenIn: WETH,
-  //     tokenOut: _tokenOut,
-  //     fee: uniswapFee,
-  //     recipient: address(this),
-  //     deadline: block.timestamp,
-  //     amountIn: _wethAmount,
-  //     amountOutMinimum: minAmountFromPrice,
-  //     sqrtPriceLimitX96: 0
-  //   });
-
-  //   // Exchange WETH -> _tokenOut via UniswapV3
-  //   uint256 receivedAmount = ISwapRouter(uniswapRouter).exactInputSingle(params);
-  //   require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
-  //   require(
-  //     IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmount,
-  //     Errors.VT_PROCESS_YIELD_INVALID
-  //   );
-
-  //   if (_isDeposit) {
-  //     // Make lendingPool to transfer required amount
-  //     IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
-  //     // Deposit Yield to pool
-  //     _depositYield(_tokenOut, receivedAmount);
-  //   } else {
-  //     TransferHelper.safeTransfer(_tokenOut, msg.sender, receivedAmount);
-  //   }
-  // }
-
-  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
-  //   require(
-  //     msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-  //     Errors.LP_LIQUIDATION_CONVERT_FAILED
-  //   );
-
-  //   // Exchange stETH -> ETH via Curve
-  //   uint256 receivedETHAmount = _convertAssetByCurve(
-  //     _addressesProvider.getAddress('LIDO'),
-  //     _amountIn
-  //   );
-  //   // ETH -> WETH
-  //   address weth = _addressesProvider.getAddress('WETH');
-  //   IWETH(weth).deposit{value: receivedETHAmount}();
-
-  //   TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
-  // }
 
   /**
    * @dev Get yield amount based on strategy
@@ -233,29 +147,6 @@ contract LidoVault is GeneralVault {
     }
     return _amount;
   }
-
-  // /**
-  //  * @dev convert asset via curve
-  //  */
-  // function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
-  //   internal
-  //   returns (uint256)
-  // {
-  //   // Exchange stETH -> ETH via curve
-  //   address CurveswapLidoPool = _addressesProvider.getAddress('STETH_ETH_POOL');
-  //   IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
-  //   uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
-
-  //   // Calculate minAmount from price with 1% slippage
-  //   IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-  //   uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
-  //   uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
-
-  //   if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
-
-  //   uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
-  //   return receivedAmount;
-  // }
 
   /**
    * @dev Move some yield to treasury

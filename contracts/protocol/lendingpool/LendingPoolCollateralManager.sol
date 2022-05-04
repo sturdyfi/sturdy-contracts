@@ -295,8 +295,8 @@ contract LendingPoolCollateralManager is
       collateralReserve.getIndexFromPricePerShare()
     );
     // // Disabled withdraw amount checking
-    // uint256 decimal = IERC20Detailed(collateralReserve.aTokenAddress).decimals();
-    // if (decimal < 18) amountCollateral = amountCollateral.div(10**(18 - decimal));
+    uint256 decimal = IERC20Detailed(collateralReserve.aTokenAddress).decimals();
+    if (decimal < 18) amountCollateral = amountCollateral.div(10**(18 - decimal));
     uint256 withdrawAmount = IGeneralVault(vault).withdrawOnLiquidation(
       collateralAsset,
       amountCollateral

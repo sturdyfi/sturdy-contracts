@@ -26,11 +26,10 @@ contract ConvexRocketPoolETHVault is ConvexCurveLPVault {
   using PercentageMath for uint256;
 
   /**
-   * @dev convert curve lp token to stable coin
-   * @param _assetOut address of stable coin
+   * @dev convert curve lp token to WETH
    * @param _amountIn amount of lp token
    */
-  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  function convertOnLiquidation(uint256 _amountIn) external override {
     require(
       msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -48,10 +47,10 @@ contract ConvexRocketPoolETHVault is ConvexCurveLPVault {
       stETHAmount
     );
     // ETH -> WETH
-    IWETH(_addressesProvider.getAddress('WETH')).deposit{value: receivedETHAmount}();
+    address weth = _addressesProvider.getAddress('WETH');
+    IWETH(weth).deposit{value: receivedETHAmount}();
 
-    // WETH -> Asset
-    _convertWETHAndDepositYield(_assetOut, receivedETHAmount, false);
+    TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
   }
 
   function _withdrawLiquidityPool(uint256 _amount) internal returns (uint256 amountWstETH) {

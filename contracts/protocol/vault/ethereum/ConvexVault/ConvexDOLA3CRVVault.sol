@@ -37,11 +37,10 @@ contract ConvexDOLA3CRVVault is ConvexCurveLPVault {
   }
 
   /**
-   * @dev convert curve lp token to stable coin
-   * @param _assetOut address of stable coin
+   * @dev convert curve lp token to 3CRV
    * @param _amountIn amount of lp token
    */
-  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  function convertOnLiquidation(uint256 _amountIn) external override {
     require(
       msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -50,11 +49,14 @@ contract ConvexDOLA3CRVVault is ConvexCurveLPVault {
     // Withdraw a single asset(3CRV) from the pool
     uint256 _amount = _withdrawFromCurvePool(_amountIn);
 
-    // Swap 3CRV to asset
-    _amount = _swap3CRV(_assetOut, _amount);
+    // // Swap 3CRV to asset
+    // _amount = _swap3CRV(_assetOut, _amount);
 
-    // Transfer asset to liquidator
-    TransferHelper.safeTransfer(_assetOut, msg.sender, _amount);
+    // // Transfer asset to liquidator
+    // TransferHelper.safeTransfer(_assetOut, msg.sender, _amount);
+
+    address threeCRV = ICurveSwap(curve3PoolSwap).coins(1); // 3CRV
+    TransferHelper.safeTransfer(threeCRV, msg.sender, _amount);
   }
 
   /**
@@ -76,26 +78,26 @@ contract ConvexDOLA3CRVVault is ConvexCurveLPVault {
     );
   }
 
-  /**
-   * @dev The function to swap 3CRV to stable asset(eg. DAI, USDC)
-   * @param _assetOut address of stable asset
-   * @param _amount amount of 3CRV
-   * @return assetAmount amount of the stable asset received
-   */
-  function _swap3CRV(address _assetOut, uint256 _amount) internal returns (uint256 assetAmount) {
-    require(curve3PoolSwap != address(0), Errors.VT_INVALID_CONFIGURATION);
-    uint256 _coin_index = poolCoins[_assetOut];
-    require(
-      ICurveSwap(curve3PoolSwap).coins(_coin_index) == _assetOut,
-      Errors.VT_LIQUIDITY_DEPOSIT_INVALID
-    );
-    uint256 _minAmount = ICurveSwap(curve3PoolSwap).calc_withdraw_one_coin(
-      _amount,
-      int128(_coin_index)
-    );
+  // /**
+  //  * @dev The function to swap 3CRV to stable asset(eg. DAI, USDC)
+  //  * @param _assetOut address of stable asset
+  //  * @param _amount amount of 3CRV
+  //  * @return assetAmount amount of the stable asset received
+  //  */
+  // function _swap3CRV(address _assetOut, uint256 _amount) internal returns (uint256 assetAmount) {
+  //   require(curve3PoolSwap != address(0), Errors.VT_INVALID_CONFIGURATION);
+  //   uint256 _coin_index = poolCoins[_assetOut];
+  //   require(
+  //     ICurveSwap(curve3PoolSwap).coins(_coin_index) == _assetOut,
+  //     Errors.VT_LIQUIDITY_DEPOSIT_INVALID
+  //   );
+  //   uint256 _minAmount = ICurveSwap(curve3PoolSwap).calc_withdraw_one_coin(
+  //     _amount,
+  //     int128(_coin_index)
+  //   );
 
-    uint256 balanceBefore = IERC20(_assetOut).balanceOf(address(this));
-    ICurveSwap(curve3PoolSwap).remove_liquidity_one_coin(_amount, int128(_coin_index), _minAmount);
-    assetAmount = IERC20(_assetOut).balanceOf(address(this)).sub(balanceBefore);
-  }
+  //   uint256 balanceBefore = IERC20(_assetOut).balanceOf(address(this));
+  //   ICurveSwap(curve3PoolSwap).remove_liquidity_one_coin(_amount, int128(_coin_index), _minAmount);
+  //   assetAmount = IERC20(_assetOut).balanceOf(address(this)).sub(balanceBefore);
+  // }
 }

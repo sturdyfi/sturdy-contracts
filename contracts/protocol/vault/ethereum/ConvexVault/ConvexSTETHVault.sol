@@ -35,11 +35,10 @@ contract ConvexSTETHVault is ConvexCurveLPVault {
   }
 
   /**
-   * @dev convert curve lp token to stable coin
-   * @param _assetOut address of stable coin
+   * @dev convert curve lp token to WETH
    * @param _amountIn amount of lp token
    */
-  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  function convertOnLiquidation(uint256 _amountIn) external override {
     require(
       msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -49,10 +48,10 @@ contract ConvexSTETHVault is ConvexCurveLPVault {
     uint256 _amount = _withdrawFromCurvePool(_amountIn);
 
     // ETH -> WETH
-    IWETH(_addressesProvider.getAddress('WETH')).deposit{value: _amount}();
+    address weth = _addressesProvider.getAddress('WETH');
+    IWETH(weth).deposit{value: _amount}();
 
-    // WETH -> Asset
-    _convertWETHAndDepositYield(_assetOut, _amount, false);
+    TransferHelper.safeTransfer(weth, msg.sender, _amount);
   }
 
   /**

@@ -136,8 +136,10 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
       // send collateral asset to vault
       TransferHelper.safeTransfer(collateralAsset, vault, collateralAmount);
 
-      // convert collateral asset and receive debt asset
-      IGeneralVault(vault).convertOnLiquidation(asset, collateralAmount);
+      // convert collateral asset and receive swappable asset
+      IGeneralVault(vault).convertOnLiquidation(collateralAmount);
+
+      // convert swappable asset to debt asset
     }
   }
 

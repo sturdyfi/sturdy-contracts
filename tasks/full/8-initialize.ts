@@ -30,6 +30,7 @@ import {
   getConvexRocketPoolETHVault,
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
+  getConvexDOLA3CRVVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -72,6 +73,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
               cvxFRAX_3CRV: (await getConvexFRAX3CRVVault()).address,
               cvxSTECRV: (await getConvexSTETHVault()).address,
+              cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,
             }
           : {
               yvWFTM: (await getYearnVault()).address,

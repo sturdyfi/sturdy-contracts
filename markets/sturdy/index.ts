@@ -9,6 +9,7 @@ import {
   strategyCVXRETH_WSTETH,
   strategyCVXFRAX_3CRV,
   strategyCVXSTECRV,
+  strategyCVXDOLA_3CRV,
 } from './reservesConfigs';
 
 // ----------------
@@ -27,6 +28,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxRETH_WSTETH: strategyCVXRETH_WSTETH,
     cvxFRAX_3CRV: strategyCVXFRAX_3CRV,
     cvxSTECRV: strategyCVXSTECRV,
+    cvxDOLA_3CRV: strategyCVXDOLA_3CRV,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -50,6 +52,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxRETH_WSTETH: '',
       cvxFRAX_3CRV: '',
       cvxSTECRV: '',
+      cvxDOLA_3CRV: '',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -131,6 +134,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.kovan]: '',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0x06325440D014e39736583c165C2963BA99fAf14E',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '',
+  },
+  DOLA_3CRV_LP: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0xAA5A67c256e27A5d80712c51971408db3370927D',
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '',
   },

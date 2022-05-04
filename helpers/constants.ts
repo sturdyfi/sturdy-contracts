@@ -57,4 +57,5 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   cvxRETH_WSTETH: oneEther.multipliedBy('1.0000826607431204').toFixed(),
   cvxFRAX_3CRV: oneEther.multipliedBy('0.0003453649').toFixed(),
   cvxSTECRV: oneEther.multipliedBy('0.9999224237').toFixed(),
+  cvxDOLA_3CRV: oneEther.multipliedBy('0.0003453649').toFixed(),
 };

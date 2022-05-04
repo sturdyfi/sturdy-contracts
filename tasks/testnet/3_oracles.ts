@@ -75,6 +75,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           cvxRETH_WSTETH: reserveAssets.cvxRETH_WSTETH,
           cvxFRAX_3CRV: reserveAssets.cvxFRAX_3CRV,
           cvxSTECRV: reserveAssets.cvxSTECRV,
+          cvxDOLA_3CRV: reserveAssets.cvxDOLA_3CRV,
           USD: UsdAddress,
         },
         fallbackOracle

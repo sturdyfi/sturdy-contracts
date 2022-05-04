@@ -25,41 +25,42 @@ contract ConvexRocketPoolETHVault is ConvexCurveLPVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  /**
-   * @dev convert curve lp token to WETH
-   * @param _amountIn amount of lp token
-   */
-  function convertOnLiquidation(uint256 _amountIn) external override {
-    require(
-      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-      Errors.LP_LIQUIDATION_CONVERT_FAILED
-    );
+  // /**
+  //  * @dev convert curve lp token to WETH
+  //  * @param _assetOut WETH address
+  //  * @param _amountIn amount of lp token
+  //  */
+  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  //   require(
+  //     msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
+  //     Errors.LP_LIQUIDATION_CONVERT_FAILED
+  //   );
 
-    // Withdraw rETHwstETH-f from curve finance pool and receive wstETH
-    uint256 wstETHAmount = _withdrawLiquidityPool(_amountIn);
+  //   // Withdraw rETHwstETH-f from curve finance pool and receive wstETH
+  //   uint256 wstETHAmount = _withdrawLiquidityPool(_amountIn);
 
-    // Unwrap wstETH and receive stETH
-    uint256 stETHAmount = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(wstETHAmount);
+  //   // Unwrap wstETH and receive stETH
+  //   uint256 stETHAmount = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(wstETHAmount);
 
-    // Exchange stETH -> ETH via Curve
-    uint256 receivedETHAmount = _convertAssetByCurve(
-      _addressesProvider.getAddress('LIDO'),
-      stETHAmount
-    );
-    // ETH -> WETH
-    address weth = _addressesProvider.getAddress('WETH');
-    IWETH(weth).deposit{value: receivedETHAmount}();
+  //   // Exchange stETH -> ETH via Curve
+  //   uint256 receivedETHAmount = _convertAssetByCurve(
+  //     _addressesProvider.getAddress('LIDO'),
+  //     stETHAmount
+  //   );
+  //   // ETH -> WETH
+  //   address weth = _addressesProvider.getAddress('WETH');
+  //   IWETH(weth).deposit{value: receivedETHAmount}();
 
-    TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
-  }
+  //   TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
+  // }
 
-  function _withdrawLiquidityPool(uint256 _amount) internal returns (uint256 amountWstETH) {
-    uint256 minWstETHAmount = ICurvePool(curveLPToken).calc_withdraw_one_coin(_amount, 1, false);
-    amountWstETH = ICurvePool(curveLPToken).remove_liquidity_one_coin(
-      _amount,
-      1,
-      minWstETHAmount,
-      address(this)
-    );
-  }
+  // function _withdrawLiquidityPool(uint256 _amount) internal returns (uint256 amountWstETH) {
+  //   uint256 minWstETHAmount = ICurvePool(curveLPToken).calc_withdraw_one_coin(_amount, 1, false);
+  //   amountWstETH = ICurvePool(curveLPToken).remove_liquidity_one_coin(
+  //     _amount,
+  //     1,
+  //     minWstETHAmount,
+  //     address(this)
+  //   );
+  // }
 }

@@ -34,43 +34,44 @@ contract ConvexSTETHVault is ConvexCurveLPVault {
     curveStableSwap = _address;
   }
 
-  /**
-   * @dev convert curve lp token to WETH
-   * @param _amountIn amount of lp token
-   */
-  function convertOnLiquidation(uint256 _amountIn) external override {
-    require(
-      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-      Errors.LP_LIQUIDATION_CONVERT_FAILED
-    );
+  // /**
+  //  * @dev convert curve lp token to WETH
+  //  * @param _assetOut WETH address
+  //  * @param _amountIn amount of lp token
+  //  */
+  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  //   require(
+  //     msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
+  //     Errors.LP_LIQUIDATION_CONVERT_FAILED
+  //   );
 
-    // Withdraw a single asset(ETH) from the pool
-    uint256 _amount = _withdrawFromCurvePool(_amountIn);
+  //   // Withdraw a single asset(ETH) from the pool
+  //   uint256 _amount = _withdrawFromCurvePool(_amountIn);
 
-    // ETH -> WETH
-    address weth = _addressesProvider.getAddress('WETH');
-    IWETH(weth).deposit{value: _amount}();
+  //   // ETH -> WETH
+  //   address weth = _addressesProvider.getAddress('WETH');
+  //   IWETH(weth).deposit{value: _amount}();
 
-    TransferHelper.safeTransfer(weth, msg.sender, _amount);
-  }
+  //   TransferHelper.safeTransfer(weth, msg.sender, _amount);
+  // }
 
-  /**
-   * @dev The function to withdraw a single asset(ETH) from Curve Pool(ETH+stETH)
-   * @param _amount amount of LP token
-   * @return amountETH amount of ETH to receive
-   */
-  function _withdrawFromCurvePool(uint256 _amount) internal returns (uint256 amountETH) {
-    require(curveStableSwap != address(0), Errors.VT_INVALID_CONFIGURATION);
+  // /**
+  //  * @dev The function to withdraw a single asset(ETH) from Curve Pool(ETH+stETH)
+  //  * @param _amount amount of LP token
+  //  * @return amountETH amount of ETH to receive
+  //  */
+  // function _withdrawFromCurvePool(uint256 _amount) internal returns (uint256 amountETH) {
+  //   require(curveStableSwap != address(0), Errors.VT_INVALID_CONFIGURATION);
 
-    int128 _underlying_coin_index = 0; // ETH
-    uint256 _minAmount = ICurvePool(curveStableSwap).calc_withdraw_one_coin(
-      _amount,
-      _underlying_coin_index
-    );
-    amountETH = ICurvePool(curveStableSwap).remove_liquidity_one_coin(
-      _amount,
-      _underlying_coin_index,
-      _minAmount
-    );
-  }
+  //   int128 _underlying_coin_index = 0; // ETH
+  //   uint256 _minAmount = ICurvePool(curveStableSwap).calc_withdraw_one_coin(
+  //     _amount,
+  //     _underlying_coin_index
+  //   );
+  //   amountETH = ICurvePool(curveStableSwap).remove_liquidity_one_coin(
+  //     _amount,
+  //     _underlying_coin_index,
+  //     _minAmount
+  //   );
+  // }
 }

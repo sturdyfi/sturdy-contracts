@@ -36,47 +36,48 @@ contract ConvexDOLA3CRVVault is ConvexCurveLPVault {
     poolCoins[ICurveSwap(_address).coins(2)] = 2;
   }
 
-  /**
-   * @dev convert curve lp token to 3CRV
-   * @param _amountIn amount of lp token
-   */
-  function convertOnLiquidation(uint256 _amountIn) external override {
-    require(
-      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-      Errors.LP_LIQUIDATION_CONVERT_FAILED
-    );
+  // /**
+  //  * @dev convert curve lp token to 3CRV
+  //  * @param _assetOut 3CRV address
+  //  * @param _amountIn amount of lp token
+  //  */
+  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  //   require(
+  //     msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
+  //     Errors.LP_LIQUIDATION_CONVERT_FAILED
+  //   );
 
-    // Withdraw a single asset(3CRV) from the pool
-    uint256 _amount = _withdrawFromCurvePool(_amountIn);
+  //   // Withdraw a single asset(3CRV) from the pool
+  //   uint256 _amount = _withdrawFromCurvePool(_amountIn);
 
-    // // Swap 3CRV to asset
-    // _amount = _swap3CRV(_assetOut, _amount);
+  //   // // Swap 3CRV to asset
+  //   // _amount = _swap3CRV(_assetOut, _amount);
 
-    // // Transfer asset to liquidator
-    // TransferHelper.safeTransfer(_assetOut, msg.sender, _amount);
+  //   // // Transfer asset to liquidator
+  //   // TransferHelper.safeTransfer(_assetOut, msg.sender, _amount);
 
-    address threeCRV = ICurveSwap(curve3PoolSwap).coins(1); // 3CRV
-    TransferHelper.safeTransfer(threeCRV, msg.sender, _amount);
-  }
+  //   address threeCRV = ICurveSwap(curve3PoolSwap).coins(1); // 3CRV
+  //   TransferHelper.safeTransfer(threeCRV, msg.sender, _amount);
+  // }
 
-  /**
-   * @dev The function to withdraw a single asset(3CRv) from Curve Pool(DOLA+3CRV)
-   * @param _amount amount of LP token
-   * @return amount3CRV amount of 3CRV to receive
-   */
-  function _withdrawFromCurvePool(uint256 _amount) internal returns (uint256 amount3CRV) {
-    int128 _underlying_coin_index = 1; // 3CRV
-    uint256 _minAmount = ICurvePool(curveLPToken).calc_withdraw_one_coin(
-      _amount,
-      _underlying_coin_index
-    );
-    amount3CRV = ICurvePool(curveLPToken).remove_liquidity_one_coin(
-      _amount,
-      _underlying_coin_index,
-      _minAmount,
-      address(this)
-    );
-  }
+  // /**
+  //  * @dev The function to withdraw a single asset(3CRv) from Curve Pool(DOLA+3CRV)
+  //  * @param _amount amount of LP token
+  //  * @return amount3CRV amount of 3CRV to receive
+  //  */
+  // function _withdrawFromCurvePool(uint256 _amount) internal returns (uint256 amount3CRV) {
+  //   int128 _underlying_coin_index = 1; // 3CRV
+  //   uint256 _minAmount = ICurvePool(curveLPToken).calc_withdraw_one_coin(
+  //     _amount,
+  //     _underlying_coin_index
+  //   );
+  //   amount3CRV = ICurvePool(curveLPToken).remove_liquidity_one_coin(
+  //     _amount,
+  //     _underlying_coin_index,
+  //     _minAmount,
+  //     address(this)
+  //   );
+  // }
 
   // /**
   //  * @dev The function to swap 3CRV to stable asset(eg. DAI, USDC)

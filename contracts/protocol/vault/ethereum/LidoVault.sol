@@ -119,23 +119,23 @@ contract LidoVault is GeneralVault {
   //   }
   // }
 
-  function convertOnLiquidation(uint256 _amountIn) external override {
-    require(
-      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-      Errors.LP_LIQUIDATION_CONVERT_FAILED
-    );
+  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  //   require(
+  //     msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
+  //     Errors.LP_LIQUIDATION_CONVERT_FAILED
+  //   );
 
-    // Exchange stETH -> ETH via Curve
-    uint256 receivedETHAmount = _convertAssetByCurve(
-      _addressesProvider.getAddress('LIDO'),
-      _amountIn
-    );
-    // ETH -> WETH
-    address weth = _addressesProvider.getAddress('WETH');
-    IWETH(weth).deposit{value: receivedETHAmount}();
+  //   // Exchange stETH -> ETH via Curve
+  //   uint256 receivedETHAmount = _convertAssetByCurve(
+  //     _addressesProvider.getAddress('LIDO'),
+  //     _amountIn
+  //   );
+  //   // ETH -> WETH
+  //   address weth = _addressesProvider.getAddress('WETH');
+  //   IWETH(weth).deposit{value: receivedETHAmount}();
 
-    TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
-  }
+  //   TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
+  // }
 
   /**
    * @dev Get yield amount based on strategy

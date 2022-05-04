@@ -191,32 +191,32 @@ contract YearnRETHWstETHVault is GeneralVault {
   //   }
   // }
 
-  function convertOnLiquidation(uint256 _amountIn) external override {
-    require(
-      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-      Errors.LP_LIQUIDATION_CONVERT_FAILED
-    );
+  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
+  //   require(
+  //     msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
+  //     Errors.LP_LIQUIDATION_CONVERT_FAILED
+  //   );
 
-    // Withdraw rETHwstETH-f from curve finance pool and receive wstETH
-    uint256 wstETHAmount = _withdrawLiquidityPool(
-      _addressesProvider.getAddress('RETH_WSTETH'),
-      _amountIn
-    );
+  //   // Withdraw rETHwstETH-f from curve finance pool and receive wstETH
+  //   uint256 wstETHAmount = _withdrawLiquidityPool(
+  //     _addressesProvider.getAddress('RETH_WSTETH'),
+  //     _amountIn
+  //   );
 
-    // Unwrap wstETH and receive stETH
-    uint256 stETHAmount = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(wstETHAmount);
+  //   // Unwrap wstETH and receive stETH
+  //   uint256 stETHAmount = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(wstETHAmount);
 
-    // Exchange stETH -> ETH via Curve
-    uint256 receivedETHAmount = _convertAssetByCurve(
-      _addressesProvider.getAddress('LIDO'),
-      stETHAmount
-    );
-    // ETH -> WETH
-    address weth = _addressesProvider.getAddress('WETH');
-    IWETH(weth).deposit{value: receivedETHAmount}();
+  //   // Exchange stETH -> ETH via Curve
+  //   uint256 receivedETHAmount = _convertAssetByCurve(
+  //     _addressesProvider.getAddress('LIDO'),
+  //     stETHAmount
+  //   );
+  //   // ETH -> WETH
+  //   address weth = _addressesProvider.getAddress('WETH');
+  //   IWETH(weth).deposit{value: receivedETHAmount}();
 
-    TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
-  }
+  //   TransferHelper.safeTransfer(weth, msg.sender, receivedETHAmount);
+  // }
 
   /**
    * @dev Get yield amount based on strategy

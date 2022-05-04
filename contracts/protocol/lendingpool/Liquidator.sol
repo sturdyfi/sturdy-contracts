@@ -109,7 +109,7 @@ contract Liquidator is IFlashLoanReceiver, Ownable {
     TransferHelper.safeTransfer(collateralAsset, vault, collateralAmount);
 
     // convert collateral asset and receive swappable asset
-    IGeneralVault(vault).convertOnLiquidation(collateralAmount);
+    // IGeneralVault(vault).convertOnLiquidation(collateralAmount);
 
     // convert swappable asset to debt asset
   }

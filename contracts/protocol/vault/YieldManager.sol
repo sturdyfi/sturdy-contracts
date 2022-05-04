@@ -8,6 +8,7 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {ISwapRouter} from '../../interfaces/ISwapRouter.sol';
+import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -190,9 +191,12 @@ contract YieldManager is VersionedInitializable, Ownable {
     internal
     returns (uint256 receivedAmount)
   {
+    if (_tokenOut == _exchangeToken) {
+      return _amount;
+    }
     address _pool = _curvePools[_exchangeToken][_tokenOut];
     require(_pool != address(0), Errors.VT_INVALID_CONFIGURATION);
-    CurveswapAdapter.swapExactTokensForTokens(
+    receivedAmount = CurveswapAdapter.swapExactTokensForTokens(
       _addressesProvider,
       _pool,
       _exchangeToken,
@@ -208,6 +212,8 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @param _amount The mount of asset
    */
   function _depositYield(address _asset, uint256 _amount) internal {
-    ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
+    address _lendingPool = _addressesProvider.getLendingPool();
+    IERC20(_asset).approve(_lendingPool, _amount);
+    ILendingPool(_lendingPool).depositYield(_asset, _amount);
   }
 }

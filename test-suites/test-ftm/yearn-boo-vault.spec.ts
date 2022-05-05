@@ -5,9 +5,11 @@
 import { expect } from 'chai';
 import { makeSuite, TestEnv } from './helpers/make-suite';
 import { ethers } from 'ethers';
-import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
+import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from '../../helpers/constants';
-import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals, getEthersSigners } from '../../helpers/contracts-helpers';
+import { deployYearnBOOVaultImpl } from '../../helpers/contracts-deployments';
+import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
 
 const { parseEther } = ethers.utils;
 
@@ -66,6 +68,39 @@ makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
     expect(await BOO.balanceOf(yearnBOOVault.address)).to.be.equal(0);
   });
 });
+
+// // This case should be passed on block number 37172125
+// makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
+
+//   it('withdraw from collateral', async () => {
+//     const { deployer, yvboo, yearnBOOVault, BOO } = testEnv;
+
+//     const ethers = (DRE as any).ethers;
+//     const owner = '0x37656cF0e4b96D121B94936ba3c3476d45f1dCc0'
+//     await impersonateAccountsHardhat([owner]);
+//     const user = '0xcba1a275e2d858ecffaf7a87f606f74b719a8a93';
+//     await impersonateAccountsHardhat([user]);
+//     let signer = await ethers.provider.getSigner(owner);
+
+//     const [_deployer, ...restSigners] = await getEthersSigners();
+//     await _deployer.sendTransaction({ value: parseEther('9000'), to: owner });
+
+//     const vaultImpl = await deployYearnBOOVaultImpl();
+//     const addressesProvider = await getLendingPoolAddressesProvider();
+//     await waitForTx(
+//       await addressesProvider.connect(signer).setAddressAsProxy(
+//         ethers.utils.formatBytes32String('YEARN_BOO_VAULT'),
+//         vaultImpl.address
+//       )
+//     );
+
+//     signer = await ethers.provider.getSigner(user);
+//     const booWithdrawAmount = await convertToCurrencyDecimals(BOO.address, '700');
+
+//     await expect(yearnBOOVault.connect(signer).withdrawCollateral(BOO.address, booWithdrawAmount, user)).to.be.revertedWith('96');
+
+//   });
+// });
 
 makeSuite('yearnBOOVault - use other coin as collateral', (testEnv) => {
   it('Should revert to use any of coin other than BOO as collateral', async () => {

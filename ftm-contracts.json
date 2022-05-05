@@ -21,40 +21,40 @@
   },
   "ReserveLogic": {
     "ftm": {
-      "address": "0xa69a8E3e1834F8aebeb35219f9f369bB15d8A698",
+      "address": "0x33Cb578Afd294a54E20710764C0667B17b6b9620",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xa69a8E3e1834F8aebeb35219f9f369bB15d8A698",
+      "address": "0x33Cb578Afd294a54E20710764C0667B17b6b9620",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "GenericLogic": {
     "ftm": {
-      "address": "0xf3cE44D3f81F98a7644dbf56Baea262d2a445AD1",
+      "address": "0xfe5A10930C9502674E776458486a8e85344b8539",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xf3cE44D3f81F98a7644dbf56Baea262d2a445AD1",
+      "address": "0xfe5A10930C9502674E776458486a8e85344b8539",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "ValidationLogic": {
     "ftm": {
-      "address": "0x48dd8AF3c41DDa384Fc3c9286A04910299c8cFA5",
+      "address": "0xF9D31BB4D30a4C6767a9A5eeF9d135FE38897229",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x48dd8AF3c41DDa384Fc3c9286A04910299c8cFA5",
+      "address": "0xF9D31BB4D30a4C6767a9A5eeF9d135FE38897229",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "LendingPoolImpl": {
     "ftm": {
-      "address": "0x06caE399575E3d20cD4B468c8Ef53fAdd2C6aEC8"
+      "address": "0x6fd71668Ce33dC8dA4d4aCF9DeBE8b8ce66A990e"
     },
     "localhost": {
-      "address": "0x06caE399575E3d20cD4B468c8Ef53fAdd2C6aEC8"
+      "address": "0x6fd71668Ce33dC8dA4d4aCF9DeBE8b8ce66A990e"
     }
   },
   "LendingPool": {
@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "ftm": {
-      "address": "0x2c512929D946266613773d8b7b9e843186070E1e",
+      "address": "0xa1B8E36143d7EF5D56F23a99cD98822D9f9FB249",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x2c512929D946266613773d8b7b9e843186070E1e",
+      "address": "0xa1B8E36143d7EF5D56F23a99cD98822D9f9FB249",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -407,11 +407,11 @@
   },
   "YearnBOOVaultImpl": {
     "ftm": {
-      "address": "0xeB6AdAaDbB20EB19e7B205decA837C13f51b3C6D",
+      "address": "0xa2bdf86104C4707C0412114283f61CA960cCdb89",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xeB6AdAaDbB20EB19e7B205decA837C13f51b3C6D",
+      "address": "0xa2bdf86104C4707C0412114283f61CA960cCdb89",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

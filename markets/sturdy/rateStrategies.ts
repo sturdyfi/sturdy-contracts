@@ -11,6 +11,7 @@ export const rateStrategyStableTwo: IInterestRateStrategyParams = {
   variableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
   stableRateSlope1: '0' /* new BigNumber(0.02).multipliedBy(oneRay).toFixed() */,
   stableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
+  capacity: '0',
 }
 
 // USDC
@@ -22,6 +23,7 @@ export const rateStrategyStableThree: IInterestRateStrategyParams = {
   variableRateSlope2: '0' /* new BigNumber(0.60).multipliedBy(oneRay).toFixed() */,
   stableRateSlope1: '0' /* new BigNumber(0.02).multipliedBy(oneRay).toFixed() */,
   stableRateSlope2: '0' /* new BigNumber(0.60).multipliedBy(oneRay).toFixed() */,
+  capacity: '0',
 }
 
 // stETH
@@ -33,6 +35,7 @@ export const rateStrategySTETH: IInterestRateStrategyParams = {
     variableRateSlope2: '0',
     stableRateSlope1: '0',
     stableRateSlope2: '0',
+    capacity: '0',
   }
 
 // yvRETH_WSTETH
@@ -44,6 +47,7 @@ export const rateStrategyYVRETH_WSTETH: IInterestRateStrategyParams = {
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
+  capacity: '0',
 }
 
 // cvxRETH_WSTETH
@@ -55,6 +59,7 @@ export const rateStrategyCVXRETH_WSTETH: IInterestRateStrategyParams = {
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
+  capacity: '0',
 }
 
 // cvxFRAX_3CRV
@@ -66,6 +71,7 @@ export const rateStrategyCVXFRAX_3CRV: IInterestRateStrategyParams = {
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
+  capacity: '0',
 }
 
 // cvxSTECRV
@@ -77,6 +83,7 @@ export const rateStrategyCVXSTECRV: IInterestRateStrategyParams = {
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
+  capacity: '0',
 }
 
 // cvxDOLA_3CRV
@@ -88,4 +95,5 @@ export const rateStrategyCVXDOLA_3CRV: IInterestRateStrategyParams = {
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
+  capacity: '0',
 }

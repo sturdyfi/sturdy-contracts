@@ -45,8 +45,8 @@ contract YieldManager is VersionedInitializable, Ownable {
   // tokenIn -> tokenOut -> Curve Pool Address
   mapping(address => mapping(address => address)) internal _curvePools;
 
-  uint256 public constant UNISWAP_FEE = 500;
-  uint256 public constant SLIPPAGE = 200;
+  uint256 public constant UNISWAP_FEE = 10000; // 1%
+  uint256 public constant SLIPPAGE = 200; // 2%
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -59,10 +59,10 @@ contract YieldManager is VersionedInitializable, Ownable {
    **/
   function initialize(ILendingPoolAddressesProvider _provider) public initializer {
     _addressesProvider = _provider;
-    _exchangeToken = _addressesProvider.getAddress('USDC');
   }
 
-  function setExchangeToken(address _token) external onlyOwner {
+  function setExchangeToken(address _token) external onlyAdmin {
+    require(_token != address(0), Errors.VT_INVALID_CONFIGURATION);
     _exchangeToken = _token;
   }
 
@@ -70,9 +70,17 @@ contract YieldManager is VersionedInitializable, Ownable {
     return VAULT_REVISION;
   }
 
-  function registerAsset(address _asset) external onlyOwner {
+  function registerAsset(address _asset) external onlyAdmin {
     _assetsList[_assetsCount] = _asset;
     _assetsCount = _assetsCount + 1;
+  }
+
+  function getAssetCount() external view returns (uint256) {
+    return _assetsCount;
+  }
+
+  function getAssetInfo(uint256 _index) external view returns (address) {
+    return _assetsList[_index];
   }
 
   /**
@@ -85,7 +93,8 @@ contract YieldManager is VersionedInitializable, Ownable {
     address _tokenIn,
     address _tokenOut,
     address _pool
-  ) external onlyOwner {
+  ) external onlyAdmin {
+    require(_pool != address(0), Errors.VT_INVALID_CONFIGURATION);
     _curvePools[_tokenIn][_tokenOut] = _pool;
   }
 
@@ -167,17 +176,13 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @param amount The amount of asset being exchanged
    */
   function _convertAssetToExchangeToken(address asset, uint256 amount) internal {
-    address WETH = _addressesProvider.getAddress('WETH');
-    bool useEthPath = asset != WETH;
-
     UniswapAdapter.swapExactTokensForTokens(
       _addressesProvider,
       asset,
       _exchangeToken,
       amount,
       UNISWAP_FEE,
-      SLIPPAGE,
-      useEthPath
+      SLIPPAGE
     );
   }
 

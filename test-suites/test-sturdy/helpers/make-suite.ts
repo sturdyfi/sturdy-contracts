@@ -24,6 +24,7 @@ import {
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
   getConvexDOLA3CRVVault,
+  getYieldManager,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -53,6 +54,7 @@ import {
   ConvexSTETHVault,
   ConvexDOLA3CRVVault,
   SturdyInternalAssetFactory,
+  YieldManager,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -114,6 +116,9 @@ export interface TestEnv {
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
   liquidator: ILiquidator;
+  yieldManager: YieldManager;
+  WETH: IERC20Detailed;
+  CRV: IERC20Detailed;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -161,6 +166,9 @@ const testEnv: TestEnv = {
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
   liquidator: {} as ILiquidator,
+  yieldManager: {} as YieldManager,
+  WETH: {} as IERC20Detailed,
+  CRV: {} as IERC20Detailed,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -173,6 +181,8 @@ export async function initializeMakeSuite() {
   const SteCrvLPAddress = getParamPerNetwork(poolConfig.STECRV_LP, network);
   const Dola3CRVLPAddress = getParamPerNetwork(poolConfig.DOLA_3CRV_LP, network);
   const yvrethwstethAddress = getParamPerNetwork(poolConfig.YearnRETHWstETHVault, network);
+  const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
+  const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -230,6 +240,7 @@ export async function initializeMakeSuite() {
   const cvxdola3crvAddress = await testEnv.convexDOLA3CRVVault.getInternalAsset();
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getLiquidator();
+  testEnv.yieldManager = await getYieldManager();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
@@ -318,6 +329,8 @@ export async function initializeMakeSuite() {
   testEnv.FRAX_3CRV_LP = await getMintableERC20(Frax3CrvLPAddress);
   testEnv.STECRV_LP = await getMintableERC20(SteCrvLPAddress);
   testEnv.DOLA_3CRV_LP = await getMintableERC20(Dola3CRVLPAddress);
+  testEnv.WETH = IERC20DetailedFactory.connect(wethAddress, deployer.signer);
+  testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
   testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
   testEnv.cvxreth_wsteth = SturdyInternalAssetFactory.connect(
     cvxrethwstethAddress,

@@ -185,6 +185,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.tenderly]: '',
     [eEthereumNetwork.goerli]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
   },
+  CurveswapAddressProvider: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x0000000022D53366457F9d5E68Ec105046FC4383',
+    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.goerli]: '0x0000000022D53366457F9d5E68Ec105046FC4383',
+  },
   AavePool: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',

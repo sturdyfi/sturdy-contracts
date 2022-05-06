@@ -18,6 +18,8 @@ library CurveswapAdapter {
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
+  address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+
   function swapExactTokensForTokens(
     ILendingPoolAddressesProvider addressesProvider,
     address poolAddress,
@@ -51,15 +53,14 @@ library CurveswapAdapter {
     );
 
     require(receivedAmount > 0, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
-    require(
-      IERC20(assetToSwapTo).balanceOf(address(this)) >= receivedAmount,
-      Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT
-    );
 
     return receivedAmount;
   }
 
   function _getDecimals(address asset) internal view returns (uint256) {
+    if (asset == ETH) {
+      return 18;
+    }
     return IERC20Detailed(asset).decimals();
   }
 
@@ -68,6 +69,9 @@ library CurveswapAdapter {
     view
     returns (uint256)
   {
+    if (asset == ETH) {
+      return 1e18;
+    }
     return IPriceOracleGetter(addressesProvider.getPriceOracle()).getAssetPrice(asset);
   }
 

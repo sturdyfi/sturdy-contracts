@@ -63,6 +63,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('8-3. Deploy Vault Helper');
     await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME });
 
+    console.log('8-4. Deploy Yield Manager');
+    await DRE.run('full:deploy-yield-manager', { pool: POOL_NAME });
+
     if (verify) {
       printContracts();
       console.log('9. Veryfing contracts');

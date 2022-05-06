@@ -152,6 +152,10 @@ export enum eContractid {
   MockCRVForFTM = 'MockCRVForFTM',
   MockSPELLForFTM = 'MockSPELLForFTM',
   DeployVaultHelper = 'DeployVaultHelper',
+  YieldManagerImpl = 'YieldManagerImpl',
+  YieldManager = 'YieldManager',
+  UniswapAdapter = 'UniswapAdapter',
+  CurveswapAdapter = 'CurveswapAdapter',
 }
 
 /*
@@ -504,6 +508,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
+  CurveswapAddressProvider: iParamsPerNetwork<tEthereumAddress>;
   AavePool: iParamsPerNetwork<tEthereumAddress>;
 }
 

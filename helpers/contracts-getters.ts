@@ -68,6 +68,7 @@ import {
   ConvexFRAX3CRVVaultFactory,
   ConvexSTETHVaultFactory,
   ConvexDOLA3CRVVaultFactory,
+  YieldManagerFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -902,3 +903,22 @@ export const getRETHWstETHLPOracle = async (address?: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
+
+export const getYieldManager = async (address?: tEthereumAddress) =>
+  await YieldManagerFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YieldManager}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getUniswapAdapterAddress = async () => {
+  const db = await getDb().get(`${eContractid.UniswapAdapter}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getCurveswapAdapterAddress = async () => {
+  const db = await getDb().get(`${eContractid.CurveswapAdapter}.${DRE.network.name}`).value();
+  return db?.address;
+};

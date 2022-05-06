@@ -23,8 +23,7 @@ library UniswapAdapter {
     address assetToSwapTo,
     uint256 amountToSwap,
     uint256 poolFee, // 0.05% = 500
-    uint256 slippage, // 2% = 200
-    bool useEthPath
+    uint256 slippage // 2% = 200
   ) external returns (uint256) {
     uint256 minAmountOut = _getMinAmount(
       addressesProvider,
@@ -38,6 +37,8 @@ library UniswapAdapter {
     address UNISWAP_ROUTER = addressesProvider.getAddress('uniswapRouter');
     IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
     IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), amountToSwap);
+
+    bool useEthPath = _useMultihopSwap(addressesProvider, assetToSwapFrom, amountToSwap);
 
     uint256 receivedAmount = 0;
     if (useEthPath) {
@@ -114,5 +115,21 @@ library UniswapAdapter {
       .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(slippage));
 
     return minAmountOut;
+  }
+
+  function _useMultihopSwap(
+    ILendingPoolAddressesProvider addressesProvider,
+    address _asset,
+    uint256 _amount
+  ) internal returns (bool) {
+    address WETH = addressesProvider.getAddress('WETH');
+    if (_asset == WETH) return false;
+
+    // Added code to prevent swap fails due to small amount
+    // If swap amount is bigger than 1 ether, we'll use multihop swap through WETH pool.
+    uint256 _assetDecimals = _getDecimals(_asset);
+    uint256 _assetPrice = _getPrice(addressesProvider, _asset);
+    uint256 _amountInEth = _assetPrice.mul(_amount).div(10**_assetDecimals);
+    return _amountInEth > 1 ether;
   }
 }

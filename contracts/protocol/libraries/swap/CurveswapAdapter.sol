@@ -53,7 +53,13 @@ library CurveswapAdapter {
     );
 
     require(receivedAmount > 0, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
-
+    uint256 balanceOfAsset = 0;
+    if (assetToSwapTo == ETH) {
+      balanceOfAsset = address(this).balance;
+    } else {
+      balanceOfAsset = IERC20(assetToSwapTo).balanceOf(address(this));
+    }
+    require(balanceOfAsset >= receivedAmount, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
     return receivedAmount;
   }
 

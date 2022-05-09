@@ -132,9 +132,6 @@ contract ConvexCurveLPVault is GeneralVault {
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
     address crvRewards = getCrvRewards();
 
-    // Get Reward before withdraw
-    IConvexBaseRewardPool(crvRewards).getReward();
-
     // Withdraw from Convex
     IConvexBaseRewardPool(crvRewards).withdrawAndUnwrap(_amount, true);
 

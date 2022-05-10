@@ -505,6 +505,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   STECRV_LP: iParamsPerNetwork<tEthereumAddress>;
   DOLA_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
+  CVX: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

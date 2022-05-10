@@ -18,7 +18,7 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { CRV, WETH } = poolConfig as ISturdyConfiguration;
+    const { CRV, CVX, WETH } = poolConfig as ISturdyConfiguration;
 
     const yieldManager = await deployYieldManager(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
@@ -28,6 +28,7 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
 
     // Register reward asset(for now CRV & WETH)
     await yieldManager.registerAsset(getParamPerNetwork(CRV, network));
+    await yieldManager.registerAsset(getParamPerNetwork(CVX, network));
     await yieldManager.registerAsset(getParamPerNetwork(WETH, network));
 
     // Set curve pool for swapping USDC -> DAI via curve

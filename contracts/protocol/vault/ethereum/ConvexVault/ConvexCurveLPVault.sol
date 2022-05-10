@@ -12,6 +12,10 @@ import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../../libraries/helpers/Errors.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 
+interface IRewards {
+  function rewardToken() external view returns (address);
+}
+
 /**
  * @title ConvexCurveLPVault
  * @notice Curve LP Token Vault by using Convex on Ethereum
@@ -54,28 +58,51 @@ contract ConvexCurveLPVault is GeneralVault {
   /**
    * @dev The function to get rewards token address
    */
-  function getCrvRewards() internal view returns (address) {
+  function getBaseRewardPool() internal view returns (address) {
     IConvexBooster.PoolInfo memory poolInfo = IConvexBooster(convexBooster).poolInfo(convexPoolId);
     return poolInfo.crvRewards;
   }
 
-  function processYield() external override onlyAdmin {
-    address CRV = _addressesProvider.getAddress('CRV');
-    address crvRewards = getCrvRewards();
-
-    IConvexBaseRewardPool(crvRewards).getReward();
-    uint256 yieldCRV = IERC20(CRV).balanceOf(address(this));
+  function _transferYield(address _asset) internal {
+    require(_asset != address(0), Errors.VT_PROCESS_YIELD_INVALID);
+    uint256 yieldAmount = IERC20(_asset).balanceOf(address(this));
 
     if (_vaultFee > 0) {
-      uint256 treasuryCRV = _processTreasury(yieldCRV);
-      yieldCRV = yieldCRV.sub(treasuryCRV);
+      uint256 treasuryAmount = _processTreasury(_asset, yieldAmount);
+      yieldAmount = yieldAmount.sub(treasuryAmount);
     }
 
     // transfer CRV to yieldManager
     address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(CRV, yieldManager, yieldCRV);
+    TransferHelper.safeTransfer(_asset, yieldManager, yieldAmount);
 
-    emit ProcessYield(CRV, yieldCRV);
+    emit ProcessYield(_asset, yieldAmount);
+  }
+
+  function processYield() external override onlyAdmin {
+    // Claim Rewards(CRV, CVX, Extra incentive tokens)
+    address baseRewardPool = getBaseRewardPool();
+    IConvexBaseRewardPool(baseRewardPool).getReward();
+
+    // Transfer CRV to YieldManager
+    address _token = _addressesProvider.getAddress('CRV');
+    address _tokenFromConvex = IConvexBaseRewardPool(baseRewardPool).rewardToken();
+    require(_token == _tokenFromConvex, Errors.VT_INVALID_CONFIGURATION);
+    _transferYield(_token);
+
+    // Transfer CVX to YieldManager
+    _token = _addressesProvider.getAddress('CVX');
+    _tokenFromConvex = IConvexBooster(convexBooster).minter();
+    require(_token == _tokenFromConvex, Errors.VT_INVALID_CONFIGURATION);
+    _transferYield(_token);
+
+    // Transfer extra incentive token to YieldManager
+    uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
+    for (uint256 i = 0; i < extraRewardsLength; i++) {
+      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(i);
+      address _rewardToken = IRewards(_extraReward).rewardToken();
+      _transferYield(_rewardToken);
+    }
   }
 
   /**
@@ -130,13 +157,9 @@ contract ConvexCurveLPVault is GeneralVault {
   }
 
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
-    address crvRewards = getCrvRewards();
-
-    // Get Reward before withdraw
-    IConvexBaseRewardPool(crvRewards).getReward();
-
     // Withdraw from Convex
-    IConvexBaseRewardPool(crvRewards).withdrawAndUnwrap(_amount, true);
+    address baseRewardPool = getBaseRewardPool();
+    IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, true);
 
     // Deliver Curve LP Token
     TransferHelper.safeTransfer(curveLPToken, _to, _amount);
@@ -174,9 +197,9 @@ contract ConvexCurveLPVault is GeneralVault {
   /**
    * @dev Move some yield(CRV) to treasury
    */
-  function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
+  function _processTreasury(address _asset, uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(_addressesProvider.getAddress('CRV')).safeTransfer(_treasuryAddress, treasuryAmount);
+    IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
     return treasuryAmount;
   }
 }

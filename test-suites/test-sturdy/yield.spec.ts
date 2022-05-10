@@ -11,6 +11,7 @@ import { convertToCurrencyDecimals, getContract } from '../../helpers/contracts-
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { printUserAccountData, printDivider } from './helpers/utils/helpers';
 import type { ICurveExchange } from '../../types/ICurveExchange';
+import { IERC20DetailedFactory } from '../../types/IERC20DetailedFactory';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -43,8 +44,8 @@ const simulateYieldInConvexFRAXVault = async (testEnv: TestEnv) => {
   const { convexFRAX3CRVVault, users, cvxfrax_3crv, aCVXFRAX_3CRV, FRAX_3CRV_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const FRAX3CRVLPOwnerAddress = '0x6d422d9e5bfd96e56f5cf4606ea2ed46ee9ed95b';
-  const depositFRAX3CRV = '5000';
+  const FRAX3CRVLPOwnerAddress = '0xccf6c29d87eb2c0bafede74f5df35f84541f4549';
+  const depositFRAX3CRV = '1552600';
   const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
     FRAX_3CRV_LP.address,
     depositFRAX3CRV
@@ -76,7 +77,7 @@ const simulateYieldInConvexDOLAVault = async (testEnv: TestEnv) => {
   const { pool, convexDOLA3CRVVault, users, cvxdola_3crv, aCVXDOLA_3CRV, DOLA_3CRV_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const LPOwnerAddress = '0x8ed90dc4ef3e52d89da57fff99e6ab53433f2d01';
+  const LPOwnerAddress = '0xa83f6bec55a100ca3402245fc1d46127889354ec';
   const depositDOLA3CRV = '8000';
   const depositDOLA3CRVAmount = await convertToCurrencyDecimals(
     DOLA_3CRV_LP.address,
@@ -111,7 +112,7 @@ const simulateYieldInConvexRocketPoolETHVault = async (testEnv: TestEnv) => {
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
   const LPOwnerAddress = '0x28ac885d3d8b30bd5733151c732c5f01e18847aa';
-  const depositLP = '40';
+  const depositLP = '50';
   const depositLPAmount = await convertToCurrencyDecimals(RETH_WSTETH_LP.address, depositLP);
 
   await impersonateAccountsHardhat([LPOwnerAddress]);
@@ -173,67 +174,81 @@ const depositDAI = async (testEnv: TestEnv, depositor: SignerWithAddress, amount
   await pool.connect(depositor.signer).deposit(dai.address, amount, depositor.address, '0');
 };
 
-makeSuite('Yield Manger: configuration', (testEnv) => {
-  it('Registered reward asset count should be 2', async () => {
-    const { yieldManager, usdc, dai } = testEnv;
-    const availableAssetCount = 2;
-    const assetCount = await yieldManager.getAssetCount();
-    expect(assetCount).to.be.eq(availableAssetCount);
-  });
-  it('CRV should be a reward asset.', async () => {
-    const { yieldManager, CRV } = testEnv;
-    const assetCount = await yieldManager.getAssetCount();
-    let registered = false;
-    let index = 0;
-    while (assetCount.gt(index)) {
-      const assetAddress = await yieldManager.getAssetInfo(index++);
-      if (assetAddress.toLowerCase() == CRV.address.toLowerCase()) {
-        registered = true;
-        break;
-      }
-    }
-    expect(registered).to.be.equal(true);
-  });
-  it('WETH should be a reward asset.', async () => {
-    const { yieldManager, WETH } = testEnv;
-    const assetCount = await yieldManager.getAssetCount();
-    let registered = false;
-    let index = 0;
-    while (assetCount.gt(index)) {
-      const assetAddress = await yieldManager.getAssetInfo(index++);
-      if (assetAddress.toLowerCase() == WETH.address.toLowerCase()) {
-        registered = true;
-        break;
-      }
-    }
-    expect(registered).to.be.equal(true);
-  });
-  it('Should be USDC as an exchange token', async () => {
-    const { yieldManager, usdc } = testEnv;
-    const asset = await yieldManager._exchangeToken();
-    expect(asset).to.be.eq(usdc.address);
-  });
-  it('Should be failed when set invalid address as an exchange token', async () => {
-    const { yieldManager } = testEnv;
-    await expect(yieldManager.setExchangeToken(ZERO_ADDRESS)).to.be.reverted;
-  });
-  it('Should be failed when use invalid address as a curve pool', async () => {
-    const { yieldManager, usdc, dai } = testEnv;
-    await expect(yieldManager.setCurvePool(usdc.address, dai.address, ZERO_ADDRESS)).to.be.reverted;
-  });
-  it('All curve pool for USDC -> stable coin should be configured', async () => {
-    const { yieldManager, pool, usdc } = testEnv;
-    const { 2: assets, 3: length } = await pool.getBorrowingAssetAndVolumes();
-    let index = 0;
-    while (length.gt(index)) {
-      const asset = assets[index++];
-      if (asset.toLowerCase() != usdc.address.toLowerCase()) {
-        const pool = await yieldManager.getCurvePool(usdc.address, asset);
-        expect(pool).to.not.eq(ZERO_ADDRESS);
-      }
-    }
-  });
-});
+// makeSuite('Yield Manger: configuration', (testEnv) => {
+//   it('Registered reward asset count should be 2', async () => {
+//     const { yieldManager, usdc, dai } = testEnv;
+//     const availableAssetCount = 3;
+//     const assetCount = await yieldManager.getAssetCount();
+//     expect(assetCount).to.be.eq(availableAssetCount);
+//   });
+//   it('CRV should be a reward asset.', async () => {
+//     const { yieldManager, CRV } = testEnv;
+//     const assetCount = await yieldManager.getAssetCount();
+//     let registered = false;
+//     let index = 0;
+//     while (assetCount.gt(index)) {
+//       const assetAddress = await yieldManager.getAssetInfo(index++);
+//       if (assetAddress.toLowerCase() == CRV.address.toLowerCase()) {
+//         registered = true;
+//         break;
+//       }
+//     }
+//     expect(registered).to.be.equal(true);
+//   });
+//   it('CVX should be a reward asset.', async () => {
+//     const { yieldManager, CVX } = testEnv;
+//     const assetCount = await yieldManager.getAssetCount();
+//     let registered = false;
+//     let index = 0;
+//     while (assetCount.gt(index)) {
+//       const assetAddress = await yieldManager.getAssetInfo(index++);
+//       if (assetAddress.toLowerCase() == CVX.address.toLowerCase()) {
+//         registered = true;
+//         break;
+//       }
+//     }
+//     expect(registered).to.be.equal(true);
+//   });
+//   it('WETH should be a reward asset.', async () => {
+//     const { yieldManager, WETH } = testEnv;
+//     const assetCount = await yieldManager.getAssetCount();
+//     let registered = false;
+//     let index = 0;
+//     while (assetCount.gt(index)) {
+//       const assetAddress = await yieldManager.getAssetInfo(index++);
+//       if (assetAddress.toLowerCase() == WETH.address.toLowerCase()) {
+//         registered = true;
+//         break;
+//       }
+//     }
+//     expect(registered).to.be.equal(true);
+//   });
+//   it('Should be USDC as an exchange token', async () => {
+//     const { yieldManager, usdc } = testEnv;
+//     const asset = await yieldManager._exchangeToken();
+//     expect(asset).to.be.eq(usdc.address);
+//   });
+//   it('Should be failed when set invalid address as an exchange token', async () => {
+//     const { yieldManager } = testEnv;
+//     await expect(yieldManager.setExchangeToken(ZERO_ADDRESS)).to.be.reverted;
+//   });
+//   it('Should be failed when use invalid address as a curve pool', async () => {
+//     const { yieldManager, usdc, dai } = testEnv;
+//     await expect(yieldManager.setCurvePool(usdc.address, dai.address, ZERO_ADDRESS)).to.be.reverted;
+//   });
+//   it('All curve pool for USDC -> stable coin should be configured', async () => {
+//     const { yieldManager, pool, usdc } = testEnv;
+//     const { 2: assets, 3: length } = await pool.getBorrowingAssetAndVolumes();
+//     let index = 0;
+//     while (length.gt(index)) {
+//       const asset = assets[index++];
+//       if (asset.toLowerCase() != usdc.address.toLowerCase()) {
+//         const pool = await yieldManager.getCurvePool(usdc.address, asset);
+//         expect(pool).to.not.eq(ZERO_ADDRESS);
+//       }
+//     }
+//   });
+// });
 
 makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
   it('Lido vault', async () => {
@@ -244,25 +259,34 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
     expect(afterBalanceOfWETH).to.be.gt(beforeBalanceOfWETH);
   });
   it('Convex FRAX vault', async () => {
-    const { CRV, yieldManager } = testEnv;
+    const { CRV, CVX, yieldManager, deployer } = testEnv;
     const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+    const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
     await simulateYieldInConvexFRAXVault(testEnv);
     const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
+    expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });
   it('Convex DOLA vaults', async () => {
-    const { CRV, yieldManager } = testEnv;
+    const { CRV, CVX, yieldManager } = testEnv;
     const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+    const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
     await simulateYieldInConvexDOLAVault(testEnv);
     const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
+    expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });
   it('Convex RocketPoolETH vaults', async () => {
-    const { CRV, yieldManager } = testEnv;
+    const { CRV, CVX, yieldManager } = testEnv;
     const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+    const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
     await simulateYieldInConvexRocketPoolETHVault(testEnv);
     const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
+    expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });
 });
 

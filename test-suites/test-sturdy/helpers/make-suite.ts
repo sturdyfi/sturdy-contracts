@@ -119,6 +119,7 @@ export interface TestEnv {
   yieldManager: YieldManager;
   WETH: IERC20Detailed;
   CRV: IERC20Detailed;
+  CVX: IERC20Detailed;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -169,6 +170,7 @@ const testEnv: TestEnv = {
   yieldManager: {} as YieldManager,
   WETH: {} as IERC20Detailed,
   CRV: {} as IERC20Detailed,
+  CVX: {} as IERC20Detailed,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -183,6 +185,7 @@ export async function initializeMakeSuite() {
   const yvrethwstethAddress = getParamPerNetwork(poolConfig.YearnRETHWstETHVault, network);
   const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
   const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
+  const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -331,6 +334,7 @@ export async function initializeMakeSuite() {
   testEnv.DOLA_3CRV_LP = await getMintableERC20(Dola3CRVLPAddress);
   testEnv.WETH = IERC20DetailedFactory.connect(wethAddress, deployer.signer);
   testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
+  testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
   testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
   testEnv.cvxreth_wsteth = SturdyInternalAssetFactory.connect(
     cvxrethwstethAddress,

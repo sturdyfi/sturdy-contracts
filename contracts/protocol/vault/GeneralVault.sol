@@ -31,6 +31,14 @@ contract GeneralVault is VersionedInitializable {
     _;
   }
 
+  modifier onlyYieldProcessor() {
+    require(
+      _addressesProvider.getAddress('YIELD_PROCESSOR') == msg.sender,
+      Errors.CALLER_NOT_POOL_ADMIN
+    );
+    _;
+  }
+
   struct AssetYield {
     address asset;
     uint256 amount;

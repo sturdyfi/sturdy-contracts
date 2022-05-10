@@ -24,7 +24,7 @@ contract YearnBOOVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVBOO = _addressesProvider.getAddress('YVBOO');
     uint256 yieldYVBOO = _getYield(YVBOO);

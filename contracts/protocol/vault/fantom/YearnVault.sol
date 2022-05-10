@@ -30,7 +30,7 @@ contract YearnVault is GeneralVault {
    */
   receive() external payable {}
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVWFTM = _addressesProvider.getAddress('YVWFTM');
     uint256 yieldYVWFTM = _getYield(YVWFTM);

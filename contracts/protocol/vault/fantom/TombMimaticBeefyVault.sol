@@ -24,7 +24,7 @@ contract TombMimaticBeefyVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombTOMB-MIMATIC');
     address TOMB_MIMATIC_LP = _addressesProvider.getAddress('TOMB_MIMATIC_LP');

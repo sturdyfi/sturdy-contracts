@@ -24,7 +24,7 @@ contract YearnCRVVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVCRV = _addressesProvider.getAddress('YVCRV');
     uint256 yieldYVCRV = _getYield(YVCRV);

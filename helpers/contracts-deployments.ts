@@ -977,6 +977,13 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
     )
   );
 
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
+    )
+  );
+
   const proxyAddress = await addressesProvider.getAddress(
     DRE.ethers.utils.formatBytes32String('CONVEX_ROCKET_POOL_ETH_VAULT')
   );
@@ -1016,6 +1023,13 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('CRV'),
       getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
     )
   );
 
@@ -1061,6 +1075,13 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
     )
   );
 
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
+    )
+  );
+
   const proxyAddress = await addressesProvider.getAddress(
     DRE.ethers.utils.formatBytes32String('CONVEX_STETH_VAULT')
   );
@@ -1100,6 +1121,13 @@ export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('CRV'),
       getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
     )
   );
 

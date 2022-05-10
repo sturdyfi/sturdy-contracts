@@ -248,13 +248,12 @@ export async function initializeMakeSuite() {
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
+  testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
       getParamPerNetwork(SturdyConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
-    testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
-
     const providerRegistryOwner = getParamPerNetwork(
       poolConfig.ProviderRegistryOwner,
       process.env.FORK as eNetwork
@@ -263,7 +262,7 @@ export async function initializeMakeSuite() {
     else testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
-    testEnv.oracle = await getPriceOracle();
+    // testEnv.oracle = await getPriceOracle();
   }
 
   testEnv.helpersContract = await getSturdyProtocolDataProvider();

@@ -797,7 +797,7 @@ export const deployLidoVaultLibraries = async (
 
 export const deployLidoVaultImpl = async (verify?: boolean) => {
   const libraries = await deployYieldManagerLibraries(verify);
-  withSaveAndVerify(
+  return withSaveAndVerify(
     await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
     [],

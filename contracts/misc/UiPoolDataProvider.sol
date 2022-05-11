@@ -341,6 +341,11 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         DefaultReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
       );
 
+      // supply capacity
+      reserveData.maxCapacity = DefaultReserveInterestRateStrategy(
+        reserveData.interestRateStrategyAddress
+      ).reserveCapacity();
+
       // incentives
       if (address(0) != address(incentivesController)) {
         (

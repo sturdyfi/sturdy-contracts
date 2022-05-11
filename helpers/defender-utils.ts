@@ -22,7 +22,7 @@ export const getDefenderRelaySigner = async () => {
   // });
 
   // const defenderAddress = await defenderSigner.getAddress();
-  const defenderAddress = '0x661fB502E24Deb30e927E39A38Bd2CC44D67339F';
+  const defenderAddress = '0xDA9dfA130Df4dE4673b89022EE50ff26f6EA73Cf';
   console.log('  - Using Defender Relay: ', defenderAddress);
 
   // Replace signer if FORK=main is active

@@ -22,7 +22,7 @@ library UniswapAdapter {
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 amountToSwap,
-    uint256 poolFee, // 0.05% = 500
+    uint256 poolFee, // 1% = 10000
     uint256 slippage // 2% = 200
   ) external returns (uint256) {
     uint256 minAmountOut = _getMinAmount(
@@ -45,9 +45,9 @@ library UniswapAdapter {
       ISwapRouter.ExactInputParams memory params = ISwapRouter.ExactInputParams({
         path: abi.encodePacked(
           assetToSwapFrom,
-          poolFee,
+          uint24(poolFee),
           addressesProvider.getAddress('WETH'),
-          poolFee,
+          uint24(poolFee),
           assetToSwapTo
         ),
         recipient: address(this),
@@ -123,13 +123,6 @@ library UniswapAdapter {
     uint256 _amount
   ) internal returns (bool) {
     address WETH = addressesProvider.getAddress('WETH');
-    if (_asset == WETH) return false;
-
-    // Added code to prevent swap fails due to small amount
-    // If swap amount is bigger than 1 ether, we'll use multihop swap through WETH pool.
-    uint256 _assetDecimals = _getDecimals(_asset);
-    uint256 _assetPrice = _getPrice(addressesProvider, _asset);
-    uint256 _amountInEth = _assetPrice.mul(_amount).div(10**_assetDecimals);
-    return _amountInEth > 1 ether;
+    return _asset != WETH;
   }
 }

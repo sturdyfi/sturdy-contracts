@@ -48,11 +48,11 @@ export const SturdyConfig: ISturdyConfiguration = {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       stETH: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
-      yvRETH_WSTETH: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',
-      cvxRETH_WSTETH: '',
-      cvxFRAX_3CRV: '',
-      cvxSTECRV: '',
-      cvxDOLA_3CRV: '',
+      yvRETH_WSTETH: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',      
+      cvxRETH_WSTETH: '0xA22B79730CBEA3426CA0AA9597Cbe053460667E3', // temporary address on forked mainnet
+      cvxFRAX_3CRV: '0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf', // temporary address on forked mainnet
+      cvxSTECRV: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e', // temporary address on forked mainnet
+      cvxDOLA_3CRV: '0x6DFC56b52a2B7F32A3d4348A53cF71a43C0Ed3a7', // temporary address on forked mainnet
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',

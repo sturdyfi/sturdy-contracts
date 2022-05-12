@@ -20,17 +20,12 @@ ALCHEMY_KEY="xxx"
 
 - Compile
 ```
-npm run compile
+yarn compile
 ```
 
 - Run the hardhat node on localhost.
 ```
 FORK=main yarn hardhat node
-```
-
-- Compile
-```
-FORK=main yarn hardhat compile
 ```
 
 - Next run the following task to deploy all smart contracts
@@ -41,9 +36,4 @@ yarn sturdy:evm:fork:mainnet:migration
 - For test, run the following task to have a test of sample contract on the localhost.
 ```
 yarn test
-```
-
-- To get test tokens in your local forked wallet, open the console by running below command, and run [this script](./impersonating-account.js) in console.
-```
-FORK=main yarn hardhat console --network forked_main
 ```

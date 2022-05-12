@@ -174,81 +174,81 @@ const depositDAI = async (testEnv: TestEnv, depositor: SignerWithAddress, amount
   await pool.connect(depositor.signer).deposit(dai.address, amount, depositor.address, '0');
 };
 
-// makeSuite('Yield Manger: configuration', (testEnv) => {
-//   it('Registered reward asset count should be 2', async () => {
-//     const { yieldManager, usdc, dai } = testEnv;
-//     const availableAssetCount = 3;
-//     const assetCount = await yieldManager.getAssetCount();
-//     expect(assetCount).to.be.eq(availableAssetCount);
-//   });
-//   it('CRV should be a reward asset.', async () => {
-//     const { yieldManager, CRV } = testEnv;
-//     const assetCount = await yieldManager.getAssetCount();
-//     let registered = false;
-//     let index = 0;
-//     while (assetCount.gt(index)) {
-//       const assetAddress = await yieldManager.getAssetInfo(index++);
-//       if (assetAddress.toLowerCase() == CRV.address.toLowerCase()) {
-//         registered = true;
-//         break;
-//       }
-//     }
-//     expect(registered).to.be.equal(true);
-//   });
-//   it('CVX should be a reward asset.', async () => {
-//     const { yieldManager, CVX } = testEnv;
-//     const assetCount = await yieldManager.getAssetCount();
-//     let registered = false;
-//     let index = 0;
-//     while (assetCount.gt(index)) {
-//       const assetAddress = await yieldManager.getAssetInfo(index++);
-//       if (assetAddress.toLowerCase() == CVX.address.toLowerCase()) {
-//         registered = true;
-//         break;
-//       }
-//     }
-//     expect(registered).to.be.equal(true);
-//   });
-//   it('WETH should be a reward asset.', async () => {
-//     const { yieldManager, WETH } = testEnv;
-//     const assetCount = await yieldManager.getAssetCount();
-//     let registered = false;
-//     let index = 0;
-//     while (assetCount.gt(index)) {
-//       const assetAddress = await yieldManager.getAssetInfo(index++);
-//       if (assetAddress.toLowerCase() == WETH.address.toLowerCase()) {
-//         registered = true;
-//         break;
-//       }
-//     }
-//     expect(registered).to.be.equal(true);
-//   });
-//   it('Should be USDC as an exchange token', async () => {
-//     const { yieldManager, usdc } = testEnv;
-//     const asset = await yieldManager._exchangeToken();
-//     expect(asset).to.be.eq(usdc.address);
-//   });
-//   it('Should be failed when set invalid address as an exchange token', async () => {
-//     const { yieldManager } = testEnv;
-//     await expect(yieldManager.setExchangeToken(ZERO_ADDRESS)).to.be.reverted;
-//   });
-//   it('Should be failed when use invalid address as a curve pool', async () => {
-//     const { yieldManager, usdc, dai } = testEnv;
-//     await expect(yieldManager.setCurvePool(usdc.address, dai.address, ZERO_ADDRESS)).to.be.reverted;
-//   });
-//   it('All curve pool for USDC -> stable coin should be configured', async () => {
-//     const { yieldManager, pool, usdc } = testEnv;
-//     const { 2: assets, 3: length } = await pool.getBorrowingAssetAndVolumes();
-//     let index = 0;
-//     while (length.gt(index)) {
-//       const asset = assets[index++];
-//       if (asset.toLowerCase() != usdc.address.toLowerCase()) {
-//         const pool = await yieldManager.getCurvePool(usdc.address, asset);
-//         expect(pool).to.not.eq(ZERO_ADDRESS);
-//       }
-//     }
-//   });
-// });
+makeSuite('Yield Manger: configuration', (testEnv) => {
+  it('Registered reward asset count should be 2', async () => {
+    const { yieldManager, usdc, dai } = testEnv;
+    const availableAssetCount = 3;
+    const assetCount = await yieldManager.getAssetCount();
+    expect(assetCount).to.be.eq(availableAssetCount);
+  });
+  it('CRV should be a reward asset.', async () => {
+    const { yieldManager, CRV } = testEnv;
+    const assetCount = await yieldManager.getAssetCount();
+    let registered = false;
+    let index = 0;
+    while (assetCount.gt(index)) {
+      const assetAddress = await yieldManager.getAssetInfo(index++);
+      if (assetAddress.toLowerCase() == CRV.address.toLowerCase()) {
+        registered = true;
+        break;
+      }
+    }
+    expect(registered).to.be.equal(true);
+  });
+  it('CVX should be a reward asset.', async () => {
+    const { yieldManager, CVX } = testEnv;
+    const assetCount = await yieldManager.getAssetCount();
+    let registered = false;
+    let index = 0;
+    while (assetCount.gt(index)) {
+      const assetAddress = await yieldManager.getAssetInfo(index++);
+      if (assetAddress.toLowerCase() == CVX.address.toLowerCase()) {
+        registered = true;
+        break;
+      }
+    }
+    expect(registered).to.be.equal(true);
+  });
+  it('WETH should be a reward asset.', async () => {
+    const { yieldManager, WETH } = testEnv;
+    const assetCount = await yieldManager.getAssetCount();
+    let registered = false;
+    let index = 0;
+    while (assetCount.gt(index)) {
+      const assetAddress = await yieldManager.getAssetInfo(index++);
+      if (assetAddress.toLowerCase() == WETH.address.toLowerCase()) {
+        registered = true;
+        break;
+      }
+    }
+    expect(registered).to.be.equal(true);
+  });
+  it('Should be USDC as an exchange token', async () => {
+    const { yieldManager, usdc } = testEnv;
+    const asset = await yieldManager._exchangeToken();
+    expect(asset).to.be.eq(usdc.address);
+  });
+  it('Should be failed when set invalid address as an exchange token', async () => {
+    const { yieldManager } = testEnv;
+    await expect(yieldManager.setExchangeToken(ZERO_ADDRESS)).to.be.reverted;
+  });
+  it('Should be failed when use invalid address as a curve pool', async () => {
+    const { yieldManager, usdc, dai } = testEnv;
+    await expect(yieldManager.setCurvePool(usdc.address, dai.address, ZERO_ADDRESS)).to.be.reverted;
+  });
+  it('All curve pool for USDC -> stable coin should be configured', async () => {
+    const { yieldManager, pool, usdc } = testEnv;
+    const { 2: assets, 3: length } = await pool.getBorrowingAssetAndVolumes();
+    let index = 0;
+    while (length.gt(index)) {
+      const asset = assets[index++];
+      if (asset.toLowerCase() != usdc.address.toLowerCase()) {
+        const pool = await yieldManager.getCurvePool(usdc.address, asset);
+        expect(pool).to.not.eq(ZERO_ADDRESS);
+      }
+    }
+  });
+});
 
 makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
   it('Lido vault', async () => {

@@ -20,7 +20,7 @@
     "hardhat:docker": "hardhat --network hardhatevm_docker",
     "compile": "SKIP_LOAD=true hardhat compile",
     "console:fork": "FORK=main hardhat console",
-    "test": "FORK=main TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-sturdy/*.spec.ts --network localhost",
+    "test": "FORK=main SKIP_DEPLOY=true TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-sturdy/*.spec.ts --network localhost",
     "test:without:deploy:tenderly": "SKIP_DEPLOY=true TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-sturdy/*.spec.ts --network tenderly",
     "test:ftm": "FORK=ftm TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-ftm/*.spec.ts --network localhost",
     "test:ftm:without:deploy": "FORK=ftm SKIP_DEPLOY=true TS_NODE_TRANSPILE_ONLY=1 hardhat test ./test-suites/test-ftm/*.spec.ts --network localhost",

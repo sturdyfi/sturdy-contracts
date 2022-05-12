@@ -29,7 +29,7 @@ contract TombFtmBeefyVault is GeneralVault {
    */
   receive() external payable {}
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address MOO_TOMB_FTM = _addressesProvider.getAddress('mooTombTOMB-FTM');
     address TOMB_FTM_LP = _addressesProvider.getAddress('TOMB_FTM_LP');

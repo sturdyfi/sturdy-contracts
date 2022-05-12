@@ -31,6 +31,14 @@ contract GeneralVault is VersionedInitializable {
     _;
   }
 
+  modifier onlyYieldProcessor() {
+    require(
+      _addressesProvider.getAddress('YIELD_PROCESSOR') == msg.sender,
+      Errors.CALLER_NOT_POOL_ADMIN
+    );
+    _;
+  }
+
   struct AssetYield {
     address asset;
     uint256 amount;
@@ -109,12 +117,12 @@ contract GeneralVault is VersionedInitializable {
     // Withdraw from vault, it will convert stAsset to asset and send to user
     // Ex: In Lido vault, it will return ETH or stETH to user
     uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
-    // // Disabled withdraw amount checking
-    // if (_amount == type(uint256).max) {
-    //   uint256 decimal = IERC20Detailed(_asset).decimals();
-    //   _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
-    // }
-    // require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);
+
+    if (_amount == type(uint256).max) {
+      uint256 decimal = IERC20Detailed(_asset).decimals();
+      _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
+    }
+    require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);
 
     emit WithdrawCollateral(_asset, _to, _amount);
   }

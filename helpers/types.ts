@@ -374,6 +374,7 @@ export interface IInterestRateStrategyParams {
   variableRateSlope2: string;
   stableRateSlope1: string;
   stableRateSlope2: string;
+  capacity: string;
 }
 
 export interface IReserveBorrowParams {

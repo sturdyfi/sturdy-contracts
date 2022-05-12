@@ -58,7 +58,7 @@ contract YearnFBEETSVault is GeneralVault {
     beethoven_BEETS_FTM_PoolId = _id;
   }
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVFBEETS = _addressesProvider.getAddress('YVFBEETS');
     address BEETS = _addressesProvider.getAddress('BEETS');

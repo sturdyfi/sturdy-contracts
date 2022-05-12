@@ -24,7 +24,7 @@ contract YearnWBTCVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVWBTC = _addressesProvider.getAddress('YVWBTC');
     uint256 yieldYVWBTC = _getYield(YVWBTC);

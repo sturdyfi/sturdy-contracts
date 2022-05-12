@@ -4,7 +4,7 @@ Sturdy is a DeFi lending protocol. Sturdy enables 'suppliers' to earn yield on t
 We currently support Dai and USDC for lending and borrowing. Users can provide ETH and some Curve LP token (e.g. FRAX3CRV, DOLA3CRV, rETHwstETH-f, steCRV) as collateral, which is then staked via Lido or Convex.
 
 ## Audit 
-The following three contracts are in the scope of the audit: LendingPool.sol, GeneralVault.sol, LidoVault.sol, ConvexCurveLPVault.sol, YearnRETHWstETHVault.sol. 
+The following three contracts are in the scope of the audit: LendingPool.sol, GeneralVault.sol, LidoVault.sol, ConvexCurveLPVault.sol. 
 
 LendingPool was originally an Aave contract that we edited. The final Aave commit is bc1a237f340dbaf713dedf413c3108bc28b6b8ec. This contract has all the typical functions of a lending protocol such as deposit, withdraw, repay, and borrow. The edits were largely to ensure compatibility with the vaults.
 
@@ -13,7 +13,6 @@ The vaults are used as a bridge between the user and LendingPool. When users wan
 GeneralVault is a template that all vaults will inherit. 
 LidoVault (which takes ETH or stETH from the user) is currently the only vault.
 ConvexCurveLPVault.sol (which takes Curve LP token from the user) is currently the only vault.
-YearnRETHWstETHVault.sol (which takes Curve LP token from the user) is currently the only vault.
 
 ## Dev Environment
 - EnvironmentFile (.env)

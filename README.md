@@ -1,7 +1,7 @@
 # Sturdy 
 Sturdy is a DeFi lending protocol. Sturdy enables 'suppliers' to earn yield on their stablecoins and 'borrowers' to take out interest-free stablecoin loans against their collateral. This interest-free mechanic is made possible through rehypothecation: when a borrower deposits their collateral (e.g. ETH), it is staked (e.g. turned into stETH via Lido). Over time, this stETH will grow in quantity over time because of its rebasing mechanic; we harvest this yield, convert it to stablecoins, and distribute it to stablecoin suppliers.
 
-We currently support Dai and USDC for lending and borrowing. Users can provide ETH as collateral, which is then staked via Lido. When users withdraw their collateral, it is swapped from stETH to ETH via Curve. Users also have the option of providing or withdrawing stETH as collateral, skipping the conversion step.
+We currently support Dai and USDC for lending and borrowing. Users can provide ETH and some Curve LP token (e.g. FRAX3CRV, DOLA3CRV, rETHwstETH-f, steCRV) as collateral, which is then staked via Lido or Convex.
 
 ## Audit 
 The following three contracts are in the scope of the audit: LendingPool.sol, GeneralVault.sol, LidoVault.sol, ConvexCurveLPVault.sol, YearnRETHWstETHVault.sol. 

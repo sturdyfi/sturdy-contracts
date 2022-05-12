@@ -35,7 +35,6 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
     await vault.setConfiguration(getParamPerNetwork(STECRV_LP, network), 25); // set curve lp token & convex pool id
-    await vault.setCurveStableSwap('0xDC24316b9AE028F1497c275EB9192a3Ea0f67022'); // set stable swap
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);

@@ -120,13 +120,10 @@ import {
   LiquidatorFactory,
   YearnRETHWstETHVaultFactory,
   CrvREthWstETHOracleFactory,
-  ConvexRocketPoolETHVaultFactory,
+  ConvexCurveLPVaultFactory,
   FRAX3CRVOracleFactory,
-  ConvexFRAX3CRVVaultFactory,
   STECRVOracleFactory,
-  ConvexSTETHVaultFactory,
   DOLA3CRVOracleFactory,
-  ConvexDOLA3CRVVaultFactory,
   YieldManagerFactory,
 } from '../types';
 import {
@@ -931,7 +928,7 @@ export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
 
 export const deployConvexRocketPoolETHVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexRocketPoolETHVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexRocketPoolETHVaulttImpl,
     [],
     verify
@@ -942,7 +939,7 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
   const network = <eNetwork>DRE.network.name;
 
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexRocketPoolETHVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexRocketPoolETHVaulttImpl,
     [],
     verify
@@ -994,7 +991,7 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
 
 export const deployConvexFRAX3CRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexFRAX3CRVVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexFRAX3CRVVaultImpl,
     [],
     verify
@@ -1005,7 +1002,7 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
   const network = <eNetwork>DRE.network.name;
 
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexFRAX3CRVVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexFRAX3CRVVaultImpl,
     [],
     verify
@@ -1043,7 +1040,7 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
 
 export const deployConvexSTETHVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexSTETHVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexSTETHVaultImpl,
     [],
     verify
@@ -1054,7 +1051,7 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
   const network = <eNetwork>DRE.network.name;
 
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexSTETHVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexSTETHVaultImpl,
     [],
     verify
@@ -1092,7 +1089,7 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
 
 export const deployConvexDOLA3CRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexDOLA3CRVVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexDOLA3CRVVaultImpl,
     [],
     verify
@@ -1103,7 +1100,7 @@ export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
   const network = <eNetwork>DRE.network.name;
 
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexDOLA3CRVVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
     eContractid.ConvexDOLA3CRVVaultImpl,
     [],
     verify

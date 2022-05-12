@@ -49,10 +49,7 @@ import {
   StakedTokenIncentivesController,
   SturdyToken,
   YearnRETHWstETHVault,
-  ConvexRocketPoolETHVault,
-  ConvexFRAX3CRVVault,
-  ConvexSTETHVault,
-  ConvexDOLA3CRVVault,
+  ConvexCurveLPVault,
   SturdyInternalAssetFactory,
   YieldManager,
 } from '../../../types';
@@ -82,10 +79,10 @@ export interface TestEnv {
   pool: LendingPool;
   lidoVault: LidoVault;
   yearnRETHWstETHVault: YearnRETHWstETHVault;
-  convexRocketPoolETHVault: ConvexRocketPoolETHVault;
-  convexFRAX3CRVVault: ConvexFRAX3CRVVault;
-  convexSTETHVault: ConvexSTETHVault;
-  convexDOLA3CRVVault: ConvexDOLA3CRVVault;
+  convexRocketPoolETHVault: ConvexCurveLPVault;
+  convexFRAX3CRVVault: ConvexCurveLPVault;
+  convexSTETHVault: ConvexCurveLPVault;
+  convexDOLA3CRVVault: ConvexCurveLPVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -134,10 +131,10 @@ const testEnv: TestEnv = {
   pool: {} as LendingPool,
   lidoVault: {} as LidoVault,
   yearnRETHWstETHVault: {} as YearnRETHWstETHVault,
-  convexRocketPoolETHVault: {} as ConvexRocketPoolETHVault,
-  convexFRAX3CRVVault: {} as ConvexFRAX3CRVVault,
-  convexSTETHVault: {} as ConvexSTETHVault,
-  convexDOLA3CRVVault: {} as ConvexDOLA3CRVVault,
+  convexRocketPoolETHVault: {} as ConvexCurveLPVault,
+  convexFRAX3CRVVault: {} as ConvexCurveLPVault,
+  convexSTETHVault: {} as ConvexCurveLPVault,
+  convexDOLA3CRVVault: {} as ConvexCurveLPVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,

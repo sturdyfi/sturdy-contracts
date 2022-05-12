@@ -64,10 +64,7 @@ import {
   MockMooBASEDMIMATICFactory,
   YearnRETHWstETHVaultFactory,
   CrvREthWstETHOracleFactory,
-  ConvexRocketPoolETHVaultFactory,
-  ConvexFRAX3CRVVaultFactory,
-  ConvexSTETHVaultFactory,
-  ConvexDOLA3CRVVaultFactory,
+  ConvexCurveLPVaultFactory,
   YieldManagerFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
@@ -488,7 +485,7 @@ export const getYearnRETHWstETHVault = async (address?: tEthereumAddress) =>
   );
 
 export const getConvexRocketPoolETHVaultImpl = async (address?: tEthereumAddress) =>
-  await ConvexRocketPoolETHVaultFactory.connect(
+  await ConvexCurveLPVaultFactory.connect(
     address ||
       (
         await getDb()
@@ -499,7 +496,7 @@ export const getConvexRocketPoolETHVaultImpl = async (address?: tEthereumAddress
   );
 
 export const getConvexRocketPoolETHVault = async (address?: tEthereumAddress) =>
-  await ConvexRocketPoolETHVaultFactory.connect(
+  await ConvexCurveLPVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.ConvexRocketPoolETHVault}.${DRE.network.name}`).value()
@@ -508,7 +505,7 @@ export const getConvexRocketPoolETHVault = async (address?: tEthereumAddress) =>
   );
 
 export const getConvexFRAX3CRVVault = async (address?: tEthereumAddress) =>
-  await ConvexFRAX3CRVVaultFactory.connect(
+  await ConvexCurveLPVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.ConvexFRAX3CRVVault}.${DRE.network.name}`).value()
@@ -517,7 +514,7 @@ export const getConvexFRAX3CRVVault = async (address?: tEthereumAddress) =>
   );
 
 export const getConvexSTETHVault = async (address?: tEthereumAddress) =>
-  await ConvexSTETHVaultFactory.connect(
+  await ConvexCurveLPVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.ConvexSTETHVault}.${DRE.network.name}`).value()
@@ -526,7 +523,7 @@ export const getConvexSTETHVault = async (address?: tEthereumAddress) =>
   );
 
 export const getConvexDOLA3CRVVault = async (address?: tEthereumAddress) =>
-  await ConvexDOLA3CRVVaultFactory.connect(
+  await ConvexCurveLPVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.ConvexDOLA3CRVVault}.${DRE.network.name}`).value()

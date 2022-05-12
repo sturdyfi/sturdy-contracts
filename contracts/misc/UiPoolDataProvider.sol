@@ -342,7 +342,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       );
 
       // supply capacity
-      reserveData.maxCapacity = DefaultReserveInterestRateStrategy(
+      reserveData.capacity = DefaultReserveInterestRateStrategy(
         reserveData.interestRateStrategyAddress
       ).reserveCapacity();
 

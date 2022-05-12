@@ -46,7 +46,7 @@ contract YieldManager is VersionedInitializable, Ownable {
   mapping(address => mapping(address => address)) internal _curvePools;
 
   uint256 public constant UNISWAP_FEE = 10000; // 1%
-  uint256 public constant SLIPPAGE = 200; // 2%
+  uint256 public constant SLIPPAGE = 500; // 5%
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);

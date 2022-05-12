@@ -82,7 +82,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.geth]: '',
     [eEthereumNetwork.localhost]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.tenderly]: '0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
+    [eEthereumNetwork.tenderly]: '', //'0x52D306e36E3B6B02c153d0266ff0f85d18BCD413',
     [eEthereumNetwork.goerli]: '0x5a3aE44704D95CcAffe608c808308c850bDec94d',
   },
   ProviderRegistryOwner: {
@@ -94,7 +94,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.geth]: '',
     [eEthereumNetwork.localhost]: '',
     [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.tenderly]: '0xB9062896ec3A615a4e4444DF183F0531a77218AE',
+    [eEthereumNetwork.tenderly]: '', //'0xB9062896ec3A615a4e4444DF183F0531a77218AE',
     [eEthereumNetwork.goerli]: '0x661fB502E24Deb30e927E39A38Bd2CC44D67339F',
   },
   LendingRateOracle: {
@@ -106,7 +106,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.kovan]: '', //'0xdCde9Bb6a49e37fA433990832AB541AE2d4FEB4a',
     [eEthereumNetwork.ropsten]: '0x05dcca805a6562c1bdd0423768754acb6993241b',
     [eEthereumNetwork.main]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
-    [eEthereumNetwork.tenderly]: '0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
+    [eEthereumNetwork.tenderly]: '', //'0x8A32f49FFbA88aba6EFF96F45D8BD1D4b3f35c7D',
     [eEthereumNetwork.goerli]: '0x54f550a7798541F8469636EA94Fd7564ea6e9027',
   },
   LendingPoolCollateralManager: {
@@ -118,7 +118,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.kovan]: '0x9269b6453d0d75370c4c85e5a42977a53efdb72a',
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '', //'0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
-    [eEthereumNetwork.tenderly]: '0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
+    [eEthereumNetwork.tenderly]: '', //'0xbd4765210d4167CE2A5b87280D9E8Ee316D5EC7C',
     [eEthereumNetwork.goerli]: '0x446E0E48315740B3f5dEFA9a1CcAF1ce193E9655',
   },
   LendingPoolConfigurator: {
@@ -154,7 +154,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.kovan]: '0x971efe90088f21dc6a36f610ffed77fc19710708',
     [eEthereumNetwork.ropsten]: '0xeba2ea67942b8250d870b12750b594696d02fc9c',
     [eEthereumNetwork.main]: '', //'0xe3d9988f676457123c5fd01297605efdd0cba1ae',
-    [eEthereumNetwork.tenderly]: '0xe3d9988f676457123c5fd01297605efdd0cba1ae',
+    [eEthereumNetwork.tenderly]: '', //'0xe3d9988f676457123c5fd01297605efdd0cba1ae',
     [eEthereumNetwork.goerli]: '',
   },
   SturdyOracle: {
@@ -166,7 +166,7 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.kovan]: '', //'0xB8bE51E6563BB312Cbb2aa26e352516c25c26ac1',
     [eEthereumNetwork.ropsten]: ZERO_ADDRESS,
     [eEthereumNetwork.main]: '', //'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
-    [eEthereumNetwork.tenderly]: '0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
+    [eEthereumNetwork.tenderly]: '', //'0xA50ba011c48153De246E5192C8f9258A2ba79Ca9',
     [eEthereumNetwork.goerli]: '',
   },
   FallbackOracle: {
@@ -208,11 +208,20 @@ export const CommonsConfig: ICommonConfiguration = {
       cvxDOLA_3CRV: '',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
+      CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
       USDC: '0x986b5E1e1755e3C2440e960477f25201B0a8bbD4',
+      stETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
+      yvRETH_WSTETH: '',
+      cvxRETH_WSTETH: '',
+      cvxFRAX_3CRV: '',
+      cvxSTECRV: '',
+      cvxDOLA_3CRV: '',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
+      CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '',

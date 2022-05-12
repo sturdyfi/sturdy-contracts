@@ -9,4 +9,10 @@ interface IConvexBaseRewardPool {
   function getReward(address _account, bool _claimExtras) external;
 
   function getReward() external;
+
+  function rewardToken() external view returns (address);
+
+  function extraRewardsLength() external view returns (uint256);
+
+  function extraRewards(uint256) external view returns (address);
 }

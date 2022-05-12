@@ -20,8 +20,14 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ReserveAssets, ChainlinkAggregator, CRV, STECRV_LP } =
-      poolConfig as ISturdyConfiguration;
+    const {
+      ReserveFactorTreasuryAddress,
+      ReserveAssets,
+      ChainlinkAggregator,
+      CRV,
+      CVX,
+      STECRV_LP,
+    } = poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexSTETHVault(verify);
@@ -45,13 +51,19 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(CRV, network)],
-        [steCRVOracleAddress, getParamPerNetwork(ChainlinkAggregator, network).CRV]
+        [internalAssetAddress, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)],
+        [
+          steCRVOracleAddress,
+          getParamPerNetwork(ChainlinkAggregator, network).CRV,
+          getParamPerNetwork(ChainlinkAggregator, network).CVX,
+        ]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 
     console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(CRV, network))).toString());
+
+    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(CVX, network))).toString());
 
     console.log(`${CONTRACT_NAME}.address`, vault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

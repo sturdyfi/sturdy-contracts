@@ -126,18 +126,6 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
       _convertSPELL(collateralAsset, asset, collateralAmount);
     } else if (collateralAsset == _addressesProvider.getAddress('CRV')) {
       _convertCRV(collateralAsset, asset, collateralAmount);
-    } else {
-      ICollateralAdapter collateralAdapter = ICollateralAdapter(
-        _addressesProvider.getAddress('COLLATERAL_ADAPTER')
-      );
-      address vault = collateralAdapter.getAcceptableVault(collateralAsset);
-      require(vault != address(0), Errors.LP_LIQUIDATION_CONVERT_FAILED);
-
-      // send collateral asset to vault
-      TransferHelper.safeTransfer(collateralAsset, vault, collateralAmount);
-
-      // convert collateral asset and receive debt asset
-      IGeneralVault(vault).convertOnLiquidation(asset, collateralAmount);
     }
   }
 

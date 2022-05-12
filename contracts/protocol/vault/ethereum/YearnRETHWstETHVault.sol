@@ -8,14 +8,10 @@ import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {IWstETH} from '../../../interfaces/IWstETH.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
-import {ISwapRouter} from '../../../interfaces/ISwapRouter.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
-import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
+import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 
 /**
  * @title YearnRETHWstETHVault
@@ -23,12 +19,7 @@ import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
  * @author Sturdy
  **/
 contract YearnRETHWstETHVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
-  using PercentageMath for uint256;
-
-  // uniswap pool fee to 0.05%.
-  uint24 constant uniswapFee = 500;
 
   /**
    * @dev Receive Ether
@@ -63,20 +54,22 @@ contract YearnRETHWstETHVault is GeneralVault {
     uint256 yieldStETH = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(yieldWstETH);
 
     // Exchange stETH -> ETH via Curve
-    uint256 receivedETHAmount = _convertAssetByCurve(
+    uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(
+      _addressesProvider,
+      _addressesProvider.getAddress('STETH_ETH_POOL'),
       _addressesProvider.getAddress('LIDO'),
-      yieldStETH
+      ETH,
+      yieldStETH,
+      200
     );
-    // ETH -> WETH
-    IWETH(_addressesProvider.getAddress('WETH')).deposit{value: receivedETHAmount}();
 
-    AssetYield[] memory assetYields = _getAssetYields(receivedETHAmount);
-    for (uint256 i = 0; i < assetYields.length; i++) {
-      // WETH -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
-        _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount, true);
-      }
-    }
+    // ETH -> WETH
+    address weth = _addressesProvider.getAddress('WETH');
+    IWETH(weth).deposit{value: receivedETHAmount}();
+
+    // transfer WETH to yieldManager
+    address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
+    TransferHelper.safeTransfer(weth, yieldManager, receivedETHAmount);
 
     emit ProcessYield(_addressesProvider.getAddress('RETH_WSTETH'), yieldRETH_WSTETH);
   }
@@ -115,102 +108,6 @@ contract YearnRETHWstETHVault is GeneralVault {
       minWstETHAmount,
       address(this)
     );
-  }
-
-  function _convertAssetByCurve(address _fromAsset, uint256 _fromAmount)
-    internal
-    returns (uint256)
-  {
-    // Exchange stETH -> ETH via curve
-    address CurveswapLidoPool = _addressesProvider.getAddress('CurveswapLidoPool');
-    IERC20(_fromAsset).safeApprove(CurveswapLidoPool, _fromAmount);
-    uint256 minAmount = ICurvePool(CurveswapLidoPool).get_dy(1, 0, _fromAmount);
-
-    // Calculate minAmount from price with 1% slippage
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 assetPrice = oracle.getAssetPrice(_fromAsset);
-    uint256 minAmountFromPrice = _fromAmount.percentMul(99_00).mul(assetPrice).div(10**18);
-
-    if (minAmountFromPrice < minAmount) minAmount = minAmountFromPrice;
-
-    uint256 receivedAmount = ICurvePool(CurveswapLidoPool).exchange(1, 0, _fromAmount, minAmount);
-    return receivedAmount;
-  }
-
-  function _convertAndDepositYield(
-    address _tokenOut,
-    uint256 _wethAmount,
-    bool _isDeposit
-  ) internal {
-    // Approve the uniswapRouter to spend WETH.
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WETH = _addressesProvider.getAddress('WETH');
-    TransferHelper.safeApprove(WETH, uniswapRouter, _wethAmount);
-
-    // Calculate minAmount from price with 1% slippage
-    uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 assetPrice = oracle.getAssetPrice(_tokenOut);
-    uint256 minAmountFromPrice = _wethAmount.div(assetPrice).percentMul(99_00).mul(
-      10**assetDecimal
-    );
-
-    // Naively set amountOutMinimum to 0. In production, use an oracle or other data source to choose a safer value for amountOutMinimum.
-    // We also set the sqrtPriceLimitx96 to be 0 to ensure we swap our exact input amount.
-    ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
-      tokenIn: WETH,
-      tokenOut: _tokenOut,
-      fee: uniswapFee,
-      recipient: address(this),
-      deadline: block.timestamp,
-      amountIn: _wethAmount,
-      amountOutMinimum: minAmountFromPrice,
-      sqrtPriceLimitX96: 0
-    });
-
-    // Exchange WETH -> _tokenOut via UniswapV3
-    uint256 receivedAmount = ISwapRouter(uniswapRouter).exactInputSingle(params);
-    require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
-    require(
-      IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmount,
-      Errors.VT_PROCESS_YIELD_INVALID
-    );
-
-    if (_isDeposit) {
-      // Make lendingPool to transfer required amount
-      IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmount);
-      // Deposit Yield to pool
-      _depositYield(_tokenOut, receivedAmount);
-    } else {
-      TransferHelper.safeTransfer(_tokenOut, msg.sender, receivedAmount);
-    }
-  }
-
-  function convertOnLiquidation(address _assetOut, uint256 _amountIn) external override {
-    require(
-      msg.sender == _addressesProvider.getAddress('LIQUIDATOR'),
-      Errors.LP_LIQUIDATION_CONVERT_FAILED
-    );
-
-    // Withdraw rETHwstETH-f from curve finance pool and receive wstETH
-    uint256 wstETHAmount = _withdrawLiquidityPool(
-      _addressesProvider.getAddress('RETH_WSTETH'),
-      _amountIn
-    );
-
-    // Unwrap wstETH and receive stETH
-    uint256 stETHAmount = IWstETH(_addressesProvider.getAddress('WSTETH')).unwrap(wstETHAmount);
-
-    // Exchange stETH -> ETH via Curve
-    uint256 receivedETHAmount = _convertAssetByCurve(
-      _addressesProvider.getAddress('LIDO'),
-      stETHAmount
-    );
-    // ETH -> WETH
-    IWETH(_addressesProvider.getAddress('WETH')).deposit{value: receivedETHAmount}();
-
-    // WETH -> Asset
-    _convertAndDepositYield(_assetOut, receivedETHAmount, false);
   }
 
   /**

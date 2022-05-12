@@ -12,6 +12,8 @@ interface IConvexBooster {
     bool shutdown;
   }
 
+  function minter() external view returns (address);
+
   function poolInfo(uint256 _poolId) external view returns (PoolInfo memory);
 
   function poolLength() external view returns (uint256);

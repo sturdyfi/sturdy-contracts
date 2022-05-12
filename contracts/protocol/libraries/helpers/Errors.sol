@@ -119,7 +119,8 @@ library Errors {
   string public constant VT_INVALID_CONFIGURATION = '94'; // Invalid vault configuration
   string public constant VL_OVERFLOW_MAX_RESERVE_CAPACITY = '95'; // overflow max capacity of reserve
   string public constant VT_WITHDRAW_AMOUNT_MISMATCH = '96'; // not performed withdraw 100%
-  string public constant CALLER_NOT_YIELD_PROCESSOR = '97'; // 'The caller must be the pool admin'
+  string public constant VT_SWAP_MISMATCH_RETURNED_AMOUNT = '97'; //Returned amount is not enough
+  string public constant CALLER_NOT_YIELD_PROCESSOR = '98'; // 'The caller must be the pool admin'
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -44,6 +44,9 @@ import {
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
   getConvexDOLA3CRVVault,
+  getYieldManager,
+  getUniswapAdapterAddress,
+  getCurveswapAdapterAddress,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -124,6 +127,7 @@ import {
   ConvexSTETHVaultFactory,
   DOLA3CRVOracleFactory,
   ConvexDOLA3CRVVaultFactory,
+  YieldManagerFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -133,6 +137,7 @@ import {
   getParamPerNetwork,
   deployContract,
   verifyContract,
+  getContract,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
 import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
@@ -142,6 +147,9 @@ import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
 import BigNumber from 'bignumber.js';
 import { verify } from 'crypto';
 import { boolean } from 'hardhat/internal/core/params/argumentTypes';
+import { YieldManagerLibraryAddresses } from '../types/YieldManagerFactory';
+import { LidoVaultLibraryAddresses } from '../types/LidoVaultFactory';
+import { YearnRETHWstETHVaultLibraryAddresses } from '../types/YearnRETHWstETHVaultFactory';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -777,17 +785,30 @@ export const deployUiIncentiveDataProvider = async (verify?: boolean) =>
     verify
   );
 
-export const deployLidoVaultImpl = async (verify?: boolean) =>
-  withSaveAndVerify(
-    await new LidoVaultFactory(await getFirstSigner()).deploy(),
+export const deployLidoVaultLibraries = async (
+  verify?: boolean
+): Promise<LidoVaultLibraryAddresses> => {
+  const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
+
+  return {
+    ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
+  };
+};
+
+export const deployLidoVaultImpl = async (verify?: boolean) => {
+  const libraries = await deployYieldManagerLibraries(verify);
+  return withSaveAndVerify(
+    await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
     [],
     verify
   );
+};
 
 export const deployLidoVault = async (verify?: boolean) => {
+  const libraries = await deployYieldManagerLibraries(verify);
   const lidoVaultImpl = await withSaveAndVerify(
-    await new LidoVaultFactory(await getFirstSigner()).deploy(),
+    await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
     [],
     verify
@@ -812,7 +833,7 @@ export const deployLidoVault = async (verify?: boolean) => {
 
   await waitForTx(
     await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('CurveswapLidoPool'),
+      DRE.ethers.utils.formatBytes32String('STETH_ETH_POOL'),
       getParamPerNetwork(config.CurveswapLidoPool, network)
     )
   );
@@ -839,17 +860,30 @@ export const deployLidoVault = async (verify?: boolean) => {
   return await getLidoVault();
 };
 
-export const deployYearnRETHWstETHVaultImpl = async (verify?: boolean) =>
+export const deployYearnRETHWstETHVaultLibraries = async (
+  verify?: boolean
+): Promise<YearnRETHWstETHVaultLibraryAddresses> => {
+  const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
+
+  return {
+    ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
+  };
+};
+
+export const deployYearnRETHWstETHVaultImpl = async (verify?: boolean) => {
+  const libraries = await deployYearnRETHWstETHVaultLibraries(verify);
   withSaveAndVerify(
-    await new YearnRETHWstETHVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnRETHWstETHVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.YearnRETHWstETHVaultImpl,
     [],
     verify
   );
+};
 
 export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
+  const libraries = await deployYearnRETHWstETHVaultLibraries(verify);
   const vaultImpl = await withSaveAndVerify(
-    await new YearnRETHWstETHVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnRETHWstETHVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.YearnRETHWstETHVaultImpl,
     [],
     verify
@@ -943,6 +977,13 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
     )
   );
 
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
+    )
+  );
+
   const proxyAddress = await addressesProvider.getAddress(
     DRE.ethers.utils.formatBytes32String('CONVEX_ROCKET_POOL_ETH_VAULT')
   );
@@ -982,6 +1023,13 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('CRV'),
       getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
     )
   );
 
@@ -1027,6 +1075,13 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
     )
   );
 
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
+    )
+  );
+
   const proxyAddress = await addressesProvider.getAddress(
     DRE.ethers.utils.formatBytes32String('CONVEX_STETH_VAULT')
   );
@@ -1066,6 +1121,13 @@ export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
     await addressesProvider.setAddress(
       DRE.ethers.utils.formatBytes32String('CRV'),
       getParamPerNetwork(config.CRV, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CVX'),
+      getParamPerNetwork(config.CVX, network)
     )
   );
 
@@ -2014,3 +2076,108 @@ export const deployVaultHelper = async (args: [string], verify?: boolean) =>
     args,
     verify
   );
+
+export const deployUniswapAdapterLibrary = async (verify?: boolean) => {
+  const contractAddress = await getUniswapAdapterAddress();
+  if (contractAddress) {
+    return await getContract(eContractid.UniswapAdapter, contractAddress);
+  }
+
+  const uniswapAdapterArtifact = await readArtifact(eContractid.UniswapAdapter);
+
+  const linkedUniswapAdapterByteCode = linkBytecode(uniswapAdapterArtifact, {});
+
+  const uniswapAdapterFactory = await DRE.ethers.getContractFactory(
+    uniswapAdapterArtifact.abi,
+    linkedUniswapAdapterByteCode
+  );
+
+  const uniswapAdapter = await (
+    await uniswapAdapterFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(uniswapAdapter, eContractid.UniswapAdapter, [], verify);
+};
+
+export const deployCurveswapAdapterLibrary = async (verify?: boolean) => {
+  const contractAddress = await getCurveswapAdapterAddress();
+  if (contractAddress) {
+    return await getContract(eContractid.CurveswapAdapter, contractAddress);
+  }
+
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  const addressesProvider = await getLendingPoolAddressesProvider();
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('CURVE_ADDRESS_PROVIDER'),
+      getParamPerNetwork(config.CurveswapAddressProvider, network)
+    )
+  );
+
+  const curveswapAdapterArtifact = await readArtifact(eContractid.CurveswapAdapter);
+
+  const linkedCurveswapAdapterByteCode = linkBytecode(curveswapAdapterArtifact, {});
+
+  const curveswapAdapterFactory = await DRE.ethers.getContractFactory(
+    curveswapAdapterArtifact.abi,
+    linkedCurveswapAdapterByteCode
+  );
+
+  const curveswapAdapter = await (
+    await curveswapAdapterFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(curveswapAdapter, eContractid.CurveswapAdapter, [], verify);
+};
+
+export const deployYieldManagerLibraries = async (
+  verify?: boolean
+): Promise<YieldManagerLibraryAddresses> => {
+  const uniswapAdapter = await deployUniswapAdapterLibrary(verify);
+  const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
+
+  return {
+    ['__$efebe91d5f5edc44768630199364d824de$__']: uniswapAdapter.address,
+    ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
+  };
+};
+
+export const deployYieldManagerImpl = async (verify?: boolean) => {
+  const libraries = await deployYieldManagerLibraries(verify);
+  withSaveAndVerify(
+    await new YieldManagerFactory(libraries, await getFirstSigner()).deploy(),
+    eContractid.YieldManagerImpl,
+    [],
+    verify
+  );
+};
+
+export const deployYieldManager = async (verify?: boolean) => {
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  const network = <eNetwork>DRE.network.name;
+
+  const libraries = await deployYieldManagerLibraries(verify);
+  const yieldManagerImpl = await withSaveAndVerify(
+    await new YieldManagerFactory(libraries, await getFirstSigner()).deploy(),
+    eContractid.YieldManagerImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('YIELD_MANAGER'),
+      yieldManagerImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('YIELD_MANAGER')
+  );
+  await insertContractAddressInDb(eContractid.YieldManager, proxyAddress);
+
+  return await getYieldManager();
+};

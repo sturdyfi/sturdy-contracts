@@ -672,6 +672,15 @@ export const getYearnFBEETSVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYearnLINKVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnLINKVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnLINKVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnLINKVault = async (address?: tEthereumAddress) =>
   await YearnLINKVaultFactory.connect(
     address ||
@@ -690,11 +699,29 @@ export const getBeefyETHVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYearnCRVVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnCRVVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnCRVVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnCRVVault = async (address?: tEthereumAddress) =>
   await YearnCRVVaultFactory.connect(
     address ||
       (
         await getDb().get(`${eContractid.YearnCRVVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYearnSPELLVaultImpl = async (address?: tEthereumAddress) =>
+  await YearnSPELLVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YearnSPELLVaultImpl}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

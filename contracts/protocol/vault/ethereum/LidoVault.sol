@@ -138,8 +138,8 @@ contract LidoVault is GeneralVault {
 
       // send ETH to user
       (bool sent, bytes memory data) = address(_to).call{value: receivedETHAmount}('');
-      return receivedETHAmount;
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+      return receivedETHAmount;
     } else {
       // Case of stETH withdraw request from user, so directly send
       require(_asset == LIDO, Errors.VT_COLLATERAL_WITHDRAW_INVALID);

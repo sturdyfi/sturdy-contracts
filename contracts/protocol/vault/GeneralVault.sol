@@ -93,6 +93,7 @@ contract GeneralVault is VersionedInitializable {
    * @param _asset The asset address for collateral
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The amount to be withdrawn
+   * @param _slippage The slippage of the withdrawal amount. 1% = 100
    * @param _to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
@@ -100,6 +101,7 @@ contract GeneralVault is VersionedInitializable {
   function withdrawCollateral(
     address _asset,
     uint256 _amount,
+    uint256 _slippage,
     address _to
   ) external virtual {
     // Before withdraw from lending pool, get the stAsset address and withdrawal amount
@@ -122,7 +124,10 @@ contract GeneralVault is VersionedInitializable {
       uint256 decimal = IERC20Detailed(_asset).decimals();
       _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
     }
-    require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);
+    require(
+      withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(_slippage)),
+      Errors.VT_WITHDRAW_AMOUNT_MISMATCH
+    );
 
     emit WithdrawCollateral(_asset, _to, _amount);
   }

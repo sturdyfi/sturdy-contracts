@@ -8,7 +8,6 @@ import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC
 import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IConvexBooster} from '../../../../interfaces/IConvexBooster.sol';
 import {IConvexBaseRewardPool} from '../../../../interfaces/IConvexBaseRewardPool.sol';
-import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../../libraries/helpers/Errors.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 
@@ -79,7 +78,7 @@ contract ConvexCurveLPVault is GeneralVault {
 
     // transfer to yieldManager
     address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(_asset, yieldManager, yieldAmount);
+    IERC20(_asset).safeTransfer(yieldManager, yieldAmount);
 
     emit ProcessYield(_asset, yieldAmount);
   }
@@ -144,7 +143,7 @@ contract ConvexCurveLPVault is GeneralVault {
   {
     // receive Curve LP Token from user
     require(_asset == curveLPToken, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(curveLPToken, msg.sender, address(this), _amount);
+    IERC20(curveLPToken).safeTransferFrom(msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
     IERC20(curveLPToken).safeApprove(convexBooster, 0);
@@ -178,7 +177,7 @@ contract ConvexCurveLPVault is GeneralVault {
     IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, true);
 
     // Deliver Curve LP Token
-    TransferHelper.safeTransfer(curveLPToken, _to, _amount);
+    IERC20(curveLPToken).safeTransfer(_to, _amount);
 
     // Burn
     SturdyInternalAsset(internalAssetToken).burn(address(this), _amount);

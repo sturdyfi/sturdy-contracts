@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 
@@ -54,7 +53,7 @@ contract LidoVault is GeneralVault {
 
     // transfer WETH to yieldManager
     address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(weth, yieldManager, receivedETHAmount);
+    IERC20(weth).safeTransfer(yieldManager, receivedETHAmount);
 
     emit ProcessYield(_addressesProvider.getAddress('WETH'), receivedETHAmount);
   }

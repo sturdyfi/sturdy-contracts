@@ -82,6 +82,7 @@ contract LidoVault is GeneralVault {
     returns (address, uint256)
   {
     address LIDO = _addressesProvider.getAddress('LIDO');
+    require(LIDO != address(0), Errors.VT_INVALID_CONFIGURATION);
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of ETH deposit from user, user has to send ETH
@@ -125,6 +126,8 @@ contract LidoVault is GeneralVault {
     address _to
   ) internal override returns (uint256) {
     address LIDO = _addressesProvider.getAddress('LIDO');
+    require(_to != address(0), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     if (_asset == address(0)) {
       // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(

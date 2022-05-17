@@ -85,9 +85,6 @@ contract LidoVault is GeneralVault {
     require(LIDO != address(0), Errors.VT_INVALID_CONFIGURATION);
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
-      // Case of ETH deposit from user, user has to send ETH
-      require(msg.value > 0, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
-
       // Deposit ETH to Lido and receive stETH
       (bool sent, bytes memory data) = LIDO.call{value: msg.value}('');
       require(sent, Errors.VT_COLLATERAL_DEPOSIT_INVALID);

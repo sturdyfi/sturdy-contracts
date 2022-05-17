@@ -126,7 +126,11 @@ contract GeneralVault is VersionedInitializable {
     uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
 
     if (_amount == type(uint256).max) {
-      uint256 decimal = IERC20Detailed(_asset).decimals();
+      uint256 decimal = 18;
+      if (_asset != address(0)) {
+        decimal = IERC20Detailed(_asset).decimals();
+      }
+
       _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
     }
     require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);

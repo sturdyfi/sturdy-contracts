@@ -100,11 +100,20 @@ contract ConvexCurveLPVault is GeneralVault {
     _tokenFromConvex = IConvexBooster(convexBooster).minter();
     require(_token == _tokenFromConvex, Errors.VT_INVALID_CONFIGURATION);
     _transferYield(_token);
+  }
 
-    // Transfer extra incentive token to YieldManager
+  /**
+   * @dev The function to transfer extra incentive token to YieldManager
+   * @param _offset extraRewards start offset.
+   * @param _count extraRewards count
+   */
+  function processExtraYield(uint256 _offset, uint256 _count) external onlyAdmin {
+    address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
-    for (uint256 i = 0; i < extraRewardsLength; i++) {
-      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(i);
+    require(_offset + _count <= extraRewardsLength, Errors.VT_EXTRA_REWARDS_INDEX_INVALID);
+
+    for (uint256 i = 0; i < _count; i++) {
+      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(_offset + i);
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);
     }

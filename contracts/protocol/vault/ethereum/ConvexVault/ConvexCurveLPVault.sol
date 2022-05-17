@@ -138,11 +138,13 @@ contract ConvexCurveLPVault is GeneralVault {
     TransferHelper.safeTransferFrom(curveLPToken, msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
+    IERC20(curveLPToken).safeApprove(convexBooster, 0);
     IERC20(curveLPToken).safeApprove(convexBooster, _amount);
     IConvexBooster(convexBooster).deposit(convexPoolId, _amount, true);
 
     // mint
     SturdyInternalAsset(internalAssetToken).mint(address(this), _amount);
+    IERC20(internalAssetToken).safeApprove(address(_addressesProvider.getLendingPool()), 0);
     IERC20(internalAssetToken).safeApprove(address(_addressesProvider.getLendingPool()), _amount);
 
     return (internalAssetToken, _amount);

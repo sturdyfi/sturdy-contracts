@@ -100,6 +100,7 @@ contract LidoVault is GeneralVault {
     }
 
     // Make lendingPool to transfer required amount
+    IERC20(LIDO).safeApprove(address(_addressesProvider.getLendingPool()), 0);
     IERC20(LIDO).safeApprove(address(_addressesProvider.getLendingPool()), assetAmount);
     return (LIDO, assetAmount);
   }

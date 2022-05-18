@@ -19,7 +19,7 @@ contract CollateralAdapter is VersionedInitializable {
     _;
   }
 
-  uint256 public constant VAULT_REVISION = 0x1;
+  uint256 private constant VAULT_REVISION = 0x1;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
@@ -32,7 +32,7 @@ contract CollateralAdapter is VersionedInitializable {
    * @dev Function is invoked by the proxy contract when the Adapter contract is deployed.
    * @param _provider The address of the provider
    **/
-  function initialize(ILendingPoolAddressesProvider _provider) public initializer {
+  function initialize(ILendingPoolAddressesProvider _provider) external initializer {
     _addressesProvider = _provider;
   }
 
@@ -44,7 +44,7 @@ contract CollateralAdapter is VersionedInitializable {
     address _externalAsset,
     address _internalAsset,
     address _acceptVault
-  ) external onlyAdmin {
+  ) external payable onlyAdmin {
     _assetToVaults[_externalAsset] = _acceptVault;
     _collateralAssets[_externalAsset] = _internalAsset;
   }

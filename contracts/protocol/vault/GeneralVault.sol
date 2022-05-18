@@ -17,7 +17,7 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
  * @author Sturdy
  **/
 
-contract GeneralVault is VersionedInitializable {
+abstract contract GeneralVault is VersionedInitializable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
 
@@ -44,21 +44,20 @@ contract GeneralVault is VersionedInitializable {
     uint256 amount;
   }
 
-  address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
-
   ILendingPoolAddressesProvider internal _addressesProvider;
 
   // vault fee 20%
   uint256 internal _vaultFee;
   address internal _treasuryAddress;
 
-  uint256 public constant VAULT_REVISION = 0x1;
+  uint256 private constant VAULT_REVISION = 0x1;
+  address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
    * @param _provider The address of the provider
    **/
-  function initialize(ILendingPoolAddressesProvider _provider) public initializer {
+  function initialize(ILendingPoolAddressesProvider _provider) external initializer {
     _addressesProvider = _provider;
   }
 
@@ -150,19 +149,19 @@ contract GeneralVault is VersionedInitializable {
   /**
    * @dev Get yield based on strategy and re-deposit
    */
-  function processYield() external virtual {}
+  function processYield() external virtual;
 
   /**
    * @dev Get price per share based on yield strategy
    */
-  function pricePerShare() external view virtual returns (uint256) {}
+  function pricePerShare() external view virtual returns (uint256);
 
   /**
    * @dev Set treasury address and vault fee
    * @param _treasury The treasury address
    * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
    */
-  function setTreasuryInfo(address _treasury, uint256 _fee) external onlyAdmin {
+  function setTreasuryInfo(address _treasury, uint256 _fee) external payable onlyAdmin {
     require(_treasury != address(0), Errors.VT_TREASURY_INVALID);
     require(_fee <= 30_00, Errors.VT_FEE_TOO_BIG);
     _treasuryAddress = _treasury;
@@ -199,51 +198,12 @@ contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Get the list of asset and asset's yield amount
-   **/
-  function _getAssetYields(uint256 _WETHAmount) internal view returns (AssetYield[] memory) {
-    // Get total borrowing asset volume and volumes and assets
-    (
-      uint256 totalVolume,
-      uint256[] memory volumes,
-      address[] memory assets,
-      uint256 length
-    ) = ILendingPool(_addressesProvider.getLendingPool()).getBorrowingAssetAndVolumes();
-
-    if (totalVolume == 0) return new AssetYield[](0);
-
-    AssetYield[] memory assetYields = new AssetYield[](length);
-    uint256 extraWETHAmount = _WETHAmount;
-
-    for (uint256 i = 0; i < length; i++) {
-      assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute wethAmount based on percent of asset volume
-        assetYields[i].amount = _WETHAmount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
-      } else {
-        // without calculation, set remained extra amount
-        assetYields[i].amount = extraWETHAmount;
-      }
-    }
-
-    return assetYields;
-  }
-
-  function _depositYield(address _asset, uint256 _amount) internal {
-    ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
-  }
-
-  /**
    * @dev Deposit to yield pool based on strategy and receive stAsset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
     virtual
-    returns (address, uint256)
-  {}
+    returns (address, uint256);
 
   /**
    * @dev Withdraw from yield pool based on strategy with stAsset and deliver asset
@@ -252,7 +212,7 @@ contract GeneralVault is VersionedInitializable {
     address _asset,
     uint256 _amount,
     address _to
-  ) internal virtual returns (uint256) {}
+  ) internal virtual returns (uint256);
 
   /**
    * @dev Get Withdrawal amount of stAsset based on strategy
@@ -261,6 +221,5 @@ contract GeneralVault is VersionedInitializable {
     internal
     view
     virtual
-    returns (address, uint256)
-  {}
+    returns (address, uint256);
 }

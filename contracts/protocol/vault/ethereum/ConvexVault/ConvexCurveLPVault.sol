@@ -34,7 +34,7 @@ contract ConvexCurveLPVault is GeneralVault {
    * @param _lpToken The address of Curve LP Token which will be used in vault
    * @param _poolId  The convex pool Id for Curve LP Token
    */
-  function setConfiguration(address _lpToken, uint256 _poolId) external onlyAdmin {
+  function setConfiguration(address _lpToken, uint256 _poolId) external payable onlyAdmin {
     require(internalAssetToken == address(0), Errors.VT_INVALID_CONFIGURATION);
 
     convexBooster = 0xF403C135812408BFbE8713b5A23a04b3D48AAE31;
@@ -70,10 +70,13 @@ contract ConvexCurveLPVault is GeneralVault {
   function _transferYield(address _asset) internal {
     require(_asset != address(0), Errors.VT_PROCESS_YIELD_INVALID);
     uint256 yieldAmount = IERC20(_asset).balanceOf(address(this));
+    if (yieldAmount == 0) return;
 
-    // transfer to treasury
-    if (_vaultFee > 0) {
-      uint256 treasuryAmount = _processTreasury(_asset, yieldAmount);
+    // Move some yield to treasury
+    uint256 fee = _vaultFee;
+    if (fee > 0) {
+      uint256 treasuryAmount = yieldAmount.percentMul(fee);
+      IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
       yieldAmount = yieldAmount.sub(treasuryAmount);
     }
 
@@ -84,26 +87,20 @@ contract ConvexCurveLPVault is GeneralVault {
     emit ProcessYield(_asset, yieldAmount);
   }
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override {
     // Claim Rewards(CRV, CVX, Extra incentive tokens)
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).getReward();
 
     // Transfer CRV to YieldManager
-    address _token = _addressesProvider.getAddress('CRV');
-    address _tokenFromConvex = IConvexBaseRewardPool(baseRewardPool).rewardToken();
-    require(_token == _tokenFromConvex, Errors.VT_INVALID_CONFIGURATION);
-    _transferYield(_token);
+    _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
 
     // Transfer CVX to YieldManager
-    _token = _addressesProvider.getAddress('CVX');
-    _tokenFromConvex = IConvexBooster(convexBooster).minter();
-    require(_token == _tokenFromConvex, Errors.VT_INVALID_CONFIGURATION);
-    _transferYield(_token);
+    _transferYield(IConvexBooster(convexBooster).minter());
 
     // Transfer extra incentive token to YieldManager
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
-    for (uint256 i = 0; i < extraRewardsLength; i++) {
+    for (uint256 i; i < extraRewardsLength; ++i) {
       address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(i);
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);
@@ -134,18 +131,21 @@ contract ConvexCurveLPVault is GeneralVault {
     returns (address, uint256)
   {
     // receive Curve LP Token from user
-    require(_asset == curveLPToken, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(curveLPToken, msg.sender, address(this), _amount);
+    address token = curveLPToken;
+    require(_asset == token, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    TransferHelper.safeTransferFrom(token, msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
-    IERC20(curveLPToken).safeApprove(convexBooster, _amount);
-    IConvexBooster(convexBooster).deposit(convexPoolId, _amount, true);
+    address convexVault = convexBooster;
+    IERC20(token).safeApprove(convexVault, _amount);
+    IConvexBooster(convexVault).deposit(convexPoolId, _amount, true);
 
     // mint
-    SturdyInternalAsset(internalAssetToken).mint(address(this), _amount);
-    IERC20(internalAssetToken).safeApprove(address(_addressesProvider.getLendingPool()), _amount);
+    address internalAsset = internalAssetToken;
+    SturdyInternalAsset(internalAsset).mint(address(this), _amount);
+    IERC20(internalAsset).safeApprove(address(_addressesProvider.getLendingPool()), _amount);
 
-    return (internalAssetToken, _amount);
+    return (internalAsset, _amount);
   }
 
   /**
@@ -157,6 +157,8 @@ contract ConvexCurveLPVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
     return (internalAssetToken, _amount);
   }
@@ -194,17 +196,6 @@ contract ConvexCurveLPVault is GeneralVault {
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
-
     return _withdraw(_amount, _to);
-  }
-
-  /**
-   * @dev Move some yield(CRV) to treasury
-   */
-  function _processTreasury(address _asset, uint256 _yieldAmount) internal returns (uint256) {
-    uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
-    return treasuryAmount;
   }
 }

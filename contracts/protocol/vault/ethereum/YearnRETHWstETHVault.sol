@@ -26,7 +26,7 @@ contract YearnRETHWstETHVault is GeneralVault {
    */
   receive() external payable {}
 
-  function processYield() external override onlyAdmin {
+  function processYield() external override {
     // Get yield from lendingPool
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
     uint256 yieldYVRETH_WSTETH = _getYield(YVRETH_WSTETH);

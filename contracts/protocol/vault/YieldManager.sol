@@ -46,7 +46,6 @@ contract YieldManager is VersionedInitializable, Ownable {
   mapping(address => mapping(address => address)) internal _curvePools;
 
   uint256 public constant UNISWAP_FEE = 10000; // 1%
-  uint256 public constant SLIPPAGE = 500; // 5%
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -114,14 +113,21 @@ contract YieldManager is VersionedInitializable, Ownable {
    *      3. deposit to pool for suppliers
    * @param _offset assets array's start offset.
    * @param _count assets array's count when perform distribution.
+   * @param _slippage1 The slippage of the uniswap 1% = 100
+   * @param _slippage2 The slippage of the curveswap 1% = 100
    **/
-  function distributeYield(uint256 _offset, uint256 _count) external onlyAdmin {
+  function distributeYield(
+    uint256 _offset,
+    uint256 _count,
+    uint256 _slippage1,
+    uint256 _slippage2
+  ) external onlyAdmin {
     // 1. convert from asset to exchange token via uniswap
     for (uint256 i = 0; i < _count; i++) {
       address asset = _assetsList[_offset + i];
       require(asset != address(0), Errors.UL_INVALID_INDEX);
       uint256 _amount = IERC20Detailed(asset).balanceOf(address(this));
-      _convertAssetToExchangeToken(asset, _amount);
+      _convertAssetToExchangeToken(asset, _amount, _slippage1);
     }
     uint256 exchangedAmount = IERC20Detailed(_exchangeToken).balanceOf(address(this));
 
@@ -129,7 +135,11 @@ contract YieldManager is VersionedInitializable, Ownable {
     AssetYield[] memory assetYields = _getAssetYields(exchangedAmount);
     for (uint256 i = 0; i < assetYields.length; i++) {
       if (assetYields[i].amount > 0) {
-        uint256 _amount = _convertToStableCoin(assetYields[i].asset, assetYields[i].amount);
+        uint256 _amount = _convertToStableCoin(
+          assetYields[i].asset,
+          assetYields[i].amount,
+          _slippage2
+        );
         // 3. deposit Yield to pool for suppliers
         _depositYield(assetYields[i].asset, _amount);
       }
@@ -174,15 +184,20 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @dev Convert asset to exchange token via Uniswap
    * @param asset The address of asset being exchanged
    * @param amount The amount of asset being exchanged
+   * @param slippage The slippage of swapping
    */
-  function _convertAssetToExchangeToken(address asset, uint256 amount) internal {
+  function _convertAssetToExchangeToken(
+    address asset,
+    uint256 amount,
+    uint256 slippage
+  ) internal {
     UniswapAdapter.swapExactTokensForTokens(
       _addressesProvider,
       asset,
       _exchangeToken,
       amount,
       UNISWAP_FEE,
-      SLIPPAGE
+      slippage
     );
   }
 
@@ -190,12 +205,14 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @dev The function to convert from exchange token to stable coin via Curve
    * @param _tokenOut The address of stable coin
    * @param _amount The amount of exchange token being sent
+   * @param slippage The slippage of swapping
    * @return receivedAmount The amount of stable coin converted
    */
-  function _convertToStableCoin(address _tokenOut, uint256 _amount)
-    internal
-    returns (uint256 receivedAmount)
-  {
+  function _convertToStableCoin(
+    address _tokenOut,
+    uint256 _amount,
+    uint256 slippage
+  ) internal returns (uint256 receivedAmount) {
     if (_tokenOut == _exchangeToken) {
       return _amount;
     }
@@ -207,7 +224,7 @@ contract YieldManager is VersionedInitializable, Ownable {
       _exchangeToken,
       _tokenOut,
       _amount,
-      SLIPPAGE
+      slippage
     );
   }
 

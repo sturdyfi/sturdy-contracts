@@ -13,6 +13,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
 
 /**
  * @title TombFtmBeefyVault
@@ -274,6 +275,44 @@ contract TombFtmBeefyVault is GeneralVault {
     // Deliver TOMB_FTM_LP to user
     TransferHelper.safeTransfer(TOMB_FTM_LP, _to, assetAmount);
     return assetAmount;
+  }
+
+  /**
+   * @dev Get the list of asset and asset's yield amount
+   **/
+  function _getAssetYields(uint256 _amount) internal view returns (AssetYield[] memory) {
+    // Get total borrowing asset volume and volumes and assets
+    (
+      uint256 totalVolume,
+      uint256[] memory volumes,
+      address[] memory assets,
+      uint256 length
+    ) = ILendingPool(_addressesProvider.getLendingPool()).getBorrowingAssetAndVolumes();
+
+    if (totalVolume == 0) return new AssetYield[](0);
+
+    AssetYield[] memory assetYields = new AssetYield[](length);
+    uint256 extraWETHAmount = _amount;
+
+    for (uint256 i; i < length; i++) {
+      assetYields[i].asset = assets[i];
+      if (i != length - 1) {
+        // Distribute wethAmount based on percent of asset volume
+        assetYields[i].amount = _amount.percentMul(
+          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
+        );
+        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
+      } else {
+        // without calculation, set remained extra amount
+        assetYields[i].amount = extraWETHAmount;
+      }
+    }
+
+    return assetYields;
+  }
+
+  function _depositYield(address _asset, uint256 _amount) internal {
+    ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
   }
 
   /**

@@ -8,6 +8,7 @@ import {IWETH} from '../../../misc/interfaces/IWETH.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title LidoVault
@@ -26,21 +27,24 @@ contract LidoVault is GeneralVault {
    * @dev Grab excess stETH which was from rebasing on Lido
    *  And convert stETH -> ETH -> asset, deposit to pool
    */
-  function processYield() external override onlyAdmin {
+  function processYield() external override {
     // Get yield from lendingPool
-    address LIDO = _addressesProvider.getAddress('LIDO');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address LIDO = provider.getAddress('LIDO');
     uint256 yieldStETH = _getYield(LIDO);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
-      uint256 treasuryStETH = _processTreasury(yieldStETH);
+    uint256 fee = _vaultFee;
+    if (fee > 0) {
+      uint256 treasuryStETH = yieldStETH.percentMul(fee);
+      IERC20(LIDO).safeTransfer(_treasuryAddress, treasuryStETH);
       yieldStETH = yieldStETH.sub(treasuryStETH);
     }
 
     // Exchange stETH -> ETH via Curve
     uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(
-      _addressesProvider,
-      _addressesProvider.getAddress('STETH_ETH_POOL'),
+      provider,
+      provider.getAddress('STETH_ETH_POOL'),
       LIDO,
       ETH,
       yieldStETH,
@@ -48,14 +52,14 @@ contract LidoVault is GeneralVault {
     );
 
     // ETH -> WETH
-    address weth = _addressesProvider.getAddress('WETH');
+    address weth = provider.getAddress('WETH');
     IWETH(weth).deposit{value: receivedETHAmount}();
 
     // transfer WETH to yieldManager
-    address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
+    address yieldManager = provider.getAddress('YIELD_MANAGER');
     IERC20(weth).safeTransfer(yieldManager, receivedETHAmount);
 
-    emit ProcessYield(_addressesProvider.getAddress('WETH'), receivedETHAmount);
+    emit ProcessYield(weth, receivedETHAmount);
   }
 
   /**
@@ -80,8 +84,10 @@ contract LidoVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address LIDO = _addressesProvider.getAddress('LIDO');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address LIDO = provider.getAddress('LIDO');
     require(LIDO != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Deposit ETH to Lido and receive stETH
@@ -96,8 +102,9 @@ contract LidoVault is GeneralVault {
     }
 
     // Make lendingPool to transfer required amount
-    IERC20(LIDO).safeApprove(address(_addressesProvider.getLendingPool()), 0);
-    IERC20(LIDO).safeApprove(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(LIDO).safeApprove(address(provider.getLendingPool()), 0);
+    IERC20(LIDO).safeApprove(address(provider.getLendingPool()), assetAmount);
+
     return (LIDO, assetAmount);
   }
 
@@ -110,8 +117,11 @@ contract LidoVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    address LIDO = _addressesProvider.getAddress('LIDO');
+    require(_asset == LIDO || _asset == address(0), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('LIDO'), _amount);
+    return (LIDO, _amount);
   }
 
   /**
@@ -122,14 +132,15 @@ contract LidoVault is GeneralVault {
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address LIDO = _addressesProvider.getAddress('LIDO');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address LIDO = provider.getAddress('LIDO');
     require(_to != address(0), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     if (_asset == address(0)) {
       // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(
-        _addressesProvider,
-        _addressesProvider.getAddress('STETH_ETH_POOL'),
+        provider,
+        provider.getAddress('STETH_ETH_POOL'),
         LIDO,
         ETH,
         _amount,
@@ -142,18 +153,8 @@ contract LidoVault is GeneralVault {
       return receivedETHAmount;
     } else {
       // Case of stETH withdraw request from user, so directly send
-      require(_asset == LIDO, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
       IERC20(LIDO).safeTransfer(_to, _amount);
     }
     return _amount;
-  }
-
-  /**
-   * @dev Move some yield to treasury
-   */
-  function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
-    uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);
-    IERC20(_addressesProvider.getAddress('LIDO')).safeTransfer(_treasuryAddress, treasuryAmount);
-    return treasuryAmount;
   }
 }

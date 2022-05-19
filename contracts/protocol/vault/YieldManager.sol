@@ -40,14 +40,14 @@ contract YieldManager is VersionedInitializable, Ownable {
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
-  uint256 public constant VAULT_REVISION = 0x1;
+  uint256 private constant REVISION = 0x1;
 
   address public _exchangeToken;
 
   // tokenIn -> tokenOut -> Curve Pool Address
   mapping(address => mapping(address => address)) internal _curvePools;
 
-  uint256 public constant UNISWAP_FEE = 10000; // 1%
+  uint256 private constant UNISWAP_FEE = 10000; // 1%
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -58,22 +58,33 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
    * @param _provider The address of the provider
    **/
-  function initialize(ILendingPoolAddressesProvider _provider) public initializer {
+  function initialize(ILendingPoolAddressesProvider _provider) external initializer {
     _addressesProvider = _provider;
   }
 
-  function setExchangeToken(address _token) external onlyAdmin {
+  function setExchangeToken(address _token) external payable onlyAdmin {
     require(_token != address(0), Errors.VT_INVALID_CONFIGURATION);
     _exchangeToken = _token;
   }
 
   function getRevision() internal pure override returns (uint256) {
-    return VAULT_REVISION;
+    return REVISION;
   }
 
-  function registerAsset(address _asset) external onlyAdmin {
+  function registerAsset(address _asset) external payable onlyAdmin {
     _assetsList[_assetsCount] = _asset;
-    _assetsCount = _assetsCount + 1;
+    _assetsCount += 1;
+  }
+
+  function unregisterAsset(address _asset, uint256 _index) external payable onlyAdmin {
+    uint256 count = _assetsCount;
+    require(_index < count, Errors.VT_INVALID_CONFIGURATION);
+
+    count -= 1;
+    if (_index == count) return;
+
+    _assetsList[_index] = _assetsList[count];
+    _assetsCount = count;
   }
 
   function getAssetCount() external view returns (uint256) {
@@ -94,7 +105,7 @@ contract YieldManager is VersionedInitializable, Ownable {
     address _tokenIn,
     address _tokenOut,
     address _pool
-  ) external onlyAdmin {
+  ) external payable onlyAdmin {
     require(_pool != address(0), Errors.VT_INVALID_CONFIGURATION);
     _curvePools[_tokenIn][_tokenOut] = _pool;
   }
@@ -123,53 +134,44 @@ contract YieldManager is VersionedInitializable, Ownable {
     uint256 _count,
     uint256 _slippage1,
     uint256 _slippage2
-  ) external onlyAdmin {
+  ) external payable onlyAdmin {
+    address token = _exchangeToken;
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
     // 1. convert from asset to exchange token via uniswap
-    for (uint256 i = 0; i < _count; i++) {
+    for (uint256 i; i < _count; ++i) {
       address asset = _assetsList[_offset + i];
       require(asset != address(0), Errors.UL_INVALID_INDEX);
-      uint256 _amount = IERC20Detailed(asset).balanceOf(address(this));
-      _convertAssetToExchangeToken(asset, _amount, _slippage1);
+      uint256 amount = IERC20Detailed(asset).balanceOf(address(this));
+      UniswapAdapter.swapExactTokensForTokens(
+        provider,
+        asset,
+        token,
+        amount,
+        UNISWAP_FEE,
+        _slippage1
+      );
     }
-    uint256 exchangedAmount = IERC20Detailed(_exchangeToken).balanceOf(address(this));
+    uint256 exchangedAmount = IERC20Detailed(token).balanceOf(address(this));
 
     // 2. convert from exchange token to other stable assets via curve swap
-    AssetYield[] memory assetYields = _getAssetYields(exchangedAmount);
-    for (uint256 i = 0; i < assetYields.length; i++) {
-      if (assetYields[i].amount > 0) {
-        uint256 _amount = _convertToStableCoin(
-          assetYields[i].asset,
-          assetYields[i].amount,
-          _slippage2
-        );
-        // 3. deposit Yield to pool for suppliers
-        _depositYield(assetYields[i].asset, _amount);
-      }
-    }
-  }
-
-  /**
-   * @dev Get the list of asset and asset's yield amount
-   **/
-  function _getAssetYields(uint256 _totalYieldAmount) internal view returns (AssetYield[] memory) {
-    // Get total borrowing asset volume and volumes and assets
+    AssetYield[] memory assetYields;
     (
       uint256 totalVolume,
       uint256[] memory volumes,
       address[] memory assets,
       uint256 length
-    ) = ILendingPool(_addressesProvider.getLendingPool()).getBorrowingAssetAndVolumes();
+    ) = ILendingPool(provider.getLendingPool()).getBorrowingAssetAndVolumes();
 
-    if (totalVolume == 0) return new AssetYield[](0);
+    if (totalVolume == 0) assetYields = new AssetYield[](0);
+    else assetYields = new AssetYield[](length);
+    uint256 extraYieldAmount = exchangedAmount;
 
-    AssetYield[] memory assetYields = new AssetYield[](length);
-    uint256 extraYieldAmount = _totalYieldAmount;
-
-    for (uint256 i = 0; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i != length - 1) {
         // Distribute yieldAmount based on percent of asset volume
-        assetYields[i].amount = _totalYieldAmount.percentMul(
+        assetYields[i].amount = exchangedAmount.percentMul(
           volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
         );
         extraYieldAmount = extraYieldAmount.sub(assetYields[i].amount);
@@ -179,66 +181,30 @@ contract YieldManager is VersionedInitializable, Ownable {
       }
     }
 
-    return assetYields;
-  }
+    length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
+      if (assetYields[i].amount > 0) {
+        uint256 amount;
 
-  /**
-   * @dev Convert asset to exchange token via Uniswap
-   * @param asset The address of asset being exchanged
-   * @param amount The amount of asset being exchanged
-   * @param slippage The slippage of swapping
-   */
-  function _convertAssetToExchangeToken(
-    address asset,
-    uint256 amount,
-    uint256 slippage
-  ) internal {
-    UniswapAdapter.swapExactTokensForTokens(
-      _addressesProvider,
-      asset,
-      _exchangeToken,
-      amount,
-      UNISWAP_FEE,
-      slippage
-    );
-  }
-
-  /**
-   * @dev The function to convert from exchange token to stable coin via Curve
-   * @param _tokenOut The address of stable coin
-   * @param _amount The amount of exchange token being sent
-   * @param slippage The slippage of swapping
-   * @return receivedAmount The amount of stable coin converted
-   */
-  function _convertToStableCoin(
-    address _tokenOut,
-    uint256 _amount,
-    uint256 slippage
-  ) internal returns (uint256 receivedAmount) {
-    if (_tokenOut == _exchangeToken) {
-      return _amount;
+        if (assetYields[i].asset == token) {
+          amount = assetYields[i].amount;
+        } else {
+          address pool = _curvePools[token][assetYields[i].asset];
+          require(pool != address(0), Errors.VT_INVALID_CONFIGURATION);
+          amount = CurveswapAdapter.swapExactTokensForTokens(
+            provider,
+            pool,
+            token,
+            assetYields[i].asset,
+            assetYields[i].amount,
+            _slippage2
+          );
+        }
+        // 3. deposit Yield to pool for suppliers
+        address _lendingPool = provider.getLendingPool();
+        IERC20(assetYields[i].asset).approve(_lendingPool, amount);
+        ILendingPool(_lendingPool).depositYield(assetYields[i].asset, amount);
+      }
     }
-    address _pool = _curvePools[_exchangeToken][_tokenOut];
-    require(_pool != address(0), Errors.VT_INVALID_CONFIGURATION);
-    receivedAmount = CurveswapAdapter.swapExactTokensForTokens(
-      _addressesProvider,
-      _pool,
-      _exchangeToken,
-      _tokenOut,
-      _amount,
-      slippage
-    );
-  }
-
-  /**
-   * @dev The function to deposit yield to pool for suppliers
-   * @param _asset The address of yield asset
-   * @param _amount The mount of asset
-   */
-  function _depositYield(address _asset, uint256 _amount) internal {
-    address _lendingPool = _addressesProvider.getLendingPool();
-    IERC20(_asset).safeApprove(_lendingPool, 0);
-    IERC20(_asset).safeApprove(_lendingPool, _amount);
-    ILendingPool(_lendingPool).depositYield(_asset, _amount);
   }
 }

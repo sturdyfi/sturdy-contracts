@@ -155,33 +155,9 @@ contract YieldManager is VersionedInitializable, Ownable {
     uint256 exchangedAmount = IERC20Detailed(token).balanceOf(address(this));
 
     // 2. convert from exchange token to other stable assets via curve swap
-    AssetYield[] memory assetYields;
-    (
-      uint256 totalVolume,
-      uint256[] memory volumes,
-      address[] memory assets,
-      uint256 length
-    ) = ILendingPool(provider.getLendingPool()).getBorrowingAssetAndVolumes();
+    AssetYield[] memory assetYields = _getAssetYields(exchangedAmount, provider);
 
-    if (totalVolume == 0) assetYields = new AssetYield[](0);
-    else assetYields = new AssetYield[](length);
-    uint256 extraYieldAmount = exchangedAmount;
-
-    for (uint256 i; i < length; ++i) {
-      assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute yieldAmount based on percent of asset volume
-        assetYields[i].amount = exchangedAmount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraYieldAmount = extraYieldAmount.sub(assetYields[i].amount);
-      } else {
-        // without calculation, set remained extra amount
-        assetYields[i].amount = extraYieldAmount;
-      }
-    }
-
-    length = assetYields.length;
+    uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       if (assetYields[i].amount > 0) {
         uint256 amount;
@@ -206,5 +182,43 @@ contract YieldManager is VersionedInitializable, Ownable {
         ILendingPool(_lendingPool).depositYield(assetYields[i].asset, amount);
       }
     }
+  }
+
+  /**
+   * @dev Get the list of asset and asset's yield amount
+   **/
+  function _getAssetYields(uint256 _totalYieldAmount, ILendingPoolAddressesProvider provider)
+    internal
+    view
+    returns (AssetYield[] memory)
+  {
+    // Get total borrowing asset volume and volumes and assets
+    (
+      uint256 totalVolume,
+      uint256[] memory volumes,
+      address[] memory assets,
+      uint256 length
+    ) = ILendingPool(provider.getLendingPool()).getBorrowingAssetAndVolumes();
+
+    if (totalVolume == 0) return new AssetYield[](0);
+
+    AssetYield[] memory assetYields = new AssetYield[](length);
+    uint256 extraYieldAmount = _totalYieldAmount;
+
+    for (uint256 i; i < length; ++i) {
+      assetYields[i].asset = assets[i];
+      if (i == length - 1) {
+        // without calculation, set remained extra amount
+        assetYields[i].amount = extraYieldAmount;
+      } else {
+        // Distribute yieldAmount based on percent of asset volume
+        assetYields[i].amount = _totalYieldAmount.percentMul(
+          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
+        );
+        extraYieldAmount = extraYieldAmount.sub(assetYields[i].amount);
+      }
+    }
+
+    return assetYields;
   }
 }

@@ -126,16 +126,14 @@ contract YieldManager is VersionedInitializable, Ownable {
    *      3. deposit to pool for suppliers
    * @param _offset assets array's start offset.
    * @param _count assets array's count when perform distribution.
-   * @param _slippage1 The slippage of the uniswap 1% = 100
-   * @param _slippage2 The slippage of the curveswap 1% = 100
+   * @param _slippage The slippage of the swap 1% = 100
    **/
   function distributeYield(
     uint256 _offset,
     uint256 _count,
-    uint256 _slippage1,
-    uint256 _slippage2
+    uint256 _slippage,
+    UniswapAdapter.Path[] memory _paths
   ) external payable onlyAdmin {
-    address token = _exchangeToken;
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // 1. convert from asset to exchange token via uniswap
@@ -146,13 +144,13 @@ contract YieldManager is VersionedInitializable, Ownable {
       UniswapAdapter.swapExactTokensForTokens(
         provider,
         asset,
-        token,
+        _exchangeToken,
         amount,
-        UNISWAP_FEE,
-        _slippage1
+        _paths[i],
+        _slippage
       );
     }
-    uint256 exchangedAmount = IERC20Detailed(token).balanceOf(address(this));
+    uint256 exchangedAmount = IERC20Detailed(_exchangeToken).balanceOf(address(this));
 
     // 2. convert from exchange token to other stable assets via curve swap
     AssetYield[] memory assetYields = _getAssetYields(exchangedAmount, provider);
@@ -162,18 +160,18 @@ contract YieldManager is VersionedInitializable, Ownable {
       if (assetYields[i].amount > 0) {
         uint256 amount;
 
-        if (assetYields[i].asset == token) {
+        if (assetYields[i].asset == _exchangeToken) {
           amount = assetYields[i].amount;
         } else {
-          address pool = _curvePools[token][assetYields[i].asset];
+          address pool = _curvePools[_exchangeToken][assetYields[i].asset];
           require(pool != address(0), Errors.VT_INVALID_CONFIGURATION);
           amount = CurveswapAdapter.swapExactTokensForTokens(
             provider,
             pool,
-            token,
+            _exchangeToken,
             assetYields[i].asset,
             assetYields[i].amount,
-            _slippage2
+            _slippage
           );
         }
         // 3. deposit Yield to pool for suppliers

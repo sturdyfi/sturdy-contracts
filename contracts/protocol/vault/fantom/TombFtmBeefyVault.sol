@@ -10,7 +10,6 @@ import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
@@ -21,7 +20,6 @@ import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
  * @author Sturdy
  **/
 contract TombFtmBeefyVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
@@ -39,7 +37,7 @@ contract TombFtmBeefyVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryMOO_TOMB_FTM = _processTreasury(yieldMOO_TOMB_FTM);
-      yieldMOO_TOMB_FTM = yieldMOO_TOMB_FTM.sub(treasuryMOO_TOMB_FTM);
+      yieldMOO_TOMB_FTM -= treasuryMOO_TOMB_FTM;
     }
 
     // Withdraw from Beefy Vault and receive TOMB_FTM_LP
@@ -101,18 +99,16 @@ contract TombFtmBeefyVault is GeneralVault {
 
     // Calculate minAmount from price with 1% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minTotalPrice = _amount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('mooTombTOMB-FTM')))
-      .div(2)
-      .percentMul(99_00);
+    uint256 minTotalPrice = ((_amount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('mooTombTOMB-FTM'))) / 2).percentMul(
+        99_00
+      );
 
-    uint256 minFTMAmountFromPrice = minTotalPrice.div(
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))
-    );
+    uint256 minFTMAmountFromPrice = minTotalPrice /
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'));
 
-    uint256 minTokenAmountFromPrice = minTotalPrice.div(
-      oracle.getAssetPrice(_addressesProvider.getAddress('TOMB'))
-    );
+    uint256 minTokenAmountFromPrice = minTotalPrice /
+      oracle.getAssetPrice(_addressesProvider.getAddress('TOMB'));
 
     IERC20(_poolAddress).approve(uniswapRouter, _amount);
     (amountToken, amountFTM) = IUniswapV2Router02(uniswapRouter).removeLiquidityETH(
@@ -132,12 +128,8 @@ contract TombFtmBeefyVault is GeneralVault {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = _tombAmount
-      .mul(oracle.getAssetPrice(TOMB))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((_tombAmount * oracle.getAssetPrice(TOMB)) / 10**18) *
+      10**assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange TOMB -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
@@ -174,12 +166,9 @@ contract TombFtmBeefyVault is GeneralVault {
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = _ftmAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(99_00);
+    uint256 minAmountFromPrice = ((((_ftmAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(_tokenOut)).percentMul(99_00);
 
     // Exchange FTM -> _tokenOut via UniswapV2
     address[] memory path = new address[](2);
@@ -296,15 +285,15 @@ contract TombFtmBeefyVault is GeneralVault {
 
     for (uint256 i; i < length; i++) {
       assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute wethAmount based on percent of asset volume
-        assetYields[i].amount = _amount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
-      } else {
+      if (i == length - 1) {
         // without calculation, set remained extra amount
         assetYields[i].amount = extraWETHAmount;
+      } else {
+        // Distribute wethAmount based on percent of asset volume
+        assetYields[i].amount = _amount.percentMul(
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
+        );
+        extraWETHAmount -= assetYields[i].amount;
       }
     }
 

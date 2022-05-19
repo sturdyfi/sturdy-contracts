@@ -16,7 +16,7 @@ import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detai
 contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  constructor() public {}
+  constructor() {}
 
   function getFullReservesIncentiveData(ILendingPoolAddressesProvider provider, address user)
     external

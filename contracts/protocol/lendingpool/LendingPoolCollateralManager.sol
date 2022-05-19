@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 
-import {SafeMath} from '../../dependencies/openzeppelin/contracts//SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts//IERC20.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
@@ -39,7 +38,6 @@ contract LendingPoolCollateralManager is
   LendingPoolStorage
 {
   using SafeERC20 for IERC20;
-  using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using ReserveLogic for DataTypes.ReserveData;
@@ -137,7 +135,7 @@ contract LendingPoolCollateralManager is
 
     vars.userCollateralBalance = vars.collateralAtoken.balanceOf(user);
 
-    vars.maxLiquidatableDebt = vars.userStableDebt.add(vars.userVariableDebt).percentMul(
+    vars.maxLiquidatableDebt = (vars.userStableDebt + vars.userVariableDebt).percentMul(
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
 
@@ -198,7 +196,7 @@ contract LendingPoolCollateralManager is
       }
       IStableDebtToken(debtReserve.stableDebtTokenAddress).burn(
         user,
-        vars.actualDebtToLiquidate.sub(vars.userVariableDebt)
+        vars.actualDebtToLiquidate - vars.userVariableDebt
       );
     }
 
@@ -301,7 +299,7 @@ contract LendingPoolCollateralManager is
       collateralReserve.getIndexFromPricePerShare()
     );
     uint256 decimal = IERC20Detailed(collateralReserve.aTokenAddress).decimals();
-    if (decimal < 18) amountCollateral = amountCollateral.div(10**(18 - decimal));
+    if (decimal < 18) amountCollateral = amountCollateral / 10**(18 - decimal);
     amountCollateral = IGeneralVault(vault).withdrawOnLiquidation(
       collateralAsset,
       amountCollateral
@@ -353,21 +351,16 @@ contract LendingPoolCollateralManager is
 
     // This is the maximum possible amount of the selected collateral that can be liquidated, given the
     // max amount of liquidatable debt
-    vars.maxAmountCollateralToLiquidate = vars
-      .debtAssetPrice
-      .mul(debtToCover)
-      .mul(10**vars.collateralDecimals)
-      .percentMul(vars.liquidationBonus)
-      .div(vars.collateralPrice.mul(10**vars.debtAssetDecimals));
+    vars.maxAmountCollateralToLiquidate =
+      (vars.debtAssetPrice * debtToCover * 10**vars.collateralDecimals).percentMul(
+        vars.liquidationBonus
+      ) /
+      (vars.collateralPrice * 10**vars.debtAssetDecimals);
 
     if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
       collateralAmount = userCollateralBalance;
-      debtAmountNeeded = vars
-        .collateralPrice
-        .mul(collateralAmount)
-        .mul(10**vars.debtAssetDecimals)
-        .div(vars.debtAssetPrice.mul(10**vars.collateralDecimals))
-        .percentDiv(vars.liquidationBonus);
+      debtAmountNeeded = ((vars.collateralPrice * collateralAmount * 10**vars.debtAssetDecimals) /
+        (vars.debtAssetPrice * 10**vars.collateralDecimals)).percentDiv(vars.liquidationBonus);
     } else {
       collateralAmount = vars.maxAmountCollateralToLiquidate;
       debtAmountNeeded = debtToCover;

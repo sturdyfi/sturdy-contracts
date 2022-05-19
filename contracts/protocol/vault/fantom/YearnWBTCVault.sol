@@ -8,7 +8,6 @@ import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -21,7 +20,6 @@ import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
  * @author Sturdy
  **/
 contract YearnWBTCVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
@@ -33,7 +31,7 @@ contract YearnWBTCVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryYVWBTC = _processTreasury(yieldYVWBTC);
-      yieldYVWBTC = yieldYVWBTC.sub(treasuryYVWBTC);
+      yieldYVWBTC -= treasuryYVWBTC;
     }
 
     // Withdraw from Yearn Vault and receive WBTC
@@ -80,12 +78,9 @@ contract YearnWBTCVault is GeneralVault {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = _wbtcAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWBTC')))
-      .div(10**8)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((_wbtcAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWBTC'))) / 10**8) * 10**assetDecimal) /
+      oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WBTC -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
@@ -205,15 +200,15 @@ contract YearnWBTCVault is GeneralVault {
 
     for (uint256 i; i < length; i++) {
       assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute wethAmount based on percent of asset volume
-        assetYields[i].amount = _amount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
-      } else {
+      if (i == length - 1) {
         // without calculation, set remained extra amount
         assetYields[i].amount = extraWETHAmount;
+      } else {
+        // Distribute wethAmount based on percent of asset volume
+        assetYields[i].amount = _amount.percentMul(
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
+        );
+        extraWETHAmount -= assetYields[i].amount;
       }
     }
 

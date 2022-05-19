@@ -11,7 +11,6 @@ import {IFBeetsToken} from '../../../interfaces/IFBeetsToken.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -24,7 +23,6 @@ import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
  * @author Sturdy
  **/
 contract YearnFBEETSVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
@@ -69,7 +67,7 @@ contract YearnFBEETSVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryYVFBEETS = _processTreasury(yieldYVFBEETS);
-      yieldYVFBEETS = yieldYVFBEETS.sub(treasuryYVFBEETS);
+      yieldYVFBEETS -= treasuryYVFBEETS;
     }
 
     // Withdraw from Yearn Vault and receive fBEETS
@@ -83,13 +81,13 @@ contract YearnFBEETSVault is GeneralVault {
 
     // BEETS -> WFTM
     uint256 balance = IERC20(BEETS).balanceOf(address(this));
-    uint256 beetsAmount = balance.sub(_balanceOfBEETS);
+    uint256 beetsAmount = balance - _balanceOfBEETS;
     require(beetsAmount > 0, Errors.LP_LIQUIDATION_CALL_FAILED);
     _swapBEETS2WFTM(beetsAmount);
 
     // WFTM -> stable coins
     balance = IERC20(WFTM).balanceOf(address(this));
-    uint256 wftmAmount = balance.sub(_balanceOfWFTM);
+    uint256 wftmAmount = balance - _balanceOfWFTM;
     AssetYield[] memory assetYields = _getAssetYields(wftmAmount);
     for (uint256 i = 0; i < assetYields.length; i++) {
       // WFTM -> Asset and Deposit to pool
@@ -134,12 +132,9 @@ contract YearnFBEETSVault is GeneralVault {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = _wftmAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((_wftmAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WFTM -> _tokenOut via UniswapV2
     address[] memory path = new address[](2);
@@ -167,24 +162,21 @@ contract YearnFBEETSVault is GeneralVault {
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
 
-  function _calcSwapMinAmount(uint256 _beetsAmount) internal returns (uint256) {
+  function _calcSwapMinAmount(uint256 _beetsAmount) internal view returns (uint256) {
     address WFTM = _addressesProvider.getAddress('WFTM');
     uint256 assetDecimal = IERC20Detailed(WFTM).decimals();
 
     // Calculate minAmount from price with 2% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = _beetsAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('BEETS')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((_beetsAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('BEETS'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))).percentMul(98_00);
 
     // Substract pool's swap fee
     (address swapPool, ) = getBeethovenVault().getPool(beethovenSwapPoolId);
     uint256 swapFee = IBalancerWeightedPool(swapPool).getSwapFeePercentage();
 
-    return minAmountFromPrice.mul(10**18 - swapFee).div(10**18);
+    return (minAmountFromPrice * (10**18 - swapFee)) / 10**18;
   }
 
   /**
@@ -237,7 +229,7 @@ contract YearnFBEETSVault is GeneralVault {
     uint256 beforeOfBalance = IERC20(BEETS_FTM_Pool).balanceOf(address(this));
     IFBeetsToken(fBEETS).leave(_fbeetsAmount);
     uint256 afterOfBalance = IERC20(BEETS_FTM_Pool).balanceOf(address(this));
-    uint256 _amount = afterOfBalance.sub(beforeOfBalance);
+    uint256 _amount = afterOfBalance - beforeOfBalance;
 
     // Withdraw from LP
     // ToDo: calculate minimum amount from token balance
@@ -250,7 +242,7 @@ contract YearnFBEETSVault is GeneralVault {
 
     uint256[] memory amountsOut = new uint256[](tokens.length);
     for (uint256 i = 0; i < tokens.length; i++) {
-      amountsOut[i] = balances[i].mul(_amount).div(_totalAmount).percentMul(99_00);
+      amountsOut[i] = ((balances[i] * _amount) / _totalAmount).percentMul(99_00);
     }
 
     getBeethovenVault().exitPool(
@@ -357,15 +349,15 @@ contract YearnFBEETSVault is GeneralVault {
 
     for (uint256 i; i < length; i++) {
       assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute wethAmount based on percent of asset volume
-        assetYields[i].amount = _amount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
-      } else {
+      if (i == length - 1) {
         // without calculation, set remained extra amount
         assetYields[i].amount = extraWETHAmount;
+      } else {
+        // Distribute wethAmount based on percent of asset volume
+        assetYields[i].amount = _amount.percentMul(
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
+        );
+        extraWETHAmount -= assetYields[i].amount;
       }
     }
 

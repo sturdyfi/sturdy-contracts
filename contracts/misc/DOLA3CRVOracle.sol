@@ -7,14 +7,11 @@ import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/ICurvePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
-import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 
 /**
  * @dev Oracle contract for DOLA3CRV LP Token
  */
 contract DOLA3CRVOracle is IOracle {
-  using SafeMath for uint256;
-
   ICurvePool public constant DOLA3CRV = ICurvePool(0xAA5A67c256e27A5d80712c51971408db3370927D);
   ICurvePool public constant CRV3 = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
 
@@ -44,7 +41,7 @@ contract DOLA3CRVOracle is IOracle {
   function _getDolaPrice() internal view returns (uint256) {
     uint256 _price = uint256(USD.latestAnswer()); // ETH / USD
     uint256 tokenPrice = 1e18;
-    return tokenPrice.div(_price).mul(1e8);
+    return (tokenPrice / _price) * 1e8;
   }
 
   /**
@@ -60,7 +57,7 @@ contract DOLA3CRVOracle is IOracle {
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false
   /// @inheritdoc IOracle
-  function get() public override returns (bool, uint256) {
+  function get() public view override returns (bool, uint256) {
     return (true, _get());
   }
 

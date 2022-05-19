@@ -20,7 +20,7 @@ import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 contract DeployVaultHelper is Ownable {
   ILendingPoolAddressesProvider private _addressProvider;
 
-  constructor(address addressProvider) public {
+  constructor(address addressProvider) {
     _addressProvider = ILendingPoolAddressesProvider(addressProvider);
   }
 

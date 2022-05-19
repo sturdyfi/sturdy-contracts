@@ -322,7 +322,7 @@ contract Usdc is IWERC10 {
     string memory _symbol,
     uint8 _decimals,
     address _owner
-  ) public {
+  ) {
     name = _name;
     symbol = _symbol;
     decimals = _decimals;

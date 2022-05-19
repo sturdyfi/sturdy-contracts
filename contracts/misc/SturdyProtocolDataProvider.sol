@@ -28,7 +28,7 @@ contract SturdyProtocolDataProvider {
 
   ILendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
-  constructor(ILendingPoolAddressesProvider addressesProvider) public {
+  constructor(ILendingPoolAddressesProvider addressesProvider) {
     ADDRESSES_PROVIDER = addressesProvider;
   }
 

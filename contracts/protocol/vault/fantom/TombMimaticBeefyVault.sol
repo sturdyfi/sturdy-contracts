@@ -10,7 +10,6 @@ import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
@@ -21,7 +20,6 @@ import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
  * @author Sturdy
  **/
 contract TombMimaticBeefyVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
@@ -34,7 +32,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryMOO_TOMB_MIMATIC = _processTreasury(yieldMOO_TOMB_MIMATIC);
-      yieldMOO_TOMB_MIMATIC = yieldMOO_TOMB_MIMATIC.sub(treasuryMOO_TOMB_MIMATIC);
+      yieldMOO_TOMB_MIMATIC -= treasuryMOO_TOMB_MIMATIC;
     }
 
     // Withdraw from Beefy Vault and receive TOMB_MIMATIC_LP
@@ -107,18 +105,16 @@ contract TombMimaticBeefyVault is GeneralVault {
 
     // Calculate minAmount from price with 1% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minTotalPrice = _amount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('mooTombTOMB-MIMATIC')))
-      .div(2)
-      .percentMul(99_00);
+    uint256 minTotalPrice = ((_amount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('mooTombTOMB-MIMATIC'))) / 2).percentMul(
+        99_00
+      );
 
-    uint256 minMiMaticAmountFromPrice = minTotalPrice.div(
-      oracle.getAssetPrice(_addressesProvider.getAddress('MIMATIC'))
-    );
+    uint256 minMiMaticAmountFromPrice = minTotalPrice /
+      oracle.getAssetPrice(_addressesProvider.getAddress('MIMATIC'));
 
-    uint256 minTombAmountFromPrice = minTotalPrice.div(
-      oracle.getAssetPrice(_addressesProvider.getAddress('TOMB'))
-    );
+    uint256 minTombAmountFromPrice = minTotalPrice /
+      oracle.getAssetPrice(_addressesProvider.getAddress('TOMB'));
 
     IERC20(_poolAddress).approve(tombSwapRouter, _amount);
     (amountTOMB, amountMIMATIC) = IUniswapV2Router02(tombSwapRouter).removeLiquidity(
@@ -174,18 +170,14 @@ contract TombMimaticBeefyVault is GeneralVault {
     address _tokenIn,
     address _tokenOut,
     uint256 _tokenAmount
-  ) internal returns (uint256 minAmount, address[] memory path) {
+  ) internal view returns (uint256 minAmount, address[] memory path) {
     uint256 inputAssetDecimal = IERC20Detailed(_tokenIn).decimals();
     uint256 outputAssetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
 
-    uint256 minTotalPrice = _tokenAmount.mul(oracle.getAssetPrice(_tokenIn)).div(
-      10**inputAssetDecimal
-    );
+    uint256 minTotalPrice = (_tokenAmount * oracle.getAssetPrice(_tokenIn)) / 10**inputAssetDecimal;
 
-    uint256 minAmount = minTotalPrice
-      .mul(10**outputAssetDecimal)
-      .div(oracle.getAssetPrice(_tokenOut))
+    minAmount = ((minTotalPrice * 10**outputAssetDecimal) / oracle.getAssetPrice(_tokenOut))
       .percentMul(98_00);
 
     if (_tokenIn == _addressesProvider.getAddress('TOMB')) {
@@ -301,15 +293,15 @@ contract TombMimaticBeefyVault is GeneralVault {
 
     for (uint256 i; i < length; i++) {
       assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute wethAmount based on percent of asset volume
-        assetYields[i].amount = _amount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
-      } else {
+      if (i == length - 1) {
         // without calculation, set remained extra amount
         assetYields[i].amount = extraWETHAmount;
+      } else {
+        // Distribute wethAmount based on percent of asset volume
+        assetYields[i].amount = _amount.percentMul(
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
+        );
+        extraWETHAmount -= assetYields[i].amount;
       }
     }
 

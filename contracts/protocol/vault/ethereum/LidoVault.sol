@@ -10,7 +10,6 @@ import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 
 /**
  * @title LidoVault
@@ -20,7 +19,6 @@ import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.so
 contract LidoVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
-  using SafeMath for uint256;
 
   /**
    * @dev Receive Ether
@@ -42,7 +40,7 @@ contract LidoVault is GeneralVault {
     if (fee > 0) {
       uint256 treasuryStETH = yieldStETH.percentMul(fee);
       IERC20(LIDO).safeTransfer(_treasuryAddress, treasuryStETH);
-      yieldStETH = yieldStETH.sub(treasuryStETH);
+      yieldStETH -= treasuryStETH;
     }
 
     // Exchange stETH -> ETH via Curve
@@ -76,7 +74,7 @@ contract LidoVault is GeneralVault {
   /**
    * @dev Get price per share based on yield strategy
    */
-  function pricePerShare() external view override returns (uint256) {
+  function pricePerShare() external pure override returns (uint256) {
     return 1e18;
   }
 

@@ -5,14 +5,13 @@ pragma experimental ABIEncoderV2;
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
-import '../protocol/libraries/math/BoringMath.sol';
 import '../dependencies/openzeppelin/contracts/IERC20.sol';
 import '../interfaces/IUniswapV2Pair.sol';
 import '../lib/FixedPoint.sol';
 
 contract TombFtmLPOracle is IOracle, Ownable {
   using FixedPoint for *;
-  using BoringMath for uint256;
+
   uint256 public constant PERIOD = 10 minutes;
   IChainlinkAggregator public constant FTM_USD =
     IChainlinkAggregator(0xf4766552D15AE4d256Ad41B6cf2933482B0680dc);
@@ -61,12 +60,12 @@ contract TombFtmLPOracle is IOracle, Ownable {
 
     uint256 priceCumulative = _get(blockTimestamp);
     pairInfo.priceAverage =
-      uint256(
+      (uint256(
         FixedPoint
           .uq112x112(uint224((priceCumulative - pairInfo.priceCumulativeLast) / timeElapsed))
           .mul(1e18)
           .decode144()
-      ).mul(uint256(FTM_USD.latestAnswer())) /
+      ) * uint256(FTM_USD.latestAnswer())) /
       1e18;
 
     pairInfo.blockTimestampLast = blockTimestamp;
@@ -89,12 +88,12 @@ contract TombFtmLPOracle is IOracle, Ownable {
 
     uint256 priceCumulative = _get(blockTimestamp);
     int256 priceAverage = int256(
-      uint256(
+      (uint256(
         FixedPoint
           .uq112x112(uint224((priceCumulative - pairInfo.priceCumulativeLast) / timeElapsed))
           .mul(1e18)
           .decode144()
-      ).mul(uint256(FTM_USD.latestAnswer())) / 1e18
+      ) * uint256(FTM_USD.latestAnswer())) / 1e18
     );
 
     return (true, priceAverage);
@@ -118,7 +117,7 @@ contract TombFtmLPOracle is IOracle, Ownable {
 
     if (rate <= 0) {
       rate = int256(
-        (reserve0.mul(1e18 * 2) / lpTotalSupply).mul(uint256(FTM_USD.latestAnswer())) / 1e18
+        (((reserve0 * 1e18 * 2) / lpTotalSupply) * uint256(FTM_USD.latestAnswer())) / 1e18
       );
     }
   }

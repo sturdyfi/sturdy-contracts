@@ -12,7 +12,6 @@ import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 
 /**
@@ -22,7 +21,6 @@ import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
  **/
 contract YearnRETHWstETHVault is GeneralVault {
   using SafeERC20 for IERC20;
-  using SafeMath for uint256;
   using PercentageMath for uint256;
 
   /**
@@ -38,7 +36,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryYVRETH_WSTETH = _processTreasury(yieldYVRETH_WSTETH);
-      yieldYVRETH_WSTETH = yieldYVRETH_WSTETH.sub(treasuryYVRETH_WSTETH);
+      yieldYVRETH_WSTETH -= treasuryYVRETH_WSTETH;
     }
 
     // Withdraw from Yearn Vault and receive rETHwstETH-f

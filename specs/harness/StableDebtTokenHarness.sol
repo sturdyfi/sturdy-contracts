@@ -10,7 +10,7 @@ contract StableDebtTokenHarness is StableDebtToken {
     string memory name,
     string memory symbol,
     address incentivesController
-  ) public StableDebtToken(pool, underlyingAsset, name, symbol, incentivesController) {}
+  ) StableDebtToken(pool, underlyingAsset, name, symbol, incentivesController) {}
 
   /**
    Simplification: The user accumulates no interest (the balance increase is always 0).

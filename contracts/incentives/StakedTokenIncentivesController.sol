@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {DistributionTypes} from '../lib/DistributionTypes.sol';
 import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {DistributionManager} from './DistributionManager.sol';
@@ -23,7 +22,6 @@ contract StakedTokenIncentivesController is
   VersionedInitializable,
   DistributionManager
 {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   uint256 public constant REVISION = 1;
@@ -40,7 +38,7 @@ contract StakedTokenIncentivesController is
     _;
   }
 
-  constructor(address emissionManager) public DistributionManager(emissionManager) {}
+  constructor(address emissionManager) DistributionManager(emissionManager) {}
 
   /**
    * @dev Initialize IStakedTokenIncentivesController
@@ -80,7 +78,7 @@ contract StakedTokenIncentivesController is
   ) external override {
     uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
     if (accruedRewards != 0) {
-      _usersUnclaimedRewards[user] = _usersUnclaimedRewards[user].add(accruedRewards);
+      _usersUnclaimedRewards[user] += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);
     }
   }
@@ -102,7 +100,7 @@ contract StakedTokenIncentivesController is
       (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(assets[i])
         .getScaledUserBalanceAndSupply(user);
     }
-    unclaimedRewards = unclaimedRewards.add(_getUnclaimedRewards(user, userState));
+    unclaimedRewards += _getUnclaimedRewards(user, userState);
     return unclaimedRewards;
   }
 
@@ -202,7 +200,7 @@ contract StakedTokenIncentivesController is
     return REVISION;
   }
 
-  function PRECISION() external view override returns (uint8) {
+  function PRECISION() external pure override returns (uint8) {
     return _PRECISION;
   }
 
@@ -236,7 +234,7 @@ contract StakedTokenIncentivesController is
 
     uint256 accruedRewards = _claimRewards(user, userState);
     if (accruedRewards != 0) {
-      unclaimedRewards = unclaimedRewards.add(accruedRewards);
+      unclaimedRewards += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);
     }
 

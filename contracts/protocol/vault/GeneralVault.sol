@@ -3,7 +3,6 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
@@ -18,7 +17,6 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
  **/
 
 abstract contract GeneralVault is VersionedInitializable {
-  using SafeMath for uint256;
   using PercentageMath for uint256;
 
   event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
@@ -134,10 +132,10 @@ abstract contract GeneralVault is VersionedInitializable {
         decimal = IERC20Detailed(_asset).decimals();
       }
 
-      _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
+      _amount = (_amountToWithdraw * this.pricePerShare()) / 10**decimal;
     }
     require(
-      withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(_slippage)),
+      withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR - _slippage),
       Errors.VT_WITHDRAW_AMOUNT_MISMATCH
     );
 
@@ -210,7 +208,7 @@ abstract contract GeneralVault is VersionedInitializable {
     // when deposit for collateral, stAssetBalance = aTokenBalance
     // But stAssetBalance should increase overtime, so vault can grab yield from lendingPool.
     // yield = stAssetBalance - aTokenBalance
-    if (stAssetBalance >= aTokenBalance) return stAssetBalance.sub(aTokenBalance);
+    if (stAssetBalance > aTokenBalance) return stAssetBalance - aTokenBalance;
 
     return 0;
   }

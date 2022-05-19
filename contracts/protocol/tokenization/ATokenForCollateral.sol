@@ -10,7 +10,6 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
 import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 
 /**
  * @title Sturdy ERC20 AToken
@@ -24,7 +23,6 @@ contract ATokenForCollateral is
 {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
-  using SafeMath for uint256;
 
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
@@ -128,7 +126,7 @@ contract ATokenForCollateral is
     uint256 share = 0;
     uint256 decimal = decimals();
 
-    if (decimal < 18) share = amount.rayDiv(index).div(10**(18 - decimal));
+    if (decimal < 18) share = amount.rayDiv(index) / 10**(18 - decimal);
     else share = amount.rayDiv(index);
 
     require(share != 0, Errors.CT_INVALID_BURN_AMOUNT);
@@ -157,7 +155,7 @@ contract ATokenForCollateral is
     uint256 previousBalance = super.balanceOf(user);
     uint256 amount = 0;
     uint256 decimal = decimals();
-    if (decimal < 18) amount = share.mul(10**(18 - decimal)).rayMul(index);
+    if (decimal < 18) amount = (share * 10**(18 - decimal)).rayMul(index);
     else amount = share.rayMul(index);
 
     require(amount != 0, Errors.CT_INVALID_MINT_AMOUNT);
@@ -336,7 +334,7 @@ contract ATokenForCollateral is
       )
     );
     require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
-    _nonces[owner] = currentValidNonce.add(1);
+    _nonces[owner] = currentValidNonce + 1;
     _approve(owner, spender, value);
   }
 

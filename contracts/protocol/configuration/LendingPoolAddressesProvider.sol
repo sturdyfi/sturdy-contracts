@@ -30,7 +30,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant INCENTIVE_CONTROLLER = 'INCENTIVE_CONTROLLER';
   bytes32 private constant INCENTIVE_TOKEN = 'INCENTIVE_TOKEN';
 
-  constructor(string memory marketId) public {
+  constructor(string memory marketId) {
     _setMarketId(marketId);
   }
 

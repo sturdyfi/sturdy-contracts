@@ -28,7 +28,7 @@ contract STECRVOracle is IOracle {
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false
   /// @inheritdoc IOracle
-  function get() public override returns (bool, uint256) {
+  function get() public view override returns (bool, uint256) {
     return (true, _get());
   }
 

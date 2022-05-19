@@ -11,7 +11,6 @@ import {IConvexBaseRewardPool} from '../../../../interfaces/IConvexBaseRewardPoo
 import {Errors} from '../../../libraries/helpers/Errors.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
-import {SafeMath} from '../../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 
 interface IRewards {
   function rewardToken() external view returns (address);
@@ -25,7 +24,6 @@ interface IRewards {
 contract ConvexCurveLPVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
-  using SafeMath for uint256;
 
   address public convexBooster;
   address internal curveLPToken;
@@ -82,7 +80,7 @@ contract ConvexCurveLPVault is GeneralVault {
     if (fee > 0) {
       uint256 treasuryAmount = yieldAmount.percentMul(fee);
       IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
-      yieldAmount = yieldAmount.sub(treasuryAmount);
+      yieldAmount -= treasuryAmount;
 
       // transfer to yieldManager
       address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');

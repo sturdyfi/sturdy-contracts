@@ -13,7 +13,6 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
 import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
@@ -25,7 +24,6 @@ import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
  **/
 
 contract YieldManager is VersionedInitializable, Ownable {
-  using SafeMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -76,7 +74,7 @@ contract YieldManager is VersionedInitializable, Ownable {
     _assetsCount += 1;
   }
 
-  function unregisterAsset(address _asset, uint256 _index) external payable onlyAdmin {
+  function unregisterAsset(uint256 _index) external payable onlyAdmin {
     uint256 count = _assetsCount;
     require(_index < count, Errors.VT_INVALID_CONFIGURATION);
 
@@ -213,9 +211,9 @@ contract YieldManager is VersionedInitializable, Ownable {
       } else {
         // Distribute yieldAmount based on percent of asset volume
         assetYields[i].amount = _totalYieldAmount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
         );
-        extraYieldAmount = extraYieldAmount.sub(assetYields[i].amount);
+        extraYieldAmount -= assetYields[i].amount;
       }
     }
 

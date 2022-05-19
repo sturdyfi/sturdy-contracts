@@ -23,7 +23,7 @@ contract SturdyToken is ERC20, VersionedInitializable {
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
 
-  constructor() public ERC20(NAME, SYMBOL) {}
+  constructor() ERC20(NAME, SYMBOL) {}
 
   /**
    * @dev initializes the contract upon assignment to the InitializableAdminUpgradeabilityProxy

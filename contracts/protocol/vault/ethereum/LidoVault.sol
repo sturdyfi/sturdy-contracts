@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
@@ -58,7 +57,7 @@ contract LidoVault is GeneralVault {
 
     // transfer WETH to yieldManager
     address yieldManager = provider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(weth, yieldManager, receivedETHAmount);
+    IERC20(weth).safeTransfer(yieldManager, receivedETHAmount);
 
     emit ProcessYield(weth, receivedETHAmount);
   }
@@ -87,11 +86,10 @@ contract LidoVault is GeneralVault {
   {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address LIDO = provider.getAddress('LIDO');
+    require(LIDO != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
-      // Case of ETH deposit from user, user has to send ETH
-      require(msg.value > 0, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
-
       // Deposit ETH to Lido and receive stETH
       (bool sent, bytes memory data) = LIDO.call{value: msg.value}('');
       require(sent, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -104,7 +102,9 @@ contract LidoVault is GeneralVault {
     }
 
     // Make lendingPool to transfer required amount
+    IERC20(LIDO).safeApprove(address(provider.getLendingPool()), 0);
     IERC20(LIDO).safeApprove(address(provider.getLendingPool()), assetAmount);
+
     return (LIDO, assetAmount);
   }
 
@@ -134,6 +134,8 @@ contract LidoVault is GeneralVault {
   ) internal override returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address LIDO = provider.getAddress('LIDO');
+    require(_to != address(0), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     if (_asset == address(0)) {
       // Case of ETH withdraw request from user, so exchange stETH -> ETH via curve
       uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(

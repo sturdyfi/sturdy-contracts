@@ -12,6 +12,7 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
@@ -26,6 +27,7 @@ import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
 contract YieldManager is VersionedInitializable, Ownable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
+  using SafeERC20 for IERC20;
 
   struct AssetYield {
     address asset;
@@ -46,7 +48,6 @@ contract YieldManager is VersionedInitializable, Ownable {
   mapping(address => mapping(address => address)) internal _curvePools;
 
   uint256 private constant UNISWAP_FEE = 10000; // 1%
-  uint256 private constant SLIPPAGE = 500; // 5%
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -125,8 +126,15 @@ contract YieldManager is VersionedInitializable, Ownable {
    *      3. deposit to pool for suppliers
    * @param _offset assets array's start offset.
    * @param _count assets array's count when perform distribution.
+   * @param _slippage1 The slippage of the uniswap 1% = 100
+   * @param _slippage2 The slippage of the curveswap 1% = 100
    **/
-  function distributeYield(uint256 _offset, uint256 _count) external payable onlyAdmin {
+  function distributeYield(
+    uint256 _offset,
+    uint256 _count,
+    uint256 _slippage1,
+    uint256 _slippage2
+  ) external payable onlyAdmin {
     address token = _exchangeToken;
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
@@ -141,7 +149,7 @@ contract YieldManager is VersionedInitializable, Ownable {
         token,
         amount,
         UNISWAP_FEE,
-        SLIPPAGE
+        _slippage1
       );
     }
     uint256 exchangedAmount = IERC20Detailed(token).balanceOf(address(this));
@@ -156,8 +164,7 @@ contract YieldManager is VersionedInitializable, Ownable {
     ) = ILendingPool(provider.getLendingPool()).getBorrowingAssetAndVolumes();
 
     if (totalVolume == 0) assetYields = new AssetYield[](0);
-
-    assetYields = new AssetYield[](length);
+    else assetYields = new AssetYield[](length);
     uint256 extraYieldAmount = exchangedAmount;
 
     for (uint256 i; i < length; ++i) {
@@ -190,7 +197,7 @@ contract YieldManager is VersionedInitializable, Ownable {
             token,
             assetYields[i].asset,
             assetYields[i].amount,
-            SLIPPAGE
+            _slippage2
           );
         }
         // 3. deposit Yield to pool for suppliers

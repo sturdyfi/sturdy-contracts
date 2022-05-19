@@ -72,6 +72,13 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _amount The deposit amount
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
+    if (_asset != address(0)) {
+      // asset = ERC20
+      require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    } else {
+      // asset = ETH
+      require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
+    }
     // Deposit asset to vault and receive stAsset
     // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH TODO No Lido
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
@@ -92,6 +99,7 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _asset The asset address for collateral
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The amount to be withdrawn
+   * @param _slippage The slippage of the withdrawal amount. 1% = 100
    * @param _to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
@@ -99,6 +107,7 @@ abstract contract GeneralVault is VersionedInitializable {
   function withdrawCollateral(
     address _asset,
     uint256 _amount,
+    uint256 _slippage,
     address _to
   ) external virtual {
     // Before withdraw from lending pool, get the stAsset address and withdrawal amount
@@ -118,10 +127,19 @@ abstract contract GeneralVault is VersionedInitializable {
     uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
 
     if (_amount == type(uint256).max) {
-      uint256 decimal = IERC20Detailed(_asset).decimals();
+      uint256 decimal;
+      if (_asset == address(0)) {
+        decimal = 18;
+      } else {
+        decimal = IERC20Detailed(_asset).decimals();
+      }
+
       _amount = _amountToWithdraw.mul(this.pricePerShare()).div(10**decimal);
     }
-    require(withdrawAmount >= _amount.percentMul(99_00), Errors.VT_WITHDRAW_AMOUNT_MISMATCH);
+    require(
+      withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(_slippage)),
+      Errors.VT_WITHDRAW_AMOUNT_MISMATCH
+    );
 
     emit WithdrawCollateral(_asset, _to, _amount);
   }

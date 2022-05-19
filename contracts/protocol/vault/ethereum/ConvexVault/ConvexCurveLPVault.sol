@@ -8,7 +8,6 @@ import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC
 import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IConvexBooster} from '../../../../interfaces/IConvexBooster.sol';
 import {IConvexBaseRewardPool} from '../../../../interfaces/IConvexBaseRewardPool.sol';
-import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../../libraries/helpers/Errors.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 
@@ -70,6 +69,8 @@ contract ConvexCurveLPVault is GeneralVault {
   function _transferYield(address _asset) internal {
     require(_asset != address(0), Errors.VT_PROCESS_YIELD_INVALID);
     uint256 yieldAmount = IERC20(_asset).balanceOf(address(this));
+    
+    // Some ERC20 do not allow zero amounts to be sent:
     if (yieldAmount == 0) return;
 
     // Move some yield to treasury
@@ -78,11 +79,11 @@ contract ConvexCurveLPVault is GeneralVault {
       uint256 treasuryAmount = yieldAmount.percentMul(fee);
       IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
       yieldAmount = yieldAmount.sub(treasuryAmount);
-    }
 
-    // transfer to yieldManager
-    address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(_asset, yieldManager, yieldAmount);
+      // transfer to yieldManager
+      address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
+      IERC20(_asset).safeTransfer(yieldManager, yieldAmount);
+    }
 
     emit ProcessYield(_asset, yieldAmount);
   }
@@ -98,10 +99,19 @@ contract ConvexCurveLPVault is GeneralVault {
     // Transfer CVX to YieldManager
     _transferYield(IConvexBooster(convexBooster).minter());
 
-    // Transfer extra incentive token to YieldManager
+  /**
+   * @dev The function to transfer extra incentive token to YieldManager
+   * @param _offset extraRewards start offset.
+   * @param _count extraRewards count
+   */
+  function processExtraYield(uint256 _offset, uint256 _count) external onlyAdmin {
+    address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
-    for (uint256 i; i < extraRewardsLength; ++i) {
-      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(i);
+    
+    require(_offset + _count <= extraRewardsLength, Errors.VT_EXTRA_REWARDS_INDEX_INVALID);
+
+    for (uint256 i; i < _count; ++i) {
+      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(_offset + i);
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);
     }
@@ -133,16 +143,18 @@ contract ConvexCurveLPVault is GeneralVault {
     // receive Curve LP Token from user
     address token = curveLPToken;
     require(_asset == token, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(token, msg.sender, address(this), _amount);
+    IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
     address convexVault = convexBooster;
+    IERC20(token).safeApprove(convexBooster, 0);
     IERC20(token).safeApprove(convexVault, _amount);
     IConvexBooster(convexVault).deposit(convexPoolId, _amount, true);
 
     // mint
     address internalAsset = internalAssetToken;
     SturdyInternalAsset(internalAsset).mint(address(this), _amount);
+    IERC20(internalAsset).safeApprove(address(_addressesProvider.getLendingPool()), 0);
     IERC20(internalAsset).safeApprove(address(_addressesProvider.getLendingPool()), _amount);
 
     return (internalAsset, _amount);
@@ -169,7 +181,7 @@ contract ConvexCurveLPVault is GeneralVault {
     IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, true);
 
     // Deliver Curve LP Token
-    TransferHelper.safeTransfer(curveLPToken, _to, _amount);
+    IERC20(curveLPToken).safeTransfer(_to, _amount);
 
     // Burn
     SturdyInternalAsset(internalAssetToken).burn(address(this), _amount);

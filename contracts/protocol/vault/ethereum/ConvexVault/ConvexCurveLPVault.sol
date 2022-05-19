@@ -69,7 +69,7 @@ contract ConvexCurveLPVault is GeneralVault {
   function _transferYield(address _asset) internal {
     require(_asset != address(0), Errors.VT_PROCESS_YIELD_INVALID);
     uint256 yieldAmount = IERC20(_asset).balanceOf(address(this));
-    
+
     // Some ERC20 do not allow zero amounts to be sent:
     if (yieldAmount == 0) return;
 
@@ -98,6 +98,7 @@ contract ConvexCurveLPVault is GeneralVault {
 
     // Transfer CVX to YieldManager
     _transferYield(IConvexBooster(convexBooster).minter());
+  }
 
   /**
    * @dev The function to transfer extra incentive token to YieldManager
@@ -107,7 +108,7 @@ contract ConvexCurveLPVault is GeneralVault {
   function processExtraYield(uint256 _offset, uint256 _count) external onlyAdmin {
     address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
-    
+
     require(_offset + _count <= extraRewardsLength, Errors.VT_EXTRA_REWARDS_INDEX_INVALID);
 
     for (uint256 i; i < _count; ++i) {

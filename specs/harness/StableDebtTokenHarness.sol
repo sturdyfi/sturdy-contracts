@@ -1,4 +1,4 @@
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {StableDebtToken} from '../../contracts/protocol/tokenization/StableDebtToken.sol';
 import {IncentivizedERC20} from '../../contracts/protocol/tokenization/IncentivizedERC20.sol';

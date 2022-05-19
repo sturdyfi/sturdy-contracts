@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
@@ -26,6 +26,9 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 /**
  * @title LendingPool contract
@@ -48,6 +51,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
+  using ReserveLogic for DataTypes.ReserveData;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   uint256 public constant LENDINGPOOL_REVISION = 0x1;
 

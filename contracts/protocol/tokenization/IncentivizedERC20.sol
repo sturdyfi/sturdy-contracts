@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {Context} from '../../dependencies/openzeppelin/contracts/Context.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -27,7 +27,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     string memory name,
     string memory symbol,
     uint8 decimals
-  ) public {
+  ) {
     _name = name;
     _symbol = symbol;
     _decimals = decimals;

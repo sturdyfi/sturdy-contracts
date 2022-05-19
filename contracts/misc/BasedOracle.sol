@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Using the same Copyleft License as in the original Repository
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import './interfaces/IOracle.sol';

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
@@ -391,7 +391,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     IERC20(BEETS).approve(IYearnFBEETSVault(fBEETSVault).getBeethovenVault(), beetsAmount);
 
     uint256 receivedAmount = IBalancerVault(IYearnFBEETSVault(fBEETSVault).getBeethovenVault())
-      .swap(singleSwap, funds, limit, uint256(-1));
+      .swap(singleSwap, funds, limit, type(uint256).max);
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     return receivedAmount;

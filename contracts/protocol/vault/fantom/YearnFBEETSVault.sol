@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {GeneralVault} from '../GeneralVault.sol';
@@ -213,7 +213,7 @@ contract YearnFBEETSVault is GeneralVault {
 
     IERC20(BEETS).approve(beethovenVault, _beetsAmount);
 
-    uint256 receivedAmount = getBeethovenVault().swap(singleSwap, funds, limit, uint256(-1));
+    uint256 receivedAmount = getBeethovenVault().swap(singleSwap, funds, limit, type(uint256).max);
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     return receivedAmount;

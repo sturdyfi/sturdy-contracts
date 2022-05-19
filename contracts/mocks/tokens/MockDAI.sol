@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 // FIXME: This contract was altered compared to the production version.
 // It doesn't use LibNote anymore.
@@ -93,7 +93,7 @@ contract Dai {
     uint256 wad
   ) public returns (bool) {
     require(balanceOf[src] >= wad, 'Dai/insufficient-balance');
-    if (src != msg.sender && allowance[src][msg.sender] != uint256(-1)) {
+    if (src != msg.sender && allowance[src][msg.sender] != type(uint256).max) {
       require(allowance[src][msg.sender] >= wad, 'Dai/insufficient-allowance');
       allowance[src][msg.sender] = sub(allowance[src][msg.sender], wad);
     }
@@ -111,7 +111,7 @@ contract Dai {
 
   function burn(address usr, uint256 wad) external {
     require(balanceOf[usr] >= wad, 'Dai/insufficient-balance');
-    if (usr != msg.sender && allowance[usr][msg.sender] != uint256(-1)) {
+    if (usr != msg.sender && allowance[usr][msg.sender] != type(uint256).max) {
       require(allowance[usr][msg.sender] >= wad, 'Dai/insufficient-allowance');
       allowance[usr][msg.sender] = sub(allowance[usr][msg.sender], wad);
     }
@@ -164,9 +164,9 @@ contract Dai {
 
     require(holder != address(0), 'Dai/invalid-address-0');
     require(holder == ecrecover(digest, v, r, s), 'Dai/invalid-permit');
-    require(expiry == 0 || now <= expiry, 'Dai/permit-expired');
+    require(expiry == 0 || block.timestamp <= expiry, 'Dai/permit-expired');
     require(nonce == nonces[holder]++, 'Dai/invalid-nonce');
-    uint256 wad = allowed ? uint256(-1) : 0;
+    uint256 wad = allowed ? type(uint256).max : 0;
     allowance[holder][spender] = wad;
     emit Approval(holder, spender, wad);
   }

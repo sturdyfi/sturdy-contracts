@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -10,6 +10,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
 import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesController.sol';
+import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 
 /**
  * @title Sturdy ERC20 AToken
@@ -23,6 +24,7 @@ contract AToken is
 {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
+  using SafeMath for uint256;
 
   bytes public constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =

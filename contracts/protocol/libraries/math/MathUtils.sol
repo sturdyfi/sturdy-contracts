@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {WadRayMath} from './WadRayMath.sol';

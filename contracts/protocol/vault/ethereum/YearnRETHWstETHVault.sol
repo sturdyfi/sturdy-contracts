@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {GeneralVault} from '../GeneralVault.sol';
@@ -12,6 +12,8 @@ import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
+import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 
 /**
  * @title YearnRETHWstETHVault
@@ -20,6 +22,8 @@ import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
  **/
 contract YearnRETHWstETHVault is GeneralVault {
   using SafeERC20 for IERC20;
+  using SafeMath for uint256;
+  using PercentageMath for uint256;
 
   /**
    * @dev Receive Ether

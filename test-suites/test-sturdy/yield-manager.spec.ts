@@ -292,12 +292,49 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
 
 makeSuite('Yield Manger: distribute yield', (testEnv) => {
   it('Should be failed when use invalid asset index', async () => {
-    const { yieldManager } = testEnv;
+    const { yieldManager, usdc, CRV, CVX } = testEnv;
     const assetCount = await yieldManager.getAssetCount();
-    await expect(yieldManager.distributeYield(assetCount, 1)).to.be.reverted;
+    const paths = [
+      {
+        tokens: [CRV.address, usdc.address],
+        fees: [100],
+      },
+    ];
+    const slippage = 500;
+    await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.revertedWith(
+      '77'
+    );
+  });
+  it('Should be failed when use invalid swap path', async () => {
+    const { yieldManager, usdc, CRV, CVX } = testEnv;
+    const assetCount = 2;
+    const paths = [
+      {
+        tokens: [CRV.address, usdc.address],
+        fees: [100],
+      },
+    ];
+    const slippage = 500;
+    await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
+      '100'
+    );
+  });
+  it('Should be failed when use swap path including invalid tokens', async () => {
+    const { yieldManager, usdc, CRV, CVX } = testEnv;
+    const assetCount = 1;
+    const paths = [
+      {
+        tokens: [usdc.address, usdc.address],
+        fees: [100],
+      },
+    ];
+    const slippage = 500;
+    await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
+      '101'
+    );
   });
   it('Distribute yield', async () => {
-    const { yieldManager, dai, aDai, usdc, aUsdc, users } = testEnv;
+    const { yieldManager, dai, aDai, usdc, aUsdc, users, CRV, CVX, WETH } = testEnv;
 
     // suppliers deposit asset to pool
     const depositor1 = users[0];
@@ -314,7 +351,23 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
 
     // Distribute yields
     const assetCount = await yieldManager.getAssetCount();
-    await yieldManager.distributeYield(0, assetCount);
+
+    const paths = [
+      {
+        tokens: [CRV.address, WETH.address, usdc.address],
+        fees: [10000, 500],
+      },
+      {
+        tokens: [CVX.address, WETH.address, usdc.address],
+        fees: [10000, 500],
+      },
+      {
+        tokens: [WETH.address, usdc.address],
+        fees: [500],
+      },
+    ];
+    const slippage = 500;
+    await yieldManager.distributeYield(0, assetCount, slippage, paths);
 
     expect((await aUsdc.balanceOf(depositor1.address)).gt(depositUSDCAmount)).to.be.equal(true);
     expect((await aDai.balanceOf(depositor2.address)).gt(depositDAIAmount)).to.be.equal(true);

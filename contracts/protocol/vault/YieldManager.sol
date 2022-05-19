@@ -124,15 +124,16 @@ contract YieldManager is VersionedInitializable, Ownable {
    *      3. deposit to pool for suppliers
    * @param _offset assets array's start offset.
    * @param _count assets array's count when perform distribution.
-   * @param _slippage1 The slippage of the uniswap 1% = 100
-   * @param _slippage2 The slippage of the curveswap 1% = 100
+   * @param _slippage The slippage of the swap 1% = 100
    **/
   function distributeYield(
     uint256 _offset,
     uint256 _count,
-    uint256 _slippage1,
-    uint256 _slippage2
+    uint256 _slippage,
+    UniswapAdapter.Path[] calldata _paths
   ) external payable onlyAdmin {
+    require(_paths.length == _count, Errors.VT_SWAP_PATH_LENGTH_INVALID);
+
     address token = _exchangeToken;
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
@@ -141,14 +142,7 @@ contract YieldManager is VersionedInitializable, Ownable {
       address asset = _assetsList[_offset + i];
       require(asset != address(0), Errors.UL_INVALID_INDEX);
       uint256 amount = IERC20Detailed(asset).balanceOf(address(this));
-      UniswapAdapter.swapExactTokensForTokens(
-        provider,
-        asset,
-        token,
-        amount,
-        UNISWAP_FEE,
-        _slippage1
-      );
+      UniswapAdapter.swapExactTokensForTokens(provider, asset, token, amount, _paths[i], _slippage);
     }
     uint256 exchangedAmount = IERC20Detailed(token).balanceOf(address(this));
 
@@ -171,7 +165,7 @@ contract YieldManager is VersionedInitializable, Ownable {
             token,
             assetYields[i].asset,
             assetYields[i].amount,
-            _slippage2
+            _slippage
           );
         }
         // 3. deposit Yield to pool for suppliers

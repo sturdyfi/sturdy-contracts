@@ -122,6 +122,8 @@ library Errors {
   string public constant VT_SWAP_MISMATCH_RETURNED_AMOUNT = '97'; //Returned amount is not enough
   string public constant CALLER_NOT_YIELD_PROCESSOR = '98'; // 'The caller must be the pool admin'
   string public constant VT_EXTRA_REWARDS_INDEX_INVALID = '99'; // Invalid extraRewards index
+  string public constant VT_SWAP_PATH_LENGTH_INVALID = '100'; // Invalid token or fee length
+  string public constant VT_SWAP_PATH_TOKEN_INVALID = '101'; // Invalid token information
 
   enum CollateralManagerErrors {
     NO_ERROR,

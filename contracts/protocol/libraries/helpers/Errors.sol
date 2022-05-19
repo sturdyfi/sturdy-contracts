@@ -121,6 +121,7 @@ library Errors {
   string public constant VT_WITHDRAW_AMOUNT_MISMATCH = '96'; // not performed withdraw 100%
   string public constant VT_SWAP_MISMATCH_RETURNED_AMOUNT = '97'; //Returned amount is not enough
   string public constant CALLER_NOT_YIELD_PROCESSOR = '98'; // 'The caller must be the pool admin'
+  string public constant VT_EXTRA_REWARDS_INDEX_INVALID = '99'; // Invalid extraRewards index
 
   enum CollateralManagerErrors {
     NO_ERROR,

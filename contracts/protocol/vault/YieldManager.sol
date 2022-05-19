@@ -12,6 +12,7 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
@@ -26,6 +27,7 @@ import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
 contract YieldManager is VersionedInitializable, Ownable {
   using SafeMath for uint256;
   using PercentageMath for uint256;
+  using SafeERC20 for IERC20;
 
   struct AssetYield {
     address asset;
@@ -235,7 +237,8 @@ contract YieldManager is VersionedInitializable, Ownable {
    */
   function _depositYield(address _asset, uint256 _amount) internal {
     address _lendingPool = _addressesProvider.getLendingPool();
-    IERC20(_asset).approve(_lendingPool, _amount);
+    IERC20(_asset).safeApprove(_lendingPool, 0);
+    IERC20(_asset).safeApprove(_lendingPool, _amount);
     ILendingPool(_lendingPool).depositYield(_asset, _amount);
   }
 }

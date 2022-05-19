@@ -8,7 +8,6 @@ import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC
 import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IConvexBooster} from '../../../../interfaces/IConvexBooster.sol';
 import {IConvexBaseRewardPool} from '../../../../interfaces/IConvexBaseRewardPool.sol';
-import {TransferHelper} from '../../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../../libraries/helpers/Errors.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 
@@ -71,15 +70,18 @@ contract ConvexCurveLPVault is GeneralVault {
     require(_asset != address(0), Errors.VT_PROCESS_YIELD_INVALID);
     uint256 yieldAmount = IERC20(_asset).balanceOf(address(this));
 
-    // transfer to treasury
-    if (_vaultFee > 0) {
-      uint256 treasuryAmount = _processTreasury(_asset, yieldAmount);
-      yieldAmount = yieldAmount.sub(treasuryAmount);
-    }
+    if (yieldAmount > 0) {
+      // Some ERC20 do not allow zero amounts to be sent:
+      // transfer to treasury
+      if (_vaultFee > 0) {
+        uint256 treasuryAmount = _processTreasury(_asset, yieldAmount);
+        yieldAmount = yieldAmount.sub(treasuryAmount);
+      }
 
-    // transfer to yieldManager
-    address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(_asset, yieldManager, yieldAmount);
+      // transfer to yieldManager
+      address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
+      IERC20(_asset).safeTransfer(yieldManager, yieldAmount);
+    }
 
     emit ProcessYield(_asset, yieldAmount);
   }
@@ -100,11 +102,20 @@ contract ConvexCurveLPVault is GeneralVault {
     _tokenFromConvex = IConvexBooster(convexBooster).minter();
     require(_token == _tokenFromConvex, Errors.VT_INVALID_CONFIGURATION);
     _transferYield(_token);
+  }
 
-    // Transfer extra incentive token to YieldManager
+  /**
+   * @dev The function to transfer extra incentive token to YieldManager
+   * @param _offset extraRewards start offset.
+   * @param _count extraRewards count
+   */
+  function processExtraYield(uint256 _offset, uint256 _count) external onlyAdmin {
+    address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
-    for (uint256 i = 0; i < extraRewardsLength; i++) {
-      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(i);
+    require(_offset + _count <= extraRewardsLength, Errors.VT_EXTRA_REWARDS_INDEX_INVALID);
+
+    for (uint256 i = 0; i < _count; i++) {
+      address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(_offset + i);
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);
     }
@@ -135,14 +146,16 @@ contract ConvexCurveLPVault is GeneralVault {
   {
     // receive Curve LP Token from user
     require(_asset == curveLPToken, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(curveLPToken, msg.sender, address(this), _amount);
+    IERC20(curveLPToken).safeTransferFrom(msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
+    IERC20(curveLPToken).safeApprove(convexBooster, 0);
     IERC20(curveLPToken).safeApprove(convexBooster, _amount);
     IConvexBooster(convexBooster).deposit(convexPoolId, _amount, true);
 
     // mint
     SturdyInternalAsset(internalAssetToken).mint(address(this), _amount);
+    IERC20(internalAssetToken).safeApprove(address(_addressesProvider.getLendingPool()), 0);
     IERC20(internalAssetToken).safeApprove(address(_addressesProvider.getLendingPool()), _amount);
 
     return (internalAssetToken, _amount);
@@ -167,7 +180,7 @@ contract ConvexCurveLPVault is GeneralVault {
     IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, true);
 
     // Deliver Curve LP Token
-    TransferHelper.safeTransfer(curveLPToken, _to, _amount);
+    IERC20(curveLPToken).safeTransfer(_to, _amount);
 
     // Burn
     SturdyInternalAsset(internalAssetToken).burn(address(this), _amount);

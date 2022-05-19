@@ -1,20 +1,18 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Using the same Copyleft License as in the original Repository
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import {IBalancerVault} from '../interfaces/IBalancerVault.sol';
 import {Variable, IBalancerWeightedPool} from '../interfaces/IBalancerWeightedPool.sol';
 import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
-import '../protocol/libraries/math/BoringMath.sol';
 import '../dependencies/openzeppelin/contracts/IERC20.sol';
 import '../interfaces/IUniswapV2Pair.sol';
 import '../lib/FixedPoint.sol';
 
 contract BeetsOracle is IOracle, Ownable {
   using FixedPoint for *;
-  using BoringMath for uint256;
 
   uint256 public secs = 3600;
   uint256 public ago = 30;
@@ -25,11 +23,11 @@ contract BeetsOracle is IOracle, Ownable {
   IBalancerWeightedPool public constant BEETS_FTM =
     IBalancerWeightedPool(0xcdE5a11a4ACB4eE4c805352Cec57E236bdBC3837);
 
-  function get() public override returns (bool, uint256) {
+  function get() public pure override returns (bool, uint256) {
     return (false, 0);
   }
 
-  function peek() public view override returns (bool, int256) {
+  function peek() public pure override returns (bool, int256) {
     return (false, 0);
   }
 
@@ -53,6 +51,6 @@ contract BeetsOracle is IOracle, Ownable {
       _price = BEETS_FTM.getLatest(Variable.PAIR_PRICE);
     }
 
-    rate = int256(_price.mul(uint256(FTM_USD.latestAnswer())) / 1e18);
+    rate = int256((_price * uint256(FTM_USD.latestAnswer())) / 1e18);
   }
 }

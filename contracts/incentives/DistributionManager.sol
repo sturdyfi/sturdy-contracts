@@ -1,9 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {ISturdyDistributionManager} from '../interfaces/ISturdyDistributionManager.sol';
-import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {DistributionTypes} from '../lib/DistributionTypes.sol';
 
 /**
@@ -12,8 +11,6 @@ import {DistributionTypes} from '../lib/DistributionTypes.sol';
  * @author Sturdy
  **/
 contract DistributionManager is ISturdyDistributionManager {
-  using SafeMath for uint256;
-
   struct AssetData {
     uint104 emissionPerSecond;
     uint104 index;
@@ -34,7 +31,7 @@ contract DistributionManager is ISturdyDistributionManager {
     _;
   }
 
-  constructor(address emissionManager) public {
+  constructor(address emissionManager) {
     EMISSION_MANAGER = emissionManager;
   }
 
@@ -194,14 +191,14 @@ contract DistributionManager is ISturdyDistributionManager {
     uint256 accruedRewards = 0;
 
     for (uint256 i = 0; i < stakes.length; i++) {
-      accruedRewards = accruedRewards.add(
+      accruedRewards =
+        accruedRewards +
         _updateUserAssetInternal(
           user,
           stakes[i].underlyingAsset,
           stakes[i].stakedByUser,
           stakes[i].totalStaked
-        )
-      );
+        );
     }
 
     return accruedRewards;
@@ -229,9 +226,9 @@ contract DistributionManager is ISturdyDistributionManager {
         stakes[i].totalStaked
       );
 
-      accruedRewards = accruedRewards.add(
-        _getRewards(stakes[i].stakedByUser, assetIndex, assetConfig.users[user])
-      );
+      accruedRewards =
+        accruedRewards +
+        _getRewards(stakes[i].stakedByUser, assetIndex, assetConfig.users[user]);
     }
     return accruedRewards;
   }
@@ -248,7 +245,7 @@ contract DistributionManager is ISturdyDistributionManager {
     uint256 reserveIndex,
     uint256 userIndex
   ) internal pure returns (uint256) {
-    return principalUserBalance.mul(reserveIndex.sub(userIndex)) / 10**uint256(_PRECISION);
+    return (principalUserBalance * (reserveIndex - userIndex)) / 10**uint256(_PRECISION);
   }
 
   /**
@@ -278,10 +275,8 @@ contract DistributionManager is ISturdyDistributionManager {
     uint256 currentTimestamp = block.timestamp > distributionEnd
       ? distributionEnd
       : block.timestamp;
-    uint256 timeDelta = currentTimestamp.sub(lastUpdateTimestamp);
+    uint256 timeDelta = currentTimestamp - lastUpdateTimestamp;
     return
-      emissionPerSecond.mul(timeDelta).mul(10**uint256(_PRECISION)).div(totalBalance).add(
-        currentIndex
-      );
+      ((emissionPerSecond * timeDelta * (10**uint256(_PRECISION))) / totalBalance) + currentIndex;
   }
 }

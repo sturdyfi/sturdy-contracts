@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {GeneralVault} from '../GeneralVault.sol';
@@ -10,7 +10,6 @@ import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
@@ -21,7 +20,6 @@ import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
  * @author Sturdy
  **/
 contract BeefyETHVault is GeneralVault {
-  using SafeMath for uint256;
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
@@ -34,13 +32,13 @@ contract BeefyETHVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryMOOWETH = _processTreasury(yieldMOOWETH);
-      yieldMOOWETH = yieldMOOWETH.sub(treasuryMOOWETH);
+      yieldMOOWETH -= treasuryMOOWETH;
     }
 
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).withdraw(yieldMOOWETH);
-    uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)).sub(before);
+    uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)) - before;
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWETH);
     for (uint256 i = 0; i < assetYields.length; i++) {
@@ -64,12 +62,9 @@ contract BeefyETHVault is GeneralVault {
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
 
-    uint256 minAmountFromPrice = _wethAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_tokenOut))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((_wethAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH'))) / 10**18) *
+      10**assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WETH -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
@@ -112,7 +107,7 @@ contract BeefyETHVault is GeneralVault {
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
     IBeefyVault(_addressesProvider.getAddress('MOOWETH')).withdraw(_amount);
-    uint256 assetAmount = IERC20(WETH).balanceOf(address(this)).sub(before);
+    uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
     // Deliver LINK to user
     TransferHelper.safeTransfer(WETH, msg.sender, assetAmount);
@@ -215,15 +210,15 @@ contract BeefyETHVault is GeneralVault {
 
     for (uint256 i; i < length; i++) {
       assetYields[i].asset = assets[i];
-      if (i != length - 1) {
-        // Distribute wethAmount based on percent of asset volume
-        assetYields[i].amount = _amount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
-        );
-        extraWETHAmount = extraWETHAmount.sub(assetYields[i].amount);
-      } else {
+      if (i == length - 1) {
         // without calculation, set remained extra amount
         assetYields[i].amount = extraWETHAmount;
+      } else {
+        // Distribute wethAmount based on percent of asset volume
+        assetYields[i].amount = _amount.percentMul(
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
+        );
+        extraWETHAmount -= assetYields[i].amount;
       }
     }
 

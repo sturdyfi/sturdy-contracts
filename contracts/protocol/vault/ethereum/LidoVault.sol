@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {GeneralVault} from '../GeneralVault.sol';
@@ -9,6 +9,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 
 /**
  * @title LidoVault
@@ -17,6 +18,7 @@ import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAdd
  **/
 contract LidoVault is GeneralVault {
   using SafeERC20 for IERC20;
+  using PercentageMath for uint256;
 
   /**
    * @dev Receive Ether
@@ -38,7 +40,7 @@ contract LidoVault is GeneralVault {
     if (fee > 0) {
       uint256 treasuryStETH = yieldStETH.percentMul(fee);
       IERC20(LIDO).safeTransfer(_treasuryAddress, treasuryStETH);
-      yieldStETH = yieldStETH.sub(treasuryStETH);
+      yieldStETH -= treasuryStETH;
     }
 
     // Exchange stETH -> ETH via Curve
@@ -72,7 +74,7 @@ contract LidoVault is GeneralVault {
   /**
    * @dev Get price per share based on yield strategy
    */
-  function pricePerShare() external view override returns (uint256) {
+  function pricePerShare() external pure override returns (uint256) {
     return 1e18;
   }
 

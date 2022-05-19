@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Using the same Copyleft License as in the original Repository
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import './interfaces/IOracle.sol';
@@ -25,7 +25,7 @@ contract CrvREthWstETHOracle is IOracle {
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false
   /// @inheritdoc IOracle
-  function get() public override returns (bool, uint256) {
+  function get() public view override returns (bool, uint256) {
     return (true, _get());
   }
 

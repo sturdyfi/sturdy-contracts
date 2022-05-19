@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {InitializableImmutableAdminUpgradeabilityProxy} from '../libraries/sturdy-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
@@ -24,7 +23,6 @@ import {ILendingPoolConfigurator} from '../../interfaces/ILendingPoolConfigurato
  **/
 
 contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigurator {
-  using SafeMath for uint256;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
@@ -72,12 +70,12 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     }
   }
 
-  function _initReserve(ILendingPool pool, InitReserveInput calldata input) internal {
+  function _initReserve(ILendingPool _pool, InitReserveInput calldata input) internal {
     address aTokenProxyAddress = _initTokenWithProxy(
       input.aTokenImpl,
       abi.encodeWithSelector(
         IInitializableAToken.initialize.selector,
-        pool,
+        _pool,
         input.treasury,
         input.underlyingAsset,
         ISturdyIncentivesController(input.incentivesController),
@@ -92,7 +90,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       input.stableDebtTokenImpl,
       abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
-        pool,
+        _pool,
         input.underlyingAsset,
         ISturdyIncentivesController(input.incentivesController),
         input.underlyingAssetDecimals,
@@ -106,7 +104,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       input.variableDebtTokenImpl,
       abi.encodeWithSelector(
         IInitializableDebtToken.initialize.selector,
-        pool,
+        _pool,
         input.underlyingAsset,
         ISturdyIncentivesController(input.incentivesController),
         input.underlyingAssetDecimals,
@@ -116,7 +114,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       )
     );
 
-    pool.initReserve(
+    _pool.initReserve(
       input.underlyingAsset,
       input.yieldAddress,
       aTokenProxyAddress,
@@ -125,7 +123,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       input.interestRateStrategyAddress
     );
 
-    DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(
+    DataTypes.ReserveConfigurationMap memory currentConfig = _pool.getConfiguration(
       input.underlyingAsset
     );
 
@@ -134,7 +132,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     currentConfig.setActive(true);
     currentConfig.setFrozen(false);
 
-    pool.setConfiguration(input.underlyingAsset, currentConfig.data);
+    _pool.setConfiguration(input.underlyingAsset, currentConfig.data);
 
     emit ReserveInitialized(
       input.underlyingAsset,

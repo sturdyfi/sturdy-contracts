@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -10,11 +10,9 @@ import {ICurveExchange} from '../../../interfaces/ICurveExchange.sol';
 import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 library CurveswapAdapter {
-  using SafeMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -87,17 +85,17 @@ library CurveswapAdapter {
     address assetToSwapTo,
     uint256 amountToSwap,
     uint256 slippage
-  ) internal returns (uint256) {
+  ) internal view returns (uint256) {
     uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
     uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
 
     uint256 fromAssetPrice = _getPrice(addressesProvider, assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(addressesProvider, assetToSwapTo);
 
-    uint256 minAmountOut = amountToSwap
-      .mul(fromAssetPrice.mul(10**toAssetDecimals))
-      .div(toAssetPrice.mul(10**fromAssetDecimals))
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(slippage));
+    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10**toAssetDecimals) /
+      (toAssetPrice * 10**fromAssetDecimals)).percentMul(
+        PercentageMath.PERCENTAGE_FACTOR - slippage
+      );
 
     return minAmountOut;
   }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
@@ -16,7 +16,7 @@ import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detai
 contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  constructor() public {}
+  constructor() {}
 
   function getFullReservesIncentiveData(ILendingPoolAddressesProvider provider, address user)
     external

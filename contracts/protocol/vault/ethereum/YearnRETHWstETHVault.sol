@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {GeneralVault} from '../GeneralVault.sol';
@@ -12,6 +12,7 @@ import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 
 /**
  * @title YearnRETHWstETHVault
@@ -20,6 +21,7 @@ import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
  **/
 contract YearnRETHWstETHVault is GeneralVault {
   using SafeERC20 for IERC20;
+  using PercentageMath for uint256;
 
   /**
    * @dev Receive Ether
@@ -34,7 +36,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     // move yield to treasury
     if (_vaultFee > 0) {
       uint256 treasuryYVRETH_WSTETH = _processTreasury(yieldYVRETH_WSTETH);
-      yieldYVRETH_WSTETH = yieldYVRETH_WSTETH.sub(treasuryYVRETH_WSTETH);
+      yieldYVRETH_WSTETH -= treasuryYVRETH_WSTETH;
     }
 
     // Withdraw from Yearn Vault and receive rETHwstETH-f

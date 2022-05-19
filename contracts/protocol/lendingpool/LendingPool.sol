@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -26,6 +25,9 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 /**
  * @title LendingPool contract
@@ -44,10 +46,12 @@ import {LendingPoolStorage} from './LendingPoolStorage.sol';
  * @author Sturdy, inspiration from Aave
  **/
 contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage {
-  using SafeMath for uint256;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
+  using ReserveLogic for DataTypes.ReserveData;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   uint256 public constant LENDINGPOOL_REVISION = 0x1;
 
@@ -202,7 +206,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     if (isCollateral && reserve.yieldAddress != address(0)) {
       aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
       uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
-      if (decimal < 18) aTokenBalance = aTokenBalance.div(10**(18 - decimal));
+      if (decimal < 18) aTokenBalance = aTokenBalance / 10**(18 - decimal);
     }
 
     return (assetBalance, aTokenBalance);
@@ -233,10 +237,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
       if (isActive && !isFrozen && isBorrowing) {
         volumes[pos] = IERC20(reserve.aTokenAddress).totalSupply();
-        volumes[pos] = volumes[pos].div(10**reserve.configuration.getDecimals());
+        volumes[pos] = volumes[pos] / 10**reserve.configuration.getDecimals();
         assets[pos] = _reservesList[i];
-        totalVolume = totalVolume.add(volumes[pos]);
-        pos = pos.add(1);
+        totalVolume += volumes[pos];
+        pos += 1;
       }
     }
 
@@ -319,7 +323,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       );
       amountToWithdraw = amountToWithdraw.rayDiv(reserve.getIndexFromPricePerShare());
       uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
-      if (decimal < 18) amountToWithdraw = amountToWithdraw.div(10**(18 - decimal));
+      if (decimal < 18) amountToWithdraw = amountToWithdraw / 10**(18 - decimal);
     } else {
       IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
     }
@@ -427,7 +431,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
     }
 
-    if (stableDebt.add(variableDebt).sub(paybackAmount) == 0) {
+    if (stableDebt + variableDebt - paybackAmount == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
     }
 
@@ -706,7 +710,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 reserveId = _reserves[asset].id;
 
     if (from != to) {
-      if (balanceFromBefore.sub(amount) == 0) {
+      if (balanceFromBefore - amount == 0) {
         DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
         fromConfig.setUsingAsCollateral(reserveId, false);
         emit ReserveUsedAsCollateralDisabled(asset, from);
@@ -810,9 +814,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     address oracle = _addressesProvider.getPriceOracle();
 
-    uint256 amountInETH = IPriceOracleGetter(oracle).getAssetPrice(vars.asset).mul(vars.amount).div(
-      10**reserve.configuration.getDecimals()
-    );
+    uint256 amountInETH = (IPriceOracleGetter(oracle).getAssetPrice(vars.asset) * vars.amount) /
+      10**reserve.configuration.getDecimals();
 
     ValidationLogic.validateBorrow(
       vars.asset,

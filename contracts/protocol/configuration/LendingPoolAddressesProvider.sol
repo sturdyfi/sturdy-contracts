@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
@@ -30,7 +30,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   bytes32 private constant INCENTIVE_CONTROLLER = 'INCENTIVE_CONTROLLER';
   bytes32 private constant INCENTIVE_TOKEN = 'INCENTIVE_TOKEN';
 
-  constructor(string memory marketId) public {
+  constructor(string memory marketId) {
     _setMarketId(marketId);
   }
 

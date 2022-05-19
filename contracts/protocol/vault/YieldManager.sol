@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {Errors} from '../libraries/helpers/Errors.sol';
@@ -13,7 +13,6 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
 import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
@@ -25,7 +24,6 @@ import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
  **/
 
 contract YieldManager is VersionedInitializable, Ownable {
-  using SafeMath for uint256;
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -76,7 +74,7 @@ contract YieldManager is VersionedInitializable, Ownable {
     _assetsCount += 1;
   }
 
-  function unregisterAsset(address _asset, uint256 _index) external payable onlyAdmin {
+  function unregisterAsset(uint256 _index) external payable onlyAdmin {
     uint256 count = _assetsCount;
     require(_index < count, Errors.VT_INVALID_CONFIGURATION);
 
@@ -127,15 +125,17 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @param _offset assets array's start offset.
    * @param _count assets array's count when perform distribution.
    * @param _slippage The slippage of the swap 1% = 100
+   * @param _paths The swapping path of uniswap
    **/
   function distributeYield(
     uint256 _offset,
     uint256 _count,
     uint256 _slippage,
-    UniswapAdapter.Path[] memory _paths
+    UniswapAdapter.Path[] calldata _paths
   ) external payable onlyAdmin {
     require(_paths.length == _count, Errors.VT_SWAP_PATH_LENGTH_INVALID);
 
+    address token = _exchangeToken;
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // 1. convert from asset to exchange token via uniswap
@@ -143,43 +143,48 @@ contract YieldManager is VersionedInitializable, Ownable {
       address asset = _assetsList[_offset + i];
       require(asset != address(0), Errors.UL_INVALID_INDEX);
       uint256 amount = IERC20Detailed(asset).balanceOf(address(this));
-      UniswapAdapter.swapExactTokensForTokens(
-        provider,
-        asset,
-        _exchangeToken,
-        amount,
-        _paths[i],
-        _slippage
-      );
+      UniswapAdapter.swapExactTokensForTokens(provider, asset, token, amount, _paths[i], _slippage);
     }
-    uint256 exchangedAmount = IERC20Detailed(_exchangeToken).balanceOf(address(this));
+    uint256 exchangedAmount = IERC20Detailed(token).balanceOf(address(this));
 
     // 2. convert from exchange token to other stable assets via curve swap
     AssetYield[] memory assetYields = _getAssetYields(exchangedAmount, provider);
 
-    uint256 length = assetYields.length;
+    _depositAssetYields(assetYields, provider, token, _slippage);
+  }
+
+  /**
+   * @dev deposit Yields to pool for suppliers
+   **/
+  function _depositAssetYields(
+    AssetYield[] memory _assetYields,
+    ILendingPoolAddressesProvider _provider,
+    address _token,
+    uint256 _slippage
+  ) internal {
+    uint256 length = _assetYields.length;
     for (uint256 i; i < length; ++i) {
-      if (assetYields[i].amount > 0) {
+      if (_assetYields[i].amount > 0) {
         uint256 amount;
 
-        if (assetYields[i].asset == _exchangeToken) {
-          amount = assetYields[i].amount;
+        if (_assetYields[i].asset == _token) {
+          amount = _assetYields[i].amount;
         } else {
-          address pool = _curvePools[_exchangeToken][assetYields[i].asset];
+          address pool = _curvePools[_token][_assetYields[i].asset];
           require(pool != address(0), Errors.VT_INVALID_CONFIGURATION);
           amount = CurveswapAdapter.swapExactTokensForTokens(
-            provider,
+            _provider,
             pool,
-            _exchangeToken,
-            assetYields[i].asset,
-            assetYields[i].amount,
+            _token,
+            _assetYields[i].asset,
+            _assetYields[i].amount,
             _slippage
           );
         }
         // 3. deposit Yield to pool for suppliers
-        address _lendingPool = provider.getLendingPool();
-        IERC20(assetYields[i].asset).approve(_lendingPool, amount);
-        ILendingPool(_lendingPool).depositYield(assetYields[i].asset, amount);
+        address lendingPool = _provider.getLendingPool();
+        IERC20(_assetYields[i].asset).approve(lendingPool, amount);
+        ILendingPool(lendingPool).depositYield(_assetYields[i].asset, amount);
       }
     }
   }
@@ -213,9 +218,9 @@ contract YieldManager is VersionedInitializable, Ownable {
       } else {
         // Distribute yieldAmount based on percent of asset volume
         assetYields[i].amount = _totalYieldAmount.percentMul(
-          volumes[i].mul(PercentageMath.PERCENTAGE_FACTOR).div(totalVolume)
+          (volumes[i] * PercentageMath.PERCENTAGE_FACTOR) / totalVolume
         );
-        extraYieldAmount = extraYieldAmount.sub(assetYields[i].amount);
+        extraYieldAmount -= assetYields[i].amount;
       }
     }
 

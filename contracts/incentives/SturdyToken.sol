@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {ERC20} from '../dependencies/openzeppelin/contracts/ERC20.sol';
@@ -23,7 +23,7 @@ contract SturdyToken is ERC20, VersionedInitializable {
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
 
-  constructor() public ERC20(NAME, SYMBOL) {}
+  constructor() ERC20(NAME, SYMBOL) {}
 
   /**
    * @dev initializes the contract upon assignment to the InitializableAdminUpgradeabilityProxy

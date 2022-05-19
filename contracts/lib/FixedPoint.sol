@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 import './FullMath.sol';
 
 // a library for handling binary fixed point numbers (https://en.wikipedia.org/wiki/Q_(number_format))
@@ -44,13 +44,13 @@ library FixedPoint {
     require(denominator > 0, 'FixedPoint::fraction: div by 0');
     if (numerator == 0) return FixedPoint.uq112x112(0);
 
-    if (numerator <= uint144(-1)) {
+    if (numerator <= type(uint144).max) {
       uint256 result = (numerator << RESOLUTION) / denominator;
-      require(result <= uint224(-1), 'FixedPoint::fraction: overflow');
+      require(result <= type(uint224).max, 'FixedPoint::fraction: overflow');
       return uq112x112(uint224(result));
     } else {
       uint256 result = FullMath.mulDiv(numerator, Q112, denominator);
-      require(result <= uint224(-1), 'FixedPoint::fraction: overflow');
+      require(result <= type(uint224).max, 'FixedPoint::fraction: overflow');
       return uq112x112(uint224(result));
     }
   }

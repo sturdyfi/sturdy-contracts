@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {TransferHelper} from '../../protocol/libraries/helpers/TransferHelper.sol';
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {WadRayMath} from '../../protocol/libraries/math/WadRayMath.sol';
 
 contract MockMooBASEDMIMATIC is ERC20 {
   using WadRayMath for uint256;
-  using SafeMath for uint256;
 
   uint256 internal constant SECONDS_PER_YEAR = 365 days;
   uint256 public rewardRatio;
@@ -32,7 +30,7 @@ contract MockMooBASEDMIMATIC is ERC20 {
     string memory symbolOverride,
     address _guardian, //default is msg.sender
     address _management //default is msg.sender
-  ) public ERC20('Moo Tomb BASED-MIMATIC', 'mooTombBASED-MIMATIC') {
+  ) ERC20('Moo Tomb BASED-MIMATIC', 'mooTombBASED-MIMATIC') {
     token = ERC20(_token);
 
     _setupDecimals(IERC20Detailed(_token).decimals());
@@ -107,14 +105,12 @@ contract MockMooBASEDMIMATIC is ERC20 {
   }
 
   function _shareValue(uint256 shares) internal view returns (uint256) {
-    uint256 timeDifference = block.timestamp.sub(lastReport);
+    uint256 timeDifference = block.timestamp - lastReport;
     if (!isIncreasing) {
       timeDifference = 3 days;
     }
 
-    uint256 linearReward = (rewardRatio.mul(timeDifference) / SECONDS_PER_YEAR).add(
-      WadRayMath.ray()
-    );
+    uint256 linearReward = ((rewardRatio * timeDifference) / SECONDS_PER_YEAR) + WadRayMath.ray();
 
     return shares.rayMul(linearReward);
   }

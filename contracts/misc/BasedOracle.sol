@@ -1,18 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Using the same Copyleft License as in the original Repository
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
-import '../protocol/libraries/math/BoringMath.sol';
 import '../dependencies/openzeppelin/contracts/IERC20.sol';
 import '../interfaces/IUniswapV2Pair.sol';
 import '../lib/FixedPoint.sol';
 
 contract BasedOracle is IOracle, Ownable {
   using FixedPoint for *;
-  using BoringMath for uint256;
   uint256 public constant PERIOD = 10 minutes;
   IChainlinkAggregator public constant MIMATIC_USD =
     IChainlinkAggregator(0x827863222c9C603960dE6FF2c0dD58D457Dcc363);
@@ -60,12 +58,12 @@ contract BasedOracle is IOracle, Ownable {
 
     uint256 priceCumulative = _get(blockTimestamp);
     pairInfo.priceAverage =
-      uint256(
+      (uint256(
         FixedPoint
           .uq112x112(uint224((priceCumulative - pairInfo.priceCumulativeLast) / timeElapsed))
           .mul(1e18)
           .decode144()
-      ).mul(uint256(MIMATIC_USD.latestAnswer())) /
+      ) * uint256(MIMATIC_USD.latestAnswer())) /
       1e18;
 
     pairInfo.blockTimestampLast = blockTimestamp;
@@ -88,12 +86,12 @@ contract BasedOracle is IOracle, Ownable {
 
     uint256 priceCumulative = _get(blockTimestamp);
     int256 priceAverage = int256(
-      uint256(
+      (uint256(
         FixedPoint
           .uq112x112(uint224((priceCumulative - pairInfo.priceCumulativeLast) / timeElapsed))
           .mul(1e18)
           .decode144()
-      ).mul(uint256(MIMATIC_USD.latestAnswer())) / 1e18
+      ) * uint256(MIMATIC_USD.latestAnswer())) / 1e18
     );
 
     return (true, priceAverage);
@@ -115,9 +113,7 @@ contract BasedOracle is IOracle, Ownable {
     }
 
     if (rate <= 0) {
-      rate = int256(
-        (reserve1.mul(1e18) / reserve0).mul(uint256(MIMATIC_USD.latestAnswer())) / 1e18
-      );
+      rate = int256((((reserve1 * 1e18) / reserve0) * uint256(MIMATIC_USD.latestAnswer())) / 1e18);
     }
   }
 }

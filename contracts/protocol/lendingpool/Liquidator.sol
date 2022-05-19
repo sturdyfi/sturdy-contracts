@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
@@ -22,15 +21,13 @@ import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
  **/
 
 contract Liquidator is IFlashLoanReceiver, Ownable {
-  using SafeMath for uint256;
-
   ILendingPoolAddressesProvider internal _addressesProvider;
 
   /**
    * @dev Function is invoked by the proxy contract when the Adapter contract is deployed.
    * @param _provider The address of the provider
    **/
-  constructor(ILendingPoolAddressesProvider _provider) public {
+  constructor(ILendingPoolAddressesProvider _provider) {
     _addressesProvider = _provider;
   }
 
@@ -66,7 +63,7 @@ contract Liquidator is IFlashLoanReceiver, Ownable {
     _convertCollateral(collateralAddress, assets[0]);
 
     // Approve the LendingPool contract allowance to *pull* the owed amount
-    uint256 amountOwing = amounts[0].add(premiums[0]);
+    uint256 amountOwing = amounts[0] + premiums[0];
     IERC20(assets[0]).approve(_addressesProvider.getAddress('AAVE_LENDING_POOL'), amountOwing);
 
     return true;

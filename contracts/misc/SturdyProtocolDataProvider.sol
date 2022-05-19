@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -28,7 +28,7 @@ contract SturdyProtocolDataProvider {
 
   ILendingPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 
-  constructor(ILendingPoolAddressesProvider addressesProvider) public {
+  constructor(ILendingPoolAddressesProvider addressesProvider) {
     ADDRESSES_PROVIDER = addressesProvider;
   }
 

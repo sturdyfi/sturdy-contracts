@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
@@ -20,7 +20,7 @@ import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 contract DeployVaultHelper is Ownable {
   ILendingPoolAddressesProvider private _addressProvider;
 
-  constructor(address addressProvider) public {
+  constructor(address addressProvider) {
     _addressProvider = ILendingPoolAddressesProvider(addressProvider);
   }
 

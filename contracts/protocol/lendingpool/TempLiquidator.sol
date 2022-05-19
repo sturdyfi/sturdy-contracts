@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.6.12;
+pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from '../../dependencies/openzeppelin/contracts/SafeMath.sol';
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
@@ -30,7 +29,6 @@ import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
  **/
 
 contract TempLiquidator is IFlashLoanReceiver, Ownable {
-  using SafeMath for uint256;
   using PercentageMath for uint256;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
@@ -44,7 +42,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
    * @dev Function is invoked by the proxy contract when the Adapter contract is deployed.
    * @param _provider The address of the provider
    **/
-  constructor(ILendingPoolAddressesProvider _provider) public {
+  constructor(ILendingPoolAddressesProvider _provider) {
     _addressesProvider = _provider;
   }
 
@@ -80,7 +78,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     _convertCollateral(collateralAddress, assets[0]);
 
     // Approve the LendingPool contract allowance to *pull* the owed amount
-    uint256 amountOwing = amounts[0].add(premiums[0]);
+    uint256 amountOwing = amounts[0] + premiums[0];
     IERC20(assets[0]).approve(_addressesProvider.getAddress('AAVE_LENDING_POOL'), amountOwing);
 
     return true;
@@ -142,12 +140,9 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = collateralAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(asset))
-      .percentMul(99_00);
+    uint256 minAmountFromPrice = ((((collateralAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(asset)).percentMul(99_00);
 
     // Exchange FTM -> Asset via UniswapV2
     address[] memory path = new address[](2);
@@ -174,12 +169,9 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = collateralAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVBOO')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(asset))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((collateralAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVBOO'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange BOO -> Asset via UniswapV2
     address[] memory path = new address[](3);
@@ -213,12 +205,9 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = collateralAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVSPELL')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(asset))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((collateralAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVSPELL'))) / 10**18) *
+      10**assetDecimal) / oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange SPELL -> Asset via UniswapV2
     address[] memory path = new address[](3);
@@ -252,12 +241,9 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = collateralAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVCRV')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(asset))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((collateralAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVCRV'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange CRV -> Asset via UniswapV2
     address[] memory path = new address[](3);
@@ -281,10 +267,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     );
   }
 
-  function _withdrawLiquidityPool(uint256 fbeetsAmount, address collateralAsset)
-    internal
-    returns (uint256 amountBEETS, uint256 amountWFTM)
-  {
+  function _withdrawLiquidityPool(uint256 fbeetsAmount, address collateralAsset) internal {
     // burn fBEETS token
     ICollateralAdapter collateralAdapter = ICollateralAdapter(
       _addressesProvider.getAddress('COLLATERAL_ADAPTER')
@@ -302,7 +285,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     uint256 beforeOfBalance = IERC20(BEETS_FTM_Pool).balanceOf(address(this));
     IFBeetsToken(fBEETS).leave(fbeetsAmount);
     uint256 afterOfBalance = IERC20(BEETS_FTM_Pool).balanceOf(address(this));
-    uint256 _amount = afterOfBalance.sub(beforeOfBalance);
+    uint256 _amount = afterOfBalance - beforeOfBalance;
 
     // Withdraw from LP
     // ToDo: calculate minimum amount from token balance
@@ -315,7 +298,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
     uint256[] memory amountsOut = new uint256[](tokens.length);
     for (uint256 i = 0; i < tokens.length; i++) {
-      amountsOut[i] = balances[i].mul(_amount).div(_totalAmount).percentMul(99_00);
+      amountsOut[i] = ((balances[i] * _amount) / _totalAmount).percentMul(99_00);
     }
 
     IBalancerVault(IYearnFBEETSVault(fBEETSVault).getBeethovenVault()).exitPool(
@@ -333,6 +316,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
   function _calcSwapMinAmount(uint256 beetsAmount, address collateralAsset)
     internal
+    view
     returns (uint256)
   {
     uint256 assetDecimal = IERC20Detailed(_addressesProvider.getAddress('WFTM')).decimals();
@@ -343,20 +327,17 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
     // Calculate minAmount from price with 2% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = beetsAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('BEETS')))
-      .div(10**18);
-    minAmountFromPrice = minAmountFromPrice
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM')))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = (beetsAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('BEETS'))) / 10**18;
+    minAmountFromPrice = ((minAmountFromPrice * 10**assetDecimal) /
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))).percentMul(98_00);
 
     // Substract pool's swap fee
     (address swapPool, ) = IBalancerVault(IYearnFBEETSVault(fBEETSVault).getBeethovenVault())
       .getPool(IYearnFBEETSVault(fBEETSVault).beethovenSwapPoolId());
     uint256 swapFee = IBalancerWeightedPool(swapPool).getSwapFeePercentage();
 
-    return minAmountFromPrice.mul(10**18 - swapFee).div(10**18);
+    return (minAmountFromPrice * (10**18 - swapFee)) / 10**18;
   }
 
   function _swapBEETS2WFTM(uint256 beetsAmount, address collateralAsset)
@@ -391,7 +372,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     IERC20(BEETS).approve(IYearnFBEETSVault(fBEETSVault).getBeethovenVault(), beetsAmount);
 
     uint256 receivedAmount = IBalancerVault(IYearnFBEETSVault(fBEETSVault).getBeethovenVault())
-      .swap(singleSwap, funds, limit, uint256(-1));
+      .swap(singleSwap, funds, limit, type(uint256).max);
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     return receivedAmount;
@@ -413,12 +394,12 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
     // BEETS -> WFTM
     uint256 balance = IERC20(BEETS).balanceOf(address(this));
-    uint256 beetsAmount = balance.sub(_balanceOfBEETS);
+    uint256 beetsAmount = balance - _balanceOfBEETS;
     require(beetsAmount > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     _swapBEETS2WFTM(beetsAmount, collateralAsset);
 
     balance = IERC20(WFTM).balanceOf(address(this));
-    uint256 wftmAmount = balance.sub(_balanceOfWFTM);
+    uint256 wftmAmount = balance - _balanceOfWFTM;
     _convertWFTM(WFTM, asset, wftmAmount);
   }
 
@@ -432,12 +413,9 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    uint256 minAmountFromPrice = collateralAmount
-      .mul(oracle.getAssetPrice(_addressesProvider.getAddress('YVLINK')))
-      .div(10**18)
-      .mul(10**assetDecimal)
-      .div(oracle.getAssetPrice(asset))
-      .percentMul(98_00);
+    uint256 minAmountFromPrice = ((((collateralAmount *
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVLINK'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange LINK -> Asset via UniswapV2
     address[] memory path = new address[](3);

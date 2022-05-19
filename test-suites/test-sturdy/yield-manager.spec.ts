@@ -299,13 +299,39 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
         tokens: [CRV.address, usdc.address],
         fees: [100],
       },
+    ];
+    const slippage = 500;
+    await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.revertedWith(
+      '77'
+    );
+  });
+  it('Should be failed when use invalid swap path', async () => {
+    const { yieldManager, usdc, CRV, CVX } = testEnv;
+    const assetCount = 2;
+    const paths = [
       {
-        tokens: [CVX.address, usdc.address],
+        tokens: [CRV.address, usdc.address],
         fees: [100],
       },
     ];
     const slippage = 500;
-    await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.reverted;
+    await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
+      '100'
+    );
+  });
+  it('Should be failed when use swap path including invalid tokens', async () => {
+    const { yieldManager, usdc, CRV, CVX } = testEnv;
+    const assetCount = 1;
+    const paths = [
+      {
+        tokens: [usdc.address, usdc.address],
+        fees: [100],
+      },
+    ];
+    const slippage = 500;
+    await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
+      '101'
+    );
   });
   it('Distribute yield', async () => {
     const { yieldManager, dai, aDai, usdc, aUsdc, users, CRV, CVX, WETH } = testEnv;

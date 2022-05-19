@@ -134,6 +134,8 @@ contract YieldManager is VersionedInitializable, Ownable {
     uint256 _slippage,
     UniswapAdapter.Path[] memory _paths
   ) external payable onlyAdmin {
+    require(_paths.length == _count, Errors.VT_SWAP_PATH_LENGTH_INVALID);
+
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // 1. convert from asset to exchange token via uniswap

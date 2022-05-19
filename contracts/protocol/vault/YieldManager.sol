@@ -125,6 +125,7 @@ contract YieldManager is VersionedInitializable, Ownable {
    * @param _offset assets array's start offset.
    * @param _count assets array's count when perform distribution.
    * @param _slippage The slippage of the swap 1% = 100
+   * @param _paths The swapping path of uniswap
    **/
   function distributeYield(
     uint256 _offset,
@@ -149,29 +150,41 @@ contract YieldManager is VersionedInitializable, Ownable {
     // 2. convert from exchange token to other stable assets via curve swap
     AssetYield[] memory assetYields = _getAssetYields(exchangedAmount, provider);
 
-    uint256 length = assetYields.length;
+    _depositAssetYields(assetYields, provider, token, _slippage);
+  }
+
+  /**
+   * @dev deposit Yields to pool for suppliers
+   **/
+  function _depositAssetYields(
+    AssetYield[] memory _assetYields,
+    ILendingPoolAddressesProvider _provider,
+    address _token,
+    uint256 _slippage
+  ) internal {
+    uint256 length = _assetYields.length;
     for (uint256 i; i < length; ++i) {
-      if (assetYields[i].amount > 0) {
+      if (_assetYields[i].amount > 0) {
         uint256 amount;
 
-        if (assetYields[i].asset == token) {
-          amount = assetYields[i].amount;
+        if (_assetYields[i].asset == _token) {
+          amount = _assetYields[i].amount;
         } else {
-          address pool = _curvePools[token][assetYields[i].asset];
+          address pool = _curvePools[_token][_assetYields[i].asset];
           require(pool != address(0), Errors.VT_INVALID_CONFIGURATION);
           amount = CurveswapAdapter.swapExactTokensForTokens(
-            provider,
+            _provider,
             pool,
-            token,
-            assetYields[i].asset,
-            assetYields[i].amount,
+            _token,
+            _assetYields[i].asset,
+            _assetYields[i].amount,
             _slippage
           );
         }
         // 3. deposit Yield to pool for suppliers
-        address _lendingPool = provider.getLendingPool();
-        IERC20(assetYields[i].asset).approve(_lendingPool, amount);
-        ILendingPool(_lendingPool).depositYield(assetYields[i].asset, amount);
+        address lendingPool = _provider.getLendingPool();
+        IERC20(_assetYields[i].asset).approve(lendingPool, amount);
+        ILendingPool(lendingPool).depositYield(_assetYields[i].asset, amount);
       }
     }
   }

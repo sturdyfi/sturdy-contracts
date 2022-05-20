@@ -9,10 +9,10 @@ import '../interfaces/ICurvePool.sol';
 import '../interfaces/IRocketTokenRETH.sol';
 
 contract CrvREthWstETHOracle is IOracle {
-  IRocketTokenRETH public constant RETH =
+  IRocketTokenRETH private constant RETH =
     IRocketTokenRETH(0xae78736Cd615f374D3085123A210448E74Fc6393);
-  ICurvePool public constant RETH_WSTETH = ICurvePool(0x447Ddd4960d9fdBF6af9a790560d0AF76795CB08);
-  IChainlinkAggregator public constant STETH =
+  ICurvePool private constant RETH_WSTETH = ICurvePool(0x447Ddd4960d9fdBF6af9a790560d0AF76795CB08);
+  IChainlinkAggregator private constant STETH =
     IChainlinkAggregator(0x86392dC19c0b719886221c78AB11eb8Cf5c52812);
 
   function _get() internal view returns (uint256) {

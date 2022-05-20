@@ -24,13 +24,13 @@ contract AToken is
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
-  bytes public constant EIP712_REVISION = bytes('1');
+  bytes private constant EIP712_REVISION = bytes('1');
   bytes32 internal constant EIP712_DOMAIN =
     keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
-  bytes32 public constant PERMIT_TYPEHASH =
+  bytes32 private constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
 
-  uint256 public constant ATOKEN_REVISION = 0x1;
+  uint256 private constant ATOKEN_REVISION = 0x1;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -122,9 +122,9 @@ contract AToken is
     address receiverOfUnderlying,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) external payable override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
     IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
@@ -145,11 +145,11 @@ contract AToken is
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool returns (bool) {
+  ) external payable override onlyLendingPool returns (bool) {
     uint256 previousBalance = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
     emit Transfer(address(0), user, amount);
@@ -164,7 +164,7 @@ contract AToken is
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve
    */
-  function mintToTreasury(uint256 amount, uint256 index) external override onlyLendingPool {
+  function mintToTreasury(uint256 amount, uint256 index) external payable override onlyLendingPool {
     if (amount == 0) {
       return;
     }
@@ -192,7 +192,7 @@ contract AToken is
     address from,
     address to,
     uint256 value
-  ) external override onlyLendingPool {
+  ) external payable override onlyLendingPool {
     // Being a normal transfer, the Transfer() and BalanceTransfer() are emitted
     // so no need to emit a specific event here
     _transfer(from, to, value, false);
@@ -307,6 +307,7 @@ contract AToken is
    **/
   function transferUnderlyingTo(address target, uint256 amount)
     external
+    payable
     override
     onlyLendingPool
     returns (uint256)

@@ -20,7 +20,7 @@ interface ILendingPoolAddressesProviderRegistry {
     view
     returns (uint256);
 
-  function registerAddressesProvider(address provider, uint256 id) external;
+  function registerAddressesProvider(address provider, uint256 id) external payable;
 
-  function unregisterAddressesProvider(address provider) external;
+  function unregisterAddressesProvider(address provider) external payable;
 }

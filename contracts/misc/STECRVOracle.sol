@@ -12,8 +12,8 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
  * @dev Oracle contract for Curve.fi ETH/stETH (steCRV) LP Token
  */
 contract STECRVOracle is IOracle {
-  ICurvePool public constant STECRV = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
-  IChainlinkAggregator public constant STETH =
+  ICurvePool private constant STECRV = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
+  IChainlinkAggregator private constant STETH =
     IChainlinkAggregator(0x86392dC19c0b719886221c78AB11eb8Cf5c52812);
 
   /**

@@ -75,7 +75,7 @@ contract MockyvBOO is ERC20 {
   function withdraw(
     uint256 maxShares,
     address recipient,
-    uint256 maxLoss
+    uint256
   ) external returns (uint256) {
     uint256 shares = maxShares;
     // require(maxLoss <= MAX_BPS);

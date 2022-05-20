@@ -13,6 +13,7 @@ import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title YearnSPELLVault
@@ -24,8 +25,9 @@ contract YearnSPELLVault is GeneralVault {
   using PercentageMath for uint256;
 
   function processYield() external override onlyYieldProcessor {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
-    address YVSPELL = _addressesProvider.getAddress('YVSPELL');
+    address YVSPELL = provider.getAddress('YVSPELL');
     uint256 yieldYVSPELL = _getYield(YVSPELL);
 
     // move yield to treasury
@@ -38,14 +40,15 @@ contract YearnSPELLVault is GeneralVault {
     uint256 yieldSPELL = IYearnVault(YVSPELL).withdraw(yieldYVSPELL, address(this), 1);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldSPELL);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    uint256 length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // SPELL -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
 
-    emit ProcessYield(_addressesProvider.getAddress('SPELL'), yieldSPELL);
+    emit ProcessYield(provider.getAddress('SPELL'), yieldSPELL);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)
@@ -53,13 +56,14 @@ contract YearnSPELLVault is GeneralVault {
     override
     returns (uint256)
   {
-    address SPELL = _addressesProvider.getAddress('SPELL');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address SPELL = provider.getAddress('SPELL');
 
     require(_asset == SPELL, Errors.LP_LIQUIDATION_CALL_FAILED);
-    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive SPELL
-    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVSPELL')).withdraw(
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVSPELL')).withdraw(
       _amount,
       address(this),
       1
@@ -72,20 +76,21 @@ contract YearnSPELLVault is GeneralVault {
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _spellAmount) internal {
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address SPELL = _addressesProvider.getAddress('SPELL');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address uniswapRouter = provider.getAddress('uniswapRouter');
+    address SPELL = provider.getAddress('SPELL');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_spellAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVSPELL'))) / 10**18) *
-      10**assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
+      oracle.getAssetPrice(provider.getAddress('YVSPELL'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange SPELL -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
     path[0] = SPELL;
-    path[1] = _addressesProvider.getAddress('WFTM');
+    path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
     IERC20(SPELL).approve(uniswapRouter, _spellAmount);
@@ -104,7 +109,7 @@ contract YearnSPELLVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -131,8 +136,9 @@ contract YearnSPELLVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address YVSPELL = _addressesProvider.getAddress('YVSPELL');
-    address SPELL = _addressesProvider.getAddress('SPELL');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address YVSPELL = provider.getAddress('YVSPELL');
+    address SPELL = provider.getAddress('SPELL');
 
     // receive SPELL from user
     require(_asset == SPELL, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -143,7 +149,7 @@ contract YearnSPELLVault is GeneralVault {
     uint256 assetAmount = IYearnVault(YVSPELL).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVSPELL).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(YVSPELL).approve(address(provider.getLendingPool()), assetAmount);
     return (YVSPELL, assetAmount);
   }
 
@@ -156,28 +162,33 @@ contract YearnSPELLVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(_asset == provider.getAddress('SPELL'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVSPELL'), _amount);
+    return (provider.getAddress('YVSPELL'), _amount);
   }
 
   /**
    * @dev Withdraw from yield pool based on strategy with yvSPELL and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address YVSPELL = _addressesProvider.getAddress('YVSPELL');
-    address SPELL = _addressesProvider.getAddress('SPELL');
-
-    require(_asset == SPELL, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive SPELL
-    uint256 assetAmount = IYearnVault(YVSPELL).withdraw(_amount, address(this), 1);
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVSPELL')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
 
     // Deliver SPELL to user
-    TransferHelper.safeTransfer(SPELL, _to, assetAmount);
+    TransferHelper.safeTransfer(provider.getAddress('SPELL'), _to, assetAmount);
     return assetAmount;
   }
 
@@ -198,7 +209,7 @@ contract YearnSPELLVault is GeneralVault {
     AssetYield[] memory assetYields = new AssetYield[](length);
     uint256 extraWETHAmount = _amount;
 
-    for (uint256 i; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i == length - 1) {
         // without calculation, set remained extra amount

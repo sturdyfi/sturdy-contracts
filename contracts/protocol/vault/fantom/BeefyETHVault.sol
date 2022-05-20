@@ -13,6 +13,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title BeefyETHVault
@@ -24,9 +25,10 @@ contract BeefyETHVault is GeneralVault {
   using PercentageMath for uint256;
 
   function processYield() external override onlyYieldProcessor {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
-    address WETH = _addressesProvider.getAddress('WETH');
+    address MOOWETH = provider.getAddress('MOOWETH');
+    address WETH = provider.getAddress('WETH');
     uint256 yieldMOOWETH = _getYield(MOOWETH);
 
     // move yield to treasury
@@ -41,7 +43,8 @@ contract BeefyETHVault is GeneralVault {
     uint256 yieldWETH = IERC20(WETH).balanceOf(address(this)) - before;
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWETH);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    uint256 length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // WETH -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
@@ -55,21 +58,22 @@ contract BeefyETHVault is GeneralVault {
    * @dev Swap 'WETH' using SpookySwap
    */
   function _convertAndDepositYield(address _tokenOut, uint256 _wethAmount) internal {
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WETH = _addressesProvider.getAddress('WETH');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address uniswapRouter = provider.getAddress('uniswapRouter');
+    address WETH = provider.getAddress('WETH');
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
 
     uint256 minAmountFromPrice = ((((_wethAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('MOOWETH'))) / 10**18) *
-      10**assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
+      oracle.getAssetPrice(provider.getAddress('MOOWETH'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WETH -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
     path[0] = address(WETH);
-    path[1] = address(_addressesProvider.getAddress('WFTM'));
+    path[1] = address(provider.getAddress('WFTM'));
     path[2] = _tokenOut;
 
     IERC20(WETH).approve(uniswapRouter, _wethAmount);
@@ -89,7 +93,7 @@ contract BeefyETHVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -99,14 +103,15 @@ contract BeefyETHVault is GeneralVault {
     override
     returns (uint256)
   {
-    address WETH = _addressesProvider.getAddress('WETH');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address WETH = provider.getAddress('WETH');
 
     require(_asset == WETH, Errors.LP_LIQUIDATION_CALL_FAILED);
-    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
-    IBeefyVault(_addressesProvider.getAddress('MOOWETH')).withdraw(_amount);
+    IBeefyVault(provider.getAddress('MOOWETH')).withdraw(_amount);
     uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
     // Deliver LINK to user
@@ -137,8 +142,9 @@ contract BeefyETHVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
-    address WETH = _addressesProvider.getAddress('WETH');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address MOOWETH = provider.getAddress('MOOWETH');
+    address WETH = provider.getAddress('WETH');
 
     require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
@@ -151,39 +157,41 @@ contract BeefyETHVault is GeneralVault {
     uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before;
 
     // Make lendingPool to transfer required amount
-    IERC20(MOOWETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(MOOWETH).approve(address(provider.getLendingPool()), assetAmount);
     return (MOOWETH, assetAmount);
   }
 
   /**
    * @dev Get Withdrawal amount of mooScreamETH based on strategy
    */
-  function _getWithdrawalAmount(address, uint256 _amount)
+  function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
     view
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(_asset == provider.getAddress('WETH'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('MOOWETH'), _amount);
+    return (provider.getAddress('MOOWETH'), _amount);
   }
 
   /**
    * @dev Withdraw from yield pool based on strategy with mooScreamETH and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address MOOWETH = _addressesProvider.getAddress('MOOWETH');
-    address WETH = _addressesProvider.getAddress('WETH');
-
-    require(_asset == WETH, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address WETH = provider.getAddress('WETH');
 
     // Withdraw from Beefy Vault and receive WETH
     uint256 before = IERC20(WETH).balanceOf(address(this));
-    IBeefyVault(MOOWETH).withdraw(_amount);
+    IBeefyVault(provider.getAddress('MOOWETH')).withdraw(_amount);
     uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
     // Deliver WETH to user
@@ -208,7 +216,7 @@ contract BeefyETHVault is GeneralVault {
     AssetYield[] memory assetYields = new AssetYield[](length);
     uint256 extraWETHAmount = _amount;
 
-    for (uint256 i; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i == length - 1) {
         // without calculation, set remained extra amount

@@ -20,8 +20,8 @@ contract SwapinERC20 is ERC20 {
    * @dev Function to mint tokens
    */
   function Swapin(
-    bytes32 txhash,
-    address account,
+    bytes32,
+    address,
     uint256 amount
   ) external returns (bool) {
     _mint(_msgSender(), amount);

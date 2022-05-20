@@ -16,6 +16,7 @@ import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title YearnFBEETSVault
@@ -35,7 +36,7 @@ contract YearnFBEETSVault is GeneralVault {
   /**
    * @dev Set BeethOvenx Vault address
    */
-  function setBeethovenVaultAddress(address _address) external onlyAdmin {
+  function setBeethovenVaultAddress(address _address) external payable onlyAdmin {
     beethovenVault = _address;
   }
 
@@ -46,22 +47,23 @@ contract YearnFBEETSVault is GeneralVault {
   /**
    * @dev Set BeethOvenx Swap Pool Id
    */
-  function setBeethovenSwapPoolId(bytes32 _id) external onlyAdmin {
+  function setBeethovenSwapPoolId(bytes32 _id) external payable onlyAdmin {
     beethovenSwapPoolId = _id;
   }
 
   /**
    * @dev Set BeethOvenx Liquidity Pool Id
    */
-  function setBeethovenLiquidityPoolId(bytes32 _id) external onlyAdmin {
+  function setBeethovenLiquidityPoolId(bytes32 _id) external payable onlyAdmin {
     beethoven_BEETS_FTM_PoolId = _id;
   }
 
   function processYield() external override onlyYieldProcessor {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
-    address YVFBEETS = _addressesProvider.getAddress('YVFBEETS');
-    address BEETS = _addressesProvider.getAddress('BEETS');
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    address YVFBEETS = provider.getAddress('YVFBEETS');
+    address BEETS = provider.getAddress('BEETS');
+    address WFTM = provider.getAddress('WFTM');
     uint256 yieldYVFBEETS = _getYield(YVFBEETS);
 
     // move yield to treasury
@@ -89,14 +91,15 @@ contract YearnFBEETSVault is GeneralVault {
     balance = IERC20(WFTM).balanceOf(address(this));
     uint256 wftmAmount = balance - _balanceOfWFTM;
     AssetYield[] memory assetYields = _getAssetYields(wftmAmount);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    uint256 length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // WFTM -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
 
-    emit ProcessYield(_addressesProvider.getAddress('fBEETS'), yieldFBEETS);
+    emit ProcessYield(provider.getAddress('fBEETS'), yieldFBEETS);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)
@@ -104,13 +107,14 @@ contract YearnFBEETSVault is GeneralVault {
     override
     returns (uint256)
   {
-    address fBEETS = _addressesProvider.getAddress('fBEETS');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address fBEETS = provider.getAddress('fBEETS');
 
     require(_asset == fBEETS, Errors.LP_LIQUIDATION_CALL_FAILED);
-    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive fBEETS
-    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVFBEETS')).withdraw(
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVFBEETS')).withdraw(
       _amount,
       address(this),
       1
@@ -126,14 +130,15 @@ contract YearnFBEETSVault is GeneralVault {
    * @dev Swap 'WFTM' using SpookySwap
    */
   function _convertAndDepositYield(address _tokenOut, uint256 _wftmAmount) internal {
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address uniswapRouter = provider.getAddress('uniswapRouter');
+    address WFTM = provider.getAddress('WFTM');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_wftmAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WFTM -> _tokenOut via UniswapV2
@@ -157,20 +162,21 @@ contract YearnFBEETSVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[1]);
+    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
 
   function _calcSwapMinAmount(uint256 _beetsAmount) internal view returns (uint256) {
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address WFTM = provider.getAddress('WFTM');
     uint256 assetDecimal = IERC20Detailed(WFTM).decimals();
 
     // Calculate minAmount from price with 2% slippage
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_beetsAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('BEETS'))) / 10**18) * 10**assetDecimal) /
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))).percentMul(98_00);
+      oracle.getAssetPrice(provider.getAddress('BEETS'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVWFTM'))).percentMul(98_00);
 
     // Substract pool's swap fee
     (address swapPool, ) = getBeethovenVault().getPool(beethovenSwapPoolId);
@@ -183,11 +189,12 @@ contract YearnFBEETSVault is GeneralVault {
    * @dev Swap BEETS -> WFTM
    */
   function _swapBEETS2WFTM(uint256 _beetsAmount) internal returns (uint256) {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     IBalancerVault.SingleSwap memory singleSwap;
     IBalancerVault.FundManagement memory funds;
 
-    address BEETS = _addressesProvider.getAddress('BEETS');
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    address BEETS = provider.getAddress('BEETS');
+    address WFTM = provider.getAddress('WFTM');
 
     uint256 limit = _calcSwapMinAmount(_beetsAmount);
     // ToDo: Need to consider batchSwap, but, it's impossible now to implement Smart Order Router on-chain
@@ -214,10 +221,7 @@ contract YearnFBEETSVault is GeneralVault {
   /**
    * @dev burn fBEETS token & withdraw (BEETS, WFTM)
    */
-  function _withdrawLiquidityPool(uint256 _fbeetsAmount)
-    internal
-    returns (uint256 amountBEETS, uint256 amountWFTM)
-  {
+  function _withdrawLiquidityPool(uint256 _fbeetsAmount) internal {
     // burn fBEETS token
     address fBEETS = _addressesProvider.getAddress('fBEETS');
     address BEETS_FTM_Pool = IFBeetsToken(fBEETS).vestingToken();
@@ -238,10 +242,11 @@ contract YearnFBEETSVault is GeneralVault {
     (address[] memory tokens, uint256[] memory balances, ) = getBeethovenVault().getPoolTokens(
       beethoven_BEETS_FTM_PoolId
     );
-    require(tokens.length == balances.length, Errors.VT_PROCESS_YIELD_INVALID);
+    uint256 length = tokens.length;
+    require(length == balances.length, Errors.VT_PROCESS_YIELD_INVALID);
 
-    uint256[] memory amountsOut = new uint256[](tokens.length);
-    for (uint256 i = 0; i < tokens.length; i++) {
+    uint256[] memory amountsOut = new uint256[](length);
+    for (uint256 i; i < length; ++i) {
       amountsOut[i] = ((balances[i] * _amount) / _totalAmount).percentMul(99_00);
     }
 
@@ -280,8 +285,9 @@ contract YearnFBEETSVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address YVFBEETS = _addressesProvider.getAddress('YVFBEETS');
-    address fBEETS = _addressesProvider.getAddress('fBEETS');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address YVFBEETS = provider.getAddress('YVFBEETS');
+    address fBEETS = provider.getAddress('fBEETS');
 
     // receive fBEETS from user
     require(_asset == fBEETS, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -292,7 +298,7 @@ contract YearnFBEETSVault is GeneralVault {
     uint256 assetAmount = IYearnVault(YVFBEETS).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVFBEETS).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(YVFBEETS).approve(address(provider.getLendingPool()), assetAmount);
     return (YVFBEETS, assetAmount);
   }
 
@@ -305,28 +311,33 @@ contract YearnFBEETSVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(_asset == provider.getAddress('fBEETS'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVFBEETS'), _amount);
+    return (provider.getAddress('YVFBEETS'), _amount);
   }
 
   /**
    * @dev Withdraw from yield pool based on strategy with yvfBEETS and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address YVFBEETS = _addressesProvider.getAddress('YVFBEETS');
-    address fBEETS = _addressesProvider.getAddress('fBEETS');
-
-    require(_asset == fBEETS, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive fBEETS
-    uint256 assetAmount = IYearnVault(YVFBEETS).withdraw(_amount, address(this), 1);
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVFBEETS')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
 
     // Deliver fBEETS to user
-    TransferHelper.safeTransfer(fBEETS, _to, assetAmount);
+    TransferHelper.safeTransfer(provider.getAddress('fBEETS'), _to, assetAmount);
     return assetAmount;
   }
 
@@ -347,7 +358,7 @@ contract YearnFBEETSVault is GeneralVault {
     AssetYield[] memory assetYields = new AssetYield[](length);
     uint256 extraWETHAmount = _amount;
 
-    for (uint256 i; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i == length - 1) {
         // without calculation, set remained extra amount

@@ -13,6 +13,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title YearnRETHWstETHVault
@@ -159,28 +160,33 @@ contract YearnRETHWstETHVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(_asset == provider.getAddress('RETH_WSTETH'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVRETH_WSTETH'), _amount);
+    return (provider.getAddress('YVRETH_WSTETH'), _amount);
   }
 
   /**
    * @dev Withdraw from yield pool based on strategy with YVRETH_WSTETH and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
-    address RETH_WSTETH = _addressesProvider.getAddress('RETH_WSTETH');
-
-    require(_asset == RETH_WSTETH, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive RETH_WSTETH
-    uint256 assetAmount = IYearnVault(YVRETH_WSTETH).withdraw(_amount, address(this), 1);
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVRETH_WSTETH')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
 
     // Deliver RETH_WSTETH to user
-    TransferHelper.safeTransfer(RETH_WSTETH, _to, assetAmount);
+    TransferHelper.safeTransfer(provider.getAddress('RETH_WSTETH'), _to, assetAmount);
     return assetAmount;
   }
 

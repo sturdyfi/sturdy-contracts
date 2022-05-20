@@ -14,13 +14,13 @@ import '../lib/FixedPoint.sol';
 contract BeetsOracle is IOracle, Ownable {
   using FixedPoint for *;
 
-  uint256 public secs = 3600;
-  uint256 public ago = 30;
-  IChainlinkAggregator public constant FTM_USD =
+  uint256 private secs = 3600;
+  uint256 private ago = 30;
+  IChainlinkAggregator private constant FTM_USD =
     IChainlinkAggregator(0xf4766552D15AE4d256Ad41B6cf2933482B0680dc);
-  // IBalancerVault public constant BeethOven_Vault =
+  // IBalancerVault private constant BeethOven_Vault =
   //   IBalancerVault(0x20dd72Ed959b6147912C2e529F0a0C651c33c9ce);
-  IBalancerWeightedPool public constant BEETS_FTM =
+  IBalancerWeightedPool private constant BEETS_FTM =
     IBalancerWeightedPool(0xcdE5a11a4ACB4eE4c805352Cec57E236bdBC3837);
 
   function get() public pure override returns (bool, uint256) {

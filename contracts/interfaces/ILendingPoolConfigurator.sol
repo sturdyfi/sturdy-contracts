@@ -191,7 +191,7 @@ interface ILendingPoolConfigurator {
     address indexed implementation
   );
 
-  function registerVault(address _vaultAddress) external;
+  function registerVault(address _vaultAddress) external payable;
 
-  function batchInitReserve(InitReserveInput[] calldata input) external;
+  function batchInitReserve(InitReserveInput[] calldata input) external payable;
 }

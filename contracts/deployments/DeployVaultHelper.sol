@@ -50,34 +50,35 @@ contract DeployVaultHelper is Ownable {
     address _aTokenHelper,
     IATokensAndRatesHelper.ConfigureReserveInput[] calldata _inputParams,
     ILendingPoolConfigurator.InitReserveInput[] memory _input
-  ) external onlyOwner {
+  ) external payable onlyOwner {
     require(_ids.length == _addresses.length, Errors.VT_DEPLOY_FAILED);
     require(_ids.length >= 3, Errors.VT_DEPLOY_FAILED);
     require(_input.length == 1, Errors.VT_DEPLOY_FAILED);
     require(_inputParams.length == 1, Errors.VT_DEPLOY_FAILED);
 
+    ILendingPoolAddressesProvider provider = _addressProvider;
     // change poolAdmin
-    address orgPoolAdmin = _addressProvider.getPoolAdmin();
-    _addressProvider.setPoolAdmin(address(this));
+    address orgPoolAdmin = provider.getPoolAdmin();
+    provider.setPoolAdmin(address(this));
 
     // deploy vault, _ids[0] and addresses[0] are the id and impl address of new vault
-    _addressProvider.setAddressAsProxy(_ids[0], _addresses[0]);
+    provider.setAddressAsProxy(_ids[0], _addresses[0]);
 
     // set addresses
-    for (uint256 i = 1; i < _ids.length; i++) {
-      _addressProvider.setAddress(_ids[i], _addresses[i]);
+    for (uint256 i = 1; i < _ids.length; ++i) {
+      provider.setAddress(_ids[i], _addresses[i]);
     }
 
     //register vault
-    address configurator = _addressProvider.getLendingPoolConfigurator();
-    address newVault = _addressProvider.getAddress(_ids[0]);
+    address configurator = provider.getLendingPoolConfigurator();
+    address newVault = provider.getAddress(_ids[0]);
     ILendingPoolConfigurator(configurator).registerVault(newVault);
 
     //set vault fee
     IGeneralVault(newVault).setTreasuryInfo(_treasuryAddress, _treasuryFee);
 
     //collateralAdapter.addCollateralAsset
-    address collateralAdapter = _addressProvider.getAddress('COLLATERAL_ADAPTER');
+    address collateralAdapter = provider.getAddress('COLLATERAL_ADAPTER');
     ICollateralAdapter(collateralAdapter).addCollateralAsset(
       _addresses[2],
       _addresses[1],
@@ -89,18 +90,18 @@ contract DeployVaultHelper is Ownable {
     ILendingPoolConfigurator(configurator).batchInitReserve(_input);
 
     //atokenAndRatesHelper.configureReserves
-    _addressProvider.setPoolAdmin(_aTokenHelper);
+    provider.setPoolAdmin(_aTokenHelper);
     IATokensAndRatesHelper(_aTokenHelper).configureReserves(_inputParams);
 
     // rollback poolAdmin
-    _addressProvider.setPoolAdmin(orgPoolAdmin);
+    provider.setPoolAdmin(orgPoolAdmin);
 
     // rollback owner of addressProvider and atokenAndRatesHelper msg.sender
-    Ownable(address(_addressProvider)).transferOwnership(msg.sender);
+    Ownable(address(provider)).transferOwnership(msg.sender);
     Ownable(_aTokenHelper).transferOwnership(msg.sender);
   }
 
-  function removeHelperAsOwner(address _aTokenHelper) external onlyOwner {
+  function removeHelperAsOwner(address _aTokenHelper) external payable onlyOwner {
     Ownable(address(_addressProvider)).transferOwnership(msg.sender);
     Ownable(_aTokenHelper).transferOwnership(msg.sender);
   }

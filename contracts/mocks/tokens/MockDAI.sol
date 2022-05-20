@@ -39,10 +39,10 @@ contract Dai {
   }
 
   // --- ERC20 Data ---
-  string public constant name = 'Dai Stablecoin';
-  string public constant symbol = 'DAI';
-  string public constant version = '1';
-  uint8 public constant decimals = 18;
+  string private constant name = 'Dai Stablecoin';
+  string private constant symbol = 'DAI';
+  string private constant version = '1';
+  uint8 private constant decimals = 18;
   uint256 public totalSupply;
 
   mapping(address => uint256) public balanceOf;
@@ -63,8 +63,8 @@ contract Dai {
 
   // --- EIP712 niceties ---
   bytes32 public DOMAIN_SEPARATOR;
-  // bytes32 public constant PERMIT_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
-  bytes32 public constant PERMIT_TYPEHASH =
+  // bytes32 private constant PERMIT_TYPEHASH = keccak256("Permit(address holder,address spender,uint256 nonce,uint256 expiry,bool allowed)");
+  bytes32 private constant PERMIT_TYPEHASH =
     0xea2aa0a1be11a07ed86d755c93467f4f82362b452371d1ba94d1715123511acb;
 
   constructor(uint256 chainId_) {
@@ -93,7 +93,7 @@ contract Dai {
     uint256 wad
   ) public returns (bool) {
     require(balanceOf[src] >= wad, 'Dai/insufficient-balance');
-    if (src != msg.sender && allowance[src][msg.sender] != type(uint256).max) {
+    if (src != msg.sender && allowance[src][msg.sender] < type(uint256).max) {
       require(allowance[src][msg.sender] >= wad, 'Dai/insufficient-allowance');
       allowance[src][msg.sender] = sub(allowance[src][msg.sender], wad);
     }
@@ -111,7 +111,7 @@ contract Dai {
 
   function burn(address usr, uint256 wad) external {
     require(balanceOf[usr] >= wad, 'Dai/insufficient-balance');
-    if (usr != msg.sender && allowance[usr][msg.sender] != type(uint256).max) {
+    if (usr != msg.sender && allowance[usr][msg.sender] < type(uint256).max) {
       require(allowance[usr][msg.sender] >= wad, 'Dai/insufficient-allowance');
       allowance[usr][msg.sender] = sub(allowance[usr][msg.sender], wad);
     }

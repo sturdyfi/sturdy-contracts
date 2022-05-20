@@ -14,7 +14,7 @@ interface ISturdyDistributionManager {
    * @dev Sets the end date for the distribution
    * @param distributionEnd The end date timestamp
    **/
-  function setDistributionEnd(uint256 distributionEnd) external;
+  function setDistributionEnd(uint256 distributionEnd) external payable;
 
   /**
    * @dev Gets the end date for the distribution

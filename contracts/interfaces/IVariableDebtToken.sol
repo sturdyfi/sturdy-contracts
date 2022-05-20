@@ -34,7 +34,7 @@ interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
     address onBehalfOf,
     uint256 amount,
     uint256 index
-  ) external returns (bool);
+  ) external payable returns (bool);
 
   /**
    * @dev Emitted when variable debt is burnt
@@ -53,7 +53,7 @@ interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
     address user,
     uint256 amount,
     uint256 index
-  ) external;
+  ) external payable;
 
   /**
    * @dev Returns the address of the incentives controller contract

@@ -11,10 +11,10 @@ import '../lib/FixedPoint.sol';
 
 contract BasedMiMaticLPOracle is IOracle, Ownable {
   using FixedPoint for *;
-  uint256 public constant PERIOD = 10 minutes;
-  IChainlinkAggregator public constant MIMATIC_USD =
+  uint256 private constant PERIOD = 10 minutes;
+  IChainlinkAggregator private constant MIMATIC_USD =
     IChainlinkAggregator(0x827863222c9C603960dE6FF2c0dD58D457Dcc363);
-  IUniswapV2Pair public constant BASED_MIMATIC =
+  IUniswapV2Pair private constant BASED_MIMATIC =
     IUniswapV2Pair(0x7B5B3751550be4FF87aC6bda89533F7A0c9825B3);
   bool isCumulativePrice;
 
@@ -98,7 +98,7 @@ contract BasedMiMaticLPOracle is IOracle, Ownable {
     return (true, priceAverage);
   }
 
-  function enableCumulativePrice(bool enable) external onlyOwner {
+  function enableCumulativePrice(bool enable) external payable onlyOwner {
     isCumulativePrice = enable;
     if (enable) {
       get();

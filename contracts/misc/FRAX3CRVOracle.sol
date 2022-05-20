@@ -12,16 +12,16 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
  * @dev Oracle contract for FRAX3CRV LP Token
  */
 contract FRAX3CRVOracle is IOracle {
-  ICurvePool public constant FRAX3CRV = ICurvePool(0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B);
-  ICurvePool public constant CRV3 = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+  ICurvePool private constant FRAX3CRV = ICurvePool(0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B);
+  ICurvePool private constant CRV3 = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
 
-  IChainlinkAggregator public constant DAI =
+  IChainlinkAggregator private constant DAI =
     IChainlinkAggregator(0x773616E4d11A78F511299002da57A0a94577F1f4);
-  IChainlinkAggregator public constant USDC =
+  IChainlinkAggregator private constant USDC =
     IChainlinkAggregator(0x986b5E1e1755e3C2440e960477f25201B0a8bbD4);
-  IChainlinkAggregator public constant USDT =
+  IChainlinkAggregator private constant USDT =
     IChainlinkAggregator(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46);
-  IChainlinkAggregator public constant FRAX =
+  IChainlinkAggregator private constant FRAX =
     IChainlinkAggregator(0x14d04Fff8D21bd62987a5cE9ce543d2F1edF5D3E);
 
   /**

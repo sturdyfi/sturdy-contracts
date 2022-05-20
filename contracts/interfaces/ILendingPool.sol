@@ -186,7 +186,7 @@ interface ILendingPool {
       uint256
     );
 
-  function registerVault(address _vaultAddress) external;
+  function registerVault(address _vaultAddress) external payable;
 
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
@@ -309,12 +309,13 @@ interface ILendingPool {
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external;
+  ) external payable;
 
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
-    external;
+    external
+    payable;
 
-  function setConfiguration(address reserve, uint256 configuration) external;
+  function setConfiguration(address reserve, uint256 configuration) external payable;
 
   /**
    * @dev Returns the configuration of the reserve
@@ -370,7 +371,7 @@ interface ILendingPool {
 
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
-  function setPause(bool val) external;
+  function setPause(bool val) external payable;
 
   function paused() external view returns (bool);
 }

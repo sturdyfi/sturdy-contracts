@@ -24,7 +24,7 @@ contract StakedTokenIncentivesController is
 {
   using SafeERC20 for IERC20;
 
-  uint256 public constant REVISION = 1;
+  uint256 private constant REVISION = 1;
 
   mapping(address => uint256) internal _usersUnclaimedRewards;
   ILendingPoolAddressesProvider internal _addressProvider;
@@ -51,15 +51,17 @@ contract StakedTokenIncentivesController is
   /// @inheritdoc ISturdyIncentivesController
   function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
     external
+    payable
     override
     onlyEmissionManager
   {
-    require(assets.length == emissionsPerSecond.length, 'INVALID_CONFIGURATION');
+    uint256 length = assets.length;
+    require(length == emissionsPerSecond.length, 'INVALID_CONFIGURATION');
 
     DistributionTypes.AssetConfigInput[]
       memory assetsConfig = new DistributionTypes.AssetConfigInput[](assets.length);
 
-    for (uint256 i = 0; i < assets.length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetsConfig[i].underlyingAsset = assets[i];
       assetsConfig[i].emissionPerSecond = uint104(emissionsPerSecond[i]);
 
@@ -77,7 +79,7 @@ contract StakedTokenIncentivesController is
     uint256 userBalance
   ) external override {
     uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
-    if (accruedRewards != 0) {
+    if (accruedRewards > 0) {
       _usersUnclaimedRewards[user] += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);
     }
@@ -91,11 +93,11 @@ contract StakedTokenIncentivesController is
     returns (uint256)
   {
     uint256 unclaimedRewards = _usersUnclaimedRewards[user];
-
+    uint256 length = assets.length;
     DistributionTypes.UserStakeInput[] memory userState = new DistributionTypes.UserStakeInput[](
-      assets.length
+      length
     );
-    for (uint256 i = 0; i < assets.length; i++) {
+    for (uint256 i; i < length; ++i) {
       userState[i].underlyingAsset = assets[i];
       (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(assets[i])
         .getScaledUserBalanceAndSupply(user);
@@ -135,7 +137,7 @@ contract StakedTokenIncentivesController is
    **/
 
   /// @inheritdoc ISturdyIncentivesController
-  function setClaimer(address user, address caller) external override onlyEmissionManager {
+  function setClaimer(address user, address caller) external payable override onlyEmissionManager {
     _authorizedClaimers[user] = caller;
     emit ClaimerSet(user, caller);
   }
@@ -222,18 +224,18 @@ contract StakedTokenIncentivesController is
       return 0;
     }
     uint256 unclaimedRewards = _usersUnclaimedRewards[user];
-
+    uint256 length = assets.length;
     DistributionTypes.UserStakeInput[] memory userState = new DistributionTypes.UserStakeInput[](
-      assets.length
+      length
     );
-    for (uint256 i = 0; i < assets.length; i++) {
+    for (uint256 i; i < length; ++i) {
       userState[i].underlyingAsset = assets[i];
       (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(assets[i])
         .getScaledUserBalanceAndSupply(user);
     }
 
     uint256 accruedRewards = _claimRewards(user, userState);
-    if (accruedRewards != 0) {
+    if (accruedRewards > 0) {
       unclaimedRewards += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);
     }

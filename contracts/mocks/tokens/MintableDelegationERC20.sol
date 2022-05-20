@@ -23,7 +23,7 @@ contract MintableDelegationERC20 is ERC20 {
    * @param value The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
-  function mint(uint256 value) public returns (bool) {
+  function mint(uint256 value) external returns (bool) {
     _mint(msg.sender, value);
     return true;
   }

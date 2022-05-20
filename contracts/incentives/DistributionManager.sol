@@ -36,7 +36,12 @@ contract DistributionManager is ISturdyDistributionManager {
   }
 
   /// @inheritdoc ISturdyDistributionManager
-  function setDistributionEnd(uint256 distributionEnd) external override onlyEmissionManager {
+  function setDistributionEnd(uint256 distributionEnd)
+    external
+    payable
+    override
+    onlyEmissionManager
+  {
     _distributionEnd = distributionEnd;
     emit DistributionEndUpdated(distributionEnd);
   }
@@ -88,7 +93,8 @@ contract DistributionManager is ISturdyDistributionManager {
   function _configureAssets(DistributionTypes.AssetConfigInput[] memory assetsConfigInput)
     internal
   {
-    for (uint256 i = 0; i < assetsConfigInput.length; i++) {
+    uint256 length = assetsConfigInput.length;
+    for (uint256 i; i < length; ++i) {
       AssetData storage assetConfig = assets[assetsConfigInput[i].underlyingAsset];
 
       _updateAssetStateInternal(
@@ -133,14 +139,14 @@ contract DistributionManager is ISturdyDistributionManager {
       totalStaked
     );
 
-    if (newIndex != oldIndex) {
+    if (newIndex == oldIndex) {
+      assetConfig.lastUpdateTimestamp = uint40(block.timestamp);
+    } else {
       require(uint104(newIndex) == newIndex, 'Index overflow');
       //optimization: storing one after another saves one SSTORE
       assetConfig.index = uint104(newIndex);
       assetConfig.lastUpdateTimestamp = uint40(block.timestamp);
       emit AssetIndexUpdated(asset, newIndex);
-    } else {
-      assetConfig.lastUpdateTimestamp = uint40(block.timestamp);
     }
 
     return newIndex;
@@ -162,18 +168,18 @@ contract DistributionManager is ISturdyDistributionManager {
   ) internal returns (uint256) {
     AssetData storage assetData = assets[asset];
     uint256 userIndex = assetData.users[user];
-    uint256 accruedRewards = 0;
+    uint256 accruedRewards;
 
     uint256 newIndex = _updateAssetStateInternal(asset, assetData, totalStaked);
 
-    if (userIndex != newIndex) {
-      if (stakedByUser != 0) {
-        accruedRewards = _getRewards(stakedByUser, newIndex, userIndex);
-      }
+    if (userIndex == newIndex) return accruedRewards;
 
-      assetData.users[user] = newIndex;
-      emit UserIndexUpdated(user, asset, newIndex);
+    if (stakedByUser > 0) {
+      accruedRewards = _getRewards(stakedByUser, newIndex, userIndex);
     }
+
+    assetData.users[user] = newIndex;
+    emit UserIndexUpdated(user, asset, newIndex);
 
     return accruedRewards;
   }
@@ -188,9 +194,9 @@ contract DistributionManager is ISturdyDistributionManager {
     internal
     returns (uint256)
   {
-    uint256 accruedRewards = 0;
-
-    for (uint256 i = 0; i < stakes.length; i++) {
+    uint256 accruedRewards;
+    uint256 length = stakes.length;
+    for (uint256 i; i < length; ++i) {
       accruedRewards =
         accruedRewards +
         _updateUserAssetInternal(
@@ -215,9 +221,9 @@ contract DistributionManager is ISturdyDistributionManager {
     view
     returns (uint256)
   {
-    uint256 accruedRewards = 0;
-
-    for (uint256 i = 0; i < stakes.length; i++) {
+    uint256 accruedRewards;
+    uint256 length = stakes.length;
+    for (uint256 i; i < length; ++i) {
       AssetData storage assetConfig = assets[stakes[i].underlyingAsset];
       uint256 assetIndex = _getAssetIndex(
         assetConfig.index,

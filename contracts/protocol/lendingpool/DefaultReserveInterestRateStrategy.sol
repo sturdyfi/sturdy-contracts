@@ -104,7 +104,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _reserveCapacity;
   }
 
-  function setReserveCapacity(uint256 amount) external onlyAdmin {
+  function setReserveCapacity(uint256 amount) external payable onlyAdmin {
     _reserveCapacity = amount;
   }
 
@@ -197,9 +197,9 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     CalcInterestRatesLocalVars memory vars;
 
     vars.totalDebt = totalStableDebt + totalVariableDebt;
-    vars.currentVariableBorrowRate = 0;
-    vars.currentStableBorrowRate = 0;
-    vars.currentLiquidityRate = 0;
+    vars.currentVariableBorrowRate;
+    vars.currentStableBorrowRate;
+    vars.currentLiquidityRate;
 
     vars.utilizationRate = vars.totalDebt == 0
       ? 0

@@ -93,7 +93,7 @@ contract LidoVault is GeneralVault {
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Deposit ETH to Lido and receive stETH
-      (bool sent, bytes memory data) = LIDO.call{value: msg.value}('');
+      (bool sent, ) = LIDO.call{value: msg.value}('');
       require(sent, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
 
       assetAmount = msg.value;
@@ -150,7 +150,7 @@ contract LidoVault is GeneralVault {
       );
 
       // send ETH to user
-      (bool sent, bytes memory data) = address(_to).call{value: receivedETHAmount}('');
+      (bool sent, ) = address(_to).call{value: receivedETHAmount}('');
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
       return receivedETHAmount;
     } else {

@@ -62,10 +62,13 @@ contract WalletBalanceProvider {
     view
     returns (uint256[] memory)
   {
-    uint256[] memory balances = new uint256[](users.length * tokens.length);
+    uint256 userLength = users.length;
+    uint256 tokenLength = tokens.length;
 
-    for (uint256 i = 0; i < users.length; i++) {
-      for (uint256 j = 0; j < tokens.length; j++) {
+    uint256[] memory balances = new uint256[](userLength * tokenLength);
+
+    for (uint256 i; i < userLength; ++i) {
+      for (uint256 j; j < tokenLength; ++j) {
         balances[i * tokens.length + j] = balanceOf(users[i], tokens[j]);
       }
     }
@@ -82,17 +85,17 @@ contract WalletBalanceProvider {
     returns (address[] memory, uint256[] memory)
   {
     ILendingPool pool = ILendingPool(ILendingPoolAddressesProvider(provider).getLendingPool());
-
     address[] memory reserves = pool.getReservesList();
-    address[] memory reservesWithEth = new address[](reserves.length + 1);
-    for (uint256 i = 0; i < reserves.length; i++) {
+    uint256 length = reserves.length;
+    address[] memory reservesWithEth = new address[](length + 1);
+    for (uint256 i; i < length; ++i) {
       reservesWithEth[i] = reserves[i];
     }
-    reservesWithEth[reserves.length] = MOCK_ETH_ADDRESS;
+    reservesWithEth[length] = MOCK_ETH_ADDRESS;
 
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
-    for (uint256 j = 0; j < reserves.length; j++) {
+    for (uint256 j; j < length; ++j) {
       DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(
         reservesWithEth[j]
       );
@@ -100,12 +103,11 @@ contract WalletBalanceProvider {
       (bool isActive, , , , ) = configuration.getFlagsMemory();
 
       if (!isActive) {
-        balances[j] = 0;
         continue;
       }
       balances[j] = balanceOf(user, reservesWithEth[j]);
     }
-    balances[reserves.length] = balanceOf(user, MOCK_ETH_ADDRESS);
+    balances[length] = balanceOf(user, MOCK_ETH_ADDRESS);
 
     return (reservesWithEth, balances);
   }

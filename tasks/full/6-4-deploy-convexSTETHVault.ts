@@ -42,7 +42,7 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     // Deploy steCRV oracle
     let steCRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxSTECRV;
     if (!steCRVOracleAddress) {
-      const steCRVOracle = await deploySTECRVOracle();
+      const steCRVOracle = await deploySTECRVOracle(verify);
       steCRVOracleAddress = steCRVOracle.address;
     }
 

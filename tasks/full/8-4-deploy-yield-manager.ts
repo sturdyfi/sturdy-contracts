@@ -43,6 +43,11 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
       getParamPerNetwork(poolConfig.ReserveAssets, network).DAI,
       curve3Pool
     );
+    await yieldManager.setCurvePool(
+      getParamPerNetwork(poolConfig.ReserveAssets, network).USDC,
+      getParamPerNetwork(poolConfig.ReserveAssets, network).USDT,
+      curve3Pool
+    );
 
     const addressProvider = await getLendingPoolAddressesProvider();
     const signer = await getFirstSigner();

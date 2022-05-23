@@ -21,7 +21,7 @@ const CONVEX_YIELD_PERIOD = 100000;
 
 const simulateYield = async (testEnv: TestEnv) => {
   await simulateYieldInLidoVault(testEnv);
-  await simulateYieldInConvexDOLAVault(testEnv);
+  // await simulateYieldInConvexDOLAVault(testEnv);
   await simulateYieldInConvexFRAXVault(testEnv);
   // await simulateYieldInConvexRocketPoolETHVault(testEnv);
 };
@@ -73,39 +73,39 @@ const simulateYieldInConvexFRAXVault = async (testEnv: TestEnv) => {
   await convexFRAX3CRVVault.processYield();
 };
 
-const simulateYieldInConvexDOLAVault = async (testEnv: TestEnv) => {
-  const { pool, convexDOLA3CRVVault, users, cvxdola_3crv, aCVXDOLA_3CRV, DOLA_3CRV_LP } = testEnv;
-  const ethers = (DRE as any).ethers;
-  const borrower = users[1];
-  const LPOwnerAddress = '0xa83f6bec55a100ca3402245fc1d46127889354ec';
-  const depositDOLA3CRV = '8000';
-  const depositDOLA3CRVAmount = await convertToCurrencyDecimals(
-    DOLA_3CRV_LP.address,
-    depositDOLA3CRV
-  );
+// const simulateYieldInConvexDOLAVault = async (testEnv: TestEnv) => {
+//   const { pool, convexDOLA3CRVVault, users, cvxdola_3crv, aCVXDOLA_3CRV, DOLA_3CRV_LP } = testEnv;
+//   const ethers = (DRE as any).ethers;
+//   const borrower = users[1];
+//   const LPOwnerAddress = '0xa83f6bec55a100ca3402245fc1d46127889354ec';
+//   const depositDOLA3CRV = '8000';
+//   const depositDOLA3CRVAmount = await convertToCurrencyDecimals(
+//     DOLA_3CRV_LP.address,
+//     depositDOLA3CRV
+//   );
 
-  await impersonateAccountsHardhat([LPOwnerAddress]);
-  let signer = await ethers.provider.getSigner(LPOwnerAddress);
+//   await impersonateAccountsHardhat([LPOwnerAddress]);
+//   let signer = await ethers.provider.getSigner(LPOwnerAddress);
 
-  //transfer to borrower
-  await DOLA_3CRV_LP.connect(signer).transfer(borrower.address, depositDOLA3CRVAmount);
+//   //transfer to borrower
+//   await DOLA_3CRV_LP.connect(signer).transfer(borrower.address, depositDOLA3CRVAmount);
 
-  //approve protocol to access borrower wallet
-  await DOLA_3CRV_LP.connect(borrower.signer).approve(
-    convexDOLA3CRVVault.address,
-    APPROVAL_AMOUNT_LENDING_POOL
-  );
+//   //approve protocol to access borrower wallet
+//   await DOLA_3CRV_LP.connect(borrower.signer).approve(
+//     convexDOLA3CRVVault.address,
+//     APPROVAL_AMOUNT_LENDING_POOL
+//   );
 
-  // deposit collateral to borrow
-  await convexDOLA3CRVVault
-    .connect(borrower.signer)
-    .depositCollateral(DOLA_3CRV_LP.address, depositDOLA3CRVAmount);
+//   // deposit collateral to borrow
+//   await convexDOLA3CRVVault
+//     .connect(borrower.signer)
+//     .depositCollateral(DOLA_3CRV_LP.address, depositDOLA3CRVAmount);
 
-  await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
+//   await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
 
-  // process yield, so yield should be sented to YieldManager
-  await convexDOLA3CRVVault.processYield();
-};
+//   // process yield, so yield should be sented to YieldManager
+//   await convexDOLA3CRVVault.processYield();
+// };
 
 // const simulateYieldInConvexRocketPoolETHVault = async (testEnv: TestEnv) => {
 //   const { convexRocketPoolETHVault, users, RETH_WSTETH_LP } = testEnv;
@@ -156,6 +156,26 @@ const depositUSDC = async (
 
   //Supplier  deposits 7000 USDC
   await pool.connect(depositor.signer).deposit(usdc.address, amount, depositor.address, '0');
+};
+
+const depositUSDT = async (
+  testEnv: TestEnv,
+  depositor: SignerWithAddress,
+  amount: BigNumberish
+) => {
+  const { pool, usdt } = testEnv;
+  const ethers = (DRE as any).ethers;
+
+  const usdtOwnerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
+  await impersonateAccountsHardhat([usdtOwnerAddress]);
+  let signer = await ethers.provider.getSigner(usdtOwnerAddress);
+  await usdt.connect(signer).transfer(depositor.address, amount);
+
+  //approve protocol to access depositor wallet
+  await usdt.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+
+  //Supplier  deposits 7000 USDT
+  await pool.connect(depositor.signer).deposit(usdt.address, amount, depositor.address, '0');
 };
 
 const depositDAI = async (testEnv: TestEnv, depositor: SignerWithAddress, amount: BigNumberish) => {
@@ -268,16 +288,16 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });
-  it('Convex DOLA vaults', async () => {
-    const { CRV, CVX, yieldManager } = testEnv;
-    const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
-    await simulateYieldInConvexDOLAVault(testEnv);
-    const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
-    expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
-    expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
-  });
+  // it('Convex DOLA vaults', async () => {
+  //   const { CRV, CVX, yieldManager } = testEnv;
+  //   const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+  //   const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
+  //   await simulateYieldInConvexDOLAVault(testEnv);
+  //   const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+  //   const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
+  //   expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
+  //   expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
+  // });
   // it('Convex RocketPoolETH vaults', async () => {
   //   const { CRV, CVX, yieldManager } = testEnv;
   //   const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
@@ -334,17 +354,21 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     );
   });
   it('Distribute yield', async () => {
-    const { yieldManager, dai, aDai, usdc, aUsdc, users, CRV, CVX, WETH } = testEnv;
+    const { yieldManager, dai, aDai, usdc, usdt, aUsdc, aUsdt, users, CRV, CVX, WETH } = testEnv;
 
     // suppliers deposit asset to pool
     const depositor1 = users[0];
     const depositor2 = users[1];
+    const depositor3 = users[2];
     const depositUSDCAmount = await convertToCurrencyDecimals(usdc.address, '7000');
+    const depositUSDTAmount = await convertToCurrencyDecimals(usdt.address, '7000');
     const depositDAIAmount = await convertToCurrencyDecimals(dai.address, '3500');
     await depositUSDC(testEnv, depositor1, depositUSDCAmount);
     await depositDAI(testEnv, depositor2, depositDAIAmount);
+    await depositUSDT(testEnv, depositor3, depositUSDTAmount);
     expect((await aUsdc.balanceOf(depositor1.address)).eq(depositUSDCAmount)).to.be.equal(true);
     expect((await aDai.balanceOf(depositor2.address)).eq(depositDAIAmount)).to.be.equal(true);
+    expect((await aUsdt.balanceOf(depositor3.address)).eq(depositUSDTAmount)).to.be.equal(true);
 
     // Simulate Yield
     await simulateYield(testEnv);
@@ -371,5 +395,6 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
 
     expect((await aUsdc.balanceOf(depositor1.address)).gt(depositUSDCAmount)).to.be.equal(true);
     expect((await aDai.balanceOf(depositor2.address)).gt(depositDAIAmount)).to.be.equal(true);
+    expect((await aUsdt.balanceOf(depositor3.address)).gt(depositUSDTAmount)).to.be.equal(true);
   });
 });

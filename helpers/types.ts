@@ -271,6 +271,7 @@ export interface iAssetBase<T> {
   WETH: T;
   DAI: T;
   USDC: T;
+  USDT: T;
   fUSDT: T;
   USD: T;
   stETH: T;
@@ -301,6 +302,7 @@ export type iSturdyPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
   | 'DAI'
   | 'USDC'
+  | 'USDT'
   | 'stETH'
   | 'yvRETH_WSTETH'
   | 'cvxRETH_WSTETH'

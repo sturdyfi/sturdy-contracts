@@ -2,7 +2,6 @@ import { eContractid, IReserveParams } from '../../helpers/types';
 
 import { 
   rateStrategyStableTwo,
-  rateStrategyStableThree,
   rateStrategySTETH,
   rateStrategyYVRETH_WSTETH,
   rateStrategyCVXRETH_WSTETH,
@@ -26,7 +25,21 @@ export const strategyDAI: IReserveParams = {
 };
 
 export const strategyUSDC: IReserveParams = {
-  strategy: rateStrategyStableThree,
+  strategy: rateStrategyStableTwo,
+  baseLTVAsCollateral: '0'/*'7500'*/,
+  liquidationThreshold: '0'/*'8000'*/,
+  liquidationBonus: '0'/*'10500'*/,
+  borrowingEnabled: true,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '6',
+  aTokenImpl: eContractid.AToken,
+  reserveFactor: '1000',
+  collateralEnabled: false,
+  emissionPerSecond: '10',
+};
+
+export const strategyUSDT: IReserveParams = {
+  strategy: rateStrategyStableTwo,
   baseLTVAsCollateral: '0'/*'7500'*/,
   liquidationThreshold: '0'/*'8000'*/,
   liquidationBonus: '0'/*'10500'*/,
@@ -69,9 +82,9 @@ export const strategyYVRETH_WSTETH: IReserveParams = {
 
 export const strategyCVXRETH_WSTETH: IReserveParams = {
   strategy: rateStrategyCVXRETH_WSTETH,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '10750',
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -83,9 +96,9 @@ export const strategyCVXRETH_WSTETH: IReserveParams = {
 
 export const strategyCVXFRAX_3CRV: IReserveParams = {
   strategy: rateStrategyCVXFRAX_3CRV,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '10750',
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -97,9 +110,9 @@ export const strategyCVXFRAX_3CRV: IReserveParams = {
 
 export const strategyCVXSTECRV: IReserveParams = {
   strategy: rateStrategyCVXSTECRV,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '10750',
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -111,9 +124,9 @@ export const strategyCVXSTECRV: IReserveParams = {
 
 export const strategyCVXDOLA_3CRV: IReserveParams = {
   strategy: rateStrategyCVXDOLA_3CRV,
-  baseLTVAsCollateral: '7000',
-  liquidationThreshold: '7500',
-  liquidationBonus: '10750',
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',

@@ -236,7 +236,8 @@ contract YieldManager is VersionedInitializable, Ownable {
         }
         // 3. deposit Yield to pool for suppliers
         address lendingPool = _provider.getLendingPool();
-        IERC20(_assetYields[i].asset).approve(lendingPool, amount);
+        IERC20(_assetYields[i].asset).safeApprove(lendingPool, 0);
+        IERC20(_assetYields[i].asset).safeApprove(lendingPool, amount);
         ILendingPool(lendingPool).depositYield(_assetYields[i].asset, amount);
       }
     }

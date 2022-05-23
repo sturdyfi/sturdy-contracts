@@ -45,7 +45,7 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     // Deploy FRAX3CRV oracle
     let FRAX3CRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxFRAX_3CRV;
     if (!FRAX3CRVOracleAddress) {
-      const FRAX3CRVOracle = await deployFRAX3CRVPOracle();
+      const FRAX3CRVOracle = await deployFRAX3CRVPOracle(verify);
       FRAX3CRVOracleAddress = FRAX3CRVOracle.address;
     }
 

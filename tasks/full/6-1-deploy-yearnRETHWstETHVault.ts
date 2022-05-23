@@ -35,7 +35,7 @@ task(`full:deploy-yearn-reth-wsteth-vault`, `Deploys the ${CONTRACT_NAME} contra
     // Deploy rETH_WstETH oracle
     let rETHWstETHOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).yvRETH_WSTETH;
     if (!rETHWstETHOracleAddress) {
-      const rETHWstETHOracle = await deployRETHWstETHLPOracle();
+      const rETHWstETHOracle = await deployRETHWstETHLPOracle(verify);
       rETHWstETHOracleAddress = rETHWstETHOracle.address;
     }
 

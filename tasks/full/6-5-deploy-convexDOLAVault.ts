@@ -45,7 +45,7 @@ task(`full:deploy-convex-dola-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     // Deploy DOLA3CRV oracle
     let DOLA3CRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxDOLA_3CRV;
     if (!DOLA3CRVOracleAddress) {
-      const DOLA3CRVOracle = await deployDOLA3CRVOracle();
+      const DOLA3CRVOracle = await deployDOLA3CRVOracle(verify);
       DOLA3CRVOracleAddress = DOLA3CRVOracle.address;
     }
 

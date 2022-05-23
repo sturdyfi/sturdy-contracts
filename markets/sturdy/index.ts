@@ -10,6 +10,7 @@ import {
   strategyCVXFRAX_3CRV,
   strategyCVXSTECRV,
   strategyCVXDOLA_3CRV,
+  strategyUSDT,
 } from './reservesConfigs';
 
 // ----------------
@@ -23,6 +24,7 @@ export const SturdyConfig: ISturdyConfiguration = {
   ReservesConfig: {
     DAI: strategyDAI,
     USDC: strategyUSDC,
+    USDT: strategyUSDT,
     stETH: strategySTETH,
     yvRETH_WSTETH: strategyYVRETH_WSTETH,
     cvxRETH_WSTETH: strategyCVXRETH_WSTETH,
@@ -47,22 +49,24 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.main]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
       stETH: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
       // yvRETH_WSTETH: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',      
       // cvxRETH_WSTETH: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
-      cvxFRAX_3CRV: '', //'0x441abcb2AE6eB1b7c2Af33a2a388c39B442F5444',
-      cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
-      cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
+      cvxFRAX_3CRV: '0x441abcb2AE6eB1b7c2Af33a2a388c39B442F5444',
+      // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
+      // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
       USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
       stETH: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
       // yvRETH_WSTETH: '0x5c0A86A32c129538D62C106Eb8115a8b02358d57',
       // cvxRETH_WSTETH: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       cvxFRAX_3CRV: '', //'0x441abcb2AE6eB1b7c2Af33a2a388c39B442F5444',
-      cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
-      cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
+      // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
+      // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',

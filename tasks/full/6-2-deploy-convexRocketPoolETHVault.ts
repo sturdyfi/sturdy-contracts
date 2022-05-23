@@ -45,7 +45,7 @@ task(`full:deploy-convex-rocket-pool-eth-vault`, `Deploys the ${CONTRACT_NAME} c
     // Deploy rETH_WstETH oracle
     let rETHWstETHOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxRETH_WSTETH;
     if (!rETHWstETHOracleAddress) {
-      const rETHWstETHOracle = await deployRETHWstETHLPOracle();
+      const rETHWstETHOracle = await deployRETHWstETHLPOracle(verify);
       rETHWstETHOracleAddress = rETHWstETHOracle.address;
     }
 

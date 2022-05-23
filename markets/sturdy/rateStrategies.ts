@@ -2,27 +2,15 @@ import BigNumber from 'bignumber.js';
 import { oneRay } from '../../helpers/constants';
 import { IInterestRateStrategyParams } from '../../helpers/types';
 
-// DAI
+// DAI, USDC, USDT
 export const rateStrategyStableTwo: IInterestRateStrategyParams = {
   name: "rateStrategyStableTwo",
-  optimalUtilizationRate: new BigNumber(0.8).multipliedBy(oneRay).toFixed(),
-  baseVariableBorrowRate: '0' /* new BigNumber(0).multipliedBy(oneRay).toFixed() */,
-  variableRateSlope1: '0' /* new BigNumber(0.04).multipliedBy(oneRay).toFixed() */,
-  variableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
-  stableRateSlope1: '0' /* new BigNumber(0.02).multipliedBy(oneRay).toFixed() */,
-  stableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
-  capacity: '0',
-}
-
-// USDC
-export const rateStrategyStableThree: IInterestRateStrategyParams = {
-  name: "rateStrategyStableThree",
   optimalUtilizationRate: new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
   baseVariableBorrowRate: '0' /* new BigNumber(0).multipliedBy(oneRay).toFixed() */,
   variableRateSlope1: '0' /* new BigNumber(0.04).multipliedBy(oneRay).toFixed() */,
-  variableRateSlope2: '0' /* new BigNumber(0.60).multipliedBy(oneRay).toFixed() */,
+  variableRateSlope2: new BigNumber(0.4).multipliedBy(oneRay).toFixed(),
   stableRateSlope1: '0' /* new BigNumber(0.02).multipliedBy(oneRay).toFixed() */,
-  stableRateSlope2: '0' /* new BigNumber(0.60).multipliedBy(oneRay).toFixed() */,
+  stableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
   capacity: '0',
 }
 

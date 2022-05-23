@@ -156,7 +156,7 @@ contract LidoVault is GeneralVault {
       );
 
       // send ETH to user
-      (bool sent, ) = address(_to).call{value: receivedETHAmount}('');
+      (bool sent, ) = _to.call{value: receivedETHAmount}('');
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
       return receivedETHAmount;
     } else {

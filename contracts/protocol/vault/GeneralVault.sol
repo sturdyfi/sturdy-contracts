@@ -78,7 +78,7 @@ abstract contract GeneralVault is VersionedInitializable {
       require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
     }
     // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH TODO No Lido
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset

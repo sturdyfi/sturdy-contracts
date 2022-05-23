@@ -34,6 +34,7 @@ contract YieldManager is VersionedInitializable, Ownable {
 
   // the list of the available reserves, structured as a mapping for gas savings reasons
   mapping(uint256 => address) internal _assetsList;
+  mapping(address => bool) internal _assetManaged;
   uint256 internal _assetsCount;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
@@ -46,6 +47,32 @@ contract YieldManager is VersionedInitializable, Ownable {
   mapping(address => mapping(address => address)) internal _curvePools;
 
   uint256 private constant UNISWAP_FEE = 10000; // 1%
+
+  /**
+   * @dev Emitted on setExchangeToken()
+   * @param _token The address of token being used as an exchange token
+   */
+  event NewExchangeToken(address _token);
+
+  /**
+   * @dev Emitted on registerAsset()
+   * @param _asset The address of reward asset
+   */
+  event RegisterAsset(address _asset);
+
+  /**
+   * @dev Emitted on unregisterAsset()
+   * @param _asset The address of asset being removed from reward token list
+   */
+  event UnregisterAsset(address _asset);
+
+  /**
+   * @dev Emitted on setCurvePool()
+   * @param _tokenIn The address of token being swapped
+   * @param _tokenOut The address of token being received
+   * @param _pool The address of Curve Pool being used for swapping
+   */
+  event AddCurveSwapPool(address _tokenIn, address _tokenOut, address _pool);
 
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -71,6 +98,8 @@ contract YieldManager is VersionedInitializable, Ownable {
   function setExchangeToken(address _token) external payable onlyAdmin {
     require(_token != address(0), Errors.VT_INVALID_CONFIGURATION);
     _exchangeToken = _token;
+
+    emit NewExchangeToken(_token);
   }
 
   function getRevision() internal pure override returns (uint256) {
@@ -78,13 +107,24 @@ contract YieldManager is VersionedInitializable, Ownable {
   }
 
   function registerAsset(address _asset) external payable onlyAdmin {
+    require(_asset != address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(_assetManaged[_asset] != true, Errors.VT_INVALID_CONFIGURATION);
+
     _assetsList[_assetsCount] = _asset;
+    _assetManaged[_asset] = true;
     _assetsCount += 1;
+
+    emit RegisterAsset(_asset);
   }
 
   function unregisterAsset(uint256 _index) external payable onlyAdmin {
     uint256 count = _assetsCount;
     require(_index < count, Errors.VT_INVALID_CONFIGURATION);
+
+    address _asset = _assetsList[_index];
+    _assetManaged[_asset] = false;
+
+    emit UnregisterAsset(_asset);
 
     count -= 1;
     if (_index == count) return;
@@ -112,8 +152,13 @@ contract YieldManager is VersionedInitializable, Ownable {
     address _tokenOut,
     address _pool
   ) external payable onlyAdmin {
+    require(_tokenIn != address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(_tokenOut != address(0), Errors.VT_INVALID_CONFIGURATION);
     require(_pool != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     _curvePools[_tokenIn][_tokenOut] = _pool;
+
+    emit AddCurveSwapPool(_tokenIn, _tokenOut, _pool);
   }
 
   /**

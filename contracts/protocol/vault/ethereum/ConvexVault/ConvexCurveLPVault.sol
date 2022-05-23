@@ -31,6 +31,14 @@ contract ConvexCurveLPVault is GeneralVault {
   uint256 internal convexPoolId;
 
   /**
+   * @dev Emitted on setConfiguration()
+   * @param _curveLpToken The address of Curve LP Token
+   * @param _convexPoolId The convex pool Id
+   * @param _internalToken The address of internal asset
+   */
+  event SetParameters(address _curveLpToken, uint256 _convexPoolId, address _internalToken);
+
+  /**
    * @dev The function to set parameters related to convex/curve
    * @param _lpToken The address of Curve LP Token which will be used in vault
    * @param _poolId  The convex pool Id for Curve LP Token
@@ -48,6 +56,8 @@ contract ConvexCurveLPVault is GeneralVault {
       IERC20Detailed(_lpToken).decimals()
     );
     internalAssetToken = address(_interalToken);
+
+    emit SetParameters(_lpToken, _poolId, internalAssetToken);
   }
 
   /**

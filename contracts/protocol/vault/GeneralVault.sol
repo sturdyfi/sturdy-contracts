@@ -32,7 +32,7 @@ abstract contract GeneralVault is VersionedInitializable {
   modifier onlyYieldProcessor() {
     require(
       _addressesProvider.getAddress('YIELD_PROCESSOR') == msg.sender,
-      Errors.CALLER_NOT_POOL_ADMIN
+      Errors.CALLER_NOT_YIELD_PROCESSOR
     );
     _;
   }
@@ -144,15 +144,10 @@ abstract contract GeneralVault is VersionedInitializable {
 
   /**
    * @dev Withdraw an `amount` of asset used as collateral to user on liquidation.
-   * @param _asset The asset address for collateral
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The amount to be withdrawn
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    virtual
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(address, uint256 _amount) external virtual returns (uint256) {
     return _amount;
   }
 

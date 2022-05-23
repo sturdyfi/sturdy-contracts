@@ -29,8 +29,8 @@ library ValidationLogic {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
-  uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
+  uint256 private constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
+  uint256 private constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
 
   /**
    * @dev Validates a deposit action
@@ -40,7 +40,7 @@ library ValidationLogic {
   function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFrozen, , , bool isCollateral) = reserve.configuration.getFlags();
 
-    require(amount != 0, Errors.VL_INVALID_AMOUNT);
+    require(amount > 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
@@ -86,7 +86,7 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    require(amount != 0, Errors.VL_INVALID_AMOUNT);
+    require(amount > 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
     (bool isActive, , , , ) = reservesData[reserveAddress].configuration.getFlags();
@@ -162,7 +162,7 @@ library ValidationLogic {
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
-    require(amount != 0, Errors.VL_INVALID_AMOUNT);
+    require(amount > 0, Errors.VL_INVALID_AMOUNT);
 
     //sturdy: place where stETH is blocked from being borrowed
     require(vars.borrowingEnabled, Errors.VL_BORROWING_NOT_ENABLED);
@@ -267,7 +267,7 @@ library ValidationLogic {
     );
 
     require(
-      amountSent != type(uint256).max || msg.sender == onBehalfOf,
+      amountSent < type(uint256).max || msg.sender == onBehalfOf,
       Errors.VL_NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
     );
   }

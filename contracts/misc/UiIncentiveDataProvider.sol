@@ -43,10 +43,11 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
+    uint256 length = reserves.length;
     AggregatedReserveIncentiveData[]
-      memory reservesIncentiveData = new AggregatedReserveIncentiveData[](reserves.length);
+      memory reservesIncentiveData = new AggregatedReserveIncentiveData[](length);
 
-    for (uint256 i = 0; i < reserves.length; i++) {
+    for (uint256 i; i < length; ++i) {
       AggregatedReserveIncentiveData memory reserveIncentiveData = reservesIncentiveData[i];
       reserveIncentiveData.underlyingAsset = reserves[i];
 
@@ -220,12 +221,13 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
+    uint256 length = reserves.length;
 
     UserReserveIncentiveData[] memory userReservesIncentivesData = new UserReserveIncentiveData[](
-      user != address(0) ? reserves.length : 0
+      user != address(0) ? length : 0
     );
 
-    for (uint256 i = 0; i < reserves.length; i++) {
+    for (uint256 i; i < length; ++i) {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
 
       // user reserve data

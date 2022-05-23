@@ -24,7 +24,7 @@ contract SturdyInternalAsset is ERC20, Ownable {
    * @param amount The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
-  function mint(address user, uint256 amount) external onlyOwner returns (bool) {
+  function mint(address user, uint256 amount) external payable onlyOwner returns (bool) {
     _mint(user, amount);
     return true;
   }
@@ -34,7 +34,7 @@ contract SturdyInternalAsset is ERC20, Ownable {
    * @param user The user which token is burned
    * @param amount The amount of tokens to burn
    */
-  function burn(address user, uint256 amount) external onlyOwner {
+  function burn(address user, uint256 amount) external payable onlyOwner {
     _burn(user, amount);
   }
 }

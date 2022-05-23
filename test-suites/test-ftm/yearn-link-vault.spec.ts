@@ -46,7 +46,7 @@ makeSuite('yearnLINKVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnLINKVault, LINK } = testEnv;
     const amountLINKtoDeposit = await convertToCurrencyDecimals(LINK.address, '300');
-    await expect(yearnLINKVault.withdrawCollateral(LINK.address, amountLINKtoDeposit, deployer.address))
+    await expect(yearnLINKVault.withdrawCollateral(LINK.address, amountLINKtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -56,7 +56,7 @@ makeSuite('yearnLINKVault', (testEnv: TestEnv) => {
     const linkBeforeBalanceOfUser = await LINK.balanceOf(deployer.address);
     const linkWithdrawAmount = await convertToCurrencyDecimals(LINK.address, '289');
 
-    await yearnLINKVault.withdrawCollateral(LINK.address, linkWithdrawAmount, deployer.address);
+    await yearnLINKVault.withdrawCollateral(LINK.address, linkWithdrawAmount, 9900, deployer.address);
 
     const linkCurrentBalanceOfUser = await LINK.balanceOf(deployer.address);
     expect(yvlinkBalanceOfPool).to.be.equal(0);

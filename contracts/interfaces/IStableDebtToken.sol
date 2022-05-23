@@ -67,7 +67,7 @@ interface IStableDebtToken is IInitializableDebtToken {
     address onBehalfOf,
     uint256 amount,
     uint256 rate
-  ) external returns (bool);
+  ) external payable returns (bool);
 
   /**
    * @dev Burns debt of `user`
@@ -76,7 +76,7 @@ interface IStableDebtToken is IInitializableDebtToken {
    * @param user The address of the user getting his debt burned
    * @param amount The amount of debt tokens getting burned
    **/
-  function burn(address user, uint256 amount) external;
+  function burn(address user, uint256 amount) external payable;
 
   /**
    * @dev Returns the average rate of all the stable rate loans.

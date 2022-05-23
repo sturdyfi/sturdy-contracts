@@ -52,14 +52,14 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
       pool == ConfigNames.Sturdy
         ? {
             stETH: getParamPerNetwork((poolConfig as ISturdyConfiguration).Lido, network),
-            yvRETH_WSTETH: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
-              network
-            ),
-            cvxRETH_WSTETH: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
-              network
-            ),
+            // yvRETH_WSTETH: getParamPerNetwork(
+            //   (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
+            //   network
+            // ),
+            // cvxRETH_WSTETH: getParamPerNetwork(
+            //   (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
+            //   network
+            // ),
             cvxFRAX_3CRV: getParamPerNetwork(
               (poolConfig as ISturdyConfiguration).FRAX_3CRV_LP,
               network
@@ -98,8 +98,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
       pool == ConfigNames.Sturdy
         ? {
             stETH: (await getLidoVault()).address,
-            yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
-            cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
+            // yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
+            // cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
             cvxFRAX_3CRV: (await getConvexFRAX3CRVVault()).address,
             cvxSTECRV: (await getConvexSTETHVault()).address,
             cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,

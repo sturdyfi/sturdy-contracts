@@ -18,7 +18,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   using WadRayMath for uint256;
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  uint256 private constant DEBT_TOKEN_REVISION = 0x1;
 
   uint256 internal _avgStableRate;
   mapping(address => uint40) internal _timestamps;
@@ -46,7 +46,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     string memory debtTokenName,
     string memory debtTokenSymbol,
     bytes calldata params
-  ) public override initializer {
+  ) external override initializer {
     _setName(debtTokenName);
     _setSymbol(debtTokenSymbol);
     _setDecimals(debtTokenDecimals);
@@ -140,7 +140,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     address onBehalfOf,
     uint256 amount,
     uint256 rate
-  ) external override onlyLendingPool returns (bool) {
+  ) external payable override onlyLendingPool returns (bool) {
     MintLocalVars memory vars;
 
     if (user != onBehalfOf) {
@@ -192,12 +192,12 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param user The address of the user getting his debt burned
    * @param amount The amount of debt tokens getting burned
    **/
-  function burn(address user, uint256 amount) external override onlyLendingPool {
+  function burn(address user, uint256 amount) external payable override onlyLendingPool {
     (, uint256 currentBalance, uint256 balanceIncrease) = _calculateBalanceIncrease(user);
 
     uint256 previousSupply = totalSupply();
-    uint256 newAvgStableRate = 0;
-    uint256 nextSupply = 0;
+    uint256 newAvgStableRate;
+    uint256 nextSupply;
     uint256 userStableRate = _usersStableRate[user];
 
     // Since the total supply and each single user debt accrue separately,

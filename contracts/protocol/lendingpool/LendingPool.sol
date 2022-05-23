@@ -53,7 +53,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  uint256 public constant LENDINGPOOL_REVISION = 0x1;
+  uint256 private constant LENDINGPOOL_REVISION = 0x1;
 
   modifier whenNotPaused() {
     _whenNotPaused();
@@ -87,14 +87,19 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    *   on subsequent operations
    * @param provider The address of the LendingPoolAddressesProvider
    **/
-  function initialize(ILendingPoolAddressesProvider provider) public initializer {
+  function initialize(ILendingPoolAddressesProvider provider) external initializer {
     _addressesProvider = provider;
     _maxStableRateBorrowSizePercent = 2500;
     _flashLoanPremiumTotal = 9;
     _maxNumberOfReserves = 128;
   }
 
-  function registerVault(address _vaultAddress) external override onlyLendingPoolConfigurator {
+  function registerVault(address _vaultAddress)
+    external
+    payable
+    override
+    onlyLendingPoolConfigurator
+  {
     _availableVaults[_vaultAddress] = true;
   }
 
@@ -227,12 +232,13 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       uint256
     )
   {
-    uint256 totalVolume = 0;
-    uint256[] memory volumes = new uint256[](_reservesCount);
-    address[] memory assets = new address[](_reservesCount);
-    uint256 pos = 0;
+    uint256 totalVolume;
+    uint256 reserveCount = _reservesCount;
+    uint256[] memory volumes = new uint256[](reserveCount);
+    address[] memory assets = new address[](reserveCount);
+    uint256 pos;
 
-    for (uint256 i = 0; i < _reservesCount; i++) {
+    for (uint256 i; i < reserveCount; ++i) {
       DataTypes.ReserveData storage reserve = _reserves[_reservesList[i]];
       (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
       if (isActive && !isFrozen && isBorrowing) {
@@ -642,9 +648,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @dev Returns the list of the initialized reserves
    **/
   function getReservesList() external view override returns (address[] memory) {
-    address[] memory _activeReserves = new address[](_reservesCount);
+    uint256 reserveCount = _reservesCount;
+    address[] memory _activeReserves = new address[](reserveCount);
 
-    for (uint256 i = 0; i < _reservesCount; i++) {
+    for (uint256 i; i < reserveCount; ++i) {
       _activeReserves[i] = _reservesList[i];
     }
     return _activeReserves;
@@ -716,7 +723,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
-      if (balanceToBefore == 0 && amount != 0) {
+      if (balanceToBefore == 0 && amount > 0) {
         DataTypes.UserConfigurationMap storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
         emit ReserveUsedAsCollateralEnabled(asset, to);
@@ -742,7 +749,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address stableDebtAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
-  ) external override onlyLendingPoolConfigurator {
+  ) external payable override onlyLendingPoolConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     require(IERC20(aTokenAddress).totalSupply() == 0, Errors.LP_ATOKEN_INIT_INVALID);
     _reserves[asset].init(
@@ -763,6 +770,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
     external
+    payable
     override
     onlyLendingPoolConfigurator
   {
@@ -777,6 +785,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    **/
   function setConfiguration(address asset, uint256 configuration)
     external
+    payable
     override
     onlyLendingPoolConfigurator
   {
@@ -788,7 +797,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - Only callable by the LendingPoolConfigurator contract
    * @param val `true` to pause the reserve, `false` to un-pause it
    */
-  function setPause(bool val) external override onlyLendingPoolConfigurator {
+  function setPause(bool val) external payable override onlyLendingPoolConfigurator {
     _paused = val;
     if (_paused) {
       emit Paused();
@@ -836,7 +845,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       reserve.updateState();
     }
 
-    uint256 currentStableRate = 0;
+    uint256 currentStableRate;
 
     bool isFirstBorrowing = false;
     if (DataTypes.InterestRateMode(vars.interestRateMode) == DataTypes.InterestRateMode.STABLE) {
@@ -892,7 +901,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
-    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
+    bool reserveAlreadyAdded = _reserves[asset].id > 0 || _reservesList[0] == asset;
 
     if (!reserveAlreadyAdded) {
       _reserves[asset].id = uint8(reservesCount);

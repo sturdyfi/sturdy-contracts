@@ -77,7 +77,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
    * @param amount The amount of tokens being transferred
    * @return `true` if the transfer succeeds, `false` otherwise
    **/
-  function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+  function transfer(address recipient, uint256 amount) external virtual override returns (bool) {
     _transfer(_msgSender(), recipient, amount);
     emit Transfer(_msgSender(), recipient, amount);
     return true;
@@ -104,7 +104,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
    * @param spender The user allowed to spend _msgSender() tokens
    * @return `true`
    **/
-  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+  function approve(address spender, uint256 amount) external virtual override returns (bool) {
     _approve(_msgSender(), spender, amount);
     return true;
   }
@@ -120,7 +120,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
     address sender,
     address recipient,
     uint256 amount
-  ) public virtual override returns (bool) {
+  ) external virtual override returns (bool) {
     _transfer(sender, recipient, amount);
     _approve(sender, _msgSender(), _allowances[sender][_msgSender()] - amount);
     emit Transfer(sender, recipient, amount);
@@ -133,7 +133,7 @@ abstract contract IncentivizedERC20 is Context, IERC20, IERC20Detailed {
    * @param addedValue The amount being added to the allowance
    * @return `true`
    **/
-  function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
+  function increaseAllowance(address spender, uint256 addedValue) external virtual returns (bool) {
     _approve(_msgSender(), spender, _allowances[_msgSender()][spender] + addedValue);
     return true;
   }

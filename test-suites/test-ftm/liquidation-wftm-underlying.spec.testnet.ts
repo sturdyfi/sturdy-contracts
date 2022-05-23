@@ -71,7 +71,7 @@ makeSuite('LendingPool liquidation - liquidator receiving the underlying asset',
     const amountFTMtoDeposit = ethers.utils.parseEther('1000');
     await yearnVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
+      .depositCollateral(ZERO_ADDRESS, amountFTMtoDeposit, { value: amountFTMtoDeposit });
 
     //user 2 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);

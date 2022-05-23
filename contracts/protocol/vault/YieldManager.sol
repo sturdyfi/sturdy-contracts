@@ -52,6 +52,14 @@ contract YieldManager is VersionedInitializable, Ownable {
     _;
   }
 
+  modifier onlyYieldProcessor() {
+    require(
+      _addressesProvider.getAddress('YIELD_PROCESSOR') == msg.sender,
+      Errors.CALLER_NOT_YIELD_PROCESSOR
+    );
+    _;
+  }
+
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
    * @param _provider The address of the provider
@@ -132,7 +140,7 @@ contract YieldManager is VersionedInitializable, Ownable {
     uint256 _count,
     uint256 _slippage,
     UniswapAdapter.Path[] calldata _paths
-  ) external payable onlyAdmin {
+  ) external payable onlyYieldProcessor {
     require(_paths.length == _count, Errors.VT_SWAP_PATH_LENGTH_INVALID);
 
     address token = _exchangeToken;

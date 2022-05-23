@@ -53,6 +53,7 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
   /// @param sources The address of the source of each asset
   function setAssetSources(address[] calldata assets, address[] calldata sources)
     external
+    payable
     onlyOwner
   {
     _setAssetsSources(assets, sources);
@@ -61,7 +62,7 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
   /// @notice Sets the fallbackOracle
   /// - Callable only by the Sturdy governance
   /// @param fallbackOracle The address of the fallbackOracle
-  function setFallbackOracle(address fallbackOracle) external onlyOwner {
+  function setFallbackOracle(address fallbackOracle) external payable onlyOwner {
     _setFallbackOracle(fallbackOracle);
   }
 
@@ -69,8 +70,9 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
   /// @param assets The addresses of the assets
   /// @param sources The address of the source of each asset
   function _setAssetsSources(address[] memory assets, address[] memory sources) internal {
-    require(assets.length == sources.length, 'INCONSISTENT_PARAMS_LENGTH');
-    for (uint256 i = 0; i < assets.length; i++) {
+    uint256 length = assets.length;
+    require(length == sources.length, 'INCONSISTENT_PARAMS_LENGTH');
+    for (uint256 i; i < length; ++i) {
       assetsSources[assets[i]] = IChainlinkAggregator(sources[i]);
       emit AssetSourceUpdated(assets[i], sources[i]);
     }
@@ -105,8 +107,9 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
   /// @notice Gets a list of prices from a list of assets addresses
   /// @param assets The list of assets addresses
   function getAssetsPrices(address[] calldata assets) external view returns (uint256[] memory) {
-    uint256[] memory prices = new uint256[](assets.length);
-    for (uint256 i = 0; i < assets.length; i++) {
+    uint256 length = assets.length;
+    uint256[] memory prices = new uint256[](length);
+    for (uint256 i; i < length; ++i) {
       prices[i] = getAssetPrice(assets[i]);
     }
     return prices;

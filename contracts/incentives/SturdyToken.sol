@@ -18,7 +18,7 @@ contract SturdyToken is ERC20, VersionedInitializable {
   /// @dev the amount being distributed for supplier and borrower
   uint256 internal constant DISTRIBUTION_AMOUNT = 100000000 ether;
 
-  uint256 public constant REVISION = 1;
+  uint256 private constant REVISION = 1;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;

@@ -463,7 +463,7 @@ export const withdrawCollateral = async (
     const txResult = await waitForTx(
       await yearnVault
         .connect(user.signer)
-        .withdrawCollateral(WFTM.address, amountToWithdraw, user.address)
+        .withdrawCollateral(WFTM.address, amountToWithdraw, 9900, user.address)
     );
 
     const {
@@ -514,7 +514,7 @@ export const withdrawCollateral = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      yearnVault.connect(user.signer).withdrawCollateral(reserve, amountToWithdraw, user.address),
+      yearnVault.connect(user.signer).withdrawCollateral(reserve, amountToWithdraw, 9900, user.address),
       revertMessage
     ).to.be.reverted;
   }

@@ -12,10 +12,10 @@ import '../lib/FixedPoint.sol';
 contract TombOracle is IOracle, Ownable {
   using FixedPoint for *;
 
-  uint256 public constant PERIOD = 10 minutes;
-  IChainlinkAggregator public constant FTM_USD =
+  uint256 private constant PERIOD = 10 minutes;
+  IChainlinkAggregator private constant FTM_USD =
     IChainlinkAggregator(0xf4766552D15AE4d256Ad41B6cf2933482B0680dc);
-  IUniswapV2Pair public constant TOMB_FTM =
+  IUniswapV2Pair private constant TOMB_FTM =
     IUniswapV2Pair(0x2A651563C9d3Af67aE0388a5c8F89b867038089e);
   bool isCumulativePrice;
 
@@ -98,7 +98,7 @@ contract TombOracle is IOracle, Ownable {
     return (true, priceAverage);
   }
 
-  function enableCumulativePrice(bool enable) external onlyOwner {
+  function enableCumulativePrice(bool enable) external payable onlyOwner {
     isCumulativePrice = enable;
     if (enable) {
       get();

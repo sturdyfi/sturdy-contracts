@@ -25,7 +25,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
     await yearnVault
       .connect(deployer.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1200') });
+      .depositCollateral(ZERO_ADDRESS, parseEther('1200'), { value: parseEther('1200') });
     expect(await yvwftm.balanceOf(yearnVault.address)).to.be.equal(0);
     expect(await aYVWFTM.balanceOf(yearnVault.address)).to.be.equal(0);
     expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(true);
@@ -50,7 +50,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     await expect(
       yearnVault
         .connect(deployer.signer)
-        .withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address)).to
+        .withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), 9900, deployer.address)).to
       .be.reverted;
   });
 
@@ -61,7 +61,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 
     await yearnVault
       .connect(deployer.signer)
-      .withdrawCollateral(ZERO_ADDRESS, parseEther('1099'), deployer.address);
+      .withdrawCollateral(ZERO_ADDRESS, parseEther('1099'), 9900, deployer.address);
 
     const ftmCurrentBalanceOfUser = await deployer.signer.getBalance();
     expect(yvWFTMBalanceOfPool).to.be.equal(0);

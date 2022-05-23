@@ -36,11 +36,11 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6. Deploy Lido vault');
     await DRE.run('full:deploy-lido-vault', { pool: POOL_NAME });
 
-    console.log('6-1. Deploy Yearn RETH_WSTETH vault');
-    await DRE.run('full:deploy-yearn-reth-wsteth-vault', { pool: POOL_NAME });
+    // console.log('6-1. Deploy Yearn RETH_WSTETH vault');
+    // await DRE.run('full:deploy-yearn-reth-wsteth-vault', { pool: POOL_NAME });
 
-    console.log('6-2. Deploy Convex Rocket Pool ETH vault');
-    await DRE.run('full:deploy-convex-rocket-pool-eth-vault', { pool: POOL_NAME });
+    // console.log('6-2. Deploy Convex Rocket Pool ETH vault');
+    // await DRE.run('full:deploy-convex-rocket-pool-eth-vault', { pool: POOL_NAME });
 
     console.log('6-3. Deploy Convex FRAX 3CRV vault');
     await DRE.run('full:deploy-convex-frax-3crv-vault', { pool: POOL_NAME });
@@ -57,8 +57,8 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('8-1. Deploy Collateral Adapter');
     await DRE.run('full:deploy-collateral-adapter', { pool: POOL_NAME });
 
-    console.log('8-2. Deploy Liquidator');
-    await DRE.run('full:deploy-liquidator', { pool: POOL_NAME });
+    // console.log('8-2. Deploy Liquidator');
+    // await DRE.run('full:deploy-liquidator', { pool: POOL_NAME });
 
     console.log('8-3. Deploy Vault Helper');
     await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME });

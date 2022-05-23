@@ -35,8 +35,9 @@ contract SturdyProtocolDataProvider {
   function getAllReservesTokens() external view returns (TokenData[] memory) {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     address[] memory reserves = pool.getReservesList();
-    TokenData[] memory reservesTokens = new TokenData[](reserves.length);
-    for (uint256 i = 0; i < reserves.length; i++) {
+    uint256 length = reserves.length;
+    TokenData[] memory reservesTokens = new TokenData[](length);
+    for (uint256 i; i < length; ++i) {
       /*       if (reserves[i] == MKR) {
         reservesTokens[i] = TokenData({symbol: 'MKR', tokenAddress: reserves[i]});
         continue;
@@ -56,8 +57,9 @@ contract SturdyProtocolDataProvider {
   function getAllATokens() external view returns (TokenData[] memory) {
     ILendingPool pool = ILendingPool(ADDRESSES_PROVIDER.getLendingPool());
     address[] memory reserves = pool.getReservesList();
-    TokenData[] memory aTokens = new TokenData[](reserves.length);
-    for (uint256 i = 0; i < reserves.length; i++) {
+    uint256 length = reserves.length;
+    TokenData[] memory aTokens = new TokenData[](length);
+    for (uint256 i; i < length; ++i) {
       DataTypes.ReserveData memory reserveData = pool.getReserveData(reserves[i]);
       aTokens[i] = TokenData({
         symbol: IERC20Detailed(reserveData.aTokenAddress).symbol(),

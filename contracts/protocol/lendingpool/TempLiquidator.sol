@@ -46,7 +46,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     _addressesProvider = _provider;
   }
 
-  function withdraw(address asset) external onlyOwner {
+  function withdraw(address asset) external payable onlyOwner {
     uint256 amount = IERC20(asset).balanceOf(address(this));
     IERC20(asset).transfer(msg.sender, amount);
   }
@@ -59,7 +59,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
-    address initiator,
+    address,
     bytes calldata params
   ) external override returns (bool) {
     // parse params
@@ -294,10 +294,11 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     (address[] memory tokens, uint256[] memory balances, ) = IBalancerVault(
       IYearnFBEETSVault(fBEETSVault).getBeethovenVault()
     ).getPoolTokens(beethoven_BEETS_FTM_PoolId);
-    require(tokens.length == balances.length, Errors.VT_PROCESS_YIELD_INVALID);
+    uint256 length = tokens.length;
+    require(length == balances.length, Errors.VT_PROCESS_YIELD_INVALID);
 
-    uint256[] memory amountsOut = new uint256[](tokens.length);
-    for (uint256 i = 0; i < tokens.length; i++) {
+    uint256[] memory amountsOut = new uint256[](length);
+    for (uint256 i; i < length; ++i) {
       amountsOut[i] = ((balances[i] * _amount) / _totalAmount).percentMul(99_00);
     }
 

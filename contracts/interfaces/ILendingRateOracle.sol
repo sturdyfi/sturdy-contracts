@@ -15,5 +15,5 @@ interface ILendingRateOracle {
   /**
     @dev sets the market borrow rate. Rate value must be in ray
     **/
-  function setMarketBorrowRate(address asset, uint256 rate) external;
+  function setMarketBorrowRate(address asset, uint256 rate) external payable;
 }

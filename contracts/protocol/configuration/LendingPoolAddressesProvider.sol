@@ -46,7 +46,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @dev Allows to set the market which this LendingPoolAddressesProvider represents
    * @param marketId The market id
    */
-  function setMarketId(string memory marketId) external override onlyOwner {
+  function setMarketId(string memory marketId) external payable override onlyOwner {
     _setMarketId(marketId);
   }
 
@@ -61,6 +61,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    */
   function setAddressAsProxy(bytes32 id, address implementationAddress)
     external
+    payable
     override
     onlyOwner
   {
@@ -74,7 +75,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param id The id
    * @param newAddress The address to set
    */
-  function setAddress(bytes32 id, address newAddress) external override onlyOwner {
+  function setAddress(bytes32 id, address newAddress) external payable override onlyOwner {
     _addresses[id] = newAddress;
     emit AddressSet(id, newAddress, false);
   }
@@ -100,7 +101,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * setting the new `pool` implementation on the first time calling it
    * @param pool The new LendingPool implementation
    **/
-  function setLendingPoolImpl(address pool) external override onlyOwner {
+  function setLendingPoolImpl(address pool) external payable override onlyOwner {
     _updateImpl(LENDING_POOL, pool);
     emit LendingPoolUpdated(pool);
   }
@@ -118,7 +119,12 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * setting the new `incentiveController` implementation on the first time calling it
    * @param incentiveController The new IncentiveController implementation
    **/
-  function setIncentiveControllerImpl(address incentiveController) external override onlyOwner {
+  function setIncentiveControllerImpl(address incentiveController)
+    external
+    payable
+    override
+    onlyOwner
+  {
     _updateImpl(INCENTIVE_CONTROLLER, incentiveController);
     emit IncentiveControllerUpdated(incentiveController);
   }
@@ -136,7 +142,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * setting the new `incentiveToken` implementation on the first time calling it
    * @param incentiveToken The new IncentiveToken implementation
    **/
-  function setIncentiveTokenImpl(address incentiveToken) external override onlyOwner {
+  function setIncentiveTokenImpl(address incentiveToken) external payable override onlyOwner {
     _updateImpl(INCENTIVE_TOKEN, incentiveToken);
     emit IncentiveTokenUpdated(incentiveToken);
   }
@@ -154,7 +160,12 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * setting the new `configurator` implementation on the first time calling it
    * @param configurator The new LendingPoolConfigurator implementation
    **/
-  function setLendingPoolConfiguratorImpl(address configurator) external override onlyOwner {
+  function setLendingPoolConfiguratorImpl(address configurator)
+    external
+    payable
+    override
+    onlyOwner
+  {
     _updateImpl(LENDING_POOL_CONFIGURATOR, configurator);
     emit LendingPoolConfiguratorUpdated(configurator);
   }
@@ -174,7 +185,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @dev Updates the address of the LendingPoolCollateralManager
    * @param manager The new LendingPoolCollateralManager address
    **/
-  function setLendingPoolCollateralManager(address manager) external override onlyOwner {
+  function setLendingPoolCollateralManager(address manager) external payable override onlyOwner {
     _addresses[LENDING_POOL_COLLATERAL_MANAGER] = manager;
     emit LendingPoolCollateralManagerUpdated(manager);
   }
@@ -188,7 +199,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     return getAddress(POOL_ADMIN);
   }
 
-  function setPoolAdmin(address admin) external override onlyOwner {
+  function setPoolAdmin(address admin) external payable override onlyOwner {
     _addresses[POOL_ADMIN] = admin;
     emit ConfigurationAdminUpdated(admin);
   }
@@ -197,7 +208,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     return getAddress(EMERGENCY_ADMIN);
   }
 
-  function setEmergencyAdmin(address emergencyAdmin) external override onlyOwner {
+  function setEmergencyAdmin(address emergencyAdmin) external payable override onlyOwner {
     _addresses[EMERGENCY_ADMIN] = emergencyAdmin;
     emit EmergencyAdminUpdated(emergencyAdmin);
   }
@@ -206,7 +217,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     return getAddress(PRICE_ORACLE);
   }
 
-  function setPriceOracle(address priceOracle) external override onlyOwner {
+  function setPriceOracle(address priceOracle) external payable override onlyOwner {
     _addresses[PRICE_ORACLE] = priceOracle;
     emit PriceOracleUpdated(priceOracle);
   }
@@ -215,7 +226,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     return getAddress(LENDING_RATE_ORACLE);
   }
 
-  function setLendingRateOracle(address lendingRateOracle) external override onlyOwner {
+  function setLendingRateOracle(address lendingRateOracle) external payable override onlyOwner {
     _addresses[LENDING_RATE_ORACLE] = lendingRateOracle;
     emit LendingRateOracleUpdated(lendingRateOracle);
   }

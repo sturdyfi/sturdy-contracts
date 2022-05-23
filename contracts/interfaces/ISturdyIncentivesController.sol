@@ -35,7 +35,7 @@ interface ISturdyIncentivesController {
    * @param user The address of the user
    * @param claimer The address of the claimer
    */
-  function setClaimer(address user, address claimer) external;
+  function setClaimer(address user, address claimer) external payable;
 
   /**
    * @dev Returns the whitelisted claimer for a certain address (0x0 if not set)
@@ -50,7 +50,8 @@ interface ISturdyIncentivesController {
    * @param emissionsPerSecond The emission for each asset
    */
   function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
-    external;
+    external
+    payable;
 
   /**
    * @dev Called by the corresponding asset on any update that affects the rewards distribution

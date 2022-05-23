@@ -12,12 +12,12 @@ import '../lib/FixedPoint.sol';
 contract BooOracle is IOracle, Ownable {
   using FixedPoint for *;
 
-  uint256 public constant PERIOD = 10 minutes;
-  IChainlinkAggregator public constant FTM_USD =
+  uint256 private constant PERIOD = 10 minutes;
+  IChainlinkAggregator private constant FTM_USD =
     IChainlinkAggregator(0xf4766552D15AE4d256Ad41B6cf2933482B0680dc);
-  IUniswapV2Pair public constant BOO_FTM =
+  IUniswapV2Pair private constant BOO_FTM =
     IUniswapV2Pair(0xEc7178F4C41f346b2721907F5cF7628E388A7a58);
-  IERC20 public constant BOO = IERC20(0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
+  IERC20 private constant BOO = IERC20(0x841FAD6EAe12c286d1Fd18d1d525DFfA75C7EFFE);
   bool isCumulativePrice;
 
   struct PairInfo {
@@ -99,7 +99,7 @@ contract BooOracle is IOracle, Ownable {
     return (true, priceAverage);
   }
 
-  function enableCumulativePrice(bool enable) external onlyOwner {
+  function enableCumulativePrice(bool enable) external payable onlyOwner {
     isCumulativePrice = enable;
     if (enable) {
       get();

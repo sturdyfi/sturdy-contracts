@@ -46,7 +46,7 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, BasedMiMaticBeefyVault, BASED_MIMATIC_LP } = testEnv;
     const amountBasedMiMaticLPtoDeposit = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2500');
-    await expect(BasedMiMaticBeefyVault.connect(deployer.address).withdrawCollateral(BASED_MIMATIC_LP.address, amountBasedMiMaticLPtoDeposit, deployer.address))
+    await expect(BasedMiMaticBeefyVault.connect(deployer.address).withdrawCollateral(BASED_MIMATIC_LP.address, amountBasedMiMaticLPtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -56,7 +56,7 @@ makeSuite('BasedMiMaticBeefyVault', (testEnv: TestEnv) => {
     const BasedMiMaticLPBeforeBalanceOfUser = await BASED_MIMATIC_LP.balanceOf(deployer.address);
     const BasedMiMaticLPWithdrawAmount = await convertToCurrencyDecimals(BASED_MIMATIC_LP.address, '2444');
 
-    await BasedMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(BASED_MIMATIC_LP.address, BasedMiMaticLPWithdrawAmount, deployer.address);
+    await BasedMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(BASED_MIMATIC_LP.address, BasedMiMaticLPWithdrawAmount, 9900, deployer.address);
 
     const BasedMiMaticLPCurrentBalanceOfUser = await BASED_MIMATIC_LP.balanceOf(deployer.address);
     expect(moobasedmimaticBalanceOfPool).to.be.equal(0);

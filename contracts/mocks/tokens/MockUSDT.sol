@@ -250,9 +250,9 @@ contract Usdt is IWERC10 {
   string public symbol;
   uint8 public immutable decimals;
 
-  bytes32 public constant PERMIT_TYPEHASH =
+  bytes32 private constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
-  bytes32 public constant TRANSFER_TYPEHASH =
+  bytes32 private constant TRANSFER_TYPEHASH =
     keccak256('Transfer(address owner,address to,uint256 value,uint256 nonce,uint256 deadline)');
   bytes32 public immutable DOMAIN_SEPARATOR;
 
@@ -546,7 +546,7 @@ contract Usdt is IWERC10 {
     if (from != msg.sender) {
       // _decreaseAllowance(from, msg.sender, value);
       uint256 allowed = allowance[from][msg.sender];
-      if (allowed != type(uint256).max) {
+      if (allowed < type(uint256).max) {
         require(allowed >= value, 'WERC10: request exceeds allowance');
         uint256 reduced = allowed - value;
         allowance[from][msg.sender] = reduced;

@@ -12,16 +12,16 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
  * @dev Oracle contract for DOLA3CRV LP Token
  */
 contract DOLA3CRVOracle is IOracle {
-  ICurvePool public constant DOLA3CRV = ICurvePool(0xAA5A67c256e27A5d80712c51971408db3370927D);
-  ICurvePool public constant CRV3 = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+  ICurvePool private constant DOLA3CRV = ICurvePool(0xAA5A67c256e27A5d80712c51971408db3370927D);
+  ICurvePool private constant CRV3 = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
 
-  IChainlinkAggregator public constant DAI =
+  IChainlinkAggregator private constant DAI =
     IChainlinkAggregator(0x773616E4d11A78F511299002da57A0a94577F1f4);
-  IChainlinkAggregator public constant USDC =
+  IChainlinkAggregator private constant USDC =
     IChainlinkAggregator(0x986b5E1e1755e3C2440e960477f25201B0a8bbD4);
-  IChainlinkAggregator public constant USDT =
+  IChainlinkAggregator private constant USDT =
     IChainlinkAggregator(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46);
-  IChainlinkAggregator public constant USD =
+  IChainlinkAggregator private constant USD =
     IChainlinkAggregator(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
 
   /**

@@ -45,7 +45,7 @@ makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ',
     const amountETHtoDeposit = ethers.utils.parseEther('1');
     await lidoVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
+      .depositCollateral(ZERO_ADDRESS, amountETHtoDeposit, { value: amountETHtoDeposit });
     {
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({
@@ -205,7 +205,9 @@ makeSuite('borrow stETH', (testEnv) => {
     //Make 5ETH deposit for collateral
     await lidoVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: ethers.utils.parseEther('5') });
+      .depositCollateral(ZERO_ADDRESS, ethers.utils.parseEther('5'), {
+        value: ethers.utils.parseEther('5'),
+      });
 
     const borrowerGlobalData = await pool.getUserAccountData(borrower.address);
     printUserAccountData({

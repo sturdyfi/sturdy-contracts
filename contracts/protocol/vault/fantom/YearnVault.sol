@@ -14,6 +14,7 @@ import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title YearnVault
@@ -30,8 +31,9 @@ contract YearnVault is GeneralVault {
   receive() external payable {}
 
   function processYield() external override onlyYieldProcessor {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
-    address YVWFTM = _addressesProvider.getAddress('YVWFTM');
+    address YVWFTM = provider.getAddress('YVWFTM');
     uint256 yieldYVWFTM = _getYield(YVWFTM);
 
     // move yield to treasury
@@ -44,17 +46,18 @@ contract YearnVault is GeneralVault {
     uint256 yieldWFTM = IYearnVault(YVWFTM).withdraw(yieldYVWFTM, address(this), 1);
 
     // WFTM -> FTM
-    IWETH(_addressesProvider.getAddress('WFTM')).withdraw(yieldWFTM);
+    IWETH(provider.getAddress('WFTM')).withdraw(yieldWFTM);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldWFTM);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    uint256 length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // FTM -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
 
-    emit ProcessYield(_addressesProvider.getAddress('WFTM'), yieldWFTM);
+    emit ProcessYield(provider.getAddress('WFTM'), yieldWFTM);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)
@@ -62,13 +65,14 @@ contract YearnVault is GeneralVault {
     override
     returns (uint256)
   {
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address WFTM = provider.getAddress('WFTM');
 
     require(_asset == WFTM, Errors.LP_LIQUIDATION_CALL_FAILED);
-    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive WFTM
-    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVWFTM')).withdraw(
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVWFTM')).withdraw(
       _amount,
       address(this),
       1
@@ -81,15 +85,16 @@ contract YearnVault is GeneralVault {
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _ftmAmount) internal {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Approve the uniswapRouter to spend WFTM.
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    address uniswapRouter = provider.getAddress('uniswapRouter');
+    address WFTM = provider.getAddress('WFTM');
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_ftmAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(99_00);
 
     // Exchange FTM -> _tokenOut via UniswapV2
@@ -107,7 +112,7 @@ contract YearnVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[1]);
+    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
@@ -134,8 +139,9 @@ contract YearnVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address YVWFTM = _addressesProvider.getAddress('YVWFTM');
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address YVWFTM = provider.getAddress('YVWFTM');
+    address WFTM = provider.getAddress('WFTM');
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM
@@ -156,7 +162,7 @@ contract YearnVault is GeneralVault {
     assetAmount = IYearnVault(YVWFTM).deposit(assetAmount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWFTM).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(YVWFTM).approve(address(provider.getLendingPool()), assetAmount);
     return (YVWFTM, assetAmount);
   }
 
@@ -169,8 +175,15 @@ contract YearnVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(
+      _asset == provider.getAddress('WFTM') || _asset == address(0),
+      Errors.VT_COLLATERAL_WITHDRAW_INVALID
+    );
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVWFTM'), _amount);
+    return (provider.getAddress('YVWFTM'), _amount);
   }
 
   /**
@@ -181,21 +194,23 @@ contract YearnVault is GeneralVault {
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address YVWFTM = _addressesProvider.getAddress('YVWFTM');
-    address WFTM = _addressesProvider.getAddress('WFTM');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address WFTM = provider.getAddress('WFTM');
 
     // Withdraw from Yearn Vault and receive WFTM
-    uint256 assetAmount = IYearnVault(YVWFTM).withdraw(_amount, address(this), 1);
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVWFTM')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
     if (_asset == address(0)) {
       // WFTM -> FTM
       IWETH(WFTM).withdraw(assetAmount);
 
       // send FTM to user
-      (bool sent, bytes memory data) = address(_to).call{value: assetAmount}('');
+      (bool sent, ) = address(_to).call{value: assetAmount}('');
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     } else {
-      require(_asset == WFTM, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
-
       // Deliver WFTM to user
       TransferHelper.safeTransfer(WFTM, _to, assetAmount);
     }
@@ -219,7 +234,7 @@ contract YearnVault is GeneralVault {
     AssetYield[] memory assetYields = new AssetYield[](length);
     uint256 extraWETHAmount = _amount;
 
-    for (uint256 i; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i == length - 1) {
         // without calculation, set remained extra amount

@@ -46,7 +46,7 @@ makeSuite('yearnSPELLVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnSPELLVault, SPELL } = testEnv;
     const amountSPELLtoDeposit = await convertToCurrencyDecimals(SPELL.address, '300');
-    await expect(yearnSPELLVault.withdrawCollateral(SPELL.address, amountSPELLtoDeposit, deployer.address))
+    await expect(yearnSPELLVault.withdrawCollateral(SPELL.address, amountSPELLtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -56,7 +56,7 @@ makeSuite('yearnSPELLVault', (testEnv: TestEnv) => {
     const spellBeforeBalanceOfUser = await SPELL.balanceOf(deployer.address);
     const spellWithdrawAmount = await convertToCurrencyDecimals(SPELL.address, '289');
 
-    await yearnSPELLVault.withdrawCollateral(SPELL.address, spellWithdrawAmount, deployer.address);
+    await yearnSPELLVault.withdrawCollateral(SPELL.address, spellWithdrawAmount, 9900, deployer.address);
 
     const spellCurrentBalanceOfUser = await SPELL.balanceOf(deployer.address);
     expect(yvspellBalanceOfPool).to.be.equal(0);

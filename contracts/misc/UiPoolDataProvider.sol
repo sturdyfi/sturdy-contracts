@@ -24,7 +24,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  address public constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
+  address private constant MOCK_USD_ADDRESS = 0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96;
   ISturdyIncentivesController public immutable override incentivesController;
   IPriceOracleGetter public immutable oracle;
 
@@ -73,9 +73,10 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
-    AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](reserves.length);
+    uint256 length = reserves.length;
+    AggregatedReserveData[] memory reservesData = new AggregatedReserveData[](length);
 
-    for (uint256 i = 0; i < reserves.length; i++) {
+    for (uint256 i; i < length; ++i) {
       AggregatedReserveData memory reserveData = reservesData[i];
       reserveData.underlyingAsset = reserves[i];
 
@@ -138,7 +139,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         reserveData.stableBorrowRateEnabled,
 
       ) = baseData.configuration.getFlagsMemory();
-      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
+      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral > 0;
       (
         reserveData.variableRateSlope1,
         reserveData.variableRateSlope2,
@@ -186,13 +187,14 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
+    uint256 length = reserves.length;
     DataTypes.UserConfigurationMap memory userConfig = lendingPool.getUserConfiguration(user);
 
     UserReserveData[] memory userReservesData = new UserReserveData[](
-      user != address(0) ? reserves.length : 0
+      user != address(0) ? length : 0
     );
 
-    for (uint256 i = 0; i < reserves.length; i++) {
+    for (uint256 i; i < length; ++i) {
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(reserves[i]);
       // incentives
       if (address(0) != address(incentivesController)) {
@@ -222,7 +224,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         ).scaledBalanceOf(user);
         userReservesData[i].principalStableDebt = IStableDebtToken(baseData.stableDebtTokenAddress)
           .principalBalanceOf(user);
-        if (userReservesData[i].principalStableDebt != 0) {
+        if (userReservesData[i].principalStableDebt > 0) {
           userReservesData[i].stableBorrowRate = IStableDebtToken(baseData.stableDebtTokenAddress)
             .getUserStableRate(user);
           userReservesData[i].stableBorrowLastUpdateTimestamp = IStableDebtToken(
@@ -260,7 +262,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       user != address(0) ? reserves.length : 0
     );
 
-    for (uint256 i = 0; i < reserves.length; i++) {
+    for (uint256 i; i < reserves.length; ++i) {
       AggregatedReserveData memory reserveData = reservesData[i];
       reserveData.underlyingAsset = reserves[i];
 
@@ -323,7 +325,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         reserveData.stableBorrowRateEnabled,
 
       ) = baseData.configuration.getFlagsMemory();
-      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
+      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral > 0;
       (
         reserveData.variableRateSlope1,
         reserveData.variableRateSlope2,
@@ -388,7 +390,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           userReservesData[i].principalStableDebt = IStableDebtToken(
             reserveData.stableDebtTokenAddress
           ).principalBalanceOf(user);
-          if (userReservesData[i].principalStableDebt != 0) {
+          if (userReservesData[i].principalStableDebt > 0) {
             userReservesData[i].stableBorrowRate = IStableDebtToken(
               reserveData.stableDebtTokenAddress
             ).getUserStableRate(user);

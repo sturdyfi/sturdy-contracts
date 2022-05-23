@@ -180,7 +180,7 @@ makeSuite('Pausable Pool', (testEnv: TestEnv) => {
     const amountFTMtoDeposit = ethers.utils.parseEther('1000');
     await yearnVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
+      .depositCollateral(ZERO_ADDRESS, amountFTMtoDeposit, { value: amountFTMtoDeposit });
 
     //user 4 borrows
     const userGlobalData = await pool.getUserAccountData(borrower.address);

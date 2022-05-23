@@ -107,7 +107,7 @@ contract ConvexCurveLPVault is GeneralVault {
    * @param _offset extraRewards start offset.
    * @param _count extraRewards count
    */
-  function processExtraYield(uint256 _offset, uint256 _count) external onlyAdmin {
+  function processExtraYield(uint256 _offset, uint256 _count) external payable onlyAdmin {
     address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
 
@@ -207,7 +207,7 @@ contract ConvexCurveLPVault is GeneralVault {
    * @dev Withdraw from yield pool based on strategy and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {

@@ -141,10 +141,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   );
 
   // Deploy deployment helpers
-  await deployStableAndVariableTokensHelper([lendingPoolProxy.address, addressesProvider.address]);
+  await deployStableAndVariableTokensHelper([]);
   await deployATokensAndRatesHelper([
-    lendingPoolProxy.address,
-    addressesProvider.address,
     lendingPoolConfiguratorProxy.address,
   ]);
 

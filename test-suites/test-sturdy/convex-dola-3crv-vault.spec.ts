@@ -98,6 +98,7 @@ makeSuite('ConvexDOLA3CRVVault - Deposit & Withdraw', (testEnv: TestEnv) => {
       convexDOLA3CRVVault.withdrawCollateral(
         DOLA_3CRV_LP.address,
         amountAssetToWithdraw,
+        9900,
         deployer.address
       )
     ).to.be.reverted;
@@ -114,7 +115,7 @@ makeSuite('ConvexDOLA3CRVVault - Deposit & Withdraw', (testEnv: TestEnv) => {
     );
     await convexDOLA3CRVVault
       .connect(deployer.signer)
-      .withdrawCollateral(DOLA_3CRV_LP.address, amountAssetToWithdraw, deployer.address);
+      .withdrawCollateral(DOLA_3CRV_LP.address, amountAssetToWithdraw, 9900, deployer.address);
 
     const afterBalanceOfUser = await DOLA_3CRV_LP.balanceOf(deployer.address);
 

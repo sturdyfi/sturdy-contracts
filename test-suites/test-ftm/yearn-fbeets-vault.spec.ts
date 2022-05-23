@@ -46,7 +46,7 @@ makeSuite('yearnFBEETSVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnFBEETSVault, fBEETS } = testEnv;
     const amountfBEETStoDeposit = await convertToCurrencyDecimals(fBEETS.address, '300');
-    await expect(yearnFBEETSVault.withdrawCollateral(fBEETS.address, amountfBEETStoDeposit, deployer.address))
+    await expect(yearnFBEETSVault.withdrawCollateral(fBEETS.address, amountfBEETStoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -56,7 +56,7 @@ makeSuite('yearnFBEETSVault', (testEnv: TestEnv) => {
     const fBEETSBeforeBalanceOfUser = await fBEETS.balanceOf(deployer.address);
     const fBEETSWithdrawAmount = await convertToCurrencyDecimals(fBEETS.address, '289');
 
-    await yearnFBEETSVault.withdrawCollateral(fBEETS.address, fBEETSWithdrawAmount, deployer.address);
+    await yearnFBEETSVault.withdrawCollateral(fBEETS.address, fBEETSWithdrawAmount, 9900, deployer.address);
 
     const fbeetsCurrentBalanceOfUser = await fBEETS.balanceOf(deployer.address);
     expect(yvfbeetsBalanceOfPool).to.be.equal(0);

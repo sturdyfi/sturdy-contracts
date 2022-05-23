@@ -432,7 +432,7 @@ export const withdrawCollateral = async (
     const txResult = await waitForTx(
       await lidoVault
         .connect(user.signer)
-        .withdrawCollateral(reserve, amountToWithdraw, user.address)
+        .withdrawCollateral(reserve, amountToWithdraw, 9900, user.address)
     );
 
     const {
@@ -471,7 +471,9 @@ export const withdrawCollateral = async (
     // });
   } else if (expectedResult === 'revert') {
     await expect(
-      lidoVault.connect(user.signer).withdrawCollateral(reserve, amountToWithdraw, user.address),
+      lidoVault
+        .connect(user.signer)
+        .withdrawCollateral(reserve, amountToWithdraw, 9900, user.address),
       revertMessage
     ).to.be.reverted;
   }

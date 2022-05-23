@@ -23,7 +23,7 @@ library GenericLogic {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  uint256 public constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
+  uint256 internal constant HEALTH_FACTOR_LIQUIDATION_THRESHOLD = 1 ether;
 
   struct balanceDecreaseAllowedLocalVars {
     uint256 decimals;
@@ -167,7 +167,7 @@ library GenericLogic {
     if (userConfig.isEmpty()) {
       return (0, 0, 0, 0, type(uint256).max);
     }
-    for (vars.i = 0; vars.i < reservesCount; vars.i++) {
+    for (vars.i; vars.i < reservesCount; ++vars.i) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
         continue;
       }
@@ -182,7 +182,7 @@ library GenericLogic {
       vars.tokenUnit = 10**vars.decimals;
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
-      if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
+      if (vars.liquidationThreshold > 0 && userConfig.isUsingAsCollateral(vars.i)) {
         vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
 
         uint256 liquidityBalanceETH = (vars.reserveUnitPrice * vars.compoundedLiquidityBalance) /

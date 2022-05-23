@@ -13,6 +13,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title TombMimaticBeefyVault
@@ -24,9 +25,10 @@ contract TombMimaticBeefyVault is GeneralVault {
   using PercentageMath for uint256;
 
   function processYield() external override onlyYieldProcessor {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
-    address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombTOMB-MIMATIC');
-    address TOMB_MIMATIC_LP = _addressesProvider.getAddress('TOMB_MIMATIC_LP');
+    address MOO_TOMB_MIMATIC = provider.getAddress('mooTombTOMB-MIMATIC');
+    address TOMB_MIMATIC_LP = provider.getAddress('TOMB_MIMATIC_LP');
     uint256 yieldMOO_TOMB_MIMATIC = _getYield(MOO_TOMB_MIMATIC);
 
     // move yield to treasury
@@ -48,11 +50,12 @@ contract TombMimaticBeefyVault is GeneralVault {
 
     // Deposit TOMB Yield
     AssetYield[] memory assetYields = _getAssetYields(yieldTOMB);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    uint256 length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // TOMB -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositTokenYield(
-          _addressesProvider.getAddress('TOMB'),
+          provider.getAddress('TOMB'),
           assetYields[i].asset,
           assetYields[i].amount
         );
@@ -61,11 +64,12 @@ contract TombMimaticBeefyVault is GeneralVault {
 
     // Deposit MIMATIC Yield
     assetYields = _getAssetYields(yieldMIMATIC);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // MIMATIC -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositTokenYield(
-          _addressesProvider.getAddress('MIMATIC'),
+          provider.getAddress('MIMATIC'),
           assetYields[i].asset,
           assetYields[i].amount
         );
@@ -80,11 +84,12 @@ contract TombMimaticBeefyVault is GeneralVault {
     override
     returns (uint256)
   {
-    address TOMB_MIMATIC_LP = _addressesProvider.getAddress('TOMB_MIMATIC_LP');
-    address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombTOMB-MIMATIC');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address TOMB_MIMATIC_LP = provider.getAddress('TOMB_MIMATIC_LP');
+    address MOO_TOMB_MIMATIC = provider.getAddress('mooTombTOMB-MIMATIC');
 
     require(_asset == TOMB_MIMATIC_LP, Errors.LP_LIQUIDATION_CALL_FAILED);
-    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Beefy Vault and receive TOMB_MIMATIC_LP
     uint256 before = IERC20(TOMB_MIMATIC_LP).balanceOf(address(this));
@@ -101,25 +106,24 @@ contract TombMimaticBeefyVault is GeneralVault {
     internal
     returns (uint256 amountTOMB, uint256 amountMIMATIC)
   {
-    address tombSwapRouter = _addressesProvider.getAddress('tombSwapRouter');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address tombSwapRouter = provider.getAddress('tombSwapRouter');
 
     // Calculate minAmount from price with 1% slippage
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minTotalPrice = ((_amount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('mooTombTOMB-MIMATIC'))) / 2).percentMul(
-        99_00
-      );
+      oracle.getAssetPrice(provider.getAddress('mooTombTOMB-MIMATIC'))) / 2).percentMul(99_00);
 
     uint256 minMiMaticAmountFromPrice = minTotalPrice /
-      oracle.getAssetPrice(_addressesProvider.getAddress('MIMATIC'));
+      oracle.getAssetPrice(provider.getAddress('MIMATIC'));
 
     uint256 minTombAmountFromPrice = minTotalPrice /
-      oracle.getAssetPrice(_addressesProvider.getAddress('TOMB'));
+      oracle.getAssetPrice(provider.getAddress('TOMB'));
 
     IERC20(_poolAddress).approve(tombSwapRouter, _amount);
     (amountTOMB, amountMIMATIC) = IUniswapV2Router02(tombSwapRouter).removeLiquidity(
-      _addressesProvider.getAddress('TOMB'),
-      _addressesProvider.getAddress('MIMATIC'),
+      provider.getAddress('TOMB'),
+      provider.getAddress('MIMATIC'),
       _amount,
       minTombAmountFromPrice,
       minMiMaticAmountFromPrice,
@@ -133,7 +137,8 @@ contract TombMimaticBeefyVault is GeneralVault {
     address _tokenOut,
     uint256 _tokenAmount
   ) internal {
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address uniswapRouter = provider.getAddress('uniswapRouter');
 
     // Calculate minAmount from price with 2% slippage
     (uint256 minAmount, address[] memory path) = _getPathAndMinAmount(
@@ -159,7 +164,7 @@ contract TombMimaticBeefyVault is GeneralVault {
 
     // Make lendingPool to transfer required amount
     IERC20(_tokenOut).safeApprove(
-      address(_addressesProvider.getLendingPool()),
+      address(provider.getLendingPool()),
       receivedAmounts[path.length - 1]
     );
     // Deposit yield to pool
@@ -171,29 +176,30 @@ contract TombMimaticBeefyVault is GeneralVault {
     address _tokenOut,
     uint256 _tokenAmount
   ) internal view returns (uint256 minAmount, address[] memory path) {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     uint256 inputAssetDecimal = IERC20Detailed(_tokenIn).decimals();
     uint256 outputAssetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
 
     uint256 minTotalPrice = (_tokenAmount * oracle.getAssetPrice(_tokenIn)) / 10**inputAssetDecimal;
 
     minAmount = ((minTotalPrice * 10**outputAssetDecimal) / oracle.getAssetPrice(_tokenOut))
       .percentMul(98_00);
 
-    if (_tokenIn == _addressesProvider.getAddress('TOMB')) {
+    if (_tokenIn == provider.getAddress('TOMB')) {
       path = new address[](3);
       path[0] = _tokenIn;
-      path[1] = _addressesProvider.getAddress('WFTM');
+      path[1] = provider.getAddress('WFTM');
       path[2] = _tokenOut;
-    } else if (_tokenOut == _addressesProvider.getAddress('USDC')) {
+    } else if (_tokenOut == provider.getAddress('USDC')) {
       // _tokenIn = MIMATIC
       path = new address[](2);
       path[0] = _tokenIn;
-      path[1] = _addressesProvider.getAddress('USDC');
+      path[1] = provider.getAddress('USDC');
     } else {
       path = new address[](3);
       path[0] = _tokenIn;
-      path[1] = _addressesProvider.getAddress('USDC');
+      path[1] = provider.getAddress('USDC');
       path[2] = _tokenOut;
     }
   }
@@ -220,8 +226,9 @@ contract TombMimaticBeefyVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombTOMB-MIMATIC');
-    address TOMB_MIMATIC_LP = _addressesProvider.getAddress('TOMB_MIMATIC_LP');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address MOO_TOMB_MIMATIC = provider.getAddress('mooTombTOMB-MIMATIC');
+    address TOMB_MIMATIC_LP = provider.getAddress('TOMB_MIMATIC_LP');
 
     require(_asset == TOMB_MIMATIC_LP, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     TransferHelper.safeTransferFrom(TOMB_MIMATIC_LP, msg.sender, address(this), _amount);
@@ -234,39 +241,44 @@ contract TombMimaticBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(MOO_TOMB_MIMATIC).balanceOf(address(this)) - before;
 
     // Make lendingPool to transfer required amount
-    IERC20(MOO_TOMB_MIMATIC).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(MOO_TOMB_MIMATIC).approve(address(provider.getLendingPool()), assetAmount);
     return (MOO_TOMB_MIMATIC, assetAmount);
   }
 
   /**
    * @dev Get Withdrawal amount of mooTombTOMB-MIMATIC based on strategy
    */
-  function _getWithdrawalAmount(address, uint256 _amount)
+  function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
     view
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(
+      _asset == provider.getAddress('TOMB_MIMATIC_LP'),
+      Errors.VT_COLLATERAL_WITHDRAW_INVALID
+    );
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('mooTombTOMB-MIMATIC'), _amount);
+    return (provider.getAddress('mooTombTOMB-MIMATIC'), _amount);
   }
 
   /**
    * @dev Withdraw from yield pool based on strategy with mooTombTOMB-MIMATIC and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address MOO_TOMB_MIMATIC = _addressesProvider.getAddress('mooTombTOMB-MIMATIC');
-    address TOMB_MIMATIC_LP = _addressesProvider.getAddress('TOMB_MIMATIC_LP');
-
-    require(_asset == TOMB_MIMATIC_LP, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address TOMB_MIMATIC_LP = provider.getAddress('TOMB_MIMATIC_LP');
 
     // Withdraw from Beefy Vault and receive TOMB_MIMATIC_LP
     uint256 before = IERC20(TOMB_MIMATIC_LP).balanceOf(address(this));
-    IBeefyVault(MOO_TOMB_MIMATIC).withdraw(_amount);
+    IBeefyVault(provider.getAddress('mooTombTOMB-MIMATIC')).withdraw(_amount);
     uint256 assetAmount = IERC20(TOMB_MIMATIC_LP).balanceOf(address(this)) - before;
 
     // Deliver TOMB_MIMATIC_LP to user
@@ -291,7 +303,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     AssetYield[] memory assetYields = new AssetYield[](length);
     uint256 extraWETHAmount = _amount;
 
-    for (uint256 i; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i == length - 1) {
         // without calculation, set remained extra amount

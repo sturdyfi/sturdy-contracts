@@ -50,11 +50,13 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)],
+        [
+          internalAssetAddress /*, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)*/,
+        ],
         [
           steCRVOracleAddress,
-          getParamPerNetwork(ChainlinkAggregator, network).CRV,
-          getParamPerNetwork(ChainlinkAggregator, network).CVX,
+          /*getParamPerNetwork(ChainlinkAggregator, network).CRV,
+          getParamPerNetwork(ChainlinkAggregator, network).CVX,*/
         ]
       )
     );

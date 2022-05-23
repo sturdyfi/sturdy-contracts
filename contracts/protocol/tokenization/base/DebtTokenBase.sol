@@ -59,7 +59,7 @@ abstract contract DebtTokenBase is
    * @dev Being non transferrable, the debt token does not implement any of the
    * standard ERC20 functions for transfer and allowance.
    **/
-  function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
+  function transfer(address recipient, uint256 amount) external virtual override returns (bool) {
     recipient;
     amount;
     revert('TRANSFER_NOT_SUPPORTED');
@@ -77,7 +77,7 @@ abstract contract DebtTokenBase is
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
-  function approve(address spender, uint256 amount) public virtual override returns (bool) {
+  function approve(address spender, uint256 amount) external virtual override returns (bool) {
     spender;
     amount;
     revert('APPROVAL_NOT_SUPPORTED');
@@ -87,7 +87,7 @@ abstract contract DebtTokenBase is
     address sender,
     address recipient,
     uint256 amount
-  ) public virtual override returns (bool) {
+  ) external virtual override returns (bool) {
     sender;
     recipient;
     amount;

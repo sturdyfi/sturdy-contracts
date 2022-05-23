@@ -13,6 +13,7 @@ import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 
 /**
  * @title YearnLINKVault
@@ -24,8 +25,9 @@ contract YearnLINKVault is GeneralVault {
   using PercentageMath for uint256;
 
   function processYield() external override onlyYieldProcessor {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
-    address YVLINK = _addressesProvider.getAddress('YVLINK');
+    address YVLINK = provider.getAddress('YVLINK');
     uint256 yieldYVLINK = _getYield(YVLINK);
 
     // move yield to treasury
@@ -38,14 +40,15 @@ contract YearnLINKVault is GeneralVault {
     uint256 yieldLINK = IYearnVault(YVLINK).withdraw(yieldYVLINK, address(this), 1);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldLINK);
-    for (uint256 i = 0; i < assetYields.length; i++) {
+    uint256 length = assetYields.length;
+    for (uint256 i; i < length; ++i) {
       // LINK -> Asset and Deposit to pool
       if (assetYields[i].amount > 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
 
-    emit ProcessYield(_addressesProvider.getAddress('LINK'), yieldLINK);
+    emit ProcessYield(provider.getAddress('LINK'), yieldLINK);
   }
 
   function withdrawOnLiquidation(address _asset, uint256 _amount)
@@ -53,13 +56,14 @@ contract YearnLINKVault is GeneralVault {
     override
     returns (uint256)
   {
-    address LINK = _addressesProvider.getAddress('LINK');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address LINK = provider.getAddress('LINK');
 
     require(_asset == LINK, Errors.LP_LIQUIDATION_CALL_FAILED);
-    require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive LINK
-    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVLINK')).withdraw(
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVLINK')).withdraw(
       _amount,
       address(this),
       1
@@ -72,20 +76,21 @@ contract YearnLINKVault is GeneralVault {
   }
 
   function _convertAndDepositYield(address _tokenOut, uint256 _linkAmount) internal {
-    address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
-    address LINK = _addressesProvider.getAddress('LINK');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address uniswapRouter = provider.getAddress('uniswapRouter');
+    address LINK = provider.getAddress('LINK');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
+    IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_linkAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVLINK'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVLINK'))) / 10**18) * 10**assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange LINK -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
     path[0] = LINK;
-    path[1] = _addressesProvider.getAddress('WFTM');
+    path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
     IERC20(LINK).approve(uniswapRouter, _linkAmount);
@@ -104,7 +109,7 @@ contract YearnLINKVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(_addressesProvider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -131,8 +136,9 @@ contract YearnLINKVault is GeneralVault {
     override
     returns (address, uint256)
   {
-    address YVLINK = _addressesProvider.getAddress('YVLINK');
-    address LINK = _addressesProvider.getAddress('LINK');
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address YVLINK = provider.getAddress('YVLINK');
+    address LINK = provider.getAddress('LINK');
 
     // receive LINK from user
     require(_asset == LINK, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -143,7 +149,7 @@ contract YearnLINKVault is GeneralVault {
     uint256 assetAmount = IYearnVault(YVLINK).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVLINK).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(YVLINK).approve(address(provider.getLendingPool()), assetAmount);
     return (YVLINK, assetAmount);
   }
 
@@ -156,28 +162,33 @@ contract YearnLINKVault is GeneralVault {
     override
     returns (address, uint256)
   {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+
+    require(_asset == provider.getAddress('LINK'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
     // In this vault, return same amount of asset.
-    return (_addressesProvider.getAddress('YVLINK'), _amount);
+    return (provider.getAddress('YVLINK'), _amount);
   }
 
   /**
    * @dev Withdraw from yield pool based on strategy with yvLINK and deliver asset
    */
   function _withdrawFromYieldPool(
-    address _asset,
+    address,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
-    address YVLINK = _addressesProvider.getAddress('YVLINK');
-    address LINK = _addressesProvider.getAddress('LINK');
-
-    require(_asset == LINK, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive LINK
-    uint256 assetAmount = IYearnVault(YVLINK).withdraw(_amount, address(this), 1);
+    uint256 assetAmount = IYearnVault(provider.getAddress('YVLINK')).withdraw(
+      _amount,
+      address(this),
+      1
+    );
 
     // Deliver LINK to user
-    TransferHelper.safeTransfer(LINK, _to, assetAmount);
+    TransferHelper.safeTransfer(provider.getAddress('LINK'), _to, assetAmount);
     return assetAmount;
   }
 
@@ -198,7 +209,7 @@ contract YearnLINKVault is GeneralVault {
     AssetYield[] memory assetYields = new AssetYield[](length);
     uint256 extraWETHAmount = _amount;
 
-    for (uint256 i; i < length; i++) {
+    for (uint256 i; i < length; ++i) {
       assetYields[i].asset = assets[i];
       if (i == length - 1) {
         // without calculation, set remained extra amount

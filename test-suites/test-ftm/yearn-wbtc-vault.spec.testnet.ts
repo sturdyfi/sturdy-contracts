@@ -45,7 +45,7 @@ makeSuite('yearnWBTCVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnWBTCVault, WBTC, aYVWBTC } = testEnv;
     const amountWBTCtoDeposit = beforeBalance.add(await convertToCurrencyDecimals(WBTC.address, '0.1'));
-    await expect(yearnWBTCVault.connect(deployer.signer).withdrawCollateral(WBTC.address, amountWBTCtoDeposit, deployer.address))
+    await expect(yearnWBTCVault.connect(deployer.signer).withdrawCollateral(WBTC.address, amountWBTCtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -55,7 +55,7 @@ makeSuite('yearnWBTCVault', (testEnv: TestEnv) => {
     const wbtcBeforeBalanceOfUser = await WBTC.balanceOf(deployer.address);
     const wbtcWithdrawAmount = await convertToCurrencyDecimals(WBTC.address, '0.099');
 
-    await yearnWBTCVault.connect(deployer.signer).withdrawCollateral(WBTC.address, wbtcWithdrawAmount, deployer.address);
+    await yearnWBTCVault.connect(deployer.signer).withdrawCollateral(WBTC.address, wbtcWithdrawAmount, 9900, deployer.address);
 
     const wbtcCurrentBalanceOfUser = await WBTC.balanceOf(deployer.address);
     expect(yvwbtcBalanceOfPool).to.be.equal(0);

@@ -94,6 +94,7 @@ makeSuite('ConvexSTETHVault - Deposit & Withdraw', (testEnv: TestEnv) => {
       convexSTETHVault.withdrawCollateral(
         STECRV_LP.address,
         amountAssetToWithdraw,
+        9900,
         deployer.address
       )
     ).to.be.reverted;
@@ -110,7 +111,7 @@ makeSuite('ConvexSTETHVault - Deposit & Withdraw', (testEnv: TestEnv) => {
     );
     await convexSTETHVault
       .connect(deployer.signer)
-      .withdrawCollateral(STECRV_LP.address, amountAssetToWithdraw, deployer.address);
+      .withdrawCollateral(STECRV_LP.address, amountAssetToWithdraw, 9900, deployer.address);
 
     const afterBalanceOfUser = await STECRV_LP.balanceOf(deployer.address);
 

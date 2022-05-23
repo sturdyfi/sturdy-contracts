@@ -101,7 +101,7 @@ contract MockBeefyVault is ERC20 {
   function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {
     uint256 decimal = decimals();
     uint256 shares = amount.rayDiv(_shareValue(10**decimal).wadToRay());
-    require(shares != 0);
+    require(shares > 0);
 
     _mint(to, shares);
 

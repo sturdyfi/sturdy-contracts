@@ -17,7 +17,7 @@ import {ISturdyIncentivesController} from '../../interfaces/ISturdyIncentivesCon
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;
 
-  uint256 public constant DEBT_TOKEN_REVISION = 0x1;
+  uint256 private constant DEBT_TOKEN_REVISION = 0x1;
 
   ILendingPool internal _pool;
   address internal _underlyingAsset;
@@ -40,7 +40,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     string memory debtTokenName,
     string memory debtTokenSymbol,
     bytes calldata params
-  ) public override initializer {
+  ) external override initializer {
     _setName(debtTokenName);
     _setSymbol(debtTokenSymbol);
     _setDecimals(debtTokenDecimals);
@@ -97,14 +97,14 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     address onBehalfOf,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool returns (bool) {
+  ) external payable override onlyLendingPool returns (bool) {
     if (user != onBehalfOf) {
       _decreaseBorrowAllowance(onBehalfOf, user, amount);
     }
 
     uint256 previousBalance = super.balanceOf(onBehalfOf);
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_MINT_AMOUNT);
 
     _mint(onBehalfOf, amountScaled);
 
@@ -125,9 +125,9 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     address user,
     uint256 amount,
     uint256 index
-  ) external override onlyLendingPool {
+  ) external payable override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
+    require(amountScaled > 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     _burn(user, amountScaled);
 

@@ -78,7 +78,7 @@ abstract contract GeneralVault is VersionedInitializable {
       require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
     }
     // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH TODO No Lido
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
     (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
 
     // Deposit stAsset to lendingPool, then user will get aToken of stAsset
@@ -150,12 +150,6 @@ abstract contract GeneralVault is VersionedInitializable {
   function withdrawOnLiquidation(address, uint256 _amount) external virtual returns (uint256) {
     return _amount;
   }
-
-  // /**
-  //  * @dev Convert an `amount` of asset used as collateral to swappable asset on liquidation.
-  //  * @param _amountIn The amount of collateral asset
-  //  */
-  // function convertOnLiquidation(address _assetOut, uint256 _amountIn) external virtual {}
 
   /**
    * @dev Get yield based on strategy and re-deposit

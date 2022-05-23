@@ -29,6 +29,14 @@ contract CollateralAdapter is VersionedInitializable {
   mapping(address => address) internal _collateralAssets;
 
   /**
+   * @dev Emitted on addCollateralAsset()
+   * @param _externalAsset The address of the external asset
+   * @param _internalAsset The address of the internal asset
+   * @param _acceptVault The address of the vault
+   **/
+  event AddCollateral(address _externalAsset, address _internalAsset, address _acceptVault);
+
+  /**
    * @dev Function is invoked by the proxy contract when the Adapter contract is deployed.
    * @param _provider The address of the provider
    **/
@@ -47,6 +55,8 @@ contract CollateralAdapter is VersionedInitializable {
   ) external payable onlyAdmin {
     _assetToVaults[_externalAsset] = _acceptVault;
     _collateralAssets[_externalAsset] = _internalAsset;
+
+    emit AddCollateral(_externalAsset, _internalAsset, _acceptVault);
   }
 
   function getAcceptableVault(address _externalAsset) external view returns (address) {

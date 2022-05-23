@@ -20,10 +20,16 @@ contract LidoVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
+  uint256 public slippage;
+
   /**
    * @dev Receive Ether
    */
   receive() external payable {}
+
+  function setSlippage(uint256 _value) external onlyAdmin {
+    slippage = _value;
+  }
 
   /**
    * @dev Grab excess stETH which was from rebasing on Lido
@@ -50,7 +56,7 @@ contract LidoVault is GeneralVault {
       LIDO,
       ETH,
       yieldStETH,
-      200
+      slippage
     );
 
     // ETH -> WETH
@@ -146,11 +152,11 @@ contract LidoVault is GeneralVault {
         LIDO,
         ETH,
         _amount,
-        200
+        slippage
       );
 
       // send ETH to user
-      (bool sent, ) = address(_to).call{value: receivedETHAmount}('');
+      (bool sent, ) = _to.call{value: receivedETHAmount}('');
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
       return receivedETHAmount;
     } else {

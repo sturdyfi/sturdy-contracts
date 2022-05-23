@@ -26,6 +26,7 @@ task(`full:deploy-lido-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(lidoVault.address);
     await lidoVault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
+    await lidoVault.setSlippage('200'); // 2% fee
 
     console.log(`${CONTRACT_NAME}.address`, lidoVault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

@@ -27,7 +27,7 @@ contract LidoVault is GeneralVault {
    */
   receive() external payable {}
 
-  function setSlippage(uint256 _value) external onlyAdmin {
+  function setSlippage(uint256 _value) external payable onlyAdmin {
     slippage = _value;
   }
 

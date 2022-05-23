@@ -43,7 +43,7 @@ makeSuite('Deposit FTM as collateral and other as for pool liquidity supplier ',
     const amountFTMtoDeposit = ethers.utils.parseEther('1000');
     await yearnVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountFTMtoDeposit });
+      .depositCollateral(ZERO_ADDRESS, amountFTMtoDeposit, { value: amountFTMtoDeposit });
     {
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({

@@ -25,7 +25,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     const beforePooledEther = await lido.getTotalPooledEther();
     await lidoVault
       .connect(deployer.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1.1') });
+      .depositCollateral(ZERO_ADDRESS, parseEther('1.1'), { value: parseEther('1.1') });
     const currentPooledEther = await lido.getTotalPooledEther();
     expect(currentPooledEther.sub(beforePooledEther)).to.be.equal(parseEther('1.1'));
     expect(await lido.balanceOf(lidoVault.address)).to.be.equal(0);
@@ -53,7 +53,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     await expect(
       lidoVault
         .connect(deployer.signer)
-        .withdrawCollateral(ZERO_ADDRESS, parseEther('1.2'), deployer.address)
+        .withdrawCollateral(ZERO_ADDRESS, parseEther('1.2'), 9900, deployer.address)
     ).to.be.reverted;
   });
 
@@ -64,7 +64,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
     await lidoVault
       .connect(deployer.signer)
-      .withdrawCollateral(ZERO_ADDRESS, parseEther('1'), deployer.address);
+      .withdrawCollateral(ZERO_ADDRESS, parseEther('1'), 9900, deployer.address);
 
     const ethCurrentBalanceOfUser = await deployer.signer.getBalance();
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);

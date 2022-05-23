@@ -1,9 +1,14 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { getLendingPoolConfiguratorProxy } from '../../helpers/contracts-getters';
+import {
+  getFirstSigner,
+  getLendingPoolAddressesProvider,
+  getLendingPoolConfiguratorProxy,
+} from '../../helpers/contracts-getters';
 import { deployYieldManager } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { waitForTx } from '../../helpers/misc-utils';
 
 const CONTRACT_NAME = 'YieldManager';
 
@@ -37,6 +42,16 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
       getParamPerNetwork(poolConfig.ReserveAssets, network).USDC,
       getParamPerNetwork(poolConfig.ReserveAssets, network).DAI,
       curve3Pool
+    );
+
+    const addressProvider = await getLendingPoolAddressesProvider();
+    const signer = await getFirstSigner();
+    const processor = await signer.getAddress();
+    await waitForTx(
+      await addressProvider.setAddress(
+        localBRE.ethers.utils.formatBytes32String('YIELD_PROCESSOR'),
+        processor
+      )
     );
 
     console.log(`${CONTRACT_NAME}.address`, yieldManager.address);

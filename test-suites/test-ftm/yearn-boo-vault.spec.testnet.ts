@@ -40,7 +40,7 @@ makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnBOOVault, BOO } = testEnv;
     const amountBOOtoDeposit = await convertToCurrencyDecimals(BOO.address, '300');
-    await expect(yearnBOOVault.connect(deployer.signer).withdrawCollateral(BOO.address, amountBOOtoDeposit, deployer.address))
+    await expect(yearnBOOVault.connect(deployer.signer).withdrawCollateral(BOO.address, amountBOOtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -50,7 +50,7 @@ makeSuite('yearnBOOVault', (testEnv: TestEnv) => {
     const booBeforeBalanceOfUser = await BOO.balanceOf(deployer.address);
     const booWithdrawAmount = await convertToCurrencyDecimals(BOO.address, '289');
 
-    await yearnBOOVault.connect(deployer.signer).withdrawCollateral(BOO.address, booWithdrawAmount, deployer.address);
+    await yearnBOOVault.connect(deployer.signer).withdrawCollateral(BOO.address, booWithdrawAmount, 9900, deployer.address);
 
     const booCurrentBalanceOfUser = await BOO.balanceOf(deployer.address);
     expect(yvbooBalanceOfPool).to.be.equal(0);

@@ -98,6 +98,7 @@ makeSuite('ConvexFRAX3CRVVault - Deposit & Withdraw', (testEnv: TestEnv) => {
       convexFRAX3CRVVault.withdrawCollateral(
         FRAX_3CRV_LP.address,
         amountAssetToWithdraw,
+        9900,
         deployer.address
       )
     ).to.be.reverted;
@@ -114,7 +115,7 @@ makeSuite('ConvexFRAX3CRVVault - Deposit & Withdraw', (testEnv: TestEnv) => {
     );
     await convexFRAX3CRVVault
       .connect(deployer.signer)
-      .withdrawCollateral(FRAX_3CRV_LP.address, amountAssetToWithdraw, deployer.address);
+      .withdrawCollateral(FRAX_3CRV_LP.address, amountAssetToWithdraw, 9900, deployer.address);
 
     const afterBalanceOfUser = await FRAX_3CRV_LP.balanceOf(deployer.address);
 

@@ -130,12 +130,8 @@ const buildTestEnv = async (deployer: Signer, secondaryWallet: Signer) => {
   );
 
   // Deploy deployment helpers
-  await deployStableAndVariableTokensHelper([lendingPoolProxy.address, addressesProvider.address]);
-  await deployATokensAndRatesHelper([
-    lendingPoolProxy.address,
-    addressesProvider.address,
-    lendingPoolConfiguratorProxy.address,
-  ]);
+  await deployStableAndVariableTokensHelper([]);
+  await deployATokensAndRatesHelper([lendingPoolConfiguratorProxy.address]);
 
   const fallbackOracle = await deployPriceOracle();
   await waitForTx(await fallbackOracle.setEthUsdPrice(MOCK_USD_PRICE_IN_WEI));

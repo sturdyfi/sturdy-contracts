@@ -70,14 +70,8 @@ task('testnet:deploy-lending-pool', 'Deploy lending pool for dev enviroment')
         lendingPoolConfiguratorProxy.address
       );
       // Deploy deployment helpers
-      await deployStableAndVariableTokensHelper(
-        [lendingPoolProxy.address, addressesProvider.address],
-        verify
-      );
-      await deployATokensAndRatesHelper(
-        [lendingPoolProxy.address, addressesProvider.address, lendingPoolConfiguratorProxy.address],
-        verify
-      );
+      await deployStableAndVariableTokensHelper([], verify);
+      await deployATokensAndRatesHelper([lendingPoolConfiguratorProxy.address], verify);
     } catch (error) {
       if (DRE.network.name.includes('tenderly')) {
         const transactionLink = `https://dashboard.tenderly.co/${DRE.config.tenderly.username}/${

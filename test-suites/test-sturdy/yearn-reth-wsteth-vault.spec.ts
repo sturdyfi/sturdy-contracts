@@ -71,6 +71,7 @@
 //       yearnRETHWstETHVault.withdrawCollateral(
 //         RETH_WSTETH_LP.address,
 //         amountRETHWstETHLPtoDeposit,
+//         9900,
 //         deployer.address
 //       )
 //     ).to.be.reverted;
@@ -87,7 +88,7 @@
 
 //     await yearnRETHWstETHVault
 //       .connect(deployer.signer)
-//       .withdrawCollateral(RETH_WSTETH_LP.address, rETHWstETHLPWithdrawAmount, deployer.address);
+//       .withdrawCollateral(RETH_WSTETH_LP.address, rETHWstETHLPWithdrawAmount, 9900, deployer.address);
 
 //     const rETHWstETHLPCurrentBalanceOfUser = await RETH_WSTETH_LP.balanceOf(deployer.address);
 //     expect(rethwstethBalanceOfPool).to.be.equal(0);

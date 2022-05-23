@@ -179,7 +179,7 @@ export async function initializeMakeSuite() {
   const Frax3CrvLPAddress = getParamPerNetwork(poolConfig.FRAX_3CRV_LP, network);
   const SteCrvLPAddress = getParamPerNetwork(poolConfig.STECRV_LP, network);
   const Dola3CRVLPAddress = getParamPerNetwork(poolConfig.DOLA_3CRV_LP, network);
-  const yvrethwstethAddress = getParamPerNetwork(poolConfig.YearnRETHWstETHVault, network);
+  // const yvrethwstethAddress = getParamPerNetwork(poolConfig.YearnRETHWstETHVault, network);
   const wethAddress = getParamPerNetwork(poolConfig.WETH, network);
   const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
   const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
@@ -229,12 +229,12 @@ export async function initializeMakeSuite() {
   testEnv.emergencyUser = emergencyUser;
   testEnv.pool = await getLendingPool();
   testEnv.lidoVault = await getLidoVault();
-  testEnv.yearnRETHWstETHVault = await getYearnRETHWstETHVault();
-  testEnv.convexRocketPoolETHVault = await getConvexRocketPoolETHVault();
+  // testEnv.yearnRETHWstETHVault = await getYearnRETHWstETHVault();
+  // testEnv.convexRocketPoolETHVault = await getConvexRocketPoolETHVault();
   testEnv.convexFRAX3CRVVault = await getConvexFRAX3CRVVault();
   testEnv.convexSTETHVault = await getConvexSTETHVault();
   testEnv.convexDOLA3CRVVault = await getConvexDOLA3CRVVault();
-  const cvxrethwstethAddress = await testEnv.convexRocketPoolETHVault.getInternalAsset();
+  // const cvxrethwstethAddress = await testEnv.convexRocketPoolETHVault.getInternalAsset();
   const cvxfrax3crvAddress = await testEnv.convexFRAX3CRVVault.getInternalAsset();
   const cvxstecrvAddress = await testEnv.convexSTETHVault.getInternalAsset();
   const cvxdola3crvAddress = await testEnv.convexDOLA3CRVVault.getInternalAsset();
@@ -272,12 +272,12 @@ export async function initializeMakeSuite() {
   const aStETHAddress = allTokens.find(
     (aToken) => aToken.symbol === 'astETH' || aToken.symbol === 'sstETH'
   )?.tokenAddress;
-  const aYVRETH_WSTETHAddress = allTokens.find(
-    (aToken) => aToken.symbol === 'ayvRETH_WSTETH' || aToken.symbol === 'syvRETH_WSTETH'
-  )?.tokenAddress;
-  const aCVXRETH_WSTETHAddress = allTokens.find(
-    (aToken) => aToken.symbol === 'acvxRETH_WSTETH' || aToken.symbol === 'scvxRETH_WSTETH'
-  )?.tokenAddress;
+  // const aYVRETH_WSTETHAddress = allTokens.find(
+  //   (aToken) => aToken.symbol === 'ayvRETH_WSTETH' || aToken.symbol === 'syvRETH_WSTETH'
+  // )?.tokenAddress;
+  // const aCVXRETH_WSTETHAddress = allTokens.find(
+  //   (aToken) => aToken.symbol === 'acvxRETH_WSTETH' || aToken.symbol === 'scvxRETH_WSTETH'
+  // )?.tokenAddress;
   const aCVXFRAX_3CRVAddress = allTokens.find(
     (aToken) => aToken.symbol === 'acvxFRAX_3CRV' || aToken.symbol === 'scvxFRAX_3CRV'
   )?.tokenAddress;
@@ -299,8 +299,8 @@ export async function initializeMakeSuite() {
   if (
     !aDaiAddress ||
     !aStETHAddress ||
-    !aYVRETH_WSTETHAddress ||
-    !aCVXRETH_WSTETHAddress ||
+    // !aYVRETH_WSTETHAddress ||
+    // !aCVXRETH_WSTETHAddress ||
     !aCVXFRAX_3CRVAddress ||
     !aCVXSTECRVAddress ||
     !aCVXDOLA_3CRVAddress
@@ -313,8 +313,8 @@ export async function initializeMakeSuite() {
 
   testEnv.aDai = await getAToken(aDaiAddress);
   testEnv.aStETH = await getAToken(aStETHAddress);
-  testEnv.aYVRETH_WSTETH = await getAToken(aYVRETH_WSTETHAddress);
-  testEnv.aCVXRETH_WSTETH = await getAToken(aCVXRETH_WSTETHAddress);
+  // testEnv.aYVRETH_WSTETH = await getAToken(aYVRETH_WSTETHAddress);
+  // testEnv.aCVXRETH_WSTETH = await getAToken(aCVXRETH_WSTETHAddress);
   testEnv.aCVXFRAX_3CRV = await getAToken(aCVXFRAX_3CRVAddress);
   testEnv.aCVXSTECRV = await getAToken(aCVXSTECRVAddress);
   testEnv.aCVXDOLA_3CRV = await getAToken(aCVXDOLA_3CRVAddress);
@@ -331,11 +331,11 @@ export async function initializeMakeSuite() {
   testEnv.WETH = IERC20DetailedFactory.connect(wethAddress, deployer.signer);
   testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
   testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
-  testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
-  testEnv.cvxreth_wsteth = SturdyInternalAssetFactory.connect(
-    cvxrethwstethAddress,
-    deployer.signer
-  );
+  // testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
+  // testEnv.cvxreth_wsteth = SturdyInternalAssetFactory.connect(
+  //   cvxrethwstethAddress,
+  //   deployer.signer
+  // );
   testEnv.cvxfrax_3crv = SturdyInternalAssetFactory.connect(cvxfrax3crvAddress, deployer.signer);
   testEnv.cvxstecrv = SturdyInternalAssetFactory.connect(cvxstecrvAddress, deployer.signer);
   testEnv.cvxdola_3crv = SturdyInternalAssetFactory.connect(cvxdola3crvAddress, deployer.signer);

@@ -23,7 +23,7 @@ const simulateYield = async (testEnv: TestEnv) => {
   await simulateYieldInLidoVault(testEnv);
   await simulateYieldInConvexDOLAVault(testEnv);
   await simulateYieldInConvexFRAXVault(testEnv);
-  await simulateYieldInConvexRocketPoolETHVault(testEnv);
+  // await simulateYieldInConvexRocketPoolETHVault(testEnv);
 };
 
 const simulateYieldInLidoVault = async (testEnv: TestEnv) => {
@@ -107,36 +107,36 @@ const simulateYieldInConvexDOLAVault = async (testEnv: TestEnv) => {
   await convexDOLA3CRVVault.processYield();
 };
 
-const simulateYieldInConvexRocketPoolETHVault = async (testEnv: TestEnv) => {
-  const { convexRocketPoolETHVault, users, RETH_WSTETH_LP } = testEnv;
-  const ethers = (DRE as any).ethers;
-  const borrower = users[1];
-  const LPOwnerAddress = '0x28ac885d3d8b30bd5733151c732c5f01e18847aa';
-  const depositLP = '50';
-  const depositLPAmount = await convertToCurrencyDecimals(RETH_WSTETH_LP.address, depositLP);
+// const simulateYieldInConvexRocketPoolETHVault = async (testEnv: TestEnv) => {
+//   const { convexRocketPoolETHVault, users, RETH_WSTETH_LP } = testEnv;
+//   const ethers = (DRE as any).ethers;
+//   const borrower = users[1];
+//   const LPOwnerAddress = '0x28ac885d3d8b30bd5733151c732c5f01e18847aa';
+//   const depositLP = '50';
+//   const depositLPAmount = await convertToCurrencyDecimals(RETH_WSTETH_LP.address, depositLP);
 
-  await impersonateAccountsHardhat([LPOwnerAddress]);
-  let signer = await ethers.provider.getSigner(LPOwnerAddress);
+//   await impersonateAccountsHardhat([LPOwnerAddress]);
+//   let signer = await ethers.provider.getSigner(LPOwnerAddress);
 
-  //transfer to borrower
-  await RETH_WSTETH_LP.connect(signer).transfer(borrower.address, depositLPAmount);
+//   //transfer to borrower
+//   await RETH_WSTETH_LP.connect(signer).transfer(borrower.address, depositLPAmount);
 
-  //approve protocol to access borrower wallet
-  await RETH_WSTETH_LP.connect(borrower.signer).approve(
-    convexRocketPoolETHVault.address,
-    APPROVAL_AMOUNT_LENDING_POOL
-  );
+//   //approve protocol to access borrower wallet
+//   await RETH_WSTETH_LP.connect(borrower.signer).approve(
+//     convexRocketPoolETHVault.address,
+//     APPROVAL_AMOUNT_LENDING_POOL
+//   );
 
-  // deposit collateral to borrow
-  await convexRocketPoolETHVault
-    .connect(borrower.signer)
-    .depositCollateral(RETH_WSTETH_LP.address, depositLPAmount);
+//   // deposit collateral to borrow
+//   await convexRocketPoolETHVault
+//     .connect(borrower.signer)
+//     .depositCollateral(RETH_WSTETH_LP.address, depositLPAmount);
 
-  await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
+//   await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
 
-  // process yield, so yield should be sented to YieldManager
-  await convexRocketPoolETHVault.processYield();
-};
+//   // process yield, so yield should be sented to YieldManager
+//   await convexRocketPoolETHVault.processYield();
+// };
 
 const depositUSDC = async (
   testEnv: TestEnv,
@@ -278,16 +278,16 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });
-  it('Convex RocketPoolETH vaults', async () => {
-    const { CRV, CVX, yieldManager } = testEnv;
-    const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
-    await simulateYieldInConvexRocketPoolETHVault(testEnv);
-    const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
-    expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
-    expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
-  });
+  // it('Convex RocketPoolETH vaults', async () => {
+  //   const { CRV, CVX, yieldManager } = testEnv;
+  //   const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+  //   const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
+  //   await simulateYieldInConvexRocketPoolETHVault(testEnv);
+  //   const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
+  //   const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
+  //   expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
+  //   expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
+  // });
 });
 
 makeSuite('Yield Manger: distribute yield', (testEnv) => {

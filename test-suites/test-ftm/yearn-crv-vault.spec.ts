@@ -46,7 +46,7 @@ makeSuite('yearnCRVVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnCRVVault, CRV } = testEnv;
     const amountCRVtoDeposit = await convertToCurrencyDecimals(CRV.address, '300');
-    await expect(yearnCRVVault.withdrawCollateral(CRV.address, amountCRVtoDeposit, deployer.address))
+    await expect(yearnCRVVault.withdrawCollateral(CRV.address, amountCRVtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -56,7 +56,7 @@ makeSuite('yearnCRVVault', (testEnv: TestEnv) => {
     const crvBeforeBalanceOfUser = await CRV.balanceOf(deployer.address);
     const crvWithdrawAmount = await convertToCurrencyDecimals(CRV.address, '289');
 
-    await yearnCRVVault.withdrawCollateral(CRV.address, crvWithdrawAmount, deployer.address);
+    await yearnCRVVault.withdrawCollateral(CRV.address, crvWithdrawAmount, 9900, deployer.address);
 
     const crvCurrentBalanceOfUser = await CRV.balanceOf(deployer.address);
     expect(yvcrvBalanceOfPool).to.be.equal(0);

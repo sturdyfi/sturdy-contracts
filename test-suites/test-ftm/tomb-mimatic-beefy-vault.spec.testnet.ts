@@ -40,7 +40,7 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, TombMiMaticBeefyVault, TOMB_MIMATIC_LP } = testEnv;
     const amountTombMiMaticLPtoDeposit = await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '2500');
-    await expect(TombMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(TOMB_MIMATIC_LP.address, amountTombMiMaticLPtoDeposit, deployer.address))
+    await expect(TombMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(TOMB_MIMATIC_LP.address, amountTombMiMaticLPtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -50,7 +50,7 @@ makeSuite('TombMiMaticBeefyVault', (testEnv: TestEnv) => {
     const tombMiMaticLPBeforeBalanceOfUser = await TOMB_MIMATIC_LP.balanceOf(deployer.address);
     const tombMiMaticLPWithdrawAmount = await convertToCurrencyDecimals(TOMB_MIMATIC_LP.address, '2449');
 
-    await TombMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(TOMB_MIMATIC_LP.address, tombMiMaticLPWithdrawAmount, deployer.address);
+    await TombMiMaticBeefyVault.connect(deployer.signer).withdrawCollateral(TOMB_MIMATIC_LP.address, tombMiMaticLPWithdrawAmount, 9900, deployer.address);
 
     const tombMiMaticLPCurrentBalanceOfUser = await TOMB_MIMATIC_LP.balanceOf(deployer.address);
     expect(mootombftmBalanceOfPool).to.be.equal(0);

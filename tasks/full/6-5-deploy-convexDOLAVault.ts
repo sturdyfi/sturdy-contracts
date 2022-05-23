@@ -53,11 +53,13 @@ task(`full:deploy-convex-dola-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)],
+        [
+          internalAssetAddress /*, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)*/,
+        ],
         [
           DOLA3CRVOracleAddress,
-          getParamPerNetwork(ChainlinkAggregator, network).CRV,
-          getParamPerNetwork(ChainlinkAggregator, network).CVX,
+          /*getParamPerNetwork(ChainlinkAggregator, network).CRV,
+          getParamPerNetwork(ChainlinkAggregator, network).CVX,*/
         ]
       )
     );

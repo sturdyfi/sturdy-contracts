@@ -114,7 +114,7 @@ makeSuite('Check incentive token growing ', (testEnv) => {
     const amountETHtoDeposit = ethers.utils.parseEther('1');
     await lidoVault
       .connect(borrower.signer)
-      .depositCollateral(ZERO_ADDRESS, 0, { value: amountETHtoDeposit });
+      .depositCollateral(ZERO_ADDRESS, amountETHtoDeposit, { value: amountETHtoDeposit });
     {
       const supplierGlobalData = await pool.getUserAccountData(borrower.address);
       printUserAccountData({

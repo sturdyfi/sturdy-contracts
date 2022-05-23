@@ -117,7 +117,6 @@ import {
   BasedMiMaticLPOracleFactory,
   BasedMimaticBeefyVaultFactory,
   MockMooBASEDMIMATICFactory,
-  LiquidatorFactory,
   YearnRETHWstETHVaultFactory,
   CrvREthWstETHOracleFactory,
   ConvexCurveLPVaultFactory,
@@ -667,10 +666,7 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
   return tokens;
 };
 
-export const deployStableAndVariableTokensHelper = async (
-  args: [tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
+export const deployStableAndVariableTokensHelper = async (args: [], verify?: boolean) =>
   withSaveAndVerify(
     await new StableAndVariableTokensHelperFactory(await getFirstSigner()).deploy(...args),
     eContractid.StableAndVariableTokensHelper,
@@ -678,10 +674,7 @@ export const deployStableAndVariableTokensHelper = async (
     verify
   );
 
-export const deployATokensAndRatesHelper = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
+export const deployATokensAndRatesHelper = async (args: [tEthereumAddress], verify?: boolean) =>
   withSaveAndVerify(
     await new ATokensAndRatesHelperFactory(await getFirstSigner()).deploy(...args),
     eContractid.ATokensAndRatesHelper,
@@ -793,7 +786,7 @@ export const deployLidoVaultLibraries = async (
 };
 
 export const deployLidoVaultImpl = async (verify?: boolean) => {
-  const libraries = await deployYieldManagerLibraries(verify);
+  const libraries = await deployLidoVaultLibraries(verify);
   return withSaveAndVerify(
     await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
@@ -803,7 +796,7 @@ export const deployLidoVaultImpl = async (verify?: boolean) => {
 };
 
 export const deployLidoVault = async (verify?: boolean) => {
-  const libraries = await deployYieldManagerLibraries(verify);
+  const libraries = await deployLidoVaultLibraries(verify);
   const lidoVaultImpl = await withSaveAndVerify(
     await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
@@ -812,6 +805,7 @@ export const deployLidoVault = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await lidoVaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('LIDO_VAULT'),
@@ -887,6 +881,7 @@ export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('YEARN_RETH_WSTETH_VAULT'),
@@ -946,6 +941,7 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('CONVEX_ROCKET_POOL_ETH_VAULT'),
@@ -1009,6 +1005,7 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('CONVEX_FRAX_3CRV_VAULT'),
@@ -1058,6 +1055,7 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('CONVEX_STETH_VAULT'),
@@ -1065,19 +1063,19 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
     )
   );
 
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('CRV'),
-      getParamPerNetwork(config.CRV, network)
-    )
-  );
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('CRV'),
+  //     getParamPerNetwork(config.CRV, network)
+  //   )
+  // );
 
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('CVX'),
-      getParamPerNetwork(config.CVX, network)
-    )
-  );
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('CVX'),
+  //     getParamPerNetwork(config.CVX, network)
+  //   )
+  // );
 
   const proxyAddress = await addressesProvider.getAddress(
     DRE.ethers.utils.formatBytes32String('CONVEX_STETH_VAULT')
@@ -1107,6 +1105,7 @@ export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('CONVEX_DOLA_3CRV_VAULT'),
@@ -1114,19 +1113,19 @@ export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
     )
   );
 
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('CRV'),
-      getParamPerNetwork(config.CRV, network)
-    )
-  );
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('CRV'),
+  //     getParamPerNetwork(config.CRV, network)
+  //   )
+  // );
 
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('CVX'),
-      getParamPerNetwork(config.CVX, network)
-    )
-  );
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('CVX'),
+  //     getParamPerNetwork(config.CVX, network)
+  //   )
+  // );
 
   const proxyAddress = await addressesProvider.getAddress(
     DRE.ethers.utils.formatBytes32String('CONVEX_DOLA_3CRV_VAULT')
@@ -1782,6 +1781,7 @@ export const deploySturdyIncentivesController = async (
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await incentiveControllerImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setIncentiveControllerImpl(incentiveControllerImpl.address)
   );
@@ -1811,6 +1811,9 @@ export const deploySturdyToken = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  // await waitForTx(
+  //   await incentiveTokenImpl.initialize(addressesProvider.address)
+  // )
   await waitForTx(await addressesProvider.setIncentiveTokenImpl(incentiveTokenImpl.address));
   const incentiveTokenProxyAddress = await addressesProvider.getIncentiveToken();
   await insertContractAddressInDb(eContractid.SturdyToken, incentiveTokenProxyAddress);
@@ -1827,6 +1830,7 @@ export const deployCollateralAdapter = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await collateralAdapterImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('COLLATERAL_ADAPTER'),
@@ -2009,52 +2013,14 @@ export const deployTempLiquidator = async (args: [string], verify?: boolean) => 
   await insertContractAddressInDb(eContractid.Liquidator, liquidatorImpl.address);
 
   const addressesProvider = await getLendingPoolAddressesProvider();
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
-      liquidatorImpl.address
-    )
-  );
-
-  // const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
-  // const network = <eNetwork>DRE.network.name;
   // await waitForTx(
   //   await addressesProvider.setAddress(
-  //     DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
-  //     getParamPerNetwork(config.AavePool, network)
+  //     DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
+  //     liquidatorImpl.address
   //   )
   // );
 
-  // const liquidatorProxyAddress = await addressesProvider.getAddress(
-  //   DRE.ethers.utils.formatBytes32String('LIQUIDATOR')
-  // );
-  // await insertContractAddressInDb(eContractid.Liquidator, liquidatorProxyAddress);
-
-  return await getLiquidator();
-};
-
-export const deployLiquidator = async (args: [string], configName: string, verify?: boolean) => {
-  const liquidatorImpl = await withSaveAndVerify(
-    await new LiquidatorFactory(await getFirstSigner()).deploy(...args),
-    eContractid.LiquidatorImpl,
-    args,
-    verify
-  );
-  await insertContractAddressInDb(eContractid.Liquidator, liquidatorImpl.address);
-
-  const addressesProvider = await getLendingPoolAddressesProvider();
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
-      liquidatorImpl.address
-    )
-  );
-
-  const config =
-    configName == ConfigNames.Fantom
-      ? (loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration)
-      : (loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration);
-
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
   const network = <eNetwork>DRE.network.name;
   await waitForTx(
     await addressesProvider.setAddress(
@@ -2062,6 +2028,11 @@ export const deployLiquidator = async (args: [string], configName: string, verif
       getParamPerNetwork(config.AavePool, network)
     )
   );
+
+  // const liquidatorProxyAddress = await addressesProvider.getAddress(
+  //   DRE.ethers.utils.formatBytes32String('LIQUIDATOR')
+  // );
+  // await insertContractAddressInDb(eContractid.Liquidator, liquidatorProxyAddress);
 
   return await getLiquidator();
 };
@@ -2164,6 +2135,7 @@ export const deployYieldManager = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await yieldManagerImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('YIELD_MANAGER'),

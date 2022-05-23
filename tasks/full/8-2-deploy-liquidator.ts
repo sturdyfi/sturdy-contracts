@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { ConfigNames } from '../../helpers/configuration';
-import { deployLiquidator, deployTempLiquidator } from '../../helpers/contracts-deployments';
+import { deployTempLiquidator } from '../../helpers/contracts-deployments';
 import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
 
 const CONTRACT_NAME = 'Liquidator';
@@ -16,10 +16,7 @@ task(`full:deploy-liquidator`, `Deploys the ${CONTRACT_NAME} contract`)
     }
 
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const liquidator =
-      pool == ConfigNames.Fantom
-        ? await deployTempLiquidator([addressesProvider.address], verify)
-        : await deployLiquidator([addressesProvider.address], pool, verify);
+    const liquidator = await deployTempLiquidator([addressesProvider.address], verify);
 
     console.log(`${CONTRACT_NAME}.address`, liquidator.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

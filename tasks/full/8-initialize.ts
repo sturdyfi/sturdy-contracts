@@ -69,8 +69,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const yieldAddresses =
         pool == ConfigNames.Sturdy
           ? {
-              yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
-              cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
+              // yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
+              // cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
               cvxFRAX_3CRV: (await getConvexFRAX3CRVVault()).address,
               cvxSTECRV: (await getConvexSTETHVault()).address,
               cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,

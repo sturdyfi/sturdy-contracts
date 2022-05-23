@@ -46,7 +46,7 @@
    it('withdraw from collateral should be failed if user has not enough balance', async () => {
      const { deployer, beefyETHVault, WETH } = testEnv;
      const amountWETHtoDeposit = await convertToCurrencyDecimals(WETH.address, '300');
-     await expect(beefyETHVault.withdrawCollateral(WETH.address, amountWETHtoDeposit, deployer.address))
+     await expect(beefyETHVault.withdrawCollateral(WETH.address, amountWETHtoDeposit, 9900, deployer.address))
        .to.be.reverted;
    });
  
@@ -56,7 +56,7 @@
      const wethBeforeBalanceOfUser = await WETH.balanceOf(deployer.address);
      const wethWithdrawAmount = await convertToCurrencyDecimals(WETH.address, '289');
  
-     await beefyETHVault.withdrawCollateral(WETH.address, wethWithdrawAmount, deployer.address);
+     await beefyETHVault.withdrawCollateral(WETH.address, wethWithdrawAmount, 9900, deployer.address);
  
      const wethCurrentBalanceOfUser = await WETH.balanceOf(deployer.address);
      expect(moowethBalanceOfPool).to.be.equal(0);

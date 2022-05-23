@@ -23,7 +23,9 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
   it('deposit ETH for collateral', async () => {
     const { lidoVault, deployer, lido, aStETH } = testEnv;
     const beforePooledEther = await lido.getTotalPooledEther();
-    await lidoVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1.1') });
+    await lidoVault.depositCollateral(ZERO_ADDRESS, parseEther('1.1'), {
+      value: parseEther('1.1'),
+    });
     const currentPooledEther = await lido.getTotalPooledEther();
     expect(currentPooledEther.sub(beforePooledEther)).to.be.equal(parseEther('1.1'));
     expect(await lido.balanceOf(lidoVault.address)).to.be.equal(0);
@@ -47,8 +49,9 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, lidoVault } = testEnv;
-    await expect(lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1.1'), deployer.address)).to
-      .be.reverted;
+    await expect(
+      lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1.1'), 9900, deployer.address)
+    ).to.be.reverted;
   });
 
   it('withdraw from collateral', async () => {
@@ -56,7 +59,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     const stETHBalanceOfPool = await lido.balanceOf(lidoVault.address);
     const ethBeforeBalanceOfUser = await deployer.signer.getBalance();
 
-    await lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1'), deployer.address);
+    await lidoVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1'), 9900, deployer.address);
 
     const ethCurrentBalanceOfUser = await deployer.signer.getBalance();
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);

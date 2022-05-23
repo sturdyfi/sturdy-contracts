@@ -50,7 +50,7 @@ makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnWETHVault, WETH } = testEnv;
-    await expect(yearnWETHVault.withdrawCollateral(WETH.address, amountWETHtoDeposit, deployer.address))
+    await expect(yearnWETHVault.withdrawCollateral(WETH.address, amountWETHtoDeposit, 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -59,7 +59,7 @@ makeSuite('yearnWETHVault', (testEnv: TestEnv) => {
     const yvwethBalanceOfPool = await yvweth.balanceOf(yearnWETHVault.address);
     const wethBeforeBalanceOfUser = await WETH.balanceOf(deployer.address);
 
-    await yearnWETHVault.withdrawCollateral(WETH.address, parseEther('0.9'), deployer.address);
+    await yearnWETHVault.withdrawCollateral(WETH.address, parseEther('0.9'), 9900, deployer.address);
 
     const wethCurrentBalanceOfUser = await WETH.balanceOf(deployer.address);
     expect(yvwethBalanceOfPool).to.be.equal(0);

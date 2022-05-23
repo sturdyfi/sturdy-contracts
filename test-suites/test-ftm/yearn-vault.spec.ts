@@ -24,7 +24,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 
   it('deposit FTM for collateral', async () => {
     const { yearnVault, deployer, yvwftm, aYVWFTM } = testEnv;
-    await yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('1200') });
+    await yearnVault.depositCollateral(ZERO_ADDRESS, parseEther('1200'), { value: parseEther('1200') });
     expect(await yvwftm.balanceOf(yearnVault.address)).to.be.equal(0);
     expect(await aYVWFTM.balanceOf(yearnVault.address)).to.be.equal(0);
     expect((await aYVWFTM.balanceOf(deployer.address)).gt(parseEther('1199.99999'))).to.be.equal(
@@ -49,7 +49,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
     const { deployer, yearnVault } = testEnv;
-    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), deployer.address))
+    await expect(yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1200'), 9900, deployer.address))
       .to.be.reverted;
   });
 
@@ -58,7 +58,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
     const yvWFTMBalanceOfPool = await yvwftm.balanceOf(yearnVault.address);
     const ftmBeforeBalanceOfUser = await deployer.signer.getBalance();
 
-    await yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1099'), deployer.address);
+    await yearnVault.withdrawCollateral(ZERO_ADDRESS, parseEther('1099'), 9900, deployer.address);
 
     const ftmCurrentBalanceOfUser = await deployer.signer.getBalance();
     expect(yvWFTMBalanceOfPool).to.be.equal(0);
@@ -349,10 +349,10 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 //     await configurator.connect(signer).setReserveInterestRateStrategyAddress(yvwftm.address, rates.address);
 
 //     await expect(
-//       yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('101') })
+//       yearnVault.depositCollateral(ZERO_ADDRESS, parseEther('101'), { value: parseEther('101') })
 //     ).to.be.reverted;
 //     await expect(
-//       yearnVault.depositCollateral(ZERO_ADDRESS, 0, { value: parseEther('99') })
+//       yearnVault.depositCollateral(ZERO_ADDRESS, parseEther('99'), { value: parseEther('99') })
 //     ).to.not.be.reverted;
 //   });
 // });

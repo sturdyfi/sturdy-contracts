@@ -108,6 +108,15 @@ export const getAToken = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getATokenForCollateral = async (address?: tEthereumAddress) =>
+  await ATokenForCollateralFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ATokenForCollateral}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getStableDebtToken = async (address?: tEthereumAddress) =>
   await StableDebtTokenFactory.connect(
     address ||

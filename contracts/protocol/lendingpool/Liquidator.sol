@@ -11,7 +11,6 @@ pragma experimental ABIEncoderV2;
 // import {ICollateralAdapter} from '../../interfaces/ICollateralAdapter.sol';
 // import {Errors} from '../libraries/helpers/Errors.sol';
 // import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
-// import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 // import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
 // /**
@@ -103,7 +102,7 @@ pragma experimental ABIEncoderV2;
 //     require(vault != address(0), Errors.LP_LIQUIDATION_CONVERT_FAILED);
 
 //     // send collateral asset to vault
-//     TransferHelper.safeTransfer(collateralAsset, vault, collateralAmount);
+//     IERC20(collateralAsset).safeTransfer(vault, collateralAmount);
 
 //     // convert collateral asset and receive swappable asset
 //     // IGeneralVault(vault).convertOnLiquidation(collateralAmount);

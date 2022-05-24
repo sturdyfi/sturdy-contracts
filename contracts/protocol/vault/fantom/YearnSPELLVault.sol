@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -70,7 +69,7 @@ contract YearnSPELLVault is GeneralVault {
     );
 
     // Deliver SPELL to user
-    TransferHelper.safeTransfer(SPELL, msg.sender, assetAmount);
+    IERC20(SPELL).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -142,7 +141,7 @@ contract YearnSPELLVault is GeneralVault {
 
     // receive SPELL from user
     require(_asset == SPELL, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(SPELL, msg.sender, address(this), _amount);
+    IERC20(SPELL).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit SPELL to Yearn Vault and receive yvSPELL
     IERC20(SPELL).approve(YVSPELL, _amount);
@@ -188,7 +187,8 @@ contract YearnSPELLVault is GeneralVault {
     );
 
     // Deliver SPELL to user
-    TransferHelper.safeTransfer(provider.getAddress('SPELL'), _to, assetAmount);
+    address SPELL = provider.getAddress('SPELL');
+    IERC20(SPELL).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

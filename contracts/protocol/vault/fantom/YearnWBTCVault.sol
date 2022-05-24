@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -70,7 +69,7 @@ contract YearnWBTCVault is GeneralVault {
     );
 
     // Deliver WBTC to user
-    TransferHelper.safeTransfer(WBTC, msg.sender, assetAmount);
+    IERC20(WBTC).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -142,7 +141,7 @@ contract YearnWBTCVault is GeneralVault {
 
     // Case of WBTC deposit from user, receive WBTC from user
     require(_asset == WBTC, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(WBTC, msg.sender, address(this), _amount);
+    IERC20(WBTC).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit WBTC to Yearn Vault and receive yvWBTC
     IERC20(WBTC).approve(YVWBTC, _amount);
@@ -187,7 +186,8 @@ contract YearnWBTCVault is GeneralVault {
     );
 
     // Deliver WBTC to user
-    TransferHelper.safeTransfer(provider.getAddress('WBTC'), _to, assetAmount);
+    address WBTC = provider.getAddress('WBTC');
+    IERC20(WBTC).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

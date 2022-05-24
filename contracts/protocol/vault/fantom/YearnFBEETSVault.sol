@@ -9,7 +9,6 @@ import {IBalancerVault} from '../../../interfaces/IBalancerVault.sol';
 import {IBalancerWeightedPool} from '../../../interfaces/IBalancerWeightedPool.sol';
 import {IFBeetsToken} from '../../../interfaces/IFBeetsToken.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -121,7 +120,7 @@ contract YearnFBEETSVault is GeneralVault {
     );
 
     // Deliver fBEETS to user
-    TransferHelper.safeTransfer(fBEETS, msg.sender, assetAmount);
+    IERC20(fBEETS).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -291,7 +290,7 @@ contract YearnFBEETSVault is GeneralVault {
 
     // receive fBEETS from user
     require(_asset == fBEETS, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(fBEETS, msg.sender, address(this), _amount);
+    IERC20(fBEETS).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit fBEETS to Yearn Vault and receive yvfBEETS
     IERC20(fBEETS).approve(YVFBEETS, _amount);
@@ -337,7 +336,8 @@ contract YearnFBEETSVault is GeneralVault {
     );
 
     // Deliver fBEETS to user
-    TransferHelper.safeTransfer(provider.getAddress('fBEETS'), _to, assetAmount);
+    address fBEETS = provider.getAddress('fBEETS');
+    IERC20(fBEETS).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

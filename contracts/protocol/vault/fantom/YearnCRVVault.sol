@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -70,7 +69,7 @@ contract YearnCRVVault is GeneralVault {
     );
 
     // Deliver CRV to user
-    TransferHelper.safeTransfer(CRV, msg.sender, assetAmount);
+    IERC20(CRV).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -142,7 +141,7 @@ contract YearnCRVVault is GeneralVault {
 
     // receive CRV from user
     require(_asset == CRV, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(CRV, msg.sender, address(this), _amount);
+    IERC20(CRV).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit CRV to Yearn Vault and receive yvCRV
     IERC20(CRV).approve(YVCRV, _amount);
@@ -188,7 +187,8 @@ contract YearnCRVVault is GeneralVault {
     );
 
     // Deliver CRV to user
-    TransferHelper.safeTransfer(provider.getAddress('CRV'), _to, assetAmount);
+    address CRV = provider.getAddress('CRV');
+    IERC20(CRV).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

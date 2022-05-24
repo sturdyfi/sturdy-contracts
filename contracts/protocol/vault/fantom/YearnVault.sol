@@ -7,7 +7,6 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -79,7 +78,7 @@ contract YearnVault is GeneralVault {
     );
 
     // Deliver WFTM to user
-    TransferHelper.safeTransfer(WFTM, msg.sender, assetAmount);
+    IERC20(WFTM).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -154,7 +153,7 @@ contract YearnVault is GeneralVault {
     } else {
       // Case of WFTM deposit from user, receive WFTM from user
       require(_asset == WFTM, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-      TransferHelper.safeTransferFrom(WFTM, msg.sender, address(this), _amount);
+      IERC20(WFTM).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     // Deposit WFTM to Yearn Vault and receive yvWFTM
@@ -212,7 +211,7 @@ contract YearnVault is GeneralVault {
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     } else {
       // Deliver WFTM to user
-      TransferHelper.safeTransfer(WFTM, _to, assetAmount);
+      IERC20(WFTM).safeTransfer(_to, assetAmount);
     }
     return assetAmount;
   }

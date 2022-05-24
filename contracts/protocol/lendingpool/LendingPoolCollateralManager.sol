@@ -20,7 +20,6 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
-import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
@@ -309,7 +308,7 @@ contract LendingPoolCollateralManager is
       Errors.VT_WITHDRAW_AMOUNT_MISMATCH
     );
 
-    TransferHelper.safeTransfer(collateralAsset, msg.sender, amountCollateral);
+    IERC20(collateralAsset).safeTransfer(msg.sender, amountCollateral);
   }
 
   /**

@@ -8,7 +8,6 @@ import {IBeefyVault} from '../../../interfaces/IBeefyVault.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -80,7 +79,7 @@ contract BasedMimaticBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(BASED_MIMATIC_LP).balanceOf(address(this)) - before;
 
     // Deliver BASED_MIMATIC_LP to user
-    TransferHelper.safeTransfer(BASED_MIMATIC_LP, msg.sender, assetAmount);
+    IERC20(BASED_MIMATIC_LP).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -236,7 +235,7 @@ contract BasedMimaticBeefyVault is GeneralVault {
     address BASED_MIMATIC_LP = provider.getAddress('BASED_MIMATIC_LP');
 
     require(_asset == BASED_MIMATIC_LP, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(BASED_MIMATIC_LP, msg.sender, address(this), _amount);
+    IERC20(BASED_MIMATIC_LP).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit BASED_MIMATIC_LP to Beefy Vault and receive mooTombBASED-MIMATIC
     IERC20(BASED_MIMATIC_LP).approve(MOO_TOMB_MIMATIC, _amount);
@@ -287,7 +286,7 @@ contract BasedMimaticBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(BASED_MIMATIC_LP).balanceOf(address(this)) - before;
 
     // Deliver BASED_MIMATIC_LP to user
-    TransferHelper.safeTransfer(BASED_MIMATIC_LP, _to, assetAmount);
+    IERC20(BASED_MIMATIC_LP).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

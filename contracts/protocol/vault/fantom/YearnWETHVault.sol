@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -70,7 +69,7 @@ contract YearnWETHVault is GeneralVault {
     );
 
     // Deliver WETH to user
-    TransferHelper.safeTransfer(WETH, msg.sender, assetAmount);
+    IERC20(WETH).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -148,7 +147,7 @@ contract YearnWETHVault is GeneralVault {
 
     // Case of WETH deposit from user, receive WETH from user
     require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
+    IERC20(WETH).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit WETH to Yearn Vault and receive yvWETH
     IERC20(WETH).approve(YVWETH, _amount);
@@ -194,7 +193,8 @@ contract YearnWETHVault is GeneralVault {
     );
 
     // Deliver WETH to user
-    TransferHelper.safeTransfer(provider.getAddress('WETH'), _to, assetAmount);
+    address WETH = provider.getAddress('WETH');
+    IERC20(WETH).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

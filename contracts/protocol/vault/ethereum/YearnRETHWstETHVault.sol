@@ -8,7 +8,6 @@ import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {IWstETH} from '../../../interfaces/IWstETH.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
@@ -72,7 +71,7 @@ contract YearnRETHWstETHVault is GeneralVault {
 
     // transfer WETH to yieldManager
     address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
-    TransferHelper.safeTransfer(weth, yieldManager, receivedETHAmount);
+    IERC20(weth).safeTransfer(yieldManager, receivedETHAmount);
 
     emit ProcessYield(_addressesProvider.getAddress('RETH_WSTETH'), yieldRETH_WSTETH);
   }
@@ -95,7 +94,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     );
 
     // Deliver RETH_WSTETH to user
-    TransferHelper.safeTransfer(RETH_WSTETH, msg.sender, assetAmount);
+    IERC20(RETH_WSTETH).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -140,7 +139,7 @@ contract YearnRETHWstETHVault is GeneralVault {
 
     // receive RETH_WSTETH from user
     require(_asset == RETH_WSTETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(RETH_WSTETH, msg.sender, address(this), _amount);
+    IERC20(RETH_WSTETH).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit RETH_WSTETH to Yearn Vault and receive YVRETH_WSTETH
     IERC20(RETH_WSTETH).approve(YVRETH_WSTETH, _amount);
@@ -186,7 +185,8 @@ contract YearnRETHWstETHVault is GeneralVault {
     );
 
     // Deliver RETH_WSTETH to user
-    TransferHelper.safeTransfer(provider.getAddress('RETH_WSTETH'), _to, assetAmount);
+    address RETH_WSTETH = _addressesProvider.getAddress('RETH_WSTETH');
+    IERC20(RETH_WSTETH).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

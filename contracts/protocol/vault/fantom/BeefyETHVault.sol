@@ -8,7 +8,6 @@ import {IBeefyVault} from '../../../interfaces/IBeefyVault.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -114,8 +113,8 @@ contract BeefyETHVault is GeneralVault {
     IBeefyVault(provider.getAddress('MOOWETH')).withdraw(_amount);
     uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
-    // Deliver LINK to user
-    TransferHelper.safeTransfer(WETH, msg.sender, assetAmount);
+    // Deliver WETH to user
+    IERC20(WETH).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -147,7 +146,7 @@ contract BeefyETHVault is GeneralVault {
     address WETH = provider.getAddress('WETH');
 
     require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
+    IERC20(WETH).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
     IERC20(WETH).approve(MOOWETH, _amount);
@@ -195,7 +194,7 @@ contract BeefyETHVault is GeneralVault {
     uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
     // Deliver WETH to user
-    TransferHelper.safeTransfer(WETH, _to, assetAmount);
+    IERC20(WETH).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

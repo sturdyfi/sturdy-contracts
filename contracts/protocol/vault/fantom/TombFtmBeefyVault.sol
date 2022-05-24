@@ -8,7 +8,6 @@ import {IBeefyVault} from '../../../interfaces/IBeefyVault.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -91,7 +90,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(TOMB_FTM_LP).balanceOf(address(this)) - before;
 
     // Deliver TOMB_FTM_LP to user
-    TransferHelper.safeTransfer(TOMB_FTM_LP, msg.sender, assetAmount);
+    IERC20(TOMB_FTM_LP).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -223,7 +222,7 @@ contract TombFtmBeefyVault is GeneralVault {
     address TOMB_FTM_LP = provider.getAddress('TOMB_FTM_LP');
 
     require(_asset == TOMB_FTM_LP, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(TOMB_FTM_LP, msg.sender, address(this), _amount);
+    IERC20(TOMB_FTM_LP).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit TOMB_FTM_LP to Beefy Vault and receive mooTombTOMB-FTM
     IERC20(TOMB_FTM_LP).approve(MOO_TOMB_FTM, _amount);
@@ -271,7 +270,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(TOMB_FTM_LP).balanceOf(address(this)) - before;
 
     // Deliver TOMB_FTM_LP to user
-    TransferHelper.safeTransfer(TOMB_FTM_LP, _to, assetAmount);
+    IERC20(TOMB_FTM_LP).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

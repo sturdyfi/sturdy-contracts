@@ -9,7 +9,6 @@ import {IBalancerVault} from '../../../interfaces/IBalancerVault.sol';
 import {IBalancerWeightedPool} from '../../../interfaces/IBalancerWeightedPool.sol';
 import {IFBeetsToken} from '../../../interfaces/IFBeetsToken.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -121,7 +120,7 @@ contract YearnFBEETSVault is GeneralVault {
     );
 
     // Deliver fBEETS to user
-    TransferHelper.safeTransfer(fBEETS, msg.sender, assetAmount);
+    IERC20(fBEETS).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -133,6 +132,7 @@ contract YearnFBEETSVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -146,7 +146,8 @@ contract YearnFBEETSVault is GeneralVault {
     path[0] = WFTM;
     path[1] = _tokenOut;
 
-    IERC20(WFTM).approve(uniswapRouter, _wftmAmount);
+    IERC20(WFTM).safeApprove(uniswapRouter, 0);
+    IERC20(WFTM).safeApprove(uniswapRouter, _wftmAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _wftmAmount,
@@ -162,7 +163,8 @@ contract YearnFBEETSVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[1]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
@@ -210,7 +212,8 @@ contract YearnFBEETSVault is GeneralVault {
     funds.fromInternalBalance = false;
     funds.toInternalBalance = false;
 
-    IERC20(BEETS).approve(beethovenVault, _beetsAmount);
+    IERC20(BEETS).safeApprove(beethovenVault, 0);
+    IERC20(BEETS).safeApprove(beethovenVault, _beetsAmount);
 
     uint256 receivedAmount = getBeethovenVault().swap(singleSwap, funds, limit, type(uint256).max);
     require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
@@ -288,17 +291,20 @@ contract YearnFBEETSVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVFBEETS = provider.getAddress('YVFBEETS');
     address fBEETS = provider.getAddress('fBEETS');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // receive fBEETS from user
     require(_asset == fBEETS, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(fBEETS, msg.sender, address(this), _amount);
+    IERC20(fBEETS).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit fBEETS to Yearn Vault and receive yvfBEETS
-    IERC20(fBEETS).approve(YVFBEETS, _amount);
+    IERC20(fBEETS).safeApprove(YVFBEETS, 0);
+    IERC20(fBEETS).safeApprove(YVFBEETS, _amount);
     uint256 assetAmount = IYearnVault(YVFBEETS).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVFBEETS).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVFBEETS).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVFBEETS).safeApprove(lendingPoolAddress, assetAmount);
     return (YVFBEETS, assetAmount);
   }
 
@@ -337,7 +343,8 @@ contract YearnFBEETSVault is GeneralVault {
     );
 
     // Deliver fBEETS to user
-    TransferHelper.safeTransfer(provider.getAddress('fBEETS'), _to, assetAmount);
+    address fBEETS = provider.getAddress('fBEETS');
+    IERC20(fBEETS).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

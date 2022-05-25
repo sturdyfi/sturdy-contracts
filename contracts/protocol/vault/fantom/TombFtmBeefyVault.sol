@@ -8,7 +8,6 @@ import {IBeefyVault} from '../../../interfaces/IBeefyVault.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -91,7 +90,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(TOMB_FTM_LP).balanceOf(address(this)) - before;
 
     // Deliver TOMB_FTM_LP to user
-    TransferHelper.safeTransfer(TOMB_FTM_LP, msg.sender, assetAmount);
+    IERC20(TOMB_FTM_LP).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -114,7 +113,8 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 minTokenAmountFromPrice = minTotalPrice /
       oracle.getAssetPrice(provider.getAddress('TOMB'));
 
-    IERC20(_poolAddress).approve(uniswapRouter, _amount);
+    IERC20(_poolAddress).safeApprove(uniswapRouter, 0);
+    IERC20(_poolAddress).safeApprove(uniswapRouter, _amount);
     (amountToken, amountFTM) = IUniswapV2Router02(uniswapRouter).removeLiquidityETH(
       provider.getAddress('TOMB'),
       _amount,
@@ -129,6 +129,7 @@ contract TombFtmBeefyVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address TOMB = provider.getAddress('TOMB');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -142,7 +143,8 @@ contract TombFtmBeefyVault is GeneralVault {
     path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(TOMB).approve(uniswapRouter, _tombAmount);
+    IERC20(TOMB).safeApprove(uniswapRouter, 0);
+    IERC20(TOMB).safeApprove(uniswapRouter, _tombAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _tombAmount,
@@ -158,7 +160,8 @@ contract TombFtmBeefyVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -168,6 +171,7 @@ contract TombFtmBeefyVault is GeneralVault {
     // Approve the uniswapRouter to spend WFTM.
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -191,7 +195,8 @@ contract TombFtmBeefyVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[1]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
@@ -221,19 +226,22 @@ contract TombFtmBeefyVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MOO_TOMB_FTM = provider.getAddress('mooTombTOMB-FTM');
     address TOMB_FTM_LP = provider.getAddress('TOMB_FTM_LP');
+    address lendingPoolAddress = provider.getLendingPool();
 
     require(_asset == TOMB_FTM_LP, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(TOMB_FTM_LP, msg.sender, address(this), _amount);
+    IERC20(TOMB_FTM_LP).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit TOMB_FTM_LP to Beefy Vault and receive mooTombTOMB-FTM
-    IERC20(TOMB_FTM_LP).approve(MOO_TOMB_FTM, _amount);
+    IERC20(TOMB_FTM_LP).safeApprove(MOO_TOMB_FTM, 0);
+    IERC20(TOMB_FTM_LP).safeApprove(MOO_TOMB_FTM, _amount);
 
     uint256 before = IERC20(MOO_TOMB_FTM).balanceOf(address(this));
     IBeefyVault(MOO_TOMB_FTM).deposit(_amount);
     uint256 assetAmount = IERC20(MOO_TOMB_FTM).balanceOf(address(this)) - before;
 
     // Make lendingPool to transfer required amount
-    IERC20(MOO_TOMB_FTM).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(MOO_TOMB_FTM).safeApprove(lendingPoolAddress, 0);
+    IERC20(MOO_TOMB_FTM).safeApprove(lendingPoolAddress, assetAmount);
     return (MOO_TOMB_FTM, assetAmount);
   }
 
@@ -271,7 +279,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 assetAmount = IERC20(TOMB_FTM_LP).balanceOf(address(this)) - before;
 
     // Deliver TOMB_FTM_LP to user
-    TransferHelper.safeTransfer(TOMB_FTM_LP, _to, assetAmount);
+    IERC20(TOMB_FTM_LP).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

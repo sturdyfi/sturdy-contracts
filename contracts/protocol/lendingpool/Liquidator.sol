@@ -8,10 +8,10 @@ pragma experimental ABIEncoderV2;
 // import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 // import {IAaveFlashLoan} from '../../interfaces/IAaveFlashLoan.sol';
 // import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
+// import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 // import {ICollateralAdapter} from '../../interfaces/ICollateralAdapter.sol';
 // import {Errors} from '../libraries/helpers/Errors.sol';
 // import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
-// import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 // import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
 // /**
@@ -21,6 +21,8 @@ pragma experimental ABIEncoderV2;
 //  **/
 
 // contract Liquidator is IFlashLoanReceiver, Ownable {
+//   using SafeERC20 for IERC20;
+//
 //   ILendingPoolAddressesProvider internal _addressesProvider;
 
 //   /**
@@ -51,8 +53,10 @@ pragma experimental ABIEncoderV2;
 //     (address collateralAddress, address borrowerAddress) = abi.decode(params, (address, address));
 
 //     // call liquidation
-//     IERC20(assets[0]).approve(_addressesProvider.getLendingPool(), amounts[0]);
-//     ILendingPool(_addressesProvider.getLendingPool()).liquidationCall(
+//     address lendingPoolAddress = _addressesProvider.getLendingPool();
+//     IERC20(assets[0]).safeApprove(lendingPoolAddress, 0);
+//     IERC20(assets[0]).safeApprove(lendingPoolAddress, amounts[0]);
+//     ILendingPool(lendingPoolAddress).liquidationCall(
 //       collateralAddress,
 //       assets[0],
 //       borrowerAddress,
@@ -103,7 +107,7 @@ pragma experimental ABIEncoderV2;
 //     require(vault != address(0), Errors.LP_LIQUIDATION_CONVERT_FAILED);
 
 //     // send collateral asset to vault
-//     TransferHelper.safeTransfer(collateralAsset, vault, collateralAmount);
+//     IERC20(collateralAsset).safeTransfer(vault, collateralAmount);
 
 //     // convert collateral asset and receive swappable asset
 //     // IGeneralVault(vault).convertOnLiquidation(collateralAmount);

@@ -13,7 +13,6 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
 import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
 

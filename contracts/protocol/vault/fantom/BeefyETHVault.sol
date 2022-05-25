@@ -8,7 +8,6 @@ import {IBeefyVault} from '../../../interfaces/IBeefyVault.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -61,6 +60,7 @@ contract BeefyETHVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WETH = provider.getAddress('WETH');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -76,7 +76,8 @@ contract BeefyETHVault is GeneralVault {
     path[1] = address(provider.getAddress('WFTM'));
     path[2] = _tokenOut;
 
-    IERC20(WETH).approve(uniswapRouter, _wethAmount);
+    IERC20(WETH).safeApprove(uniswapRouter, 0);
+    IERC20(WETH).safeApprove(uniswapRouter, _wethAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _wethAmount,
@@ -93,7 +94,8 @@ contract BeefyETHVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -114,8 +116,8 @@ contract BeefyETHVault is GeneralVault {
     IBeefyVault(provider.getAddress('MOOWETH')).withdraw(_amount);
     uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
-    // Deliver LINK to user
-    TransferHelper.safeTransfer(WETH, msg.sender, assetAmount);
+    // Deliver WETH to user
+    IERC20(WETH).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -145,19 +147,22 @@ contract BeefyETHVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MOOWETH = provider.getAddress('MOOWETH');
     address WETH = provider.getAddress('WETH');
+    address lendingPoolAddress = address(provider.getLendingPool());
 
     require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(WETH, msg.sender, address(this), _amount);
+    IERC20(WETH).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit WETH to Beefy Vault and receive mooScreamETH
-    IERC20(WETH).approve(MOOWETH, _amount);
+    IERC20(WETH).safeApprove(MOOWETH, 0);
+    IERC20(WETH).safeApprove(MOOWETH, _amount);
 
     uint256 before = IERC20(MOOWETH).balanceOf(address(this));
     IBeefyVault(MOOWETH).deposit(_amount);
     uint256 assetAmount = IERC20(MOOWETH).balanceOf(address(this)) - before;
 
     // Make lendingPool to transfer required amount
-    IERC20(MOOWETH).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(MOOWETH).safeApprove(lendingPoolAddress, 0);
+    IERC20(MOOWETH).safeApprove(lendingPoolAddress, assetAmount);
     return (MOOWETH, assetAmount);
   }
 
@@ -195,7 +200,7 @@ contract BeefyETHVault is GeneralVault {
     uint256 assetAmount = IERC20(WETH).balanceOf(address(this)) - before;
 
     // Deliver WETH to user
-    TransferHelper.safeTransfer(WETH, _to, assetAmount);
+    IERC20(WETH).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

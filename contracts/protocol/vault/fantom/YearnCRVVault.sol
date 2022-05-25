@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -70,7 +69,7 @@ contract YearnCRVVault is GeneralVault {
     );
 
     // Deliver CRV to user
-    TransferHelper.safeTransfer(CRV, msg.sender, assetAmount);
+    IERC20(CRV).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -79,6 +78,7 @@ contract YearnCRVVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address CRV = provider.getAddress('CRV');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -93,7 +93,8 @@ contract YearnCRVVault is GeneralVault {
     path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(CRV).approve(uniswapRouter, _linkAmount);
+    IERC20(CRV).safeApprove(uniswapRouter, 0);
+    IERC20(CRV).safeApprove(uniswapRouter, _linkAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _linkAmount,
@@ -109,7 +110,8 @@ contract YearnCRVVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -139,17 +141,20 @@ contract YearnCRVVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVCRV = provider.getAddress('YVCRV');
     address CRV = provider.getAddress('CRV');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // receive CRV from user
     require(_asset == CRV, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(CRV, msg.sender, address(this), _amount);
+    IERC20(CRV).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit CRV to Yearn Vault and receive yvCRV
-    IERC20(CRV).approve(YVCRV, _amount);
+    IERC20(CRV).safeApprove(YVCRV, 0);
+    IERC20(CRV).safeApprove(YVCRV, _amount);
     uint256 assetAmount = IYearnVault(YVCRV).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVCRV).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVCRV).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVCRV).safeApprove(lendingPoolAddress, assetAmount);
     return (YVCRV, assetAmount);
   }
 
@@ -188,7 +193,8 @@ contract YearnCRVVault is GeneralVault {
     );
 
     // Deliver CRV to user
-    TransferHelper.safeTransfer(provider.getAddress('CRV'), _to, assetAmount);
+    address CRV = provider.getAddress('CRV');
+    IERC20(CRV).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

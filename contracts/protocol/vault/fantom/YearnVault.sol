@@ -7,7 +7,6 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -79,7 +78,7 @@ contract YearnVault is GeneralVault {
     );
 
     // Deliver WFTM to user
-    TransferHelper.safeTransfer(WFTM, msg.sender, assetAmount);
+    IERC20(WFTM).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -89,6 +88,7 @@ contract YearnVault is GeneralVault {
     // Approve the uniswapRouter to spend WFTM.
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -112,7 +112,8 @@ contract YearnVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[1]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
@@ -142,6 +143,7 @@ contract YearnVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVWFTM = provider.getAddress('YVWFTM');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM
@@ -154,15 +156,17 @@ contract YearnVault is GeneralVault {
     } else {
       // Case of WFTM deposit from user, receive WFTM from user
       require(_asset == WFTM, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-      TransferHelper.safeTransferFrom(WFTM, msg.sender, address(this), _amount);
+      IERC20(WFTM).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     // Deposit WFTM to Yearn Vault and receive yvWFTM
-    IERC20(WFTM).approve(YVWFTM, assetAmount);
+    IERC20(WFTM).safeApprove(YVWFTM, 0);
+    IERC20(WFTM).safeApprove(YVWFTM, assetAmount);
     assetAmount = IYearnVault(YVWFTM).deposit(assetAmount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWFTM).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVWFTM).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVWFTM).safeApprove(lendingPoolAddress, assetAmount);
     return (YVWFTM, assetAmount);
   }
 
@@ -212,7 +216,7 @@ contract YearnVault is GeneralVault {
       require(sent, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     } else {
       // Deliver WFTM to user
-      TransferHelper.safeTransfer(WFTM, _to, assetAmount);
+      IERC20(WFTM).safeTransfer(_to, assetAmount);
     }
     return assetAmount;
   }

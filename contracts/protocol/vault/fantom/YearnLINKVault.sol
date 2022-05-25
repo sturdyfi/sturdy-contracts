@@ -6,7 +6,6 @@ import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
-import {TransferHelper} from '../../libraries/helpers/TransferHelper.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
@@ -70,7 +69,7 @@ contract YearnLINKVault is GeneralVault {
     );
 
     // Deliver LINK to user
-    TransferHelper.safeTransfer(LINK, msg.sender, assetAmount);
+    IERC20(LINK).safeTransfer(msg.sender, assetAmount);
 
     return assetAmount;
   }
@@ -79,6 +78,7 @@ contract YearnLINKVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address LINK = provider.getAddress('LINK');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -93,7 +93,8 @@ contract YearnLINKVault is GeneralVault {
     path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(LINK).approve(uniswapRouter, _linkAmount);
+    IERC20(LINK).safeApprove(uniswapRouter, 0);
+    IERC20(LINK).safeApprove(uniswapRouter, _linkAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _linkAmount,
@@ -109,7 +110,8 @@ contract YearnLINKVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -139,17 +141,20 @@ contract YearnLINKVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVLINK = provider.getAddress('YVLINK');
     address LINK = provider.getAddress('LINK');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // receive LINK from user
     require(_asset == LINK, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    TransferHelper.safeTransferFrom(LINK, msg.sender, address(this), _amount);
+    IERC20(LINK).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit LINK to Yearn Vault and receive yvLINK
-    IERC20(LINK).approve(YVLINK, _amount);
+    IERC20(LINK).safeApprove(YVLINK, 0);
+    IERC20(LINK).safeApprove(YVLINK, _amount);
     uint256 assetAmount = IYearnVault(YVLINK).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVLINK).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVLINK).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVLINK).safeApprove(lendingPoolAddress, assetAmount);
     return (YVLINK, assetAmount);
   }
 
@@ -188,7 +193,8 @@ contract YearnLINKVault is GeneralVault {
     );
 
     // Deliver LINK to user
-    TransferHelper.safeTransfer(provider.getAddress('LINK'), _to, assetAmount);
+    address LINK = provider.getAddress('LINK');
+    IERC20(LINK).safeTransfer(_to, assetAmount);
     return assetAmount;
   }
 

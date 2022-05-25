@@ -1,6 +1,8 @@
+import BigNumber from 'bignumber.js';
 import { parseEther } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
+import { oneRay } from '../../helpers/constants';
 import {
   deployMintableERC20,
   deployMockBOOForFTM,
@@ -15,9 +17,11 @@ import {
   deployMockYearnVault,
   deployMockBeefyVault,
   deployMockMooBASEDMIMATIC,
+  deployDefaultReserveInterestRateStrategy,
 } from '../../helpers/contracts-deployments';
 import {
   getFirstSigner,
+  getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getMintableERC20,
   getSwapinERC20,
@@ -27,6 +31,7 @@ import {
   getParamPerNetwork,
   verifyContract,
 } from '../../helpers/contracts-helpers';
+import { verifyEtherscanContract } from '../../helpers/etherscan-verification';
 import { eNetwork, IFantomConfiguration, eContractid } from '../../helpers/types';
 import { DaiFactory } from '../../types';
 
@@ -54,94 +59,106 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     // const configurator = await getLendingPoolConfiguratorProxy();
     // await configurator.freezeReserve('0x53F26e11497A3632CC58F88957C1761925f753B0');
 
-    console.log('Deploying MockyvWFTM started\n');
-    const yvWFTM = await deployMockyvWFTM(
-      [wftmAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvWFTM address `, yvWFTM.address);
+    // const addressProvider = await getLendingPoolAddressesProvider();
+    // await deployDefaultReserveInterestRateStrategy([
+    //     addressProvider.address,
+    //     new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
+    //     '0',
+    //     '0',
+    //     new BigNumber(0.4).multipliedBy(oneRay).toFixed(),
+    //     '0',
+    //     '0',
+    //   ],
+    //   verify
+    // );
+    // console.log('Deploying MockyvWFTM started\n');
+    // const yvWFTM = await deployMockyvWFTM(
+    //   [wftmAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvWFTM address `, yvWFTM.address);
 
-    console.log('Deploying MockyvWETH started\n');
-    const yvWETH = await deployMockyvWETH(
-      [wethAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvWETH address `, yvWETH.address);
+    // console.log('Deploying MockyvWETH started\n');
+    // const yvWETH = await deployMockyvWETH(
+    //   [wethAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvWETH address `, yvWETH.address);
 
-    console.log('Deploying MockyvWBTC started\n');
-    const yvWBTC = await deployMockyvWBTC(
-      [wbtcAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvWBTC address `, yvWBTC.address);
+    // console.log('Deploying MockyvWBTC started\n');
+    // const yvWBTC = await deployMockyvWBTC(
+    //   [wbtcAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvWBTC address `, yvWBTC.address);
 
-    console.log('Deploying MockyvBOO started\n');
-    const yvBOO = await deployMockyvBOO(
-      [booAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvBOO address `, yvBOO.address);
+    // console.log('Deploying MockyvBOO started\n');
+    // const yvBOO = await deployMockyvBOO(
+    //   [booAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvBOO address `, yvBOO.address);
 
-    console.log('Deploying MockMooTOMBFTM started\n');
-    const mooTOMB_FTM = await deployMockMooTOMBFTM(
-      [tombFtmLPAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockMooTOMBFTM address `, mooTOMB_FTM.address);
+    // console.log('Deploying MockMooTOMBFTM started\n');
+    // const mooTOMB_FTM = await deployMockMooTOMBFTM(
+    //   [tombFtmLPAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockMooTOMBFTM address `, mooTOMB_FTM.address);
 
-    console.log('Deploying MockMooTOMBMIMATIC started\n');
-    const mooTOMB_MIMATIC = await deployMockMooTOMBMIMATIC(
-      [tombMiMaticLPAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockMooTOMBMIMATIC address `, mooTOMB_MIMATIC.address);
+    // console.log('Deploying MockMooTOMBMIMATIC started\n');
+    // const mooTOMB_MIMATIC = await deployMockMooTOMBMIMATIC(
+    //   [tombMiMaticLPAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockMooTOMBMIMATIC address `, mooTOMB_MIMATIC.address);
 
-    console.log('Deploying MockMooBASEDMIMATIC started\n');
-    const mooBASED_MIMATIC = await deployMockMooBASEDMIMATIC(
-      [basedMiMaticLPAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockMooBASEDMIMATIC address `, mooBASED_MIMATIC.address);
+    // console.log('Deploying MockMooBASEDMIMATIC started\n');
+    // const mooBASED_MIMATIC = await deployMockMooBASEDMIMATIC(
+    //   [basedMiMaticLPAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockMooBASEDMIMATIC address `, mooBASED_MIMATIC.address);
 
-    console.log('Deploying MockyvLINK started\n');
-    const yvLINK = await deployMockYearnVault(
-      eContractid.MockLINKForFTM,
-      [linkAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvLINK`, yvLINK.address);
+    // console.log('Deploying MockyvLINK started\n');
+    // const yvLINK = await deployMockYearnVault(
+    //   eContractid.MockLINKForFTM,
+    //   [linkAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvLINK`, yvLINK.address);
 
-    console.log('Deploying MockyvfBEETS started\n');
-    const yvfBEETS = await deployMockYearnVault(
-      eContractid.MockFBEETSForFTM,
-      [fbeetsAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvfBEETS`, yvfBEETS.address);
+    // console.log('Deploying MockyvfBEETS started\n');
+    // const yvfBEETS = await deployMockYearnVault(
+    //   eContractid.MockFBEETSForFTM,
+    //   [fbeetsAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvfBEETS`, yvfBEETS.address);
 
-    console.log('Deploying MockMooETH started\n');
-    const mooWETH = await deployMockBeefyVault(
-      eContractid.MockBeeefyETHForFTM,
-      [wethAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockMooETH`, mooWETH.address);
+    // console.log('Deploying MockMooETH started\n');
+    // const mooWETH = await deployMockBeefyVault(
+    //   eContractid.MockBeeefyETHForFTM,
+    //   [wethAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockMooETH`, mooWETH.address);
 
-    console.log('Deploying MockyvCRV started\n');
-    const yvCRV = await deployMockYearnVault(
-      eContractid.MockCRVForFTM,
-      [crvAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvCRV`, yvCRV.address);
+    // console.log('Deploying MockyvCRV started\n');
+    // const yvCRV = await deployMockYearnVault(
+    //   eContractid.MockCRVForFTM,
+    //   [crvAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvCRV`, yvCRV.address);
 
-    console.log('Deploying MockyvSPELL started\n');
-    const yvSPELL = await deployMockYearnVault(
-      eContractid.MockSPELLForFTM,
-      [spellAddress, sender, sender, '', '', sender, sender],
-      verify
-    );
-    console.log(`MockyvSPELL`, yvSPELL.address);
+    // console.log('Deploying MockyvSPELL started\n');
+    // const yvSPELL = await deployMockYearnVault(
+    //   eContractid.MockSPELLForFTM,
+    //   [spellAddress, sender, sender, '', '', sender, sender],
+    //   verify
+    // );
+    // console.log(`MockyvSPELL`, yvSPELL.address);
     // console.log('Deploying MockBASEDMIMATICLP started\n');
     // const BASED_MIMATIC_LP = await deployMintableERC20(
     //   ['BASED-MIMATIC LP', 'BASED-MIMATIC', '18'],

@@ -136,17 +136,20 @@ contract YearnRETHWstETHVault is GeneralVault {
   {
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
     address RETH_WSTETH = _addressesProvider.getAddress('RETH_WSTETH');
+    address lendingPoolAddress = _addressesProvider.getLendingPool();
 
     // receive RETH_WSTETH from user
     require(_asset == RETH_WSTETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(RETH_WSTETH).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit RETH_WSTETH to Yearn Vault and receive YVRETH_WSTETH
-    IERC20(RETH_WSTETH).approve(YVRETH_WSTETH, _amount);
+    IERC20(RETH_WSTETH).safeApprove(YVRETH_WSTETH, 0);
+    IERC20(RETH_WSTETH).safeApprove(YVRETH_WSTETH, _amount);
     uint256 assetAmount = IYearnVault(YVRETH_WSTETH).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVRETH_WSTETH).approve(address(_addressesProvider.getLendingPool()), assetAmount);
+    IERC20(YVRETH_WSTETH).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVRETH_WSTETH).safeApprove(lendingPoolAddress, assetAmount);
     return (YVRETH_WSTETH, assetAmount);
   }
 

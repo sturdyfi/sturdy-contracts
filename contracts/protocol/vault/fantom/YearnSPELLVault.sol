@@ -78,6 +78,7 @@ contract YearnSPELLVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address SPELL = provider.getAddress('SPELL');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -92,7 +93,8 @@ contract YearnSPELLVault is GeneralVault {
     path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(SPELL).approve(uniswapRouter, _spellAmount);
+    IERC20(SPELL).safeApprove(uniswapRouter, 0);
+    IERC20(SPELL).safeApprove(uniswapRouter, _spellAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _spellAmount,
@@ -108,7 +110,8 @@ contract YearnSPELLVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -138,17 +141,20 @@ contract YearnSPELLVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVSPELL = provider.getAddress('YVSPELL');
     address SPELL = provider.getAddress('SPELL');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // receive SPELL from user
     require(_asset == SPELL, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(SPELL).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit SPELL to Yearn Vault and receive yvSPELL
-    IERC20(SPELL).approve(YVSPELL, _amount);
+    IERC20(SPELL).safeApprove(YVSPELL, 0);
+    IERC20(SPELL).safeApprove(YVSPELL, _amount);
     uint256 assetAmount = IYearnVault(YVSPELL).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVSPELL).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVSPELL).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVSPELL).safeApprove(lendingPoolAddress, assetAmount);
     return (YVSPELL, assetAmount);
   }
 

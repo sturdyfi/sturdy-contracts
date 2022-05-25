@@ -78,6 +78,7 @@ contract YearnCRVVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address CRV = provider.getAddress('CRV');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -92,7 +93,8 @@ contract YearnCRVVault is GeneralVault {
     path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(CRV).approve(uniswapRouter, _linkAmount);
+    IERC20(CRV).safeApprove(uniswapRouter, 0);
+    IERC20(CRV).safeApprove(uniswapRouter, _linkAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _linkAmount,
@@ -108,7 +110,8 @@ contract YearnCRVVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -138,17 +141,20 @@ contract YearnCRVVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVCRV = provider.getAddress('YVCRV');
     address CRV = provider.getAddress('CRV');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // receive CRV from user
     require(_asset == CRV, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(CRV).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit CRV to Yearn Vault and receive yvCRV
-    IERC20(CRV).approve(YVCRV, _amount);
+    IERC20(CRV).safeApprove(YVCRV, 0);
+    IERC20(CRV).safeApprove(YVCRV, _amount);
     uint256 assetAmount = IYearnVault(YVCRV).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVCRV).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVCRV).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVCRV).safeApprove(lendingPoolAddress, assetAmount);
     return (YVCRV, assetAmount);
   }
 

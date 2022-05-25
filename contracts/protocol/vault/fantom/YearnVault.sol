@@ -88,6 +88,7 @@ contract YearnVault is GeneralVault {
     // Approve the uniswapRouter to spend WFTM.
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -111,7 +112,8 @@ contract YearnVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[1]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
@@ -141,6 +143,7 @@ contract YearnVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVWFTM = provider.getAddress('YVWFTM');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM
@@ -157,11 +160,13 @@ contract YearnVault is GeneralVault {
     }
 
     // Deposit WFTM to Yearn Vault and receive yvWFTM
-    IERC20(WFTM).approve(YVWFTM, assetAmount);
+    IERC20(WFTM).safeApprove(YVWFTM, 0);
+    IERC20(WFTM).safeApprove(YVWFTM, assetAmount);
     assetAmount = IYearnVault(YVWFTM).deposit(assetAmount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWFTM).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVWFTM).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVWFTM).safeApprove(lendingPoolAddress, assetAmount);
     return (YVWFTM, assetAmount);
   }
 

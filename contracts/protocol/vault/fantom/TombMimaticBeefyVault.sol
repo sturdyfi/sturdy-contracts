@@ -119,7 +119,8 @@ contract TombMimaticBeefyVault is GeneralVault {
     uint256 minTombAmountFromPrice = minTotalPrice /
       oracle.getAssetPrice(provider.getAddress('TOMB'));
 
-    IERC20(_poolAddress).approve(tombSwapRouter, _amount);
+    IERC20(_poolAddress).safeApprove(tombSwapRouter, 0);
+    IERC20(_poolAddress).safeApprove(tombSwapRouter, _amount);
     (amountTOMB, amountMIMATIC) = IUniswapV2Router02(tombSwapRouter).removeLiquidity(
       provider.getAddress('TOMB'),
       provider.getAddress('MIMATIC'),
@@ -138,6 +139,7 @@ contract TombMimaticBeefyVault is GeneralVault {
   ) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     (uint256 minAmount, address[] memory path) = _getPathAndMinAmount(
@@ -146,7 +148,8 @@ contract TombMimaticBeefyVault is GeneralVault {
       _tokenAmount
     );
 
-    IERC20(_tokenIn).approve(uniswapRouter, _tokenAmount);
+    IERC20(_tokenIn).safeApprove(uniswapRouter, 0);
+    IERC20(_tokenIn).safeApprove(uniswapRouter, _tokenAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _tokenAmount,
@@ -162,10 +165,8 @@ contract TombMimaticBeefyVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(
-      address(provider.getLendingPool()),
-      receivedAmounts[path.length - 1]
-    );
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[path.length - 1]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[path.length - 1]);
   }
@@ -228,19 +229,22 @@ contract TombMimaticBeefyVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MOO_TOMB_MIMATIC = provider.getAddress('mooTombTOMB-MIMATIC');
     address TOMB_MIMATIC_LP = provider.getAddress('TOMB_MIMATIC_LP');
+    address lendingPoolAddress = provider.getLendingPool();
 
     require(_asset == TOMB_MIMATIC_LP, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(TOMB_MIMATIC_LP).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit TOMB_MIMATIC_LP to Beefy Vault and receive mooTombTOMB-MIMATIC
-    IERC20(TOMB_MIMATIC_LP).approve(MOO_TOMB_MIMATIC, _amount);
+    IERC20(TOMB_MIMATIC_LP).safeApprove(MOO_TOMB_MIMATIC, 0);
+    IERC20(TOMB_MIMATIC_LP).safeApprove(MOO_TOMB_MIMATIC, _amount);
 
     uint256 before = IERC20(MOO_TOMB_MIMATIC).balanceOf(address(this));
     IBeefyVault(MOO_TOMB_MIMATIC).deposit(_amount);
     uint256 assetAmount = IERC20(MOO_TOMB_MIMATIC).balanceOf(address(this)) - before;
 
     // Make lendingPool to transfer required amount
-    IERC20(MOO_TOMB_MIMATIC).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(MOO_TOMB_MIMATIC).safeApprove(lendingPoolAddress, 0);
+    IERC20(MOO_TOMB_MIMATIC).safeApprove(lendingPoolAddress, assetAmount);
     return (MOO_TOMB_MIMATIC, assetAmount);
   }
 

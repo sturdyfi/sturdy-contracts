@@ -78,6 +78,7 @@ contract YearnWBTCVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WBTC = provider.getAddress('WBTC');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -92,7 +93,8 @@ contract YearnWBTCVault is GeneralVault {
     path[1] = provider.getAddress('WFTM');
     path[2] = _tokenOut;
 
-    IERC20(WBTC).approve(uniswapRouter, _wbtcAmount);
+    IERC20(WBTC).safeApprove(uniswapRouter, 0);
+    IERC20(WBTC).safeApprove(uniswapRouter, _wbtcAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _wbtcAmount,
@@ -108,7 +110,8 @@ contract YearnWBTCVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -138,17 +141,20 @@ contract YearnWBTCVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVWBTC = provider.getAddress('YVWBTC');
     address WBTC = provider.getAddress('WBTC');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Case of WBTC deposit from user, receive WBTC from user
     require(_asset == WBTC, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(WBTC).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit WBTC to Yearn Vault and receive yvWBTC
-    IERC20(WBTC).approve(YVWBTC, _amount);
+    IERC20(WBTC).safeApprove(YVWBTC, 0);
+    IERC20(WBTC).safeApprove(YVWBTC, _amount);
     uint256 assetAmount = IYearnVault(YVWBTC).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWBTC).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVWBTC).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVWBTC).safeApprove(lendingPoolAddress, assetAmount);
     return (YVWBTC, assetAmount);
   }
 

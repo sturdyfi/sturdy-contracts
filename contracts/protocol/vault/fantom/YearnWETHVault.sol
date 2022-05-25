@@ -79,6 +79,7 @@ contract YearnWETHVault is GeneralVault {
     address uniswapRouter = provider.getAddress('uniswapRouter');
     address WETH = provider.getAddress('WETH');
     address WFTM = provider.getAddress('WFTM');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Calculate minAmount from price with 1% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
@@ -98,7 +99,8 @@ contract YearnWETHVault is GeneralVault {
     path[1] = address(WFTM);
     path[2] = _tokenOut;
 
-    IERC20(WETH).approve(uniswapRouter, _wethAmount);
+    IERC20(WETH).safeApprove(uniswapRouter, 0);
+    IERC20(WETH).safeApprove(uniswapRouter, _wethAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       _wethAmount,
@@ -114,7 +116,8 @@ contract YearnWETHVault is GeneralVault {
     );
 
     // Make lendingPool to transfer required amount
-    IERC20(_tokenOut).safeApprove(address(provider.getLendingPool()), receivedAmounts[2]);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, 0);
+    IERC20(_tokenOut).safeApprove(lendingPoolAddress, receivedAmounts[2]);
     // Deposit yield to pool
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
@@ -144,17 +147,20 @@ contract YearnWETHVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVWETH = provider.getAddress('YVWETH');
     address WETH = provider.getAddress('WETH');
+    address lendingPoolAddress = provider.getLendingPool();
 
     // Case of WETH deposit from user, receive WETH from user
     require(_asset == WETH, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(WETH).safeTransferFrom(msg.sender, address(this), _amount);
 
     // Deposit WETH to Yearn Vault and receive yvWETH
-    IERC20(WETH).approve(YVWETH, _amount);
+    IERC20(WETH).safeApprove(YVWETH, 0);
+    IERC20(WETH).safeApprove(YVWETH, _amount);
     uint256 assetAmount = IYearnVault(YVWETH).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
-    IERC20(YVWETH).approve(address(provider.getLendingPool()), assetAmount);
+    IERC20(YVWETH).safeApprove(lendingPoolAddress, 0);
+    IERC20(YVWETH).safeApprove(lendingPoolAddress, assetAmount);
     return (YVWETH, assetAmount);
   }
 

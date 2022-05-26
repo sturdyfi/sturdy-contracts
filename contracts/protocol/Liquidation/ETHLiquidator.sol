@@ -11,7 +11,6 @@ import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {IWETH} from '../../misc/interfaces/IWETH.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
 
@@ -47,7 +46,6 @@ interface ICurvePool {
 }
 
 contract ETHLiquidator is IFlashLoanReceiver, Ownable {
-  using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;

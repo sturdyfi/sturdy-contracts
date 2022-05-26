@@ -25,12 +25,12 @@ import {
   getYearnBOOVault,
   getTombFtmBeefyVault,
   getTombMiMaticBeefyVault,
-  getLiquidator,
   getYearnFBEETSVault,
   getYearnLINKVault,
   getYearnCRVVault,
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
+  getFTMLiquidator,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -61,7 +61,6 @@ import {
   YearnBOOVault,
   TombFtmBeefyVault,
   TombMimaticBeefyVault,
-  TempLiquidator,
   YearnFBEETSVault,
   YearnLINKVault,
   YearnCRVVault,
@@ -336,7 +335,7 @@ export async function initializeMakeSuite() {
   testEnv.yearnCRVVault = await getYearnCRVVault();
   testEnv.yearnSPELLVault = await getYearnSPELLVault();
   testEnv.incentiveController = await getSturdyIncentivesController();
-  // testEnv.liquidator = await getLiquidator();
+  // testEnv.liquidator = await getFTMLiquidator();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

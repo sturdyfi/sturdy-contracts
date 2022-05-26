@@ -1,7 +1,8 @@
 import { task } from 'hardhat/config';
 import { ConfigNames } from '../../helpers/configuration';
-import { deployTempLiquidator } from '../../helpers/contracts-deployments';
+import { deployFTMLiquidator, deployETHLiquidator } from '../../helpers/contracts-deployments';
 import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
+import { eNetwork } from '../../helpers/types';
 
 const CONTRACT_NAME = 'Liquidator';
 
@@ -15,8 +16,12 @@ task(`full:deploy-liquidator`, `Deploys the ${CONTRACT_NAME} contract`)
       throw new Error('INVALID_CHAIN_ID');
     }
 
+    const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const liquidator = await deployTempLiquidator([addressesProvider.address], verify);
+    const liquidator =
+      network == 'ftm'
+        ? await deployFTMLiquidator([addressesProvider.address], verify)
+        : await deployETHLiquidator([addressesProvider.address], verify);
 
     console.log(`${CONTRACT_NAME}.address`, liquidator.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

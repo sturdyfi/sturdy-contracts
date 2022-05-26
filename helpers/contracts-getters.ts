@@ -49,7 +49,8 @@ import {
   TombMiMaticLPOracleFactory,
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
-  TempLiquidatorFactory,
+  FTMLiquidatorFactory,
+  ETHLiquidatorFactory,
   YearnFBEETSVaultFactory,
   YearnLINKVaultFactory,
   DeployVaultHelperFactory,
@@ -885,9 +886,21 @@ export const getCollateralATokenImpl = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
-export const getLiquidator = async (address?: tEthereumAddress) =>
-  await TempLiquidatorFactory.connect(
-    address || (await getDb().get(`${eContractid.Liquidator}.${DRE.network.name}`).value()).address,
+export const getFTMLiquidator = async (address?: tEthereumAddress) =>
+  await FTMLiquidatorFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.FTMLiquidator}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getETHLiquidator = async (address?: tEthereumAddress) =>
+  await ETHLiquidatorFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ETHLiquidator}.${DRE.network.name}`).value()
+      ).address,
     await getFirstSigner()
   );
 

@@ -20,16 +20,17 @@ import {ICollateralAdapter} from '../../interfaces/ICollateralAdapter.sol';
 import {IBalancerVault} from '../../interfaces/IBalancerVault.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
-import {TransferHelper} from '../libraries/helpers/TransferHelper.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /**
- * @title TempLiquidator
- * @notice TempLiquidator
+ * @title FTMLiquidator
+ * @notice FTMLiquidator
  * @author Sturdy
  **/
 
-contract TempLiquidator is IFlashLoanReceiver, Ownable {
+contract FTMLiquidator is IFlashLoanReceiver, Ownable {
   using PercentageMath for uint256;
+  using SafeERC20 for IERC20;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
@@ -48,7 +49,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
   function withdraw(address asset) external payable onlyOwner {
     uint256 amount = IERC20(asset).balanceOf(address(this));
-    IERC20(asset).transfer(msg.sender, amount);
+    IERC20(asset).safeTransfer(msg.sender, amount);
   }
 
   /**
@@ -66,7 +67,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     (address collateralAddress, address borrowerAddress) = abi.decode(params, (address, address));
 
     // call liquidation
-    IERC20(assets[0]).approve(_addressesProvider.getLendingPool(), amounts[0]);
+    IERC20(assets[0]).safeApprove(_addressesProvider.getLendingPool(), amounts[0]);
     ILendingPool(_addressesProvider.getLendingPool()).liquidationCall(
       collateralAddress,
       assets[0],
@@ -79,7 +80,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
 
     // Approve the LendingPool contract allowance to *pull* the owed amount
     uint256 amountOwing = amounts[0] + premiums[0];
-    IERC20(assets[0]).approve(_addressesProvider.getAddress('AAVE_LENDING_POOL'), amountOwing);
+    IERC20(assets[0]).safeApprove(_addressesProvider.getAddress('AAVE_LENDING_POOL'), amountOwing);
 
     return true;
   }
@@ -179,7 +180,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = asset;
 
-    IERC20(collateralAsset).approve(uniswapRouter, collateralAmount);
+    IERC20(collateralAsset).safeApprove(uniswapRouter, collateralAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       collateralAmount,
@@ -215,7 +216,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = asset;
 
-    IERC20(collateralAsset).approve(uniswapRouter, collateralAmount);
+    IERC20(collateralAsset).safeApprove(uniswapRouter, collateralAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       collateralAmount,
@@ -251,7 +252,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = asset;
 
-    IERC20(collateralAsset).approve(uniswapRouter, collateralAmount);
+    IERC20(collateralAsset).safeApprove(uniswapRouter, collateralAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       collateralAmount,
@@ -370,7 +371,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     funds.fromInternalBalance = false;
     funds.toInternalBalance = false;
 
-    IERC20(BEETS).approve(IYearnFBEETSVault(fBEETSVault).getBeethovenVault(), beetsAmount);
+    IERC20(BEETS).safeApprove(IYearnFBEETSVault(fBEETSVault).getBeethovenVault(), beetsAmount);
 
     uint256 receivedAmount = IBalancerVault(IYearnFBEETSVault(fBEETSVault).getBeethovenVault())
       .swap(singleSwap, funds, limit, type(uint256).max);
@@ -424,7 +425,7 @@ contract TempLiquidator is IFlashLoanReceiver, Ownable {
     path[1] = _addressesProvider.getAddress('WFTM');
     path[2] = asset;
 
-    IERC20(collateralAsset).approve(uniswapRouter, collateralAmount);
+    IERC20(collateralAsset).safeApprove(uniswapRouter, collateralAmount);
 
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactTokensForTokens(
       collateralAmount,

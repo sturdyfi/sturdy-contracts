@@ -21,10 +21,8 @@ import {
   getCollateralAdapter,
   // getBeefyVault,
   getFirstSigner,
-  getLendingPool,
   getLendingPoolAddressesProvider,
   getLidoVault,
-  getLiquidator,
   getSturdyIncentivesController,
   getSturdyToken,
   getTombFtmBeefyVault,
@@ -103,7 +101,8 @@ import {
   TombMiMaticLPOracleFactory,
   TombMimaticBeefyVaultFactory,
   MockMooTOMBMIMATICFactory,
-  TempLiquidatorFactory,
+  FTMLiquidatorFactory,
+  ETHLiquidatorFactory,
   YearnFBEETSVaultFactory,
   FBeetsOracleFactory,
   BeetsOracleFactory,
@@ -2003,23 +2002,15 @@ export const deployMockBeefyVault = async (
     verify
   );
 
-export const deployTempLiquidator = async (args: [string], verify?: boolean) => {
-  const liquidatorImpl = await withSaveAndVerify(
-    await new TempLiquidatorFactory(await getFirstSigner()).deploy(...args),
-    eContractid.LiquidatorImpl,
+export const deployFTMLiquidator = async (args: [string], verify?: boolean) => {
+  const liquidator = await withSaveAndVerify(
+    await new FTMLiquidatorFactory(await getFirstSigner()).deploy(...args),
+    eContractid.FTMLiquidator,
     args,
     verify
   );
-  await insertContractAddressInDb(eContractid.Liquidator, liquidatorImpl.address);
 
   const addressesProvider = await getLendingPoolAddressesProvider();
-  // await waitForTx(
-  //   await addressesProvider.setAddress(
-  //     DRE.ethers.utils.formatBytes32String('LIQUIDATOR'),
-  //     liquidatorImpl.address
-  //   )
-  // );
-
   const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
   const network = <eNetwork>DRE.network.name;
   await waitForTx(
@@ -2029,12 +2020,42 @@ export const deployTempLiquidator = async (args: [string], verify?: boolean) => 
     )
   );
 
-  // const liquidatorProxyAddress = await addressesProvider.getAddress(
-  //   DRE.ethers.utils.formatBytes32String('LIQUIDATOR')
-  // );
-  // await insertContractAddressInDb(eContractid.Liquidator, liquidatorProxyAddress);
+  return liquidator;
+};
 
-  return await getLiquidator();
+export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
+  const liquidator = await withSaveAndVerify(
+    await new ETHLiquidatorFactory(await getFirstSigner()).deploy(...args),
+    eContractid.ETHLiquidator,
+    args,
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
+      getParamPerNetwork(config.AavePool, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('FRAX_3CRV_LP'),
+      getParamPerNetwork(config.FRAX_3CRV_LP, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('3CRV_POOL'),
+      '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'
+    )
+  );
+
+  return liquidator;
 };
 
 export const deployVaultHelper = async (args: [string], verify?: boolean) =>

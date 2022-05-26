@@ -20,7 +20,7 @@ import {
   getFirstSigner,
   getYearnRETHWstETHVault,
   getConvexRocketPoolETHVault,
-  getLiquidator,
+  getETHLiquidator,
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
   getConvexDOLA3CRVVault,
@@ -243,7 +243,7 @@ export async function initializeMakeSuite() {
   // const cvxstecrvAddress = await testEnv.convexSTETHVault.getInternalAsset();
   // const cvxdola3crvAddress = await testEnv.convexDOLA3CRVVault.getInternalAsset();
   testEnv.incentiveController = await getSturdyIncentivesController();
-  // testEnv.liquidator = await getLiquidator();
+  // testEnv.liquidator = await getETHLiquidator();
   testEnv.yieldManager = await getYieldManager();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();

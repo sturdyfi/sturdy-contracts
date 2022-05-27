@@ -10,6 +10,7 @@ import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.
 import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 
 /**
  * @title LidoVault
@@ -98,11 +99,22 @@ contract LidoVault is GeneralVault {
 
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
-      // Deposit ETH to Lido and receive stETH
-      (bool sent, ) = LIDO.call{value: msg.value}('');
-      require(sent, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+      address curveswapLidoPool = provider.getAddress('STETH_ETH_POOL');
+      uint256 minSwapAmount = ICurvePool(curveswapLidoPool).get_dy(0, 1, _amount);
 
-      assetAmount = msg.value;
+      if (_amount < minSwapAmount) {
+        // exchange ETH -> stETH via curve
+        assetAmount = ICurvePool(curveswapLidoPool).exchange{value: _amount}(
+          0,
+          1,
+          _amount,
+          minSwapAmount
+        );
+      } else {
+        // Deposit ETH to Lido and receive stETH
+        (bool sent, ) = LIDO.call{value: _amount}('');
+        require(sent, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+      }
     } else {
       // Case of stETH deposit from user, receive stETH from user
       require(_asset == LIDO, Errors.VT_COLLATERAL_DEPOSIT_INVALID);

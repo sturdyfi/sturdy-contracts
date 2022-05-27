@@ -2024,8 +2024,9 @@ export const deployFTMLiquidator = async (args: [string], verify?: boolean) => {
 };
 
 export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
+  const libraries = await deployYieldManagerLibraries(verify);
   const liquidator = await withSaveAndVerify(
-    await new ETHLiquidatorFactory(await getFirstSigner()).deploy(...args),
+    await new ETHLiquidatorFactory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.ETHLiquidator,
     args,
     verify

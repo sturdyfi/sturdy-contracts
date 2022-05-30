@@ -179,11 +179,11 @@
   },
   "LidoVaultImpl": {
     "main": {
-      "address": "0x0024a128CB74FF0C93de1261C59E4d04321E9dC0",
+      "address": "0x86616a01f098a0768c7b0d559120820eb7d89288",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x0024a128CB74FF0C93de1261C59E4d04321E9dC0",
+      "address": "0x86616a01f098a0768c7b0d559120820eb7d89288",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

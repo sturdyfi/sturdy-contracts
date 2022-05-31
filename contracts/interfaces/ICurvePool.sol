@@ -25,7 +25,7 @@ interface ICurvePool {
     uint256 _burn_amount,
     int128 i,
     uint256 _min_received
-  ) external returns (uint256);
+  ) external;
 
   /**
    * @dev Index values can be found via the `coins` public getter method

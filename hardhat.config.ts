@@ -110,7 +110,7 @@ const buidlerConfig: HardhatUserConfig = {
     ftm: getCommonNetworkConfig(eFantomNetwork.ftm, 250),
     ftm_test: getCommonNetworkConfig(eFantomNetwork.ftm_test, 4002),
     hardhat: {
-      hardfork: 'berlin',
+      hardfork: 'london',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
       gasPrice: 8000000000,
@@ -132,7 +132,7 @@ const buidlerConfig: HardhatUserConfig = {
       url: 'http://localhost:8545',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
-      gasPrice: 8000000000,
+      gasPrice: 33805666499,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
       forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
       timeout: 1200000

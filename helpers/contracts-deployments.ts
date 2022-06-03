@@ -2032,29 +2032,29 @@ export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
     verify
   );
 
-  const addressesProvider = await getLendingPoolAddressesProvider();
-  const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
-  const network = <eNetwork>DRE.network.name;
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
-      getParamPerNetwork(config.AavePool, network)
-    )
-  );
+  // const addressesProvider = await getLendingPoolAddressesProvider();
+  // const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
+  // const network = <eNetwork>DRE.network.name;
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
+  //     getParamPerNetwork(config.AavePool, network)
+  //   )
+  // );
 
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('FRAX_3CRV_LP'),
-      getParamPerNetwork(config.FRAX_3CRV_LP, network)
-    )
-  );
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('FRAX_3CRV_LP'),
+  //     getParamPerNetwork(config.FRAX_3CRV_LP, network)
+  //   )
+  // );
 
-  await waitForTx(
-    await addressesProvider.setAddress(
-      DRE.ethers.utils.formatBytes32String('3CRV_POOL'),
-      '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'
-    )
-  );
+  // await waitForTx(
+  //   await addressesProvider.setAddress(
+  //     DRE.ethers.utils.formatBytes32String('3CRV_POOL'),
+  //     '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'
+  //   )
+  // );
 
   return liquidator;
 };

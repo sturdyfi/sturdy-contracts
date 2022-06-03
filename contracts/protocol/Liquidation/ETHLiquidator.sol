@@ -48,7 +48,10 @@ interface ICurvePool {
 contract ETHLiquidator is IFlashLoanReceiver, Ownable {
   using SafeERC20 for IERC20;
 
-  address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
+  address private constant FRAX_3CRV_LP_ADDRESS = 0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B;
+  address private constant POOL_3CRV_ADDRESS = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
@@ -83,12 +86,12 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
   ) external override returns (bool) {
     // parse params
     (address collateralAddress, address borrowerAddress) = abi.decode(params, (address, address));
-    ILendingPoolAddressesProvider provider = _addressesProvider;
+    address lendingPool = _addressesProvider.getLendingPool();
 
     // call liquidation
-    IERC20(assets[0]).safeApprove(provider.getLendingPool(), 0);
-    IERC20(assets[0]).safeApprove(provider.getLendingPool(), amounts[0]);
-    ILendingPool(provider.getLendingPool()).liquidationCall(
+    IERC20(assets[0]).safeApprove(lendingPool, 0);
+    IERC20(assets[0]).safeApprove(lendingPool, amounts[0]);
+    ILendingPool(lendingPool).liquidationCall(
       collateralAddress,
       assets[0],
       borrowerAddress,
@@ -99,11 +102,8 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     _convertCollateral(collateralAddress, assets[0]);
 
     // Approve the LendingPool contract allowance to *pull* the owed amount
-    IERC20(assets[0]).safeApprove(provider.getAddress('AAVE_LENDING_POOL'), 0);
-    IERC20(assets[0]).safeApprove(
-      provider.getAddress('AAVE_LENDING_POOL'),
-      amounts[0] + premiums[0]
-    );
+    IERC20(assets[0]).safeApprove(AAVE_LENDING_POOL_ADDRESS, 0);
+    IERC20(assets[0]).safeApprove(AAVE_LENDING_POOL_ADDRESS, amounts[0] + premiums[0]);
 
     return true;
   }
@@ -113,9 +113,7 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     uint256 debtToCover,
     bytes calldata params
   ) external {
-    IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(
-      _addressesProvider.getAddress('AAVE_LENDING_POOL')
-    );
+    IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS);
 
     address[] memory assets = new address[](1);
     assets[0] = debtAsset;
@@ -139,7 +137,7 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
 
     if (collateralAsset == provider.getAddress('LIDO')) {
       _convertLIDO(provider, collateralAsset, asset, collateralAmount);
-    } else if (collateralAsset == provider.getAddress('FRAX_3CRV_LP')) {
+    } else if (collateralAsset == FRAX_3CRV_LP_ADDRESS) {
       _convertFRAX_3CRV(provider, collateralAsset, asset, collateralAmount);
     }
   }
@@ -194,14 +192,13 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     returns (uint256 amount3CRV)
   {
     int128 _underlying_coin_index = 1; // 3CRV
-    address curveLPToken = provider.getAddress('FRAX_3CRV_LP');
 
-    uint256 _minAmount = ICurvePool(curveLPToken).calc_withdraw_one_coin(
+    uint256 _minAmount = ICurvePool(FRAX_3CRV_LP_ADDRESS).calc_withdraw_one_coin(
       _amount,
       _underlying_coin_index,
       false
     );
-    amount3CRV = ICurvePool(curveLPToken).remove_liquidity_one_coin(
+    amount3CRV = ICurvePool(FRAX_3CRV_LP_ADDRESS).remove_liquidity_one_coin(
       _amount,
       _underlying_coin_index,
       _minAmount,
@@ -214,12 +211,11 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     address _assetOut,
     uint256 _amount
   ) internal {
-    address curve3PoolSwap = provider.getAddress('3CRV_POOL');
-    require(curve3PoolSwap != address(0), Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(POOL_3CRV_ADDRESS != address(0), Errors.LP_LIQUIDATION_CONVERT_FAILED);
 
     int256 _coin_index = 3;
     for (int256 i; i < 3; ++i) {
-      if (ICurvePool(curve3PoolSwap).coins(uint256(i)) == _assetOut) {
+      if (ICurvePool(POOL_3CRV_ADDRESS).coins(uint256(i)) == _assetOut) {
         _coin_index = i;
         break;
       }
@@ -227,11 +223,15 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
 
     require(_coin_index < 3, Errors.LP_LIQUIDATION_CONVERT_FAILED);
 
-    uint256 _minAmount = ICurvePool(curve3PoolSwap).calc_withdraw_one_coin(
+    uint256 _minAmount = ICurvePool(POOL_3CRV_ADDRESS).calc_withdraw_one_coin(
       _amount,
       int128(_coin_index)
     );
 
-    ICurvePool(curve3PoolSwap).remove_liquidity_one_coin(_amount, int128(_coin_index), _minAmount);
+    ICurvePool(POOL_3CRV_ADDRESS).remove_liquidity_one_coin(
+      _amount,
+      int128(_coin_index),
+      _minAmount
+    );
   }
 }

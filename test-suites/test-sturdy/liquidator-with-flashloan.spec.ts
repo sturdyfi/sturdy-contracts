@@ -6,26 +6,16 @@ import { expect } from 'chai';
 import { makeSuite, TestEnv } from './helpers/make-suite';
 import { ethers } from 'ethers';
 import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
-import {
-  convertToCurrencyDecimals,
-  getEthersSigners,
-  getParamPerNetwork,
-  withSaveAndVerify,
-} from '../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import {
   getFirstSigner,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
 import BigNumber from 'bignumber.js';
-import { eContractid, eNetwork, ISturdyConfiguration, RateMode } from '../../helpers/types';
+import { RateMode } from '../../helpers/types';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
-import {
-  deployETHLiquidator,
-  deployYieldManagerLibraries,
-} from '../../helpers/contracts-deployments';
-import { ETHLiquidatorFactory } from '../../types';
-import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
+import { deployETHLiquidator } from '../../helpers/contracts-deployments';
 
 const { parseEther } = ethers.utils;
 
@@ -40,26 +30,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
 
     // deploy liquidator with flashloan contract
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const libraries = await deployYieldManagerLibraries(false);
-    const liquidator = await withSaveAndVerify(
-      await new ETHLiquidatorFactory(libraries, await getFirstSigner()).deploy(
-        addressesProvider.address
-      ),
-      eContractid.ETHLiquidator,
-      [addressesProvider.address],
-      false
-    );
-
-    const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
-    const network = <eNetwork>DRE.network.name;
-    await waitForTx(
-      await addressesProvider
-        .connect(deployer.signer)
-        .setAddress(
-          ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
-          getParamPerNetwork(config.AavePool, network)
-        )
-    );
+    const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     await lidoVault
       .connect(borrower.signer)
@@ -135,44 +106,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
 
     // deploy liquidator with flashloan contract
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const libraries = await deployYieldManagerLibraries(false);
-    const liquidator = await withSaveAndVerify(
-      await new ETHLiquidatorFactory(libraries, await getFirstSigner()).deploy(
-        addressesProvider.address
-      ),
-      eContractid.ETHLiquidator,
-      [addressesProvider.address],
-      false
-    );
-
-    const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
-    const network = <eNetwork>DRE.network.name;
-    await waitForTx(
-      await addressesProvider
-        .connect(deployer.signer)
-        .setAddress(
-          ethers.utils.formatBytes32String('AAVE_LENDING_POOL'),
-          getParamPerNetwork(config.AavePool, network)
-        )
-    );
-
-    await waitForTx(
-      await addressesProvider
-        .connect(deployer.signer)
-        .setAddress(
-          ethers.utils.formatBytes32String('FRAX_3CRV_LP'),
-          getParamPerNetwork(config.FRAX_3CRV_LP, network)
-        )
-    );
-
-    await waitForTx(
-      await addressesProvider
-        .connect(deployer.signer)
-        .setAddress(
-          ethers.utils.formatBytes32String('3CRV_POOL'),
-          '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7'
-        )
-    );
+    const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some FRAX_3CRV_LP token
     const LPOwnerAddress = '0xdCA313c4Df33c2142B2aDf202D6AbF4Fa56e1d41';

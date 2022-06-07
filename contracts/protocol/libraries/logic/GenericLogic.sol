@@ -182,7 +182,7 @@ library GenericLogic {
       vars.tokenUnit = 10**vars.decimals;
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
 
-      if (vars.liquidationThreshold > 0 && userConfig.isUsingAsCollateral(vars.i)) {
+      if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
         vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
 
         uint256 liquidityBalanceETH = (vars.reserveUnitPrice * vars.compoundedLiquidityBalance) /
@@ -208,8 +208,8 @@ library GenericLogic {
       }
     }
 
-    vars.avgLtv = vars.totalCollateralInETH > 0 ? vars.avgLtv / vars.totalCollateralInETH : 0;
-    vars.avgLiquidationThreshold = vars.totalCollateralInETH > 0
+    vars.avgLtv = vars.totalCollateralInETH != 0 ? vars.avgLtv / vars.totalCollateralInETH : 0;
+    vars.avgLiquidationThreshold = vars.totalCollateralInETH != 0
       ? vars.avgLiquidationThreshold / vars.totalCollateralInETH
       : 0;
 

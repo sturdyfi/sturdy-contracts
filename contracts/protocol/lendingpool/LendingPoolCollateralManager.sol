@@ -186,7 +186,7 @@ contract LendingPoolCollateralManager is
       );
     } else {
       // If the user doesn't have variable debt, no need to try to burn variable debt tokens
-      if (vars.userVariableDebt > 0) {
+      if (vars.userVariableDebt != 0) {
         IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
           user,
           vars.userVariableDebt,

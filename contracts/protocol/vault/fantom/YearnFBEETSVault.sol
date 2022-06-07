@@ -66,7 +66,7 @@ contract YearnFBEETSVault is GeneralVault {
     uint256 yieldYVFBEETS = _getYield(YVFBEETS);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryYVFBEETS = _processTreasury(yieldYVFBEETS);
       yieldYVFBEETS -= treasuryYVFBEETS;
     }
@@ -83,7 +83,7 @@ contract YearnFBEETSVault is GeneralVault {
     // BEETS -> WFTM
     uint256 balance = IERC20(BEETS).balanceOf(address(this));
     uint256 beetsAmount = balance - _balanceOfBEETS;
-    require(beetsAmount > 0, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(beetsAmount != 0, Errors.LP_LIQUIDATION_CALL_FAILED);
     _swapBEETS2WFTM(beetsAmount);
 
     // WFTM -> stable coins
@@ -93,7 +93,7 @@ contract YearnFBEETSVault is GeneralVault {
     uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // WFTM -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
@@ -156,7 +156,7 @@ contract YearnFBEETSVault is GeneralVault {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[1] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[1] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[1],
       Errors.VT_PROCESS_YIELD_INVALID
@@ -216,7 +216,7 @@ contract YearnFBEETSVault is GeneralVault {
     IERC20(BEETS).safeApprove(beethovenVault, _beetsAmount);
 
     uint256 receivedAmount = getBeethovenVault().swap(singleSwap, funds, limit, type(uint256).max);
-    require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmount != 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     return receivedAmount;
   }

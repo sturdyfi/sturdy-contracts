@@ -53,7 +53,7 @@ library SafeERC20 {
     (bool success, bytes memory returndata) = address(token).call(data);
     require(success, 'SafeERC20: low-level call failed');
 
-    if (returndata.length > 0) {
+    if (returndata.length != 0) {
       // Return data is optional
       // solhint-disable-next-line max-line-length
       require(abi.decode(returndata, (bool)), 'SafeERC20: ERC20 operation did not succeed');

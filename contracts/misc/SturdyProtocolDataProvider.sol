@@ -95,7 +95,7 @@ contract SturdyProtocolDataProvider {
     (isActive, isFrozen, borrowingEnabled, stableBorrowRateEnabled, ) = configuration
       .getFlagsMemory();
 
-    usageAsCollateralEnabled = liquidationThreshold > 0;
+    usageAsCollateralEnabled = liquidationThreshold != 0;
   }
 
   function getReserveData(address asset)

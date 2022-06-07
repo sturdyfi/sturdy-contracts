@@ -160,7 +160,7 @@ library ReserveConfiguration {
    * @return The active state
    **/
   function getActive(DataTypes.ReserveConfigurationMap storage self) internal view returns (bool) {
-    return (self.data & ~ACTIVE_MASK) > 0;
+    return (self.data & ~ACTIVE_MASK) != 0;
   }
 
   /**
@@ -180,7 +180,7 @@ library ReserveConfiguration {
    * @return The frozen state
    **/
   function getFrozen(DataTypes.ReserveConfigurationMap storage self) internal view returns (bool) {
-    return (self.data & ~FROZEN_MASK) > 0;
+    return (self.data & ~FROZEN_MASK) != 0;
   }
 
   /**
@@ -207,7 +207,7 @@ library ReserveConfiguration {
     view
     returns (bool)
   {
-    return (self.data & ~BORROWING_MASK) > 0;
+    return (self.data & ~BORROWING_MASK) != 0;
   }
 
   /**
@@ -234,7 +234,7 @@ library ReserveConfiguration {
     view
     returns (bool)
   {
-    return (self.data & ~COLLATERAL_MASK) > 0;
+    return (self.data & ~COLLATERAL_MASK) != 0;
   }
 
   /**
@@ -261,7 +261,7 @@ library ReserveConfiguration {
     view
     returns (bool)
   {
-    return (self.data & ~STABLE_BORROWING_MASK) > 0;
+    return (self.data & ~STABLE_BORROWING_MASK) != 0;
   }
 
   /**
@@ -312,11 +312,11 @@ library ReserveConfiguration {
     uint256 dataLocal = self.data;
 
     return (
-      (dataLocal & ~ACTIVE_MASK) > 0,
-      (dataLocal & ~FROZEN_MASK) > 0,
-      (dataLocal & ~BORROWING_MASK) > 0,
-      (dataLocal & ~STABLE_BORROWING_MASK) > 0,
-      (dataLocal & ~COLLATERAL_MASK) > 0
+      (dataLocal & ~ACTIVE_MASK) != 0,
+      (dataLocal & ~FROZEN_MASK) != 0,
+      (dataLocal & ~BORROWING_MASK) != 0,
+      (dataLocal & ~STABLE_BORROWING_MASK) != 0,
+      (dataLocal & ~COLLATERAL_MASK) != 0
     );
   }
 
@@ -389,11 +389,11 @@ library ReserveConfiguration {
     )
   {
     return (
-      (self.data & ~ACTIVE_MASK) > 0,
-      (self.data & ~FROZEN_MASK) > 0,
-      (self.data & ~BORROWING_MASK) > 0,
-      (self.data & ~STABLE_BORROWING_MASK) > 0,
-      (self.data & ~COLLATERAL_MASK) > 0
+      (self.data & ~ACTIVE_MASK) != 0,
+      (self.data & ~FROZEN_MASK) != 0,
+      (self.data & ~BORROWING_MASK) != 0,
+      (self.data & ~STABLE_BORROWING_MASK) != 0,
+      (self.data & ~COLLATERAL_MASK) != 0
     );
   }
 }

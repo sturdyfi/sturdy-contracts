@@ -41,7 +41,7 @@ library FixedPoint {
     pure
     returns (uq112x112 memory)
   {
-    require(denominator > 0, 'FixedPoint::fraction: div by 0');
+    require(denominator != 0, 'FixedPoint::fraction: div by 0');
     if (numerator == 0) return FixedPoint.uq112x112(0);
 
     if (numerator <= type(uint144).max) {

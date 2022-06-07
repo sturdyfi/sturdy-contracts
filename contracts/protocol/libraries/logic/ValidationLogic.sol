@@ -40,14 +40,14 @@ library ValidationLogic {
   function validateDeposit(DataTypes.ReserveData storage reserve, uint256 amount) external view {
     (bool isActive, bool isFrozen, , , bool isCollateral) = reserve.configuration.getFlags();
 
-    require(amount > 0, Errors.VL_INVALID_AMOUNT);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
     uint256 maxCapacity = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress)
       .reserveCapacity();
 
-    if (maxCapacity > 0) {
+    if (maxCapacity != 0) {
       uint256 currentCapacity = IERC20(reserve.aTokenAddress).totalSupply();
       uint256 depositAmount = amount;
       if (isCollateral && reserve.yieldAddress != address(0)) {
@@ -86,7 +86,7 @@ library ValidationLogic {
     uint256 reservesCount,
     address oracle
   ) external view {
-    require(amount > 0, Errors.VL_INVALID_AMOUNT);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
     (bool isActive, , , , ) = reservesData[reserveAddress].configuration.getFlags();
@@ -162,7 +162,7 @@ library ValidationLogic {
 
     require(vars.isActive, Errors.VL_NO_ACTIVE_RESERVE);
     require(!vars.isFrozen, Errors.VL_RESERVE_FROZEN);
-    require(amount > 0, Errors.VL_INVALID_AMOUNT);
+    require(amount != 0, Errors.VL_INVALID_AMOUNT);
 
     //sturdy: place where stETH is blocked from being borrowed
     require(vars.borrowingEnabled, Errors.VL_BORROWING_NOT_ENABLED);
@@ -189,7 +189,7 @@ library ValidationLogic {
       oracle
     );
 
-    require(vars.userCollateralBalanceETH > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
+    require(vars.userCollateralBalanceETH != 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
 
     require(
       vars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
@@ -256,12 +256,12 @@ library ValidationLogic {
 
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
-    require(amountSent > 0, Errors.VL_INVALID_AMOUNT);
+    require(amountSent != 0, Errors.VL_INVALID_AMOUNT);
 
     require(
-      (stableDebt > 0 &&
+      (stableDebt != 0 &&
         DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE) ||
-        (variableDebt > 0 &&
+        (variableDebt != 0 &&
           DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.VARIABLE),
       Errors.VL_NO_DEBT_OF_SELECTED_TYPE
     );
@@ -293,9 +293,9 @@ library ValidationLogic {
     require(!isFrozen, Errors.VL_RESERVE_FROZEN);
 
     if (currentRateMode == DataTypes.InterestRateMode.STABLE) {
-      require(stableDebt > 0, Errors.VL_NO_STABLE_RATE_LOAN_IN_RESERVE);
+      require(stableDebt != 0, Errors.VL_NO_STABLE_RATE_LOAN_IN_RESERVE);
     } else if (currentRateMode == DataTypes.InterestRateMode.VARIABLE) {
-      require(variableDebt > 0, Errors.VL_NO_VARIABLE_RATE_LOAN_IN_RESERVE);
+      require(variableDebt != 0, Errors.VL_NO_VARIABLE_RATE_LOAN_IN_RESERVE);
       /**
        * user wants to swap to stable, before swapping we need to ensure that
        * 1. stable borrow rate is enabled on the reserve
@@ -378,7 +378,7 @@ library ValidationLogic {
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.aTokenAddress).balanceOf(msg.sender);
 
-    require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
+    require(underlyingBalance != 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
       useAsCollateral ||
@@ -438,7 +438,7 @@ library ValidationLogic {
       );
     }
 
-    bool isCollateralEnabled = collateralReserve.configuration.getLiquidationThreshold() > 0 &&
+    bool isCollateralEnabled = collateralReserve.configuration.getLiquidationThreshold() != 0 &&
       userConfig.isUsingAsCollateral(collateralReserve.id);
 
     //if collateral isn't enabled as collateral by user, it cannot be liquidated

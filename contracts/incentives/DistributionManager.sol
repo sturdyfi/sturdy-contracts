@@ -174,7 +174,7 @@ contract DistributionManager is ISturdyDistributionManager {
 
     if (userIndex == newIndex) return accruedRewards;
 
-    if (stakedByUser > 0) {
+    if (stakedByUser != 0) {
       accruedRewards = _getRewards(stakedByUser, newIndex, userIndex);
     }
 

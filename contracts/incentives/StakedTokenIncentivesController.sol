@@ -79,7 +79,7 @@ contract StakedTokenIncentivesController is
     uint256 userBalance
   ) external override {
     uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
-    if (accruedRewards > 0) {
+    if (accruedRewards != 0) {
       _usersUnclaimedRewards[user] += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);
     }
@@ -235,7 +235,7 @@ contract StakedTokenIncentivesController is
     }
 
     uint256 accruedRewards = _claimRewards(user, userState);
-    if (accruedRewards > 0) {
+    if (accruedRewards != 0) {
       unclaimedRewards += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);
     }

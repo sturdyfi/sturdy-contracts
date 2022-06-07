@@ -38,7 +38,7 @@ contract FBeetsOracle is IOracle, Ownable {
     uint256 _price;
     (, , , , , , uint256 timestamp) = BEETS_FTM.getSample(1023);
 
-    if (timestamp > 0) {
+    if (timestamp != 0) {
       IBalancerWeightedPool.OracleAverageQuery[]
         memory queries = new IBalancerWeightedPool.OracleAverageQuery[](1);
 

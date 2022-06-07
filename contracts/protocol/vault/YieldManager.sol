@@ -216,7 +216,7 @@ contract YieldManager is VersionedInitializable, Ownable {
   ) internal {
     uint256 length = _assetYields.length;
     for (uint256 i; i < length; ++i) {
-      if (_assetYields[i].amount > 0) {
+      if (_assetYields[i].amount != 0) {
         uint256 amount;
 
         if (_assetYields[i].asset == _token) {

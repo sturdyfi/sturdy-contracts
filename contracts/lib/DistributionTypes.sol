@@ -14,4 +14,9 @@ library DistributionTypes {
     uint256 stakedByUser;
     uint256 totalStaked;
   }
+
+  struct AssetConfigInputForYield {
+    uint256 totalStaked;
+    address underlyingAsset;
+  }
 }

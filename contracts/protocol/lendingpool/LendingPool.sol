@@ -723,7 +723,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
         emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
-      if (balanceToBefore == 0 && amount > 0) {
+      if (balanceToBefore == 0 && amount != 0) {
         DataTypes.UserConfigurationMap storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
         emit ReserveUsedAsCollateralEnabled(asset, to);
@@ -901,7 +901,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
-    bool reserveAlreadyAdded = _reserves[asset].id > 0 || _reservesList[0] == asset;
+    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
 
     if (!reserveAlreadyAdded) {
       _reserves[asset].id = uint8(reservesCount);

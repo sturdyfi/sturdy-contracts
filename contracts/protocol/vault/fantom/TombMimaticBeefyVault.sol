@@ -31,7 +31,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     uint256 yieldMOO_TOMB_MIMATIC = _getYield(MOO_TOMB_MIMATIC);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryMOO_TOMB_MIMATIC = _processTreasury(yieldMOO_TOMB_MIMATIC);
       yieldMOO_TOMB_MIMATIC -= treasuryMOO_TOMB_MIMATIC;
     }
@@ -52,7 +52,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // TOMB -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositTokenYield(
           provider.getAddress('TOMB'),
           assetYields[i].asset,
@@ -66,7 +66,7 @@ contract TombMimaticBeefyVault is GeneralVault {
     length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // MIMATIC -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositTokenYield(
           provider.getAddress('MIMATIC'),
           assetYields[i].asset,
@@ -158,7 +158,7 @@ contract TombMimaticBeefyVault is GeneralVault {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[path.length - 1] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[path.length - 1] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[path.length - 1],
       Errors.VT_PROCESS_YIELD_INVALID

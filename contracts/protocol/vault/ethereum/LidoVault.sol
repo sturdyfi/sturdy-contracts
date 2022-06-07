@@ -44,7 +44,7 @@ contract LidoVault is GeneralVault {
 
     // move yield to treasury
     uint256 fee = _vaultFee;
-    if (fee > 0) {
+    if (fee != 0) {
       uint256 treasuryStETH = yieldStETH.percentMul(fee);
       IERC20(LIDO).safeTransfer(_treasuryAddress, treasuryStETH);
       yieldStETH -= treasuryStETH;

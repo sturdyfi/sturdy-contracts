@@ -139,7 +139,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         reserveData.stableBorrowRateEnabled,
 
       ) = baseData.configuration.getFlagsMemory();
-      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral > 0;
+      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
       (
         reserveData.variableRateSlope1,
         reserveData.variableRateSlope2,
@@ -224,7 +224,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         ).scaledBalanceOf(user);
         userReservesData[i].principalStableDebt = IStableDebtToken(baseData.stableDebtTokenAddress)
           .principalBalanceOf(user);
-        if (userReservesData[i].principalStableDebt > 0) {
+        if (userReservesData[i].principalStableDebt != 0) {
           userReservesData[i].stableBorrowRate = IStableDebtToken(baseData.stableDebtTokenAddress)
             .getUserStableRate(user);
           userReservesData[i].stableBorrowLastUpdateTimestamp = IStableDebtToken(
@@ -325,7 +325,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         reserveData.stableBorrowRateEnabled,
 
       ) = baseData.configuration.getFlagsMemory();
-      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral > 0;
+      reserveData.usageAsCollateralEnabled = reserveData.baseLTVasCollateral != 0;
       (
         reserveData.variableRateSlope1,
         reserveData.variableRateSlope2,
@@ -390,7 +390,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
           userReservesData[i].principalStableDebt = IStableDebtToken(
             reserveData.stableDebtTokenAddress
           ).principalBalanceOf(user);
-          if (userReservesData[i].principalStableDebt > 0) {
+          if (userReservesData[i].principalStableDebt != 0) {
             userReservesData[i].stableBorrowRate = IStableDebtToken(
               reserveData.stableDebtTokenAddress
             ).getUserStableRate(user);

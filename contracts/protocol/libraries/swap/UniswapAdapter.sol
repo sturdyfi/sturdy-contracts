@@ -85,7 +85,7 @@ library UniswapAdapter {
       receivedAmount = ISwapRouter(UNISWAP_ROUTER).exactInputSingle(params);
     }
 
-    require(receivedAmount > 0, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
+    require(receivedAmount != 0, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
     require(
       IERC20(assetToSwapTo).balanceOf(address(this)) >= receivedAmount,
       Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT

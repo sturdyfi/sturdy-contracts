@@ -124,7 +124,7 @@ contract AToken is
     uint256 index
   ) external payable override onlyLendingPool {
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled > 0, Errors.CT_INVALID_BURN_AMOUNT);
+    require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
     IERC20(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
@@ -149,7 +149,7 @@ contract AToken is
     uint256 previousBalance = super.balanceOf(user);
 
     uint256 amountScaled = amount.rayDiv(index);
-    require(amountScaled > 0, Errors.CT_INVALID_MINT_AMOUNT);
+    require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
 
     emit Transfer(address(0), user, amount);

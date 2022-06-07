@@ -30,7 +30,7 @@ contract YearnCRVVault is GeneralVault {
     uint256 yieldYVCRV = _getYield(YVCRV);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryYVCRV = _processTreasury(yieldYVCRV);
       yieldYVCRV -= treasuryYVCRV;
     }
@@ -42,7 +42,7 @@ contract YearnCRVVault is GeneralVault {
     uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // CRV -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
@@ -103,7 +103,7 @@ contract YearnCRVVault is GeneralVault {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[2] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[2] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.VT_PROCESS_YIELD_INVALID

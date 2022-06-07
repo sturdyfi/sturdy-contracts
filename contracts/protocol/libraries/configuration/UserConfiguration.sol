@@ -58,7 +58,7 @@ library UserConfiguration {
     uint256 reserveIndex
   ) internal pure returns (bool) {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    return (self.data >> (reserveIndex * 2)) & 3 > 0;
+    return (self.data >> (reserveIndex * 2)) & 3 != 0;
   }
 
   /**
@@ -73,7 +73,7 @@ library UserConfiguration {
     returns (bool)
   {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    return (self.data >> (reserveIndex * 2)) & 1 > 0;
+    return (self.data >> (reserveIndex * 2)) & 1 != 0;
   }
 
   /**
@@ -88,7 +88,7 @@ library UserConfiguration {
     returns (bool)
   {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    return (self.data >> (reserveIndex * 2 + 1)) & 1 > 0;
+    return (self.data >> (reserveIndex * 2 + 1)) & 1 != 0;
   }
 
   /**
@@ -97,7 +97,7 @@ library UserConfiguration {
    * @return True if the user has been borrowing any reserve, false otherwise
    **/
   function isBorrowingAny(DataTypes.UserConfigurationMap memory self) internal pure returns (bool) {
-    return self.data & BORROWING_MASK > 0;
+    return self.data & BORROWING_MASK != 0;
   }
 
   /**

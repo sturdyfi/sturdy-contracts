@@ -180,7 +180,7 @@ abstract contract GeneralVault is VersionedInitializable {
    */
   function _getYield(address _stAsset) internal returns (uint256) {
     uint256 yieldStAsset = _getYieldAmount(_stAsset);
-    require(yieldStAsset > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(yieldStAsset != 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     ILendingPool(_addressesProvider.getLendingPool()).getYield(_stAsset, yieldStAsset);
     return yieldStAsset;

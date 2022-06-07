@@ -29,7 +29,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
     address[] memory activeProviders = new address[](maxLength);
 
     for (uint256 i; i < maxLength; ++i) {
-      if (_addressesProviders[addressesProvidersList[i]] > 0) {
+      if (_addressesProviders[addressesProvidersList[i]] != 0) {
         activeProviders[i] = addressesProvidersList[i];
       }
     }
@@ -48,7 +48,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
     override
     onlyOwner
   {
-    require(id > 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
+    require(id != 0, Errors.LPAPR_INVALID_ADDRESSES_PROVIDER_ID);
 
     _addressesProviders[provider] = id;
     _addToAddressesProvidersList(provider);
@@ -60,7 +60,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
    * @param provider The LendingPoolAddressesProvider address
    **/
   function unregisterAddressesProvider(address provider) external payable override onlyOwner {
-    require(_addressesProviders[provider] > 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);
+    require(_addressesProviders[provider] != 0, Errors.LPAPR_PROVIDER_NOT_REGISTERED);
     _addressesProviders[provider] = 0;
     emit AddressesProviderUnregistered(provider);
   }

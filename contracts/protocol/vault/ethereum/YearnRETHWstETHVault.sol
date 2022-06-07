@@ -34,7 +34,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     uint256 yieldYVRETH_WSTETH = _getYield(YVRETH_WSTETH);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryYVRETH_WSTETH = _processTreasury(yieldYVRETH_WSTETH);
       yieldYVRETH_WSTETH -= treasuryYVRETH_WSTETH;
     }

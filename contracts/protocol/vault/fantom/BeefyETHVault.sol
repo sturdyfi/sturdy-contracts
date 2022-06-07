@@ -31,7 +31,7 @@ contract BeefyETHVault is GeneralVault {
     uint256 yieldMOOWETH = _getYield(MOOWETH);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryMOOWETH = _processTreasury(yieldMOOWETH);
       yieldMOOWETH -= treasuryMOOWETH;
     }
@@ -45,7 +45,7 @@ contract BeefyETHVault is GeneralVault {
     uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // WETH -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
@@ -87,7 +87,7 @@ contract BeefyETHVault is GeneralVault {
       block.timestamp
     );
 
-    require(receivedAmounts[2] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[2] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.VT_PROCESS_YIELD_INVALID

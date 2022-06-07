@@ -88,7 +88,7 @@ contract ConvexCurveLPVault is GeneralVault {
 
     // Move some yield to treasury
     uint256 fee = _vaultFee;
-    if (fee > 0) {
+    if (fee != 0) {
       uint256 treasuryAmount = yieldAmount.percentMul(fee);
       IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
       yieldAmount -= treasuryAmount;

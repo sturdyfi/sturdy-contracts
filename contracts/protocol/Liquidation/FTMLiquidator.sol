@@ -153,7 +153,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactETHForTokens{
       value: collateralAmount
     }(minAmountFromPrice, path, address(this), block.timestamp);
-    require(receivedAmounts[1] > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(receivedAmounts[1] != 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     require(
       IERC20(asset).balanceOf(address(this)) >= receivedAmounts[1],
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -189,7 +189,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[2] > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(receivedAmounts[2] != 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     require(
       IERC20(asset).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -225,7 +225,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[2] > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(receivedAmounts[2] != 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     require(
       IERC20(asset).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -261,7 +261,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[2] > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(receivedAmounts[2] != 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     require(
       IERC20(asset).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.LP_LIQUIDATION_CONVERT_FAILED
@@ -375,7 +375,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
 
     uint256 receivedAmount = IBalancerVault(IYearnFBEETSVault(fBEETSVault).getBeethovenVault())
       .swap(singleSwap, funds, limit, type(uint256).max);
-    require(receivedAmount > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmount != 0, Errors.VT_PROCESS_YIELD_INVALID);
 
     return receivedAmount;
   }
@@ -397,7 +397,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     // BEETS -> WFTM
     uint256 balance = IERC20(BEETS).balanceOf(address(this));
     uint256 beetsAmount = balance - _balanceOfBEETS;
-    require(beetsAmount > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(beetsAmount != 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     _swapBEETS2WFTM(beetsAmount, collateralAsset);
 
     balance = IERC20(WFTM).balanceOf(address(this));
@@ -434,7 +434,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[2] > 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+    require(receivedAmounts[2] != 0, Errors.LP_LIQUIDATION_CONVERT_FAILED);
     require(
       IERC20(asset).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.LP_LIQUIDATION_CONVERT_FAILED

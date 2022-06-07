@@ -323,7 +323,7 @@ library ReserveLogic {
 
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
-    if (vars.amountToMint > 0) {
+    if (vars.amountToMint != 0) {
       IAToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
     }
   }
@@ -348,7 +348,7 @@ library ReserveLogic {
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
     //only cumulating if there is any income being produced
-    if (currentLiquidityRate > 0) {
+    if (currentLiquidityRate != 0) {
       uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(
         currentLiquidityRate,
         timestamp
@@ -360,7 +360,7 @@ library ReserveLogic {
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
-      if (scaledVariableDebt > 0) {
+      if (scaledVariableDebt != 0) {
         uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
           reserve.currentVariableBorrowRate,
           timestamp

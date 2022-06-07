@@ -36,7 +36,7 @@ contract YearnVault is GeneralVault {
     uint256 yieldYVWFTM = _getYield(YVWFTM);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryYVWFTM = _processTreasury(yieldYVWFTM);
       yieldYVWFTM -= treasuryYVWFTM;
     }
@@ -51,7 +51,7 @@ contract YearnVault is GeneralVault {
     uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // FTM -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
@@ -105,7 +105,7 @@ contract YearnVault is GeneralVault {
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactETHForTokens{
       value: _ftmAmount
     }(minAmountFromPrice, path, address(this), block.timestamp);
-    require(receivedAmounts[1] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[1] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[1],
       Errors.VT_PROCESS_YIELD_INVALID
@@ -147,7 +147,7 @@ contract YearnVault is GeneralVault {
     uint256 assetAmount = _amount;
     if (_asset == address(0)) {
       // Case of FTM deposit from user, user has to send FTM
-      require(msg.value > 0, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
+      require(msg.value != 0, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
 
       // FTM -> WFTM
       IWETH(WFTM).deposit{value: msg.value}();

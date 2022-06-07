@@ -129,7 +129,7 @@ contract ATokenForCollateral is
     if (decimal < 18) share = amount.rayDiv(index) / 10**(18 - decimal);
     else share = amount.rayDiv(index);
 
-    require(share > 0, Errors.CT_INVALID_BURN_AMOUNT);
+    require(share != 0, Errors.CT_INVALID_BURN_AMOUNT);
 
     _burn(user, amount);
 
@@ -158,7 +158,7 @@ contract ATokenForCollateral is
     if (decimal < 18) amount = (share * 10**(18 - decimal)).rayMul(index);
     else amount = share.rayMul(index);
 
-    require(amount > 0, Errors.CT_INVALID_MINT_AMOUNT);
+    require(amount != 0, Errors.CT_INVALID_MINT_AMOUNT);
 
     _mint(user, amount);
 

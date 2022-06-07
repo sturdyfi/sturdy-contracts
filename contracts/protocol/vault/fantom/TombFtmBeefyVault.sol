@@ -36,7 +36,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 yieldMOO_TOMB_FTM = _getYield(MOO_TOMB_FTM);
 
     // move yield to treasury
-    if (_vaultFee > 0) {
+    if (_vaultFee != 0) {
       uint256 treasuryMOO_TOMB_FTM = _processTreasury(yieldMOO_TOMB_FTM);
       yieldMOO_TOMB_FTM -= treasuryMOO_TOMB_FTM;
     }
@@ -54,7 +54,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // TOMB -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositTokenYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
@@ -64,7 +64,7 @@ contract TombFtmBeefyVault is GeneralVault {
     length = assetYields.length;
     for (uint256 i; i < length; ++i) {
       // FTM -> Asset and Deposit to pool
-      if (assetYields[i].amount > 0) {
+      if (assetYields[i].amount != 0) {
         _convertAndDepositYield(assetYields[i].asset, assetYields[i].amount);
       }
     }
@@ -153,7 +153,7 @@ contract TombFtmBeefyVault is GeneralVault {
       address(this),
       block.timestamp
     );
-    require(receivedAmounts[2] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[2] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[2],
       Errors.VT_PROCESS_YIELD_INVALID
@@ -188,7 +188,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactETHForTokens{
       value: _ftmAmount
     }(minAmountFromPrice, path, address(this), block.timestamp);
-    require(receivedAmounts[1] > 0, Errors.VT_PROCESS_YIELD_INVALID);
+    require(receivedAmounts[1] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
       IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[1],
       Errors.VT_PROCESS_YIELD_INVALID

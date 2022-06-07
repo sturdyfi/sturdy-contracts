@@ -339,7 +339,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     //(otherwise a loan against the asset would cause instantaneous liquidation)
     require(ltv <= liquidationThreshold, Errors.LPC_INVALID_CONFIGURATION);
 
-    if (liquidationThreshold > 0) {
+    if (liquidationThreshold != 0) {
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
       //collateral than needed to cover the debt
       require(

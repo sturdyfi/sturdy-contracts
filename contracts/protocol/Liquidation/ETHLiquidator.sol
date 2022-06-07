@@ -136,15 +136,14 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     uint256 collateralAmount = IERC20(collateralAsset).balanceOf(address(this));
 
     if (collateralAsset == provider.getAddress('LIDO')) {
-      _convertLIDO(provider, collateralAsset, asset, collateralAmount);
+      _convertLIDO(provider, asset, collateralAmount);
     } else if (collateralAsset == FRAX_3CRV_LP_ADDRESS) {
-      _convertFRAX_3CRV(provider, collateralAsset, asset, collateralAmount);
+      _convertFRAX_3CRV(asset, collateralAmount);
     }
   }
 
   function _convertLIDO(
     ILendingPoolAddressesProvider provider,
-    address collateralAsset,
     address asset,
     uint256 collateralAmount
   ) internal {
@@ -174,23 +173,15 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     UniswapAdapter.swapExactTokensForTokens(provider, weth, asset, receivedETHAmount, path, 500);
   }
 
-  function _convertFRAX_3CRV(
-    ILendingPoolAddressesProvider provider,
-    address collateralAsset,
-    address asset,
-    uint256 collateralAmount
-  ) internal {
+  function _convertFRAX_3CRV(address asset, uint256 collateralAmount) internal {
     // Withdraw a single asset(3CRV) from the pool
-    uint256 _amount = _withdrawFromCurvePool(provider, collateralAmount);
+    uint256 _amount = _withdrawFromCurvePool(collateralAmount);
 
     // Swap 3CRV to asset
-    _swap3CRV(provider, asset, _amount);
+    _swap3CRV(asset, _amount);
   }
 
-  function _withdrawFromCurvePool(ILendingPoolAddressesProvider provider, uint256 _amount)
-    internal
-    returns (uint256 amount3CRV)
-  {
+  function _withdrawFromCurvePool(uint256 _amount) internal returns (uint256 amount3CRV) {
     int128 _underlying_coin_index = 1; // 3CRV
 
     uint256 _minAmount = ICurvePool(FRAX_3CRV_LP_ADDRESS).calc_withdraw_one_coin(
@@ -206,11 +197,7 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     );
   }
 
-  function _swap3CRV(
-    ILendingPoolAddressesProvider provider,
-    address _assetOut,
-    uint256 _amount
-  ) internal {
+  function _swap3CRV(address _assetOut, uint256 _amount) internal {
     require(POOL_3CRV_ADDRESS != address(0), Errors.LP_LIQUIDATION_CONVERT_FAILED);
 
     int256 _coin_index = 3;

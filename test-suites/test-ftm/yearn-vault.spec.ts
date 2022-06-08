@@ -336,6 +336,8 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 //         '0',
 //         '0',
 //         '0',
+//         '0',
+//         ZERO_ADDRESS,
 //       ],
 //       false
 //     );

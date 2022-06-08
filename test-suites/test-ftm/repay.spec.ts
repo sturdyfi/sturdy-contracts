@@ -228,6 +228,8 @@ makeSuite('Deposit WFTM as collatoral and other as for pool liquidity supplier '
 //         '0',
 //         '0',
 //         '0',
+//         '0',
+//         ZERO_ADDRESS,
 //       ],
 //       false
 //     );
@@ -354,6 +356,8 @@ makeSuite('Deposit WFTM as collatoral and other as for pool liquidity supplier '
 //         new BigNumber(0.1).multipliedBy(oneRay).toFixed(),
 //         '0',
 //         '0',
+//         '0',
+//         ZERO_ADDRESS,
 //       ],
 //       false
 //     );

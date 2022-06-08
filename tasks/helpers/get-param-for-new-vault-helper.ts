@@ -47,8 +47,9 @@ const isSymbolValid = (
 task('external:get-param-for-new-vault', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
+  .addParam('yieldDistributor', `Yield Distribution address`)
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ pool, verify, symbol }, localBRE) => {
+  .setAction(async ({ pool, verify, symbol, yieldDistributor }, localBRE) => {
     const poolConfig = loadPoolConfig(pool);
     const reserveConfigs = getReserveConfigs(pool);
     const network = process.env.FORK || localBRE.network.name;
@@ -79,6 +80,9 @@ WRONG RESERVE ASSET SETUP:
     const treasuryAddress = await getTreasuryAddress(poolConfig);
     const incentivesController = await getSturdyIncentivesController();
     const atokenAndRatesDeployer = await getATokensAndRatesHelper();
+
+    // ToDo: Deploy yieldDistributor parts instead parameter
+
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,
@@ -88,6 +92,8 @@ WRONG RESERVE ASSET SETUP:
         strategyParams.strategy.variableRateSlope2,
         strategyParams.strategy.stableRateSlope1,
         strategyParams.strategy.stableRateSlope2,
+        strategyParams.strategy.capacity,
+        yieldDistributor || ZERO_ADDRESS,
       ],
       verify
     );

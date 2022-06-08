@@ -84,10 +84,11 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
 
   function handleAction(
     address user,
+    address asset,
     uint256 totalSupply,
     uint256 userBalance
   ) external {
-    uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
+    uint256 accruedRewards = _updateUserAssetInternal(user, asset, userBalance, totalSupply);
     if (accruedRewards != 0) {
       _usersUnclaimedRewards[user] += accruedRewards;
       emit RewardsAccrued(user, accruedRewards);

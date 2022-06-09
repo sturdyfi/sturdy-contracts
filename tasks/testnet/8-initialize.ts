@@ -77,6 +77,7 @@ task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.'
               yvSPELL: (await getYearnSPELLVault()).address,
               // mooWETH: (await getBeefyVault()).address,
             };
+      const yieldDistributor = {};
 
       await initReservesByHelper(
         ReservesConfig,
@@ -88,6 +89,7 @@ task('testnet:initialize-lending-pool', 'Initialize lending pool configuration.'
         admin,
         treasuryAddress,
         yieldAddresses,
+        yieldDistributor,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);

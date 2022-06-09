@@ -9,7 +9,7 @@ import {DistributionManager} from './DistributionManager.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from '../interfaces/IScaledBalanceToken.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
 /**
  * @title StableYieldDistribution
@@ -17,7 +17,7 @@ import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
  * The contract stakes the rewards before redistributing them to the Sturdy protocol participants.
  * @author Sturdy
  **/
-contract StableYieldDistribution is VersionedInitializable, Ownable {
+contract StableYieldDistribution is VersionedInitializable {
   using SafeERC20 for IERC20;
 
   struct AssetData {
@@ -28,6 +28,7 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
   }
 
   uint256 private constant REVISION = 1;
+  address public immutable EMISSION_MANAGER;
 
   uint256 internal _distributionEnd;
 
@@ -50,7 +51,14 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
     uint256 amount
   );
 
-  constructor() {}
+  modifier onlyEmissionManager() {
+    require(msg.sender == EMISSION_MANAGER, Errors.CALLER_NOT_EMISSION_MANAGER);
+    _;
+  }
+
+  constructor(address emissionManager) {
+    EMISSION_MANAGER = emissionManager;
+  }
 
   /**
    * @dev Initialize IStakedTokenIncentivesController
@@ -63,10 +71,10 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
   function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
     external
     payable
-    onlyOwner
+    onlyEmissionManager
   {
     uint256 length = assets.length;
-    require(length == emissionsPerSecond.length, 'INVALID_CONFIGURATION');
+    require(length == emissionsPerSecond.length, Errors.YD_INVALID_CONFIGURATION);
 
     DistributionTypes.AssetConfigInput[]
       memory assetsConfig = new DistributionTypes.AssetConfigInput[](assets.length);
@@ -75,7 +83,10 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
       assetsConfig[i].underlyingAsset = assets[i];
       assetsConfig[i].emissionPerSecond = uint104(emissionsPerSecond[i]);
 
-      require(assetsConfig[i].emissionPerSecond == emissionsPerSecond[i], 'INVALID_CONFIGURATION');
+      require(
+        assetsConfig[i].emissionPerSecond == emissionsPerSecond[i],
+        Errors.YD_INVALID_CONFIGURATION
+      );
 
       assetsConfig[i].totalStaked = IScaledBalanceToken(assets[i]).scaledTotalSupply();
     }
@@ -119,7 +130,7 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
     uint256 amount,
     address to
   ) external returns (uint256) {
-    require(to != address(0), 'INVALID_TO_ADDRESS');
+    require(to != address(0), Errors.YD_INVALID_CONFIGURATION);
     return _claimRewards(assets, amount, msg.sender, msg.sender, to);
   }
 
@@ -127,12 +138,12 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
     return _usersUnclaimedRewards[_user];
   }
 
-  function setRewardInfo(address tokenAddress, uint8 tokenDecimal) external onlyOwner {
+  function setRewardInfo(address tokenAddress, uint8 precision) external onlyEmissionManager {
     REWARD_TOKEN = tokenAddress;
-    PRECISION = tokenDecimal;
+    PRECISION = precision;
   }
 
-  function setDistributionEnd(uint256 distributionEnd) external payable onlyOwner {
+  function setDistributionEnd(uint256 distributionEnd) external payable onlyEmissionManager {
     _distributionEnd = distributionEnd;
     emit DistributionEndUpdated(distributionEnd);
   }
@@ -369,6 +380,7 @@ contract StableYieldDistribution is VersionedInitializable, Ownable {
         accruedRewards +
         _getRewards(stakes[i].stakedByUser, assetIndex, assetConfig.users[user]);
     }
+
     return accruedRewards;
   }
 

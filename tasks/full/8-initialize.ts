@@ -31,6 +31,7 @@ import {
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
   getConvexDOLA3CRVVault,
+  getFXSStableYieldDistribution,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -90,6 +91,13 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvSPELL: (await getYearnSPELLVault()).address,
             };
 
+      const yieldDistributor =
+        pool == ConfigNames.Sturdy
+          ? {
+              cvxFRAX_3CRV: (await getFXSStableYieldDistribution()).address,
+            }
+          : {};
+
       await initReservesByHelper(
         ReservesConfig,
         reserveAssets,
@@ -100,6 +108,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         admin,
         treasuryAddress,
         yieldAddresses,
+        yieldDistributor,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);

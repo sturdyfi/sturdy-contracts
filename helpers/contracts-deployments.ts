@@ -45,6 +45,8 @@ import {
   getYieldManager,
   getUniswapAdapterAddress,
   getCurveswapAdapterAddress,
+  getStableYieldDistributionImpl,
+  getFXSStableYieldDistribution,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -123,6 +125,7 @@ import {
   STECRVOracleFactory,
   DOLA3CRVOracleFactory,
   YieldManagerFactory,
+  StableYieldDistributionFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1818,6 +1821,37 @@ export const deploySturdyToken = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.SturdyToken, incentiveTokenProxyAddress);
 
   return await getSturdyToken();
+};
+
+export const deployStableYieldDistributionImpl = async (args: [string], verify?: boolean) => {
+  const impl = await withSaveAndVerify(
+    await new StableYieldDistributionFactory(await getFirstSigner()).deploy(...args),
+    eContractid.StableYieldDistributionImpl,
+    args,
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await impl.initialize(addressesProvider.address));
+  return impl;
+};
+
+export const deployFXSStableYieldDistribution = async () => {
+  const stableYieldDistributionImpl = await getStableYieldDistributionImpl();
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('FXS_YIELD_DISTRIBUTOR'),
+      stableYieldDistributionImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('FXS_YIELD_DISTRIBUTOR')
+  );
+  await insertContractAddressInDb(eContractid.FXSStableYieldDistribution, proxyAddress);
+
+  return await getFXSStableYieldDistribution();
 };
 
 export const deployCollateralAdapter = async (verify?: boolean) => {

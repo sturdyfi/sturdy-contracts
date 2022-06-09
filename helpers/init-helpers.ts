@@ -10,6 +10,7 @@ import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
+  getFXSStableYieldDistribution,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
@@ -30,7 +31,7 @@ import {
 import { ZERO_ADDRESS } from './constants';
 import * as sturdyReserveConfigs from '../markets/sturdy/reservesConfigs';
 import * as fantomReserveConfigs from '../markets/ftm/reservesConfigs';
-import { ConfigNames } from './configuration';
+import { ConfigNames, loadPoolConfig } from './configuration';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -271,6 +272,15 @@ export const initReservesByHelper = async (
   }
 
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
+
+  //FXSStableYieldDistributor config
+  const response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
+  const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
+  await FXSStableYieldDistributor.configureAssets(
+    [response.aTokenAddress],
+    [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
+  );
+
   return gasUsage; // Deprecated
 };
 

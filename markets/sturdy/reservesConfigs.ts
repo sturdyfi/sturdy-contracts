@@ -105,7 +105,7 @@ export const strategyCVXFRAX_3CRV: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '0',
+  emissionPerSecond: '10',
   };
 
 export const strategyCVXSTECRV: IReserveParams = {

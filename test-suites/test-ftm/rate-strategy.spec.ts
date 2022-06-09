@@ -1,7 +1,7 @@
 import { TestEnv, makeSuite } from './helpers/make-suite';
 import { deployDefaultReserveInterestRateStrategy } from '../../helpers/contracts-deployments';
 
-import { APPROVAL_AMOUNT_LENDING_POOL, PERCENTAGE_FACTOR, RAY } from '../../helpers/constants';
+import { APPROVAL_AMOUNT_LENDING_POOL, PERCENTAGE_FACTOR, RAY, ZERO_ADDRESS } from '../../helpers/constants';
 
 import { rateStrategyStableTwo } from '../../markets/sturdy/rateStrategies';
 
@@ -32,6 +32,8 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
         rateStrategyStableTwo.variableRateSlope2,
         rateStrategyStableTwo.stableRateSlope1,
         rateStrategyStableTwo.stableRateSlope2,
+        rateStrategyStableTwo.capacity,
+        ZERO_ADDRESS,
       ],
       false
     );

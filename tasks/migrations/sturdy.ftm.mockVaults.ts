@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { parseEther } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { oneRay } from '../../helpers/constants';
+import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
 import {
   deployMintableERC20,
   deployMockBOOForFTM,
@@ -68,6 +68,8 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     //     new BigNumber(0.4).multipliedBy(oneRay).toFixed(),
     //     '0',
     //     '0',
+    //     '0',
+    //     ZERO_ADDRESS,
     //   ],
     //   verify
     // );

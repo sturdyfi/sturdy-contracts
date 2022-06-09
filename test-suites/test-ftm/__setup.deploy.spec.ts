@@ -289,6 +289,9 @@ const deployNewVault = async () => {
 
   const reserveConfigs = getReserveConfigs(ConfigNames.Fantom);
   const strategyParams = reserveConfigs['strategy' + 'mooTOMB_MIMATIC'.toUpperCase()];
+
+  // ToDo: Deploy yield distributor part
+  const yieldAddress = ZERO_ADDRESS
   const rates = await deployDefaultReserveInterestRateStrategy(
     [
       addressProvider.address,
@@ -298,6 +301,8 @@ const deployNewVault = async () => {
       strategyParams.strategy.variableRateSlope2,
       strategyParams.strategy.stableRateSlope1,
       strategyParams.strategy.stableRateSlope2,
+      strategyParams.strategy.capacity,
+      yieldAddress,
     ],
     false
   );

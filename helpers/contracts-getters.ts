@@ -66,6 +66,7 @@ import {
   CrvREthWstETHOracleFactory,
   ConvexCurveLPVaultFactory,
   YieldManagerFactory,
+  StableYieldDistributionFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -798,6 +799,24 @@ export const getSturdyToken = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.SturdyToken}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getStableYieldDistributionImpl = async (address?: tEthereumAddress) =>
+  await StableYieldDistributionFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.StableYieldDistributionImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getFXSStableYieldDistribution = async (address?: tEthereumAddress) =>
+  await StableYieldDistributionFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.FXSStableYieldDistribution}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

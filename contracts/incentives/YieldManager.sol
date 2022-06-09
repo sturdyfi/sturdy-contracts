@@ -2,19 +2,19 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {Errors} from '../libraries/helpers/Errors.sol';
-import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
-import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
-import {ISwapRouter} from '../../interfaces/ISwapRouter.sol';
-import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
-import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
-import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
+import {Errors} from '../protocol/libraries/helpers/Errors.sol';
+import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
+import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
+import {ISwapRouter} from '../interfaces/ISwapRouter.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {PercentageMath} from '../protocol/libraries/math/PercentageMath.sol';
+import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {UniswapAdapter} from '../protocol/libraries/swap/UniswapAdapter.sol';
+import {CurveswapAdapter} from '../protocol/libraries/swap/CurveswapAdapter.sol';
 
 /**
  * @title YieldManager

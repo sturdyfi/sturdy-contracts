@@ -78,6 +78,8 @@ export enum eContractid {
   StakedTokenIncentivesController = 'StakedTokenIncentivesController',
   SturdyTokenImpl = 'SturdyTokenImpl',
   SturdyToken = 'SturdyToken',
+  StableYieldDistributionImpl = 'StableYieldDistributionImpl',
+  FXSStableYieldDistribution = 'FXSStableYieldDistribution',
   SturdyProtocolDataProvider = 'SturdyProtocolDataProvider',
   WalletBalanceProvider = 'WalletBalanceProvider',
   UiIncentiveDataProvider = 'UiIncentiveDataProvider',

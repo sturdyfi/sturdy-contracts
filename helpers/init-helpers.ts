@@ -10,6 +10,7 @@ import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
+  getFXSStableYieldDistribution,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
@@ -30,7 +31,7 @@ import {
 import { ZERO_ADDRESS } from './constants';
 import * as sturdyReserveConfigs from '../markets/sturdy/reservesConfigs';
 import * as fantomReserveConfigs from '../markets/ftm/reservesConfigs';
-import { ConfigNames } from './configuration';
+import { ConfigNames, loadPoolConfig } from './configuration';
 
 export const chooseATokenDeployment = (id: eContractid) => {
   switch (id) {
@@ -64,6 +65,7 @@ export const initReservesByHelper = async (
   admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
   yieldAddresses: Object, // TODO @bshevchenko: refactor
+  yieldDistributor: Object, // TODO @bshevchenko: refactor
   verify: boolean
 ): Promise<BigNumber> => {
   let gasUsage = BigNumber.from('0');
@@ -105,6 +107,8 @@ export const initReservesByHelper = async (
 
   let strategyRates: [
     string, // addresses provider
+    string,
+    string,
     string,
     string,
     string,
@@ -164,6 +168,7 @@ export const initReservesByHelper = async (
       variableRateSlope2,
       stableRateSlope1,
       stableRateSlope2,
+      capacity,
     } = strategy;
     if (!strategyAddresses[strategy.name]) {
       // Strategy does not exist, create a new one
@@ -175,6 +180,8 @@ export const initReservesByHelper = async (
         variableRateSlope2,
         stableRateSlope1,
         stableRateSlope2,
+        capacity,
+        yieldDistributor[symbol] || ZERO_ADDRESS,
       ];
       strategyAddresses[strategy.name] = (
         await deployDefaultReserveInterestRateStrategy(rateStrategies[strategy.name], verify)
@@ -265,6 +272,15 @@ export const initReservesByHelper = async (
   }
 
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
+
+  //FXSStableYieldDistributor config
+  const response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
+  const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
+  await FXSStableYieldDistributor.configureAssets(
+    [response.aTokenAddress],
+    [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
+  );
+
   return gasUsage; // Deprecated
 };
 

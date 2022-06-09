@@ -36,10 +36,14 @@ task('external:deploy-new-asset', 'Deploy A token, Debt Tokens, Risk Parameters'
   .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
   .addParam('yieldaddress', `Yield address, needs for collateral asset`)
+  .addParam('yieldDistributor', `Yield Distributor address`)
   .addParam('externalcollateraladdress', `External collateral address`)
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(
-    async ({ pool, verify, symbol, yieldaddress, externalcollateraladdress }, localBRE) => {
+    async (
+      { pool, verify, symbol, yieldaddress, yieldDistributor, externalcollateraladdress },
+      localBRE
+    ) => {
       const poolConfig = loadPoolConfig(pool);
       const reserveConfigs = getReserveConfigs(pool);
       const network = process.env.FORK || localBRE.network.name;
@@ -76,6 +80,8 @@ WRONG RESERVE ASSET SETUP:
           strategyParams.strategy.variableRateSlope2,
           strategyParams.strategy.stableRateSlope1,
           strategyParams.strategy.stableRateSlope2,
+          strategyParams.strategy.capacity,
+          yieldDistributor || ZERO_ADDRESS,
         ],
         verify
       );

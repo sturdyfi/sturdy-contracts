@@ -10,6 +10,12 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from '../interfaces/IScaledBalanceToken.sol';
 import {ISturdyIncentivesController} from '../interfaces/ISturdyIncentivesController.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
+import {IAToken} from '../interfaces/IAToken.sol';
+import {ILendingPool} from '../interfaces/ILendingPool.sol';
+import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+import {IYieldDistribution} from '../interfaces/IYieldDistribution.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
 /**
  * @title StakedTokenIncentivesController
@@ -34,7 +40,7 @@ contract StakedTokenIncentivesController is
   mapping(address => address) internal _authorizedClaimers;
 
   modifier onlyAuthorizedClaimers(address claimer, address user) {
-    require(_authorizedClaimers[user] == claimer, 'CLAIMER_UNAUTHORIZED');
+    require(_authorizedClaimers[user] == claimer, Errors.CLAIMER_UNAUTHORIZED);
     _;
   }
 
@@ -56,7 +62,7 @@ contract StakedTokenIncentivesController is
     onlyEmissionManager
   {
     uint256 length = assets.length;
-    require(length == emissionsPerSecond.length, 'INVALID_CONFIGURATION');
+    require(length == emissionsPerSecond.length, Errors.YD_INVALID_CONFIGURATION);
 
     DistributionTypes.AssetConfigInput[]
       memory assetsConfig = new DistributionTypes.AssetConfigInput[](assets.length);
@@ -65,7 +71,10 @@ contract StakedTokenIncentivesController is
       assetsConfig[i].underlyingAsset = assets[i];
       assetsConfig[i].emissionPerSecond = uint104(emissionsPerSecond[i]);
 
-      require(assetsConfig[i].emissionPerSecond == emissionsPerSecond[i], 'INVALID_CONFIGURATION');
+      require(
+        assetsConfig[i].emissionPerSecond == emissionsPerSecond[i],
+        Errors.YD_INVALID_CONFIGURATION
+      );
 
       assetsConfig[i].totalStaked = IScaledBalanceToken(assets[i]).scaledTotalSupply();
     }
@@ -78,11 +87,23 @@ contract StakedTokenIncentivesController is
     uint256 totalSupply,
     uint256 userBalance
   ) external override {
-    uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
-    if (accruedRewards != 0) {
-      _usersUnclaimedRewards[user] += accruedRewards;
-      emit RewardsAccrued(user, accruedRewards);
+    ILendingPoolAddressesProvider provider = _addressProvider;
+    address reserveAsset = IAToken(msg.sender).UNDERLYING_ASSET_ADDRESS();
+    require(reserveAsset != address(0), Errors.YD_INVALID_CONFIGURATION);
+
+    DataTypes.ReserveData memory reserveData = ILendingPool(provider.getLendingPool())
+      .getReserveData(reserveAsset);
+    address yieldDistributor = IReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
+      .yieldDistributor();
+    if (yieldDistributor != address(0)) {
+      IYieldDistribution(yieldDistributor).handleAction(user, msg.sender, totalSupply, userBalance);
     }
+
+    // uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
+    // if (accruedRewards != 0) {
+    //   _usersUnclaimedRewards[user] += accruedRewards;
+    //   emit RewardsAccrued(user, accruedRewards);
+    // }
   }
 
   /// @inheritdoc ISturdyIncentivesController
@@ -112,7 +133,7 @@ contract StakedTokenIncentivesController is
     uint256 amount,
     address to
   ) external override returns (uint256) {
-    require(to != address(0), 'INVALID_TO_ADDRESS');
+    require(to != address(0), Errors.YD_INVALID_CONFIGURATION);
     return _claimRewards(assets, amount, msg.sender, msg.sender, to);
   }
 
@@ -123,8 +144,8 @@ contract StakedTokenIncentivesController is
     address user,
     address to
   ) external override onlyAuthorizedClaimers(msg.sender, user) returns (uint256) {
-    require(user != address(0), 'INVALID_USER_ADDRESS');
-    require(to != address(0), 'INVALID_TO_ADDRESS');
+    require(user != address(0), Errors.YD_INVALID_CONFIGURATION);
+    require(to != address(0), Errors.YD_INVALID_CONFIGURATION);
     return _claimRewards(assets, amount, msg.sender, user, to);
   }
 

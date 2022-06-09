@@ -1,5 +1,6 @@
 import { task } from 'hardhat/config';
 import {
+  deployStableYieldDistributionImpl,
   deploySturdyIncentivesController,
   deploySturdyToken,
 } from '../../helpers/contracts-deployments';
@@ -21,6 +22,12 @@ task('full:deploy-incentives-impl', 'Incentives controller implementation deploy
 
       const sturdyToken = await deploySturdyToken(verify);
       console.log(`- Incentives sturdy token proxy address ${sturdyToken.address}`);
+
+      const stableYieldDistributorImpl = await deployStableYieldDistributionImpl(
+        [EMISSION_EXECUTOR],
+        verify
+      );
+      console.log(`- Stable Yield Distributor Impl address ${stableYieldDistributorImpl.address}`);
     } catch (err) {
       console.error(err);
       exit(1);

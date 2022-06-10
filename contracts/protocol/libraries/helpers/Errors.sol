@@ -127,6 +127,7 @@ library Errors {
   string internal constant CLAIMER_UNAUTHORIZED = '102'; // 'The claimer is not authorized'
   string internal constant YD_INVALID_CONFIGURATION = '103'; // 'The yield distribution's invalid configuration'
   string internal constant CALLER_NOT_EMISSION_MANAGER = '104'; // 'The caller must be emission manager'
+  string internal constant CALLER_NOT_INCENTIVE_CONTROLLER = '105'; // 'The caller must be incentive controller'
 
   enum CollateralManagerErrors {
     NO_ERROR,

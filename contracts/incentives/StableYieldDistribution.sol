@@ -56,6 +56,14 @@ contract StableYieldDistribution is VersionedInitializable {
     _;
   }
 
+  modifier onlyIncentiveController() {
+    require(
+      msg.sender == _addressProvider.getIncentiveController(),
+      Errors.CALLER_NOT_INCENTIVE_CONTROLLER
+    );
+    _;
+  }
+
   constructor(address emissionManager) {
     EMISSION_MANAGER = emissionManager;
   }
@@ -98,7 +106,7 @@ contract StableYieldDistribution is VersionedInitializable {
     address asset,
     uint256 totalSupply,
     uint256 userBalance
-  ) external {
+  ) external payable onlyIncentiveController {
     uint256 accruedRewards = _updateUserAssetInternal(user, asset, userBalance, totalSupply);
     if (accruedRewards != 0) {
       _usersUnclaimedRewards[user] += accruedRewards;
@@ -138,7 +146,11 @@ contract StableYieldDistribution is VersionedInitializable {
     return _usersUnclaimedRewards[_user];
   }
 
-  function setRewardInfo(address tokenAddress, uint8 precision) external onlyEmissionManager {
+  function setRewardInfo(address tokenAddress, uint8 precision)
+    external
+    payable
+    onlyEmissionManager
+  {
     REWARD_TOKEN = tokenAddress;
     PRECISION = precision;
   }

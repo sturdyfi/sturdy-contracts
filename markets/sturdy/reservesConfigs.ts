@@ -63,7 +63,7 @@ export const strategySTETH: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '0',
+  emissionPerSecond: '10',
   };
 
 export const strategyYVRETH_WSTETH: IReserveParams = {

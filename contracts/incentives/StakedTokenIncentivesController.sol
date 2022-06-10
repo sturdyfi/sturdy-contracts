@@ -87,6 +87,8 @@ contract StakedTokenIncentivesController is
     uint256 totalSupply,
     uint256 userBalance
   ) external override {
+    if (assets[msg.sender].emissionPerSecond == 0) return;
+
     ILendingPoolAddressesProvider provider = _addressProvider;
     address reserveAsset = IAToken(msg.sender).UNDERLYING_ASSET_ADDRESS();
     require(reserveAsset != address(0), Errors.YD_INVALID_CONFIGURATION);

@@ -85,3 +85,39 @@ export const rateStrategyCVXDOLA_3CRV: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
   capacity: '0',
 }
+
+// cvxMIM_3CRV
+export const rateStrategyCVXMIM_3CRV: IInterestRateStrategyParams = {
+  name: "rateStrategyCVXMIM_3CRV",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}
+
+// cvxmUSD_3CRV
+export const rateStrategyCVXMUSD_3CRV: IInterestRateStrategyParams = {
+  name: "rateStrategyCVXMUSD_3CRV",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}
+
+// cvxDAI_USDC_USDT_sUSD
+export const rateStrategyCVXDAI_USDC_USDT_SUSD: IInterestRateStrategyParams = {
+  name: "rateStrategyCVXDAI_USDC_USDT_SUSD",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}

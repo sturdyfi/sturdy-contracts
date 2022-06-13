@@ -8,6 +8,9 @@ import {
   rateStrategyCVXFRAX_3CRV,
   rateStrategyCVXSTECRV,
   rateStrategyCVXDOLA_3CRV,
+  rateStrategyCVXMIM_3CRV,
+  rateStrategyCVXMUSD_3CRV,
+  rateStrategyCVXDAI_USDC_USDT_SUSD,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -124,6 +127,48 @@ export const strategyCVXSTECRV: IReserveParams = {
 
 export const strategyCVXDOLA_3CRV: IReserveParams = {
   strategy: rateStrategyCVXDOLA_3CRV,
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+  };
+
+export const strategyCVXMIM_3CRV: IReserveParams = {
+  strategy: rateStrategyCVXMIM_3CRV,
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+  };
+
+export const strategyCVXMUSD_3CRV: IReserveParams = {
+  strategy: rateStrategyCVXMUSD_3CRV,
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+  };
+
+export const strategyCVXDAI_USDC_USDT_SUSD: IReserveParams = {
+  strategy: rateStrategyCVXDAI_USDC_USDT_SUSD,
   baseLTVAsCollateral: '9000',
   liquidationThreshold: '9300',
   liquidationBonus: '10200',

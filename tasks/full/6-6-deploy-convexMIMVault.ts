@@ -1,14 +1,17 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { deploySTECRVOracle, deployConvexSTETHVault } from '../../helpers/contracts-deployments';
+import {
+  deployMIM3CRVPOracle,
+  deployConvexMIM3CRVVault,
+} from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 
-const CONTRACT_NAME = 'ConvexSTETHVault';
+const CONTRACT_NAME = 'ConvexMIM3CRVVault';
 
-task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
+task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .addFlag('verify', `Verify ${CONTRACT_NAME} contract via Etherscan API.`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -20,30 +23,30 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, STECRV_LP } =
+    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, MIM_3CRV_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
-    const vault = await deployConvexSTETHVault(verify);
+    const vault = await deployConvexMIM3CRVVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
-    await vault.setConfiguration(getParamPerNetwork(STECRV_LP, network), 25); // set curve lp token & convex pool id
+    await vault.setConfiguration(getParamPerNetwork(MIM_3CRV_LP, network), 40); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);
 
-    // Deploy steCRV oracle
-    let steCRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxSTECRV;
-    if (!steCRVOracleAddress) {
-      const steCRVOracle = await deploySTECRVOracle(verify);
-      steCRVOracleAddress = steCRVOracle.address;
+    // Deploy MIM3CRV oracle
+    let MIM3CRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxMIM_3CRV;
+    if (!MIM3CRVOracleAddress) {
+      const MIM3CRVOracle = await deployMIM3CRVPOracle(verify);
+      MIM3CRVOracleAddress = MIM3CRVOracle.address;
     }
 
-    // Register csteCRV oracle
+    // Register cMIM3CRV-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [steCRVOracleAddress])
+      await sturdyOracle.setAssetSources([internalAssetAddress], [MIM3CRVOracleAddress])
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

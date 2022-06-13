@@ -23,14 +23,8 @@ task(`full:deploy-convex-rocket-pool-eth-vault`, `Deploys the ${CONTRACT_NAME} c
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const {
-      ReserveFactorTreasuryAddress,
-      ReserveAssets,
-      ChainlinkAggregator,
-      CRV,
-      CVX,
-      RETH_WSTETH_LP,
-    } = poolConfig as ISturdyConfiguration;
+    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, RETH_WSTETH_LP } =
+      poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexRocketPoolETHVault(verify);
@@ -49,23 +43,12 @@ task(`full:deploy-convex-rocket-pool-eth-vault`, `Deploys the ${CONTRACT_NAME} c
       rETHWstETHOracleAddress = rETHWstETHOracle.address;
     }
 
-    // Register crETHwstETH-f, CRV, CVX oracle
+    // Register crETHwstETH-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)],
-        [
-          rETHWstETHOracleAddress,
-          getParamPerNetwork(ChainlinkAggregator, network).CRV,
-          getParamPerNetwork(ChainlinkAggregator, network).CVX,
-        ]
-      )
+      await sturdyOracle.setAssetSources([internalAssetAddress], [rETHWstETHOracleAddress])
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
-
-    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(CRV, network))).toString());
-
-    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(CVX, network))).toString());
 
     console.log(`${CONTRACT_NAME}.address`, vault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

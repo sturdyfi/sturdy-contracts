@@ -12,7 +12,6 @@ import {
   strategyCVXDOLA_3CRV,
   strategyUSDT,
   strategyCVXMIM_3CRV,
-  strategyCVXMUSD_3CRV,
   strategyCVXDAI_USDC_USDT_SUSD,
 } from './reservesConfigs';
 
@@ -35,7 +34,6 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxSTECRV: strategyCVXSTECRV,
     cvxDOLA_3CRV: strategyCVXDOLA_3CRV,
     cvxMIM_3CRV: strategyCVXMIM_3CRV,
-    cvxmUSD_3CRV: strategyCVXMUSD_3CRV,
     cvxDAI_USDC_USDT_sUSD: strategyCVXDAI_USDC_USDT_SUSD,
   },
   ReserveAssets: {
@@ -63,7 +61,6 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxMIM_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
-      cvxmUSD_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
       cvxDAI_USDC_USDT_sUSD: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
     },
     [eEthereumNetwork.tenderly]: {
@@ -77,7 +74,6 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxMIM_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
-      cvxmUSD_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
       cvxDAI_USDC_USDT_sUSD: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
     },
     [eEthereumNetwork.goerli]: {
@@ -192,18 +188,6 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B',
     [eEthereumNetwork.tenderly]: '0x5a6A4D54456819380173272A5E8E9B9904BdF41B',
-    [eEthereumNetwork.goerli]: '',
-  },
-  MUSD_3CRV_LP: {
-    [eEthereumNetwork.coverage]: '',
-    [eEthereumNetwork.hardhat]: '',
-    [eEthereumNetwork.geth]: '',
-    [eEthereumNetwork.localhost]: '',
-    [eEthereumNetwork.buidlerevm]: '',
-    [eEthereumNetwork.kovan]: '',
-    [eEthereumNetwork.ropsten]: '',
-    [eEthereumNetwork.main]: '0x1AEf73d49Dedc4b1778d0706583995958Dc862e6',
-    [eEthereumNetwork.tenderly]: '0x1AEf73d49Dedc4b1778d0706583995958Dc862e6',
     [eEthereumNetwork.goerli]: '',
   },
   DAI_USDC_USDT_SUSD_LP: {

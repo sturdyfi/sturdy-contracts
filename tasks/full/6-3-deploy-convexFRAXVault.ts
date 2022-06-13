@@ -23,14 +23,8 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const {
-      ReserveFactorTreasuryAddress,
-      ReserveAssets,
-      ChainlinkAggregator,
-      CRV,
-      CVX,
-      FRAX_3CRV_LP,
-    } = poolConfig as ISturdyConfiguration;
+    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, CRV, CVX, FRAX_3CRV_LP } =
+      poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexFRAX3CRVVault(verify);

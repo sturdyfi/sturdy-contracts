@@ -40,7 +40,7 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
     let DAIUSDCUSDTSUSDOracleAddress = getParamPerNetwork(
       ChainlinkAggregator,
       network
-    ).cvxDAI_USDC_USDT_sUSD;
+    ).cvxDAI_USDC_USDT_SUSD;
     if (!DAIUSDCUSDTSUSDOracleAddress) {
       const DAIUSDCUSDTSUSDOracle = await deployDAIUSDCUSDTSUSDOracle(verify);
       DAIUSDCUSDTSUSDOracleAddress = DAIUSDCUSDTSUSDOracle.address;

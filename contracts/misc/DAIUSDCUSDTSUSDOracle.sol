@@ -13,7 +13,7 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
  */
 contract DAIUSDCUSDTSUSDOracle is IOracle {
   ICurvePool private constant DAIUSDCUSDTSUSD =
-    ICurvePool(0xC25a3A3b969415c80451098fa907EC722572917F);
+    ICurvePool(0xA5407eAE9Ba41422680e2e00537571bcC53efBfD);
 
   IChainlinkAggregator private constant DAI =
     IChainlinkAggregator(0x773616E4d11A78F511299002da57A0a94577F1f4);

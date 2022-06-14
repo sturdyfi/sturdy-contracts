@@ -34,7 +34,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxSTECRV: strategyCVXSTECRV,
     cvxDOLA_3CRV: strategyCVXDOLA_3CRV,
     cvxMIM_3CRV: strategyCVXMIM_3CRV,
-    cvxDAI_USDC_USDT_sUSD: strategyCVXDAI_USDC_USDT_SUSD,
+    cvxDAI_USDC_USDT_SUSD: strategyCVXDAI_USDC_USDT_SUSD,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -60,8 +60,8 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxFRAX_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
-      cvxMIM_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
-      cvxDAI_USDC_USDT_sUSD: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
+      cvxMIM_3CRV: '0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
+      cvxDAI_USDC_USDT_SUSD: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -73,8 +73,8 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxFRAX_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
-      cvxMIM_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
-      cvxDAI_USDC_USDT_sUSD: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
+      cvxMIM_3CRV: '0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
+      cvxDAI_USDC_USDT_SUSD: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',

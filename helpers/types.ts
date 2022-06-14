@@ -289,7 +289,7 @@ export interface iAssetBase<T> {
   cvxSTECRV: T;
   cvxDOLA_3CRV: T;
   cvxMIM_3CRV: T;
-  cvxDAI_USDC_USDT_sUSD: T;
+  cvxDAI_USDC_USDT_SUSD: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -320,7 +320,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxSTECRV'
   | 'cvxDOLA_3CRV'
   | 'cvxMIM_3CRV'
-  | 'cvxDAI_USDC_USDT_sUSD'
+  | 'cvxDAI_USDC_USDT_SUSD'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -360,7 +360,7 @@ export enum TokenContractId {
   cvxSTECRV = 'cvxSTECRV',
   cvxDOLA_3CRV = 'cvxDOLA_3CRV',
   cvxMIM_3CRV = 'cvxMIM_3CRV',
-  cvxDAI_USDC_USDT_sUSD = 'cvxDAI_USDC_USDT_sUSD',
+  cvxDAI_USDC_USDT_SUSD = 'cvxDAI_USDC_USDT_SUSD',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',

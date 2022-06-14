@@ -98,7 +98,7 @@ export const rateStrategyCVXMIM_3CRV: IInterestRateStrategyParams = {
   capacity: '0',
 }
 
-// cvxDAI_USDC_USDT_sUSD
+// cvxDAI_USDC_USDT_SUSD
 export const rateStrategyCVXDAI_USDC_USDT_SUSD: IInterestRateStrategyParams = {
   name: "rateStrategyCVXDAI_USDC_USDT_SUSD",
   optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),

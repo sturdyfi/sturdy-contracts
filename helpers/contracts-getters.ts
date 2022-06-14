@@ -532,6 +532,24 @@ export const getConvexDOLA3CRVVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getConvexMIM3CRVVault = async (address?: tEthereumAddress) =>
+  await ConvexCurveLPVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ConvexMIM3CRVVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getConvexDAIUSDCUSDTSUSDVault = async (address?: tEthereumAddress) =>
+  await ConvexCurveLPVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ConvexDAIUSDCUSDTSUSDVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVaultFactory.connect(
     address ||

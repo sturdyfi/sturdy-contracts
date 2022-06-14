@@ -66,6 +66,8 @@ export enum eContractid {
   FRAX3CRVOracle = 'FRAX3CRVOracle',
   STECRVOracle = 'STECRVOracle',
   DOLA3CRVOracle = 'DOLA3CRVOracle',
+  MIM3CRVOracle = 'MIM3CRVOracle',
+  DAIUSDCUSDTSUSDOracle = 'DAIUSDCUSDTSUSDOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -110,6 +112,10 @@ export enum eContractid {
   ConvexSTETHVault = 'ConvexSTETHVault',
   ConvexDOLA3CRVVaultImpl = 'ConvexDOLA3CRVVaultImpl',
   ConvexDOLA3CRVVault = 'ConvexDOLA3CRVVault',
+  ConvexMIM3CRVVaultImpl = 'ConvexMIM3CRVVaultImpl',
+  ConvexMIM3CRVVault = 'ConvexMIM3CRVVault',
+  ConvexDAIUSDCUSDTSUSDVaultImpl = 'ConvexDAIUSDCUSDTSUSDVaultImpl',
+  ConvexDAIUSDCUSDTSUSDVault = 'ConvexDAIUSDCUSDTSUSDVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -282,6 +288,8 @@ export interface iAssetBase<T> {
   cvxFRAX_3CRV: T;
   cvxSTECRV: T;
   cvxDOLA_3CRV: T;
+  cvxMIM_3CRV: T;
+  cvxDAI_USDC_USDT_SUSD: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -311,6 +319,8 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxFRAX_3CRV'
   | 'cvxSTECRV'
   | 'cvxDOLA_3CRV'
+  | 'cvxMIM_3CRV'
+  | 'cvxDAI_USDC_USDT_SUSD'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -349,6 +359,8 @@ export enum TokenContractId {
   cvxFRAX_3CRV = 'cvxFRAX_3CRV',
   cvxSTECRV = 'cvxSTECRV',
   cvxDOLA_3CRV = 'cvxDOLA_3CRV',
+  cvxMIM_3CRV = 'cvxMIM_3CRV',
+  cvxDAI_USDC_USDT_SUSD = 'cvxDAI_USDC_USDT_SUSD',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -509,6 +521,8 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   FRAX_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
   STECRV_LP: iParamsPerNetwork<tEthereumAddress>;
   DOLA_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
+  MIM_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
+  DAI_USDC_USDT_SUSD_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;

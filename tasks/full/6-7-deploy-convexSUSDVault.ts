@@ -1,14 +1,17 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
-import { deploySTECRVOracle, deployConvexSTETHVault } from '../../helpers/contracts-deployments';
+import {
+  deployDAIUSDCUSDTSUSDOracle,
+  deployConvexDAIUSDCUSDTSUSDVault,
+} from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 
-const CONTRACT_NAME = 'ConvexSTETHVault';
+const CONTRACT_NAME = 'ConvexDAIUSDCUSDTSUSDVault';
 
-task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
+task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME} contract`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .addFlag('verify', `Verify ${CONTRACT_NAME} contract via Etherscan API.`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -20,30 +23,33 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, STECRV_LP } =
+    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, DAI_USDC_USDT_SUSD_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
-    const vault = await deployConvexSTETHVault(verify);
+    const vault = await deployConvexDAIUSDCUSDTSUSDVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
-    await vault.setConfiguration(getParamPerNetwork(STECRV_LP, network), 25); // set curve lp token & convex pool id
+    await vault.setConfiguration(getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network), 4); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);
 
-    // Deploy steCRV oracle
-    let steCRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxSTECRV;
-    if (!steCRVOracleAddress) {
-      const steCRVOracle = await deploySTECRVOracle(verify);
-      steCRVOracleAddress = steCRVOracle.address;
+    // Deploy DAIUSDCUSDTSUSD oracle
+    let DAIUSDCUSDTSUSDOracleAddress = getParamPerNetwork(
+      ChainlinkAggregator,
+      network
+    ).cvxDAI_USDC_USDT_SUSD;
+    if (!DAIUSDCUSDTSUSDOracleAddress) {
+      const DAIUSDCUSDTSUSDOracle = await deployDAIUSDCUSDTSUSDOracle(verify);
+      DAIUSDCUSDTSUSDOracleAddress = DAIUSDCUSDTSUSDOracle.address;
     }
 
-    // Register csteCRV oracle
+    // Register cDAIUSDCUSDTSUSD-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [steCRVOracleAddress])
+      await sturdyOracle.setAssetSources([internalAssetAddress], [DAIUSDCUSDTSUSDOracleAddress])
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

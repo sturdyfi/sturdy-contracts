@@ -250,9 +250,8 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
     if (stakeToken.balanceOf(address(this)) >= amountToClaim) {
       stakeToken.safeTransfer(to, amountToClaim);
       userData.unclaimedRewards = unclaimedRewards - amountToClaim;
+      emit RewardsClaimed(asset, user, to, amountToClaim);
     }
-
-    emit RewardsClaimed(asset, user, to, amountToClaim);
 
     return amountToClaim;
   }

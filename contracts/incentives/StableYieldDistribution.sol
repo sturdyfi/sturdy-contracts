@@ -28,6 +28,7 @@ contract StableYieldDistribution is VersionedInitializable {
   }
 
   uint256 private constant REVISION = 1;
+  uint8 private constant PRECISION = 27;
   address public immutable EMISSION_MANAGER;
 
   uint256 internal _distributionEnd;
@@ -37,7 +38,6 @@ contract StableYieldDistribution is VersionedInitializable {
 
   mapping(address => AssetData) public assets;
   address public REWARD_TOKEN;
-  uint8 public PRECISION;
 
   event AssetConfigUpdated(address indexed asset, uint256 emission);
   event AssetIndexUpdated(address indexed asset, uint256 index);
@@ -146,13 +146,8 @@ contract StableYieldDistribution is VersionedInitializable {
     return _usersUnclaimedRewards[_user];
   }
 
-  function setRewardInfo(address tokenAddress, uint8 precision)
-    external
-    payable
-    onlyEmissionManager
-  {
+  function setRewardInfo(address tokenAddress) external payable onlyEmissionManager {
     REWARD_TOKEN = tokenAddress;
-    PRECISION = precision;
   }
 
   function setDistributionEnd(uint256 distributionEnd) external payable onlyEmissionManager {

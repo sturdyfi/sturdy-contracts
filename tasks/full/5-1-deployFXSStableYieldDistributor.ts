@@ -15,10 +15,7 @@ task(
       await localBRE.run('set-DRE');
 
       const FXSStableYieldDistributor = await deployFXSStableYieldDistribution();
-      await FXSStableYieldDistributor.setRewardInfo(
-        '0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0',
-        27
-      );
+      await FXSStableYieldDistributor.setRewardInfo('0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0');
       console.log(`- Incentives proxy address ${FXSStableYieldDistributor.address}`);
     } catch (err) {
       console.error(err);

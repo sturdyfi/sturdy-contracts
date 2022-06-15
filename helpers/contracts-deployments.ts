@@ -49,6 +49,8 @@ import {
   getFXSStableYieldDistribution,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
+  getVariableYieldDistributionImpl,
+  getVariableYieldDistribution,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -130,6 +132,7 @@ import {
   StableYieldDistributionFactory,
   MIM3CRVOracleFactory,
   DAIUSDCUSDTSUSDOracleFactory,
+  VariableYieldDistributionFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1904,6 +1907,37 @@ export const deployFXSStableYieldDistribution = async () => {
   await insertContractAddressInDb(eContractid.FXSStableYieldDistribution, proxyAddress);
 
   return await getFXSStableYieldDistribution();
+};
+
+export const deployVariableYieldDistributionImpl = async (verify?: boolean) => {
+  const impl = await withSaveAndVerify(
+    await new VariableYieldDistributionFactory(await getFirstSigner()).deploy(),
+    eContractid.VariableYieldDistributionImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await impl.initialize(addressesProvider.address));
+  return impl;
+};
+
+export const deployVariableYieldDistribution = async () => {
+  const variableYieldDistributionImpl = await getVariableYieldDistributionImpl();
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('VR_YIELD_DISTRIBUTOR'),
+      variableYieldDistributionImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('VR_YIELD_DISTRIBUTOR')
+  );
+  await insertContractAddressInDb(eContractid.VariableYieldDistribution, proxyAddress);
+
+  return await getVariableYieldDistribution();
 };
 
 export const deployCollateralAdapter = async (verify?: boolean) => {

@@ -128,6 +128,12 @@ library Errors {
   string internal constant YD_INVALID_CONFIGURATION = '103'; // 'The yield distribution's invalid configuration'
   string internal constant CALLER_NOT_EMISSION_MANAGER = '104'; // 'The caller must be emission manager'
   string internal constant CALLER_NOT_INCENTIVE_CONTROLLER = '105'; // 'The caller must be incentive controller'
+  string internal constant YD_VR_ASSET_ALREADY_IN_USE = '106'; // Vault is already registered
+  string internal constant YD_VR_INVALID_VAULT = '107'; // Invalid vault is used for an asset
+  string internal constant YD_VR_INVALID_REWARDS_AMOUNT = '108'; // Rewards amount should be bigger than before
+  string internal constant YD_VR_REWARD_TOKEN_NOT_VALID = '109'; // The reward token must be same with configured address
+  string internal constant YD_VR_ASSET_NOT_REGISTERED = '110';
+  string internal constant YD_VR_CALLER_NOT_VAULT = '111'; // The caller must be same with configured vault address
 
   enum CollateralManagerErrors {
     NO_ERROR,

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {GeneralVault} from '../../GeneralVault.sol';
+import {IncentiveVault} from '../../IncentiveVault.sol';
 import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {IERC20Detailed} from '../../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -11,6 +11,8 @@ import {IConvexBaseRewardPool} from '../../../../interfaces/IConvexBaseRewardPoo
 import {Errors} from '../../../libraries/helpers/Errors.sol';
 import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol';
 import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
+import {DataTypes} from '../../../libraries/types/DataTypes.sol';
+import {ILendingPool} from '../../../../interfaces/ILendingPool.sol';
 
 interface IRewards {
   function rewardToken() external view returns (address);
@@ -21,7 +23,7 @@ interface IRewards {
  * @notice Curve LP Token Vault by using Convex on Ethereum
  * @author Sturdy
  **/
-contract ConvexCurveLPVault is GeneralVault {
+contract ConvexCurveLPVault is IncentiveVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
@@ -86,14 +88,28 @@ contract ConvexCurveLPVault is GeneralVault {
     // Some ERC20 do not allow zero amounts to be sent:
     if (yieldAmount == 0) return;
 
+    uint256 incentiveAmount;
+    uint256 fee = _incentiveRatio;
+    bool isIncentiveToken = (getIncentiveToken() == _asset);
+    if (isIncentiveToken && fee != 0) {
+      incentiveAmount = yieldAmount.percentMul(fee);
+      sendIncentive(incentiveAmount);
+    }
+
     // Move some yield to treasury
-    uint256 fee = _vaultFee;
+    fee = _vaultFee;
     if (fee != 0) {
       uint256 treasuryAmount = yieldAmount.percentMul(fee);
       IERC20(_asset).safeTransfer(_treasuryAddress, treasuryAmount);
       yieldAmount -= treasuryAmount;
+    }
 
-      // transfer to yieldManager
+    if (incentiveAmount > 0) {
+      yieldAmount -= incentiveAmount;
+    }
+
+    // transfer to yieldManager
+    if (yieldAmount > 0) {
       address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
       IERC20(_asset).safeTransfer(yieldManager, yieldAmount);
     }
@@ -193,7 +209,7 @@ contract ConvexCurveLPVault is GeneralVault {
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
     // Withdraw from Convex
     address baseRewardPool = getBaseRewardPool();
-    IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, true);
+    IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false);
 
     // Deliver Curve LP Token
     IERC20(curveLPToken).safeTransfer(_to, _amount);
@@ -224,5 +240,32 @@ contract ConvexCurveLPVault is GeneralVault {
     address _to
   ) internal override returns (uint256) {
     return _withdraw(_amount, _to);
+  }
+
+  function getIncentiveToken() public view override returns (address) {
+    address baseRewardPool = getBaseRewardPool();
+    return IConvexBaseRewardPool(baseRewardPool).rewardToken();
+  }
+
+  function getCurrentTotalIncentiveAmount() external view override returns (uint256) {
+    if (_incentiveRatio > 0) {
+      address baseRewardPool = getBaseRewardPool();
+      uint256 earned = IConvexBaseRewardPool(baseRewardPool).earned(address(this));
+      return earned.percentMul(_incentiveRatio);
+    }
+    return 0;
+  }
+
+  function getAToken() internal view override returns (address) {
+    address internalAsset = internalAssetToken;
+    DataTypes.ReserveData memory reserveData = ILendingPool(_addressesProvider.getLendingPool())
+      .getReserveData(internalAsset);
+    return reserveData.aTokenAddress;
+  }
+
+  function clearRewards() internal override {
+    address baseRewardPool = getBaseRewardPool();
+    IConvexBaseRewardPool(baseRewardPool).getReward();
+    _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
   }
 }

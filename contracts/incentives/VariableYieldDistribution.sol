@@ -276,7 +276,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
 
     uint256 newIndex = _getAssetIndex(oldIndex, increasedRewards, totalStaked);
 
-    if (newIndex != oldIndex && lastAvailableRewards != oldAvailableRewards) {
+    if (newIndex != oldIndex || lastAvailableRewards != oldAvailableRewards) {
       assetData.index = newIndex;
       assetData.lastAvailableRewards = lastAvailableRewards;
       emit AssetIndexUpdated(asset, newIndex, lastAvailableRewards);

@@ -32,6 +32,8 @@ contract ConvexCurveLPVault is IncentiveVault {
   address internal internalAssetToken;
   uint256 internal convexPoolId;
 
+  uint256 internal _incentiveRatio;
+
   /**
    * @dev Emitted on setConfiguration()
    * @param _curveLpToken The address of Curve LP Token
@@ -267,5 +269,23 @@ contract ConvexCurveLPVault is IncentiveVault {
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).getReward();
     _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
+  }
+
+  function getIncentiveRatio() external view override returns (uint256) {
+    return _incentiveRatio;
+  }
+
+  function setIncentiveRatio(uint256 _ratio) external override onlyAdmin {
+    require(_vaultFee + _ratio <= PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
+
+    // Get all available rewards & Send it to YieldDistributor,
+    // so that the changing ratio does not affect asset's cumulative index
+    if (_incentiveRatio != 0) {
+      clearRewards();
+    }
+
+    _incentiveRatio = _ratio;
+
+    emit SetIncentiveRatio(_ratio);
   }
 }

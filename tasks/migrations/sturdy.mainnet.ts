@@ -36,6 +36,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('5-1. Deploy FXS Stable Yield Distributor');
     await DRE.run('full:deploy-FXS-stable-yield-distributor', { pool: POOL_NAME, verify });
 
+    console.log('5-2. Deploy Variable Yield Distributor');
+    await DRE.run('full:deploy-variable-yield-distributor', { pool: POOL_NAME, verify });
+
     console.log('6. Deploy Lido vault');
     await DRE.run('full:deploy-lido-vault', { pool: POOL_NAME, verify });
 

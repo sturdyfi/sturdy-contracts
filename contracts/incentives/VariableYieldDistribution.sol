@@ -28,7 +28,6 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
 
   struct AssetData {
     uint256 index;
-    uint256 lastUpdateTimestamp;
     uint256 lastAvailableRewards;
     address rewardToken; // The address of reward token
     address yieldAddress; // The address of vault
@@ -42,7 +41,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
   }
 
   uint256 private constant REVISION = 1;
-  uint8 private constant PRECISION = 18;
+  uint8 private constant PRECISION = 27;
 
   ILendingPoolAddressesProvider internal _addressProvider;
 
@@ -132,7 +131,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
     require(rewardToken == _rewardToken, Errors.YD_VR_REWARD_TOKEN_NOT_VALID);
     require(amount >= lastAvailableRewards, Errors.YD_VR_INVALID_REWARDS_AMOUNT);
 
-    uint256 increasedRewards = lastAvailableRewards - amount;
+    uint256 increasedRewards = amount - lastAvailableRewards;
     uint256 totalStaked = IScaledBalanceToken(asset).scaledTotalSupply();
 
     _updateAssetStateInternal(asset, assetData, totalStaked, 0, increasedRewards);
@@ -196,7 +195,6 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
       uint256,
       address,
       address,
-      uint256,
       uint256
     )
   {
@@ -204,8 +202,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
       assets[asset].index,
       assets[asset].yieldAddress,
       assets[asset].rewardToken,
-      assets[asset].lastAvailableRewards,
-      assets[asset].lastUpdateTimestamp
+      assets[asset].lastAvailableRewards
     );
   }
 
@@ -276,11 +273,9 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
   ) internal returns (uint256) {
     uint256 oldIndex = assetData.index;
     uint256 oldAvailableRewards = assetData.lastAvailableRewards;
-    uint256 lastUpdateTimestamp = assetData.lastUpdateTimestamp;
 
-    uint256 newIndex = _getAssetIndex(oldIndex, increasedRewards, lastUpdateTimestamp, totalStaked);
+    uint256 newIndex = _getAssetIndex(oldIndex, increasedRewards, totalStaked);
 
-    assetData.lastUpdateTimestamp = block.timestamp;
     if (newIndex != oldIndex && lastAvailableRewards != oldAvailableRewards) {
       assetData.index = newIndex;
       assetData.lastAvailableRewards = lastAvailableRewards;
@@ -354,18 +349,12 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
     rewardToken = assetData.rewardToken;
     uint256 oldIndex = assetData.index;
     (, uint256 increasedRewards) = _getAvailableRewardsAmount(assetData);
-    uint256 lastUpdateTimestamp = assetData.lastUpdateTimestamp;
 
     UserData storage userData = assetData.users[user];
     uint256 userIndex = userData.index;
     unclaimedRewards = userData.unclaimedRewards;
 
-    uint256 assetIndex = _getAssetIndex(
-      oldIndex,
-      increasedRewards,
-      lastUpdateTimestamp,
-      totalStaked
-    );
+    uint256 assetIndex = _getAssetIndex(oldIndex, increasedRewards, totalStaked);
 
     if (stakedByUser > 0) {
       unclaimedRewards += _getRewards(stakedByUser, assetIndex, userIndex);
@@ -391,17 +380,15 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
    * @dev Calculates the next value of an specific distribution index, with validations
    * @param currentIndex Current index of the distribution
    * @param increasedRewards Earned Amount
-   * @param lastUpdateTimestamp Last moment this distribution was updated
    * @param totalBalance of tokens considered for the distribution
    * @return The new index.
    **/
   function _getAssetIndex(
     uint256 currentIndex,
     uint256 increasedRewards,
-    uint256 lastUpdateTimestamp,
     uint256 totalBalance
-  ) internal view returns (uint256) {
-    if (increasedRewards == 0 || totalBalance == 0 || lastUpdateTimestamp == block.timestamp) {
+  ) internal pure returns (uint256) {
+    if (increasedRewards == 0 || totalBalance == 0) {
       return currentIndex;
     }
 

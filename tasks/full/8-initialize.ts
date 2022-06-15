@@ -34,6 +34,7 @@ import {
   getFXSStableYieldDistribution,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
+  getVariableYieldDistribution,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -98,7 +99,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const yieldDistributor =
         pool == ConfigNames.Sturdy
           ? {
-              cvxFRAX_3CRV: (await getFXSStableYieldDistribution()).address,
+              // cvxFRAX_3CRV: (await getFXSStableYieldDistribution()).address,
+              cvxFRAX_3CRV: (await getVariableYieldDistribution()).address,
             }
           : {};
 

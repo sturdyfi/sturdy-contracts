@@ -37,73 +37,65 @@ const getPoolAdmin = async () => {
 
 makeSuite('VariableYieldDistribution: configuration', (testEnv) => {
   it('Only Pool Admin can register an asset', async () => {
-    const { aCVXFRAX_3CRV, users, convexFRAX3CRVVault } = testEnv;
-    const VariableYieldDistributor = await getVariableYieldDistribution();
+    const { aCVXFRAX_3CRV, users, convexFRAX3CRVVault, variableYieldDistributor } = testEnv;
     const user = users[2];
     await expect(
-      VariableYieldDistributor.connect(user.signer).registerAsset(
-        aCVXFRAX_3CRV.address,
-        convexFRAX3CRVVault.address
-      )
+      variableYieldDistributor
+        .connect(user.signer)
+        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
     ).to.be.revertedWith('33');
   });
   it('Should be reverted if the vault address is invalid', async () => {
-    const { aCVXFRAX_3CRV } = testEnv;
+    const { aCVXFRAX_3CRV, variableYieldDistributor } = testEnv;
     const poolAdmin = await getPoolAdmin();
 
-    const VariableYieldDistributor = await getVariableYieldDistribution();
     await expect(
-      VariableYieldDistributor.connect(poolAdmin.signer).registerAsset(
-        aCVXFRAX_3CRV.address,
-        ZERO_ADDRESS
-      )
+      variableYieldDistributor
+        .connect(poolAdmin.signer)
+        .registerAsset(aCVXFRAX_3CRV.address, ZERO_ADDRESS)
     ).to.be.reverted;
   });
   it('Should be reverted if the asset is already configured', async () => {
-    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, convexMIM3CRVVault } = testEnv;
+    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, convexMIM3CRVVault, variableYieldDistributor } =
+      testEnv;
     const poolAdmin = await getPoolAdmin();
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.connect(poolAdmin.signer).registerAsset(
-      aCVXFRAX_3CRV.address,
-      convexFRAX3CRVVault.address
-    );
+    await variableYieldDistributor
+      .connect(poolAdmin.signer)
+      .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address);
     await expect(
-      VariableYieldDistributor.connect(poolAdmin.signer).registerAsset(
-        aCVXFRAX_3CRV.address,
-        convexMIM3CRVVault.address
-      )
+      variableYieldDistributor
+        .connect(poolAdmin.signer)
+        .registerAsset(aCVXFRAX_3CRV.address, convexMIM3CRVVault.address)
     ).to.be.revertedWith('106');
   });
 });
 
 makeSuite('VariableYieldDistribution', (testEnv) => {
   it('Register FRAX3CRV vault', async () => {
-    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV } = testEnv;
+    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
     const poolAdmin = await getPoolAdmin();
-    const VariableYieldDistributor = await getVariableYieldDistribution();
 
     await convexFRAX3CRVVault.setIncentiveRatio('3000'); // 30%
 
     await expect(
-      VariableYieldDistributor.connect(poolAdmin.signer).registerAsset(
-        aCVXFRAX_3CRV.address,
-        convexFRAX3CRVVault.address
-      )
+      variableYieldDistributor
+        .connect(poolAdmin.signer)
+        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
     ).to.not.be.reverted;
 
-    let assetData = await VariableYieldDistributor.getAssetData(aCVXFRAX_3CRV.address);
+    let assetData = await variableYieldDistributor.getAssetData(aCVXFRAX_3CRV.address);
     expect(assetData[0]).to.be.equal(0); // index
     expect(assetData[1]).to.be.equal(convexFRAX3CRVVault.address); // yield address
     expect(assetData[2]).to.be.equal(CRV.address); // reward token
     expect(assetData[3]).to.be.equal(0); // last available rewards
   });
   it('Borrower provides some FRAX3CRV token', async () => {
-    const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP } = testEnv;
+    const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP, variableYieldDistributor } =
+      testEnv;
     const ethers = (DRE as any).ethers;
     const borrower = users[1];
-    const VariableYieldDistributor = await getVariableYieldDistribution();
 
-    let userData = await VariableYieldDistributor.getUserAssetData(
+    let userData = await variableYieldDistributor.getUserAssetData(
       borrower.address,
       aCVXFRAX_3CRV.address
     );
@@ -134,42 +126,94 @@ makeSuite('VariableYieldDistribution', (testEnv) => {
       .connect(borrower.signer)
       .depositCollateral(FRAX_3CRV_LP.address, depositFRAX3CRVAmount);
 
-    let assetData = await VariableYieldDistributor.getAssetData(aCVXFRAX_3CRV.address);
+    let assetData = await variableYieldDistributor.getAssetData(aCVXFRAX_3CRV.address);
     expect(assetData[0]).to.be.equal(0); // index
     expect(assetData[3]).to.be.equal(0); // last available rewards
     expect(await aCVXFRAX_3CRV.balanceOf(borrower.address)).to.be.gte(depositFRAX3CRVAmount);
   });
-  it('After some later, borrower can see his claimable rewards', async () => {
-    const { users, aCVXFRAX_3CRV, CRV, convexFRAX3CRVVault } = testEnv;
-    const VariableYieldDistributor = await getVariableYieldDistribution();
+  it('After some time, borrower can see his claimable rewards', async () => {
+    const { users, aCVXFRAX_3CRV, CRV, convexFRAX3CRVVault, variableYieldDistributor } = testEnv;
     const borrower = users[1];
-
-    let balanceOfUser = await aCVXFRAX_3CRV.balanceOf(borrower.address);
-    console.log('Balance:', balanceOfUser.toString());
 
     await advanceBlock((await timeLatest()).plus(100000).toNumber());
 
-    const amount = await convexFRAX3CRVVault.getCurrentTotalIncentiveAmount();
-    console.log('Available Amount:', amount.toString());
-    expect(amount).to.be.gt(0);
+    const availableAmount = await convexFRAX3CRVVault.getCurrentTotalIncentiveAmount();
+    expect(availableAmount).to.be.gt(0);
 
     // fetch available rewards
-    const rewardsBalance = await VariableYieldDistributor.getRewardsBalance(
+    const rewardsBalance = await variableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],
       borrower.address
     );
 
-    const result = await aCVXFRAX_3CRV.getScaledUserBalanceAndSupply(borrower.address);
-    balanceOfUser = result[0];
-    const totalSupply = result[1];
-
-    console.log('Balance:', balanceOfUser.toString());
-    console.log('Total Supply:', totalSupply.toString());
-
     expect(rewardsBalance.length).to.be.equal(1);
     expect(rewardsBalance[0].asset).to.be.equal(aCVXFRAX_3CRV.address);
     expect(rewardsBalance[0].rewardToken).to.be.equal(CRV.address);
-    console.log('User Claimable Amount:', rewardsBalance[0].balance.toString());
-    expect(rewardsBalance[0].balance).to.be.gt(0);
+
+    const userRewardsBalance = rewardsBalance[0].balance;
+    expect(
+      availableAmount
+        .sub(userRewardsBalance)
+        .lt(await convertToCurrencyDecimals(CRV.address, '0.00001'))
+    ).to.be.equal(true);
+  });
+  it('ClaimRewards: should be failed when use invalid address as an receiver address', async () => {
+    const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor } = testEnv;
+    const borrower = users[1];
+
+    const result = await variableYieldDistributor.getRewardsBalance(
+      [aCVXFRAX_3CRV.address],
+      borrower.address
+    );
+    expect(result[0].balance).to.be.gt(0);
+
+    await expect(
+      variableYieldDistributor
+        .connect(borrower.signer)
+        .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, ZERO_ADDRESS)
+    ).to.be.reverted;
+  });
+  it('ClaimRewards: borrower can not get any rewards before processYield', async () => {
+    const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor } = testEnv;
+    const borrower = users[1];
+    const result = await variableYieldDistributor.getRewardsBalance(
+      [aCVXFRAX_3CRV.address],
+      borrower.address
+    );
+    expect(result[0].rewardToken).to.be.equal(CRV.address);
+    expect(result[0].balance).to.be.gt(0);
+
+    let crvBalanceOfUser = await CRV.balanceOf(borrower.address);
+    expect(crvBalanceOfUser).to.be.eq(0);
+
+    await variableYieldDistributor
+      .connect(borrower.signer)
+      .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, borrower.address);
+
+    crvBalanceOfUser = await CRV.balanceOf(borrower.address);
+    expect(crvBalanceOfUser).to.be.equal(0);
+  });
+  it('ClaimRewards: borrower can get rewards after processYield', async () => {
+    const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor, convexFRAX3CRVVault } = testEnv;
+    const borrower = users[1];
+    const result = await variableYieldDistributor.getRewardsBalance(
+      [aCVXFRAX_3CRV.address],
+      borrower.address
+    );
+    expect(result[0].rewardToken).to.be.equal(CRV.address);
+    const availableRewards = result[0].balance;
+    expect(availableRewards).to.be.gt(0);
+
+    let crvBalanceOfUser = await CRV.balanceOf(borrower.address);
+    expect(crvBalanceOfUser).to.be.eq(0);
+
+    await convexFRAX3CRVVault.processYield();
+
+    await variableYieldDistributor
+      .connect(borrower.signer)
+      .claimRewards(aCVXFRAX_3CRV.address, availableRewards, borrower.address);
+
+    crvBalanceOfUser = await CRV.balanceOf(borrower.address);
+    expect(crvBalanceOfUser).to.be.eq(availableRewards);
   });
 });

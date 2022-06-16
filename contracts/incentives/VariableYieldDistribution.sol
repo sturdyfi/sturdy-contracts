@@ -9,7 +9,7 @@ import {DistributionManager} from './DistributionManager.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from '../interfaces/IScaledBalanceToken.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {UserData, AssetData, AggregatedRewardsData} from '../interfaces/IVariableYieldDistribution.sol';
 import {IncentiveVault} from '../protocol/vault/IncentiveVault.sol';
 import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
@@ -18,30 +18,12 @@ import {Errors} from '../protocol/libraries/helpers/Errors.sol';
  * @notice Distributor contract that sends some rewards to borrowers who provide some special tokens such as Curve LP tokens.
  * @author Sturdy
  **/
-contract VariableYieldDistribution is VersionedInitializable, Ownable {
+contract VariableYieldDistribution is VersionedInitializable {
   using SafeERC20 for IERC20;
-
-  struct UserData {
-    uint256 index;
-    uint256 unclaimedRewards;
-  }
-
-  struct AssetData {
-    uint256 index;
-    uint256 lastAvailableRewards;
-    address rewardToken; // The address of reward token
-    address yieldAddress; // The address of vault
-    mapping(address => UserData) users;
-  }
-
-  struct AggregatedRewardsData {
-    address asset;
-    address rewardToken;
-    uint256 balance;
-  }
 
   uint256 private constant REVISION = 1;
   uint8 private constant PRECISION = 27;
+  address public immutable EMISSION_MANAGER;
 
   ILendingPoolAddressesProvider internal _addressProvider;
 
@@ -64,8 +46,8 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
     uint256 amount
   );
 
-  modifier onlyAdmin() {
-    require(_addressProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+  modifier onlyEmissionManager() {
+    require(msg.sender == EMISSION_MANAGER, Errors.CALLER_NOT_EMISSION_MANAGER);
     _;
   }
 
@@ -75,6 +57,10 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
       Errors.CALLER_NOT_INCENTIVE_CONTROLLER
     );
     _;
+  }
+
+  constructor(address emissionManager) {
+    EMISSION_MANAGER = emissionManager;
   }
 
   /**
@@ -90,7 +76,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
    * @param asset The address of the reference asset
    * @param yieldAddress The address of the vault
    */
-  function registerAsset(address asset, address yieldAddress) external onlyAdmin {
+  function registerAsset(address asset, address yieldAddress) external payable onlyEmissionManager {
     AssetData storage assetData = assets[asset];
     address rewardToken = IncentiveVault(yieldAddress).getIncentiveToken();
 
@@ -144,7 +130,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
     address asset,
     uint256 totalSupply,
     uint256 userBalance
-  ) external onlyIncentiveController {
+  ) external payable onlyIncentiveController {
     uint256 accruedRewards = _updateUserAssetInternal(user, asset, userBalance, totalSupply);
     if (accruedRewards != 0) {
       emit RewardsAccrued(user, asset, accruedRewards);
@@ -355,7 +341,7 @@ contract VariableYieldDistribution is VersionedInitializable, Ownable {
 
     uint256 assetIndex = _getAssetIndex(oldIndex, increasedRewards, totalStaked);
 
-    if (stakedByUser > 0) {
+    if (stakedByUser != 0) {
       unclaimedRewards += _getRewards(stakedByUser, assetIndex, userIndex);
     }
   }

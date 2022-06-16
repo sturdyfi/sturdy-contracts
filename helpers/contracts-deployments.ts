@@ -1909,11 +1909,11 @@ export const deployFXSStableYieldDistribution = async () => {
   return await getFXSStableYieldDistribution();
 };
 
-export const deployVariableYieldDistributionImpl = async (verify?: boolean) => {
+export const deployVariableYieldDistributionImpl = async (args: [string], verify?: boolean) => {
   const impl = await withSaveAndVerify(
-    await new VariableYieldDistributionFactory(await getFirstSigner()).deploy(),
+    await new VariableYieldDistributionFactory(await getFirstSigner()).deploy(...args),
     eContractid.VariableYieldDistributionImpl,
-    [],
+    args,
     verify
   );
 

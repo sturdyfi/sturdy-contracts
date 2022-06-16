@@ -95,7 +95,7 @@ contract ConvexCurveLPVault is IncentiveVault {
     bool isIncentiveToken = (getIncentiveToken() == _asset);
     if (isIncentiveToken && fee != 0) {
       incentiveAmount = yieldAmount.percentMul(fee);
-      sendIncentive(incentiveAmount);
+      _sendIncentive(incentiveAmount);
     }
 
     // Move some yield to treasury
@@ -258,19 +258,6 @@ contract ConvexCurveLPVault is IncentiveVault {
     return 0;
   }
 
-  function getAToken() internal view override returns (address) {
-    address internalAsset = internalAssetToken;
-    DataTypes.ReserveData memory reserveData = ILendingPool(_addressesProvider.getLendingPool())
-      .getReserveData(internalAsset);
-    return reserveData.aTokenAddress;
-  }
-
-  function clearRewards() internal override {
-    address baseRewardPool = getBaseRewardPool();
-    IConvexBaseRewardPool(baseRewardPool).getReward();
-    _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
-  }
-
   function getIncentiveRatio() external view override returns (uint256) {
     return _incentiveRatio;
   }
@@ -281,11 +268,24 @@ contract ConvexCurveLPVault is IncentiveVault {
     // Get all available rewards & Send it to YieldDistributor,
     // so that the changing ratio does not affect asset's cumulative index
     if (_incentiveRatio != 0) {
-      clearRewards();
+      _clearRewards();
     }
 
     _incentiveRatio = _ratio;
 
     emit SetIncentiveRatio(_ratio);
+  }
+
+  function _getAToken() internal view override returns (address) {
+    address internalAsset = internalAssetToken;
+    DataTypes.ReserveData memory reserveData = ILendingPool(_addressesProvider.getLendingPool())
+      .getReserveData(internalAsset);
+    return reserveData.aTokenAddress;
+  }
+
+  function _clearRewards() internal override {
+    address baseRewardPool = getBaseRewardPool();
+    IConvexBaseRewardPool(baseRewardPool).getReward();
+    _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
   }
 }

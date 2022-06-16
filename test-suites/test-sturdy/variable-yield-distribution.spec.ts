@@ -23,49 +23,27 @@ const chai = require('chai');
 const { expect } = chai;
 const DISTRIBUTION_DURATION = 86400; //1day
 
-const getPoolAdmin = async () => {
-  const ethers = (DRE as any).ethers;
-  const addressProvider = await getLendingPoolAddressesProvider();
-  const admin = await addressProvider.getPoolAdmin();
-  await impersonateAccountsHardhat([admin]);
-  let signer = await ethers.provider.getSigner(admin);
-  return {
-    address: admin,
-    signer: signer,
-  };
-};
-
 makeSuite('VariableYieldDistribution: configuration', (testEnv) => {
-  it('Only Pool Admin can register an asset', async () => {
+  it('Only EmissionManager can register an asset', async () => {
     const { aCVXFRAX_3CRV, users, convexFRAX3CRVVault, variableYieldDistributor } = testEnv;
     const user = users[2];
     await expect(
       variableYieldDistributor
         .connect(user.signer)
         .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
-    ).to.be.revertedWith('33');
+    ).to.be.revertedWith('104');
   });
   it('Should be reverted if the vault address is invalid', async () => {
     const { aCVXFRAX_3CRV, variableYieldDistributor } = testEnv;
-    const poolAdmin = await getPoolAdmin();
 
-    await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, ZERO_ADDRESS)
-    ).to.be.reverted;
+    await expect(variableYieldDistributor.registerAsset(aCVXFRAX_3CRV.address, ZERO_ADDRESS)).to.be
+      .reverted;
   });
   it('Should be reverted if the asset is already configured', async () => {
     const { aCVXFRAX_3CRV, convexFRAX3CRVVault, convexMIM3CRVVault, variableYieldDistributor } =
       testEnv;
-    const poolAdmin = await getPoolAdmin();
-    await variableYieldDistributor
-      .connect(poolAdmin.signer)
-      .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address);
     await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, convexMIM3CRVVault.address)
+      variableYieldDistributor.registerAsset(aCVXFRAX_3CRV.address, convexMIM3CRVVault.address)
     ).to.be.revertedWith('106');
   });
 });
@@ -81,15 +59,6 @@ makeSuite('VariableYieldDistribution: configuration', (testEnv) => {
 makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
   it('Register FRAX3CRV vault', async () => {
     const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
-    const poolAdmin = await getPoolAdmin();
-
-    await convexFRAX3CRVVault.setIncentiveRatio('3000'); // 30%
-
-    await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
-    ).to.not.be.reverted;
 
     let assetData = await variableYieldDistributor.getAssetData(aCVXFRAX_3CRV.address);
     expect(assetData[0]).to.be.equal(0); // index
@@ -235,18 +204,6 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
  * Expected: the available rewards amount should be the same for both.
  */
 makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
-  it('Register FRAX3CRV vault', async () => {
-    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
-    const poolAdmin = await getPoolAdmin();
-
-    await convexFRAX3CRVVault.setIncentiveRatio('3000'); // 30%
-
-    await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
-    ).to.not.be.reverted;
-  });
   it('User1 deposits 2,000 FRAX3CRV', async () => {
     const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP, variableYieldDistributor } =
       testEnv;
@@ -363,18 +320,6 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
  * Expected: the available rewards amount should be the same for both.
  */
 makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
-  it('Register FRAX3CRV vault', async () => {
-    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
-    const poolAdmin = await getPoolAdmin();
-
-    await convexFRAX3CRVVault.setIncentiveRatio('3000'); // 30%
-
-    await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
-    ).to.not.be.reverted;
-  });
   it('User1 deposits 4,000 FRAX3CRV', async () => {
     const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP, variableYieldDistributor } =
       testEnv;
@@ -522,18 +467,6 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
  * Expected: the available rewards amount should be the same for both.
  */
 makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
-  it('Register FRAX3CRV vault', async () => {
-    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
-    const poolAdmin = await getPoolAdmin();
-
-    await convexFRAX3CRVVault.setIncentiveRatio('3000'); // 30%
-
-    await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
-    ).to.not.be.reverted;
-  });
   it('User1 deposits 1,000 FRAX3CRV', async () => {
     const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP, variableYieldDistributor } =
       testEnv;
@@ -696,18 +629,6 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
  * Expected: User1 should be available to take all amount from getRewardsBalance()
  */
 makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
-  it('Register FRAX3CRV vault', async () => {
-    const { aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
-    const poolAdmin = await getPoolAdmin();
-
-    await convexFRAX3CRVVault.setIncentiveRatio('3000'); // 30%
-
-    await expect(
-      variableYieldDistributor
-        .connect(poolAdmin.signer)
-        .registerAsset(aCVXFRAX_3CRV.address, convexFRAX3CRVVault.address)
-    ).to.not.be.reverted;
-  });
   it('User1 deposits 1,000 FRAX3CRV', async () => {
     const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP, variableYieldDistributor } =
       testEnv;

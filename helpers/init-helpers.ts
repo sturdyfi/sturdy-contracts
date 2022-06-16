@@ -16,6 +16,7 @@ import {
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
   getSturdyIncentivesController,
+  getVariableYieldDistribution,
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
@@ -274,11 +275,19 @@ export const initReservesByHelper = async (
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
 
   //FXSStableYieldDistributor config
-  const response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
+  let response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
   const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
   await FXSStableYieldDistributor.configureAssets(
     [response.aTokenAddress],
     [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
+  );
+
+  //CRV VariableYieldDistributor config
+  response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
+  const VariableYieldDistributor = await getVariableYieldDistribution();
+  await VariableYieldDistributor.registerAsset(
+    response.aTokenAddress,
+    yieldAddresses['cvxFRAX_3CRV']
   );
 
   return gasUsage; // Deprecated

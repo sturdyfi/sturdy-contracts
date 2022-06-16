@@ -29,11 +29,6 @@ abstract contract IncentiveVault is GeneralVault {
   function getCurrentTotalIncentiveAmount() external view virtual returns (uint256);
 
   /**
-   * @dev Get AToken address for the vault
-   */
-  function getAToken() internal view virtual returns (address);
-
-  /**
    * @dev Get Incentive Ratio
    */
   function getIncentiveRatio() external view virtual returns (uint256);
@@ -44,15 +39,20 @@ abstract contract IncentiveVault is GeneralVault {
   function setIncentiveRatio(uint256 _ratio) external virtual;
 
   /**
+   * @dev Get AToken address for the vault
+   */
+  function _getAToken() internal view virtual returns (address);
+
+  /**
    * @dev Claim all rewards and send some to YieldDistributor
    */
-  function clearRewards() internal virtual;
+  function _clearRewards() internal virtual;
 
   /**
    * @dev Send incentive to YieldDistribution
    */
-  function sendIncentive(uint256 amount) internal {
-    address asset = getAToken();
+  function _sendIncentive(uint256 amount) internal {
+    address asset = _getAToken();
     address incentiveToken = getIncentiveToken();
 
     // transfer to YieldDistributor

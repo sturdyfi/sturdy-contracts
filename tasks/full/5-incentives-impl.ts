@@ -29,7 +29,10 @@ task('full:deploy-incentives-impl', 'Incentives controller implementation deploy
         verify
       );
       console.log(`- Stable Yield Distributor Impl address ${stableYieldDistributorImpl.address}`);
-      const variableYieldDistributorImpl = await deployVariableYieldDistributionImpl(verify);
+      const variableYieldDistributorImpl = await deployVariableYieldDistributionImpl(
+        [EMISSION_EXECUTOR],
+        verify
+      );
       console.log(
         `- Variable Yield Distributor Impl address ${variableYieldDistributorImpl.address}`
       );

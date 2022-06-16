@@ -27,6 +27,7 @@ import {
   getYieldManager,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
+  getVariableYieldDistribution,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -54,6 +55,7 @@ import {
   ConvexCurveLPVault,
   SturdyInternalAssetFactory,
   YieldManager,
+  VariableYieldDistribution,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -129,6 +131,7 @@ export interface TestEnv {
   WETH: IERC20Detailed;
   CRV: IERC20Detailed;
   CVX: IERC20Detailed;
+  variableYieldDistributor: VariableYieldDistribution;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -190,6 +193,7 @@ const testEnv: TestEnv = {
   WETH: {} as IERC20Detailed,
   CRV: {} as IERC20Detailed,
   CVX: {} as IERC20Detailed,
+  variableYieldDistributor: {} as VariableYieldDistribution,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -282,6 +286,7 @@ export async function initializeMakeSuite() {
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getETHLiquidator();
   testEnv.yieldManager = await getYieldManager();
+  testEnv.variableYieldDistributor = await getVariableYieldDistribution();
 
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
 

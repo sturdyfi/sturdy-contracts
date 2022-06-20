@@ -23,7 +23,9 @@ import {
   deployBasedMiMaticBeefyVaultImpl,
   deployBasedMiMaticLPOracle,
   deployBasedOracle,
+  deployConvexMIM3CRVVaultImpl,
   deployDefaultReserveInterestRateStrategy,
+  deployMIM3CRVPOracle,
   deployTombMiMaticBeefyVaultImpl,
   deployTombMiMaticLPOracle,
   deployYearnCRVVaultImpl,
@@ -107,6 +109,7 @@ WRONG RESERVE ASSET SETUP:
       aTokenToUse = (await getCollateralATokenImpl()).address;
     }
 
+    // ========== Fantom Vault ===========
     // // mooTOMB_MIMATIC reserve
     // {
     //   // Deploy vault impl
@@ -270,39 +273,72 @@ WRONG RESERVE ASSET SETUP:
     //   ]);
     // }
 
-    // yvCRV reserve
+    // // yvCRV reserve
+    // {
+    //   // Deploy vault impl
+    //   const impladdress = (await deployYearnCRVVaultImpl(verify)).address;
+
+    //   // Deploy and Register new oracle for new vault
+    //   if (network === 'ftm_test') {
+    //     const priceOracleInstance = await getPriceOracle();
+    //     await waitForTx(
+    //       await priceOracleInstance.setAssetPrice(
+    //         config.ReserveAssets[network]['yvCRV'],
+    //         config.Mocks.AllAssetsInitialPrices['yvCRV']
+    //       )
+    //     );
+    //   } else {
+    //     const sturdyOracle = await getSturdyOracle();
+    //     await waitForTx(
+    //       await sturdyOracle.setAssetSources(
+    //         [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvCRV],
+    //         [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvCRV]
+    //       )
+    //     );
+    //   }
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('YEARN_CRV_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('YVCRV').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('CRV').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     impladdress, //implement address
+    //     getParamPerNetwork(config.YearnCRVVaultFTM, <eNetwork>network), //internal asset
+    //     getParamPerNetwork(config.CRV, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
+
+    // ========== Ethereum Vault ===========
+    // cvxMIM_3CRV reserve
     {
       // Deploy vault impl
-      const impladdress = (await deployYearnCRVVaultImpl(verify)).address;
+      const impladdress = (await deployConvexMIM3CRVVaultImpl(verify)).address;
 
       // Deploy and Register new oracle for new vault
-      if (network === 'ftm_test') {
-        const priceOracleInstance = await getPriceOracle();
-        await waitForTx(
-          await priceOracleInstance.setAssetPrice(
-            config.ReserveAssets[network]['yvCRV'],
-            config.Mocks.AllAssetsInitialPrices['yvCRV']
-          )
-        );
-      } else {
-        const sturdyOracle = await getSturdyOracle();
-        await waitForTx(
-          await sturdyOracle.setAssetSources(
-            [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvCRV],
-            [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvCRV]
-          )
-        );
+      if (network === 'main') {
+        // Deploy MIM3CRV oracle
+        // need to perform after deploy vault by helper, Because don't know the internalAsset address and vault proxy address.
+        // let MIM3CRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).cvxMIM_3CRV;
+        // if (!MIM3CRVOracleAddress) {
+        //   const MIM3CRVOracle = await deployMIM3CRVPOracle(verify);
+        //   MIM3CRVOracleAddress = MIM3CRVOracle.address;
+        // }
+        // const sturdyOracle = await getSturdyOracle();
+        // await waitForTx(
+        //   await sturdyOracle.setAssetSources(
+        //     [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvCRV],
+        //     [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvCRV]
+        //   )
+        // );
       }
       console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('YEARN_CRV_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('YVCRV').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('CRV').toString(), //external asset id
+        localBRE.ethers.utils.formatBytes32String('CONVEX_MIM_3CRV_VAULT').toString(), //implement id
         //etc...
       ]);
       console.log('_addresses: ', [
         impladdress, //implement address
-        getParamPerNetwork(config.YearnCRVVaultFTM, <eNetwork>network), //internal asset
-        getParamPerNetwork(config.CRV, <eNetwork>network), //exterenal asset
         //etc...
       ]);
     }

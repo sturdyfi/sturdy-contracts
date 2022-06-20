@@ -32,7 +32,7 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
     await vault.setConfiguration(getParamPerNetwork(FRAX_3CRV_LP, network), 32); // set curve lp token & convex pool id
-    await vault.setIncentiveRatio('3000');
+    await vault.setIncentiveRatio('4000');
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);

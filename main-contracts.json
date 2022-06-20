@@ -133,11 +133,11 @@
   },
   "StakedTokenIncentivesControllerImpl": {
     "main": {
-      "address": "0xf9225f0575E1fAab957C3B19fB7E3124fE6d40A0",
+      "address": "0x1753A500D370f2a14419d8614A4b24EE6f127855",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xf9225f0575E1fAab957C3B19fB7E3124fE6d40A0",
+      "address": "0x1753A500D370f2a14419d8614A4b24EE6f127855",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -197,11 +197,11 @@
   },
   "ConvexFRAX3CRVVaultImpl": {
     "main": {
-      "address": "0x36FC92aa4C4a34CdeAB5f83F7c5ab74d10D2E1e1",
+      "address": "0xAe7Ad62cf5Eb7488e254b31c75822525D2D8aacf",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x36FC92aa4C4a34CdeAB5f83F7c5ab74d10D2E1e1",
+      "address": "0xAe7Ad62cf5Eb7488e254b31c75822525D2D8aacf",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0x5747D28D9317A930279CB6c958C06f802d988828",
+      "address": "0x9a8797FA4Fb878243212b11E0b611634A6197C1D",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x5747D28D9317A930279CB6c958C06f802d988828",
+      "address": "0x9a8797FA4Fb878243212b11E0b611634A6197C1D",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -424,6 +424,26 @@
     },
     "localhost": {
       "address": "0xda2410558019BdA540f7B9422b331cb6349430fF",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "VariableYieldDistributionImpl": {
+    "main": {
+      "address": "0xc6eC262e5926D7e5D8d5C7235dEb1440E0F55e79",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xc6eC262e5926D7e5D8d5C7235dEb1440E0F55e79",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "VariableYieldDistribution": {
+    "main": {
+      "address": "0x81Ce0B194Cea336C22244139Ff71426AC5fc750E",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x81Ce0B194Cea336C22244139Ff71426AC5fc750E",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

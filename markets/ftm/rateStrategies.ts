@@ -110,6 +110,18 @@ export const rateStrategyMOOTOMB_MIMATIC: IInterestRateStrategyParams = {
   capacity: '0',
 };
 
+// mooMIM_2CRV
+export const rateStrategyMOOMIM_2CRV: IInterestRateStrategyParams = {
+  name: 'rateStrategyMOOMIM_2CRV',
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+};
+
 // yvfBEETS
 export const rateStrategyYVFBEETS: IInterestRateStrategyParams = {
   name: 'rateStrategyYVFBEETS',

@@ -69,6 +69,9 @@ task('sturdy:ftm', 'Deploy development environment')
     console.log('7-11. Deploy BASED-MIMATIC Beefy vault');
     await DRE.run('full:deploy-based-mimatic-beefy-vault', { pool: POOL_NAME });
 
+    console.log('7-12. Deploy MIM-2CRV Beefy vault');
+    await DRE.run('full:deploy-beefy-mim2crv-vault', { pool: POOL_NAME });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME });
 

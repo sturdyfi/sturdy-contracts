@@ -68,6 +68,7 @@ import {
   YieldManagerFactory,
   StableYieldDistributionFactory,
   VariableYieldDistributionFactory,
+  BeefyMIM2CRVVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -670,6 +671,24 @@ export const getBasedMiMaticBeefyVault = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.BasedMiMaticBeefyVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBeefyMIM2CRVVaultImpl = async (address?: tEthereumAddress) =>
+  await BeefyMIM2CRVVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BeefyMIM2CRVVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getBeefyMIM2CRVVault = async (address?: tEthereumAddress) =>
+  await BeefyMIM2CRVVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.BeefyMIM2CRVVault}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

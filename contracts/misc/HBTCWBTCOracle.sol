@@ -5,12 +5,15 @@ pragma experimental ABIEncoderV2;
 
 import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
+import '../interfaces/ICurvePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 
 /**
  * @dev Oracle contract for Curve.fi hBTC/wBTC (hCRV) LP Token
  */
 contract HBTCWBTCOracle is IOracle {
+  ICurvePool private constant HBTCWBTC = ICurvePool(0x4CA9b3063Ec5866A4B82E437059D2C43d1be596F);
+
   // BTC / ETH
   IChainlinkAggregator private constant BTC =
     IChainlinkAggregator(0xdeb288F737066589598e9214E782fa5A8eD689e8);
@@ -28,10 +31,12 @@ contract HBTCWBTCOracle is IOracle {
 
     // HBTC maintains a strict, asset-backed 1:1 peg to BTC
     uint256 minValue = uint256(btcPrice);
-    if (wbtc2btcPrice < int256(int8(decimals))) {
+    if (uint256(wbtc2btcPrice) < 10**decimals) {
       minValue = (minValue * uint256(wbtc2btcPrice)) / (10**decimals);
     }
-    return minValue;
+    uint256 virtualPrice = HBTCWBTC.get_virtual_price();
+
+    return (virtualPrice * minValue) / 1e18;
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

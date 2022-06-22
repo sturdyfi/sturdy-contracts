@@ -35,6 +35,7 @@ import {
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
   getVariableYieldDistribution,
+  getConvexHBTCWBTCVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -80,6 +81,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               // cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,
               cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
               cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
+              cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
             }
           : {
               yvWFTM: (await getYearnVault()).address,

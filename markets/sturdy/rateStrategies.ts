@@ -109,3 +109,15 @@ export const rateStrategyCVXDAI_USDC_USDT_SUSD: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
   capacity: '0',
 }
+
+// cvxHBTC_WBTC
+export const rateStrategyCVXHBTC_WBTC: IInterestRateStrategyParams = {
+  name: "rateStrategyCVXHBTC_WBTC",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}

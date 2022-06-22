@@ -27,6 +27,7 @@ import {
   getYieldManager,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
+  getConvexHBTCWBTCVault,
   getVariableYieldDistribution,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
@@ -89,6 +90,7 @@ export interface TestEnv {
   convexDAIUSDCUSDTSUSDVault: ConvexCurveLPVault;
   convexSTETHVault: ConvexCurveLPVault;
   convexDOLA3CRVVault: ConvexCurveLPVault;
+  convexHBTCWBTCVault: ConvexCurveLPVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -108,6 +110,7 @@ export interface TestEnv {
   aCVXDAI_USDC_USDT_SUSD: AToken;
   aCVXSTECRV: AToken;
   aCVXDOLA_3CRV: AToken;
+  aCVXHBTC_WBTC: AToken;
   brick: SturdyToken;
   lido: ILido;
   RETH_WSTETH_LP: MintableERC20;
@@ -116,6 +119,7 @@ export interface TestEnv {
   DAI_USDC_USDT_SUSD_LP: MintableERC20;
   STECRV_LP: MintableERC20;
   DOLA_3CRV_LP: MintableERC20;
+  HBTC_WBTC_LP: MintableERC20;
   yvreth_wsteth: IERC20Detailed;
   cvxreth_wsteth: SturdyInternalAsset;
   cvxfrax_3crv: SturdyInternalAsset;
@@ -123,6 +127,7 @@ export interface TestEnv {
   cvxdai_usdc_usdt_susd: SturdyInternalAsset;
   cvxstecrv: SturdyInternalAsset;
   cvxdola_3crv: SturdyInternalAsset;
+  cvxhbtc_wbtc: SturdyInternalAsset;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
@@ -152,6 +157,7 @@ const testEnv: TestEnv = {
   convexDAIUSDCUSDTSUSDVault: {} as ConvexCurveLPVault,
   convexSTETHVault: {} as ConvexCurveLPVault,
   convexDOLA3CRVVault: {} as ConvexCurveLPVault,
+  convexHBTCWBTCVault: {} as ConvexCurveLPVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -171,6 +177,7 @@ const testEnv: TestEnv = {
   aCVXDAI_USDC_USDT_SUSD: {} as AToken,
   aCVXSTECRV: {} as AToken,
   aCVXDOLA_3CRV: {} as AToken,
+  aCVXHBTC_WBTC: {} as AToken,
   brick: {} as SturdyToken,
   lido: {} as ILido,
   RETH_WSTETH_LP: {} as MintableERC20,
@@ -179,6 +186,7 @@ const testEnv: TestEnv = {
   DAI_USDC_USDT_SUSD_LP: {} as MintableERC20,
   STECRV_LP: {} as MintableERC20,
   DOLA_3CRV_LP: {} as MintableERC20,
+  HBTC_WBTC_LP: {} as MintableERC20,
   yvreth_wsteth: {} as IERC20Detailed,
   cvxreth_wsteth: {} as SturdyInternalAsset,
   cvxfrax_3crv: {} as SturdyInternalAsset,
@@ -186,6 +194,7 @@ const testEnv: TestEnv = {
   cvxdai_usdc_usdt_susd: {} as SturdyInternalAsset,
   cvxstecrv: {} as SturdyInternalAsset,
   cvxdola_3crv: {} as SturdyInternalAsset,
+  cvxhbtc_wbtc: {} as SturdyInternalAsset,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
   liquidator: {} as ILiquidator,
@@ -211,6 +220,7 @@ export async function initializeMakeSuite() {
   const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
   const Mim3CrvLPAddress = getParamPerNetwork(poolConfig.MIM_3CRV_LP, network);
   const DaiUsdcUsdtSusdLPAddress = getParamPerNetwork(poolConfig.DAI_USDC_USDT_SUSD_LP, network);
+  const HBTCWBTCLPAddress = getParamPerNetwork(poolConfig.HBTC_WBTC_LP, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -277,12 +287,14 @@ export async function initializeMakeSuite() {
   // testEnv.convexDOLA3CRVVault = await getConvexDOLA3CRVVault();
   testEnv.convexMIM3CRVVault = await getConvexMIM3CRVVault();
   testEnv.convexDAIUSDCUSDTSUSDVault = await getConvexDAIUSDCUSDTSUSDVault();
+  testEnv.convexHBTCWBTCVault = await getConvexHBTCWBTCVault();
   // const cvxrethwstethAddress = await testEnv.convexRocketPoolETHVault.getInternalAsset();
   const cvxfrax3crvAddress = await testEnv.convexFRAX3CRVVault.getInternalAsset();
   // const cvxstecrvAddress = await testEnv.convexSTETHVault.getInternalAsset();
   // const cvxdola3crvAddress = await testEnv.convexDOLA3CRVVault.getInternalAsset();
   const cvxmim3crvAddress = await testEnv.convexMIM3CRVVault.getInternalAsset();
   const cvxdaiusdcusdtsusdAddress = await testEnv.convexDAIUSDCUSDTSUSDVault.getInternalAsset();
+  const cvxhbtcwbtcAddress = await testEnv.convexHBTCWBTCVault.getInternalAsset();
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getETHLiquidator();
   testEnv.yieldManager = await getYieldManager();
@@ -340,6 +352,9 @@ export async function initializeMakeSuite() {
     (aToken) =>
       aToken.symbol === 'acvxDAI_USDC_USDT_SUSD' || aToken.symbol === 'scvxDAI_USDC_USDT_SUSD'
   )?.tokenAddress;
+  const aCVXHBTC_WBTCAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'acvxHBTC_WBTC' || aToken.symbol === 'scvxHBTC_WBTC'
+  )?.tokenAddress;
   const aUsdcAddress = allTokens.find(
     (aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC'
   )?.tokenAddress;
@@ -362,7 +377,8 @@ export async function initializeMakeSuite() {
     // !aCVXSTECRVAddress ||
     // !aCVXDOLA_3CRVAddress ||
     !aCVXMIM_3CRVAddress ||
-    !aCVXDAI_USDC_USDT_SUSDAddress
+    !aCVXDAI_USDC_USDT_SUSDAddress ||
+    !aCVXHBTC_WBTCAddress
   ) {
     process.exit(1);
   }
@@ -379,6 +395,7 @@ export async function initializeMakeSuite() {
   // testEnv.aCVXDOLA_3CRV = await getAToken(aCVXDOLA_3CRVAddress);
   testEnv.aCVXMIM_3CRV = await getAToken(aCVXMIM_3CRVAddress);
   testEnv.aCVXDAI_USDC_USDT_SUSD = await getAToken(aCVXDAI_USDC_USDT_SUSDAddress);
+  testEnv.aCVXHBTC_WBTC = await getAToken(aCVXHBTC_WBTCAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
   testEnv.aUsdt = await getAToken(aUsdtAddress);
 
@@ -393,6 +410,7 @@ export async function initializeMakeSuite() {
   // testEnv.DOLA_3CRV_LP = await getMintableERC20(Dola3CRVLPAddress);
   testEnv.MIM_3CRV_LP = await getMintableERC20(Mim3CrvLPAddress);
   testEnv.DAI_USDC_USDT_SUSD_LP = await getMintableERC20(DaiUsdcUsdtSusdLPAddress);
+  testEnv.HBTC_WBTC_LP = await getMintableERC20(HBTCWBTCLPAddress);
   testEnv.WETH = IERC20DetailedFactory.connect(wethAddress, deployer.signer);
   testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
   testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
@@ -409,6 +427,7 @@ export async function initializeMakeSuite() {
     cvxdaiusdcusdtsusdAddress,
     deployer.signer
   );
+  testEnv.cvxhbtc_wbtc = SturdyInternalAssetFactory.connect(cvxhbtcwbtcAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

@@ -32,4 +32,16 @@ interface IVariableYieldDistribution {
     external
     view
     returns (AggregatedRewardsData[] memory);
+
+  function getAssetData(address asset)
+    external
+    view
+    returns (
+      uint256,
+      address,
+      address,
+      uint256
+    );
+
+  function getUserAssetData(address user, address asset) external view returns (uint256, uint256);
 }

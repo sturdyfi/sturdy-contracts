@@ -372,7 +372,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
     address asset,
     address yieldDistributor
   ) private view returns (UserRewardData memory rewardUserData) {
-    (rewardUserData.tokenincentivesUserIndex, ) = IVariableYieldDistribution(yieldDistributor)
+    (rewardUserData.tokenincentivesUserIndex, , ) = IVariableYieldDistribution(yieldDistributor)
       .getUserAssetData(user, asset);
     address[] memory assets = new address[](1);
     assets[0] = asset;

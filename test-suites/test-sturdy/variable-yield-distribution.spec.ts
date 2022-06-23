@@ -78,6 +78,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     );
     expect(userData[0]).to.be.equal(0);
     expect(userData[1]).to.be.equal(0);
+    expect(userData[2]).to.be.equal(0);
 
     const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
     const depositFRAX3CRV = '10000';
@@ -117,6 +118,8 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     const availableAmount = await convexFRAX3CRVVault.getCurrentTotalIncentiveAmount();
     expect(availableAmount).to.be.gt(0);
 
+    await convexFRAX3CRVVault.processYield();
+
     // fetch available rewards
     const rewardsBalance = await variableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],
@@ -150,27 +153,27 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
         .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, ZERO_ADDRESS)
     ).to.be.reverted;
   });
-  it('ClaimRewards: borrower can not get any rewards before processYield', async () => {
-    const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor } = testEnv;
-    const borrower = users[1];
-    const result = await variableYieldDistributor.getRewardsBalance(
-      [aCVXFRAX_3CRV.address],
-      borrower.address
-    );
-    expect(result[0].rewardToken).to.be.equal(CRV.address);
-    expect(result[0].balance).to.be.gt(0);
+  // it('ClaimRewards: borrower can not get any rewards before processYield', async () => {
+  //   const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor } = testEnv;
+  //   const borrower = users[1];
+  //   const result = await variableYieldDistributor.getRewardsBalance(
+  //     [aCVXFRAX_3CRV.address],
+  //     borrower.address
+  //   );
+  //   expect(result[0].rewardToken).to.be.equal(CRV.address);
+  //   expect(result[0].balance).to.be.gt(0);
 
-    let crvBalanceOfUser = await CRV.balanceOf(borrower.address);
-    expect(crvBalanceOfUser).to.be.eq(0);
+  //   let crvBalanceOfUser = await CRV.balanceOf(borrower.address);
+  //   expect(crvBalanceOfUser).to.be.eq(0);
 
-    await variableYieldDistributor
-      .connect(borrower.signer)
-      .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, borrower.address);
+  //   await variableYieldDistributor
+  //     .connect(borrower.signer)
+  //     .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, borrower.address);
 
-    crvBalanceOfUser = await CRV.balanceOf(borrower.address);
-    expect(crvBalanceOfUser).to.be.equal(0);
-  });
-  it('ClaimRewards: borrower can get rewards after processYield', async () => {
+  //   crvBalanceOfUser = await CRV.balanceOf(borrower.address);
+  //   expect(crvBalanceOfUser).to.be.equal(0);
+  // });
+  it('ClaimRewards: borrower can get rewards', async () => {
     const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor, convexFRAX3CRVVault } = testEnv;
     const borrower = users[1];
     const result = await variableYieldDistributor.getRewardsBalance(
@@ -183,8 +186,6 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
 
     let crvBalanceOfUser = await CRV.balanceOf(borrower.address);
     expect(crvBalanceOfUser).to.be.eq(0);
-
-    await convexFRAX3CRVVault.processYield();
 
     await variableYieldDistributor
       .connect(borrower.signer)
@@ -216,6 +217,7 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
     );
     expect(userData[0]).to.be.equal(0);
     expect(userData[1]).to.be.equal(0);
+    expect(userData[2]).to.be.equal(0);
 
     const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
     const depositFRAX3CRV = '2000';
@@ -255,6 +257,7 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
     );
     expect(userData[0]).to.be.equal(0);
     expect(userData[1]).to.be.equal(0);
+    expect(userData[2]).to.be.equal(0);
 
     const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
     const depositFRAX3CRV = '4000';
@@ -332,6 +335,7 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
     );
     expect(userData[0]).to.be.equal(0);
     expect(userData[1]).to.be.equal(0);
+    expect(userData[2]).to.be.equal(0);
 
     const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
     const depositFRAX3CRV = '4000';
@@ -376,9 +380,11 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
         .withdrawCollateral(FRAX_3CRV_LP.address, amountAssetToWithdraw, 100, user1.address)
     ).to.not.be.reverted;
   });
-  it('User1 can see his claimable rewards, but can not get rewards because processYield is not executed.', async () => {
+  it('User1 can see his claimable rewards.', async () => {
     const { users, aCVXFRAX_3CRV, CRV, convexFRAX3CRVVault, variableYieldDistributor } = testEnv;
     const user1 = users[1];
+
+    await convexFRAX3CRVVault.processYield();
 
     // fetch available rewards
     const result = await variableYieldDistributor.getRewardsBalance(
@@ -389,15 +395,6 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
     // claimableAmount > 0
     const claimableAmount = result[0].balance;
     expect(claimableAmount).to.be.gt(0);
-
-    // can't get any rewards
-    const beforeBalanceOfCRV = await CRV.balanceOf(user1.address);
-    await variableYieldDistributor
-      .connect(user1.signer)
-      .claimRewards(aCVXFRAX_3CRV.address, claimableAmount, user1.address);
-    const afterBalanceOfCRV = await CRV.balanceOf(user1.address);
-
-    expect(afterBalanceOfCRV.sub(beforeBalanceOfCRV)).to.be.equal(0);
   });
   it('On the same day, User2 deposits 4,000 FRAX3CRV', async () => {
     const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, FRAX_3CRV_LP, variableYieldDistributor } =
@@ -426,11 +423,12 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
       .depositCollateral(FRAX_3CRV_LP.address, depositFRAX3CRVAmount);
   });
   it('After one day pass again, the rewards amount should be the same for both.', async () => {
-    const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor } = testEnv;
+    const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
     const user1 = users[1];
     const user2 = users[2];
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
+    await convexFRAX3CRVVault.processYield();
 
     let result = await variableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],
@@ -588,11 +586,12 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
       .depositCollateral(FRAX_3CRV_LP.address, depositFRAX3CRVAmount);
   });
   it('The 4th day, the rewards amount should be the same for both.', async () => {
-    const { users, aCVXFRAX_3CRV, CRV, variableYieldDistributor } = testEnv;
+    const { users, aCVXFRAX_3CRV, convexFRAX3CRVVault, CRV, variableYieldDistributor } = testEnv;
     const user1 = users[1];
     const user2 = users[2];
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
+    await convexFRAX3CRVVault.processYield();
 
     let result = await variableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],

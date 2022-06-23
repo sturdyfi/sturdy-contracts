@@ -12,6 +12,7 @@ import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddresses
 import {UserData, AssetData, AggregatedRewardsData} from '../interfaces/IVariableYieldDistribution.sol';
 import {IncentiveVault} from '../protocol/vault/IncentiveVault.sol';
 import {Errors} from '../protocol/libraries/helpers/Errors.sol';
+import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 
 /**
  * @title VariableYieldDistribution
@@ -35,7 +36,7 @@ contract VariableYieldDistribution is VersionedInitializable {
     address indexed user,
     address indexed asset,
     uint256 index,
-    uint256 unclaimedRewardsAmount
+    uint256 expectedRewardsAmount
   );
   event RewardsReceived(address indexed asset, address indexed rewardToken, uint256 receivedAmount);
   event RewardsAccrued(address indexed user, address indexed asset, uint256 amount);
@@ -152,8 +153,7 @@ contract VariableYieldDistribution is VersionedInitializable {
       (rewards[i].rewardToken, rewards[i].balance) = _getUnclaimedRewards(
         user,
         assets[i],
-        stakedByUser,
-        totalStaked
+        stakedByUser
       );
     }
 
@@ -169,9 +169,17 @@ contract VariableYieldDistribution is VersionedInitializable {
     return _claimRewards(asset, amount, msg.sender, to);
   }
 
-  function getUserAssetData(address user, address asset) public view returns (uint256, uint256) {
+  function getUserAssetData(address user, address asset)
+    public
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
     UserData storage userData = assets[asset].users[user];
-    return (userData.index, userData.unclaimedRewards);
+    return (userData.index, userData.expectedRewards, userData.claimableRewards);
   }
 
   function getAssetData(address asset)
@@ -225,7 +233,7 @@ contract VariableYieldDistribution is VersionedInitializable {
 
     _updateUserAssetInternal(user, asset, stakedByUser, totalStaked);
 
-    uint256 unclaimedRewards = userData.unclaimedRewards;
+    uint256 unclaimedRewards = userData.claimableRewards;
     if (unclaimedRewards == 0) {
       return 0;
     }
@@ -235,7 +243,7 @@ contract VariableYieldDistribution is VersionedInitializable {
     IERC20 stakeToken = IERC20(rewardToken);
     if (stakeToken.balanceOf(address(this)) >= amountToClaim) {
       stakeToken.safeTransfer(to, amountToClaim);
-      userData.unclaimedRewards = unclaimedRewards - amountToClaim;
+      userData.claimableRewards = unclaimedRewards - amountToClaim;
       emit RewardsClaimed(asset, user, to, amountToClaim);
     }
 
@@ -264,6 +272,7 @@ contract VariableYieldDistribution is VersionedInitializable {
     if (newIndex != oldIndex || lastAvailableRewards != oldAvailableRewards) {
       assetData.index = newIndex;
       assetData.lastAvailableRewards = lastAvailableRewards;
+      if (lastAvailableRewards == 0) assetData.claimableIndex = newIndex;
       emit AssetIndexUpdated(asset, newIndex, lastAvailableRewards);
     }
 
@@ -287,7 +296,9 @@ contract VariableYieldDistribution is VersionedInitializable {
     AssetData storage assetData = assets[asset];
     UserData storage userData = assetData.users[user];
     uint256 userIndex = userData.index;
-    uint256 unclaimedRewards = userData.unclaimedRewards;
+    uint256 claimableIndex = assetData.claimableIndex;
+    uint256 expectedRewards = userData.expectedRewards;
+    uint256 claimableRewards = userData.claimableRewards;
     uint256 accruedRewards;
 
     (uint256 lastAvailableRewards, uint256 increasedRewards) = _getAvailableRewardsAmount(
@@ -303,14 +314,25 @@ contract VariableYieldDistribution is VersionedInitializable {
 
     if (userIndex == newIndex) return accruedRewards;
 
+    if (claimableIndex >= userIndex) {
+      claimableRewards += expectedRewards;
+      expectedRewards = 0;
+    }
+
     if (stakedByUser != 0) {
-      accruedRewards = _getRewards(stakedByUser, newIndex, userIndex);
-      unclaimedRewards += accruedRewards;
+      if (claimableIndex >= userIndex) {
+        claimableRewards += _getRewards(stakedByUser, claimableIndex, userIndex);
+        accruedRewards = _getRewards(stakedByUser, newIndex, claimableIndex);
+      } else {
+        accruedRewards = _getRewards(stakedByUser, newIndex, userIndex);
+      }
+      expectedRewards += accruedRewards;
     }
 
     userData.index = newIndex;
-    userData.unclaimedRewards = unclaimedRewards;
-    emit UserIndexUpdated(user, asset, newIndex, unclaimedRewards);
+    if (userData.expectedRewards != expectedRewards) userData.expectedRewards = expectedRewards;
+    if (userData.claimableRewards != claimableRewards) userData.claimableRewards = claimableRewards;
+    emit UserIndexUpdated(user, asset, newIndex, expectedRewards);
 
     return accruedRewards;
   }
@@ -320,29 +342,27 @@ contract VariableYieldDistribution is VersionedInitializable {
    * @param user The address of the user
    * @param asset The address of the asset
    * @param stakedByUser The balance of the user of the asset
-   * @param totalStaked The total staked amount of the asset
    * @return rewardToken The address of the reward token
    * @return unclaimedRewards The accrued rewards for the user until the moment
    **/
   function _getUnclaimedRewards(
     address user,
     address asset,
-    uint256 stakedByUser,
-    uint256 totalStaked
+    uint256 stakedByUser
   ) internal view returns (address rewardToken, uint256 unclaimedRewards) {
     AssetData storage assetData = assets[asset];
     rewardToken = assetData.rewardToken;
-    uint256 oldIndex = assetData.index;
-    (, uint256 increasedRewards) = _getAvailableRewardsAmount(assetData);
+    uint256 claimableIndex = assetData.claimableIndex;
 
     UserData storage userData = assetData.users[user];
     uint256 userIndex = userData.index;
-    unclaimedRewards = userData.unclaimedRewards;
+    unclaimedRewards = userData.claimableRewards;
 
-    uint256 assetIndex = _getAssetIndex(oldIndex, increasedRewards, totalStaked);
-
-    if (stakedByUser != 0) {
-      unclaimedRewards += _getRewards(stakedByUser, assetIndex, userIndex);
+    if (claimableIndex >= userIndex) {
+      unclaimedRewards += userData.expectedRewards;
+      if (stakedByUser != 0) {
+        unclaimedRewards += _getRewards(stakedByUser, claimableIndex, userIndex);
+      }
     }
   }
 

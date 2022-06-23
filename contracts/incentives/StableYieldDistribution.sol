@@ -402,7 +402,7 @@ contract StableYieldDistribution is VersionedInitializable {
     uint256 principalUserBalance,
     uint256 reserveIndex,
     uint256 userIndex
-  ) internal view returns (uint256) {
+  ) internal pure returns (uint256) {
     return (principalUserBalance * (reserveIndex - userIndex)) / 10**uint256(PRECISION);
   }
 

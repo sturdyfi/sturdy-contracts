@@ -369,11 +369,11 @@
   },
   "UiIncentiveDataProvider": {
     "ftm": {
-      "address": "0xb006689adC0a08057fE178F7df783F31A9Fe26d2",
+      "address": "0x6026336AE9b20976bA165FC410EF3B25c39adD98",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xb006689adC0a08057fE178F7df783F31A9Fe26d2",
+      "address": "0x6026336AE9b20976bA165FC410EF3B25c39adD98",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

@@ -4,7 +4,8 @@ pragma experimental ABIEncoderV2;
 
 struct UserData {
   uint256 index;
-  uint256 unclaimedRewards;
+  uint256 expectedRewards;
+  uint256 claimableRewards;
 }
 
 struct AssetData {
@@ -13,6 +14,7 @@ struct AssetData {
   address rewardToken; // The address of reward token
   address yieldAddress; // The address of vault
   mapping(address => UserData) users;
+  uint256 claimableIndex;
 }
 
 struct AggregatedRewardsData {
@@ -32,4 +34,23 @@ interface IVariableYieldDistribution {
     external
     view
     returns (AggregatedRewardsData[] memory);
+
+  function getAssetData(address asset)
+    external
+    view
+    returns (
+      uint256,
+      address,
+      address,
+      uint256
+    );
+
+  function getUserAssetData(address user, address asset)
+    external
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    );
 }

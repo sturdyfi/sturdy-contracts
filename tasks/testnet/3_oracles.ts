@@ -72,6 +72,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           yvCRV: reserveAssets.yvCRV,
           yvSPELL: reserveAssets.yvSPELL,
           mooWETH: reserveAssets.mooWETH,
+          mooMIM_2CRV: reserveAssets.mooMIM2_CRV,
           yvRETH_WSTETH: reserveAssets.yvRETH_WSTETH,
           cvxRETH_WSTETH: reserveAssets.cvxRETH_WSTETH,
           cvxFRAX_3CRV: reserveAssets.cvxFRAX_3CRV,

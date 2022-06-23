@@ -10,6 +10,7 @@ import {
   rateStrategyYVBOO,
   rateStrategyMOOTOMB_FTM,
   rateStrategyMOOTOMB_MIMATIC,
+  rateStrategyMOOMIM_2CRV,
   rateStrategyYVFBEETS,
   rateStrategyYVLINK,
   rateStrategyYVCRV,
@@ -145,6 +146,20 @@ export const strategyMOOTOMB_FTM: IReserveParams = {
 
 export const strategyMOOTOMB_MIMATIC: IReserveParams = {
   strategy: rateStrategyMOOTOMB_MIMATIC,
+  baseLTVAsCollateral: '0', //'7000',
+  liquidationThreshold: '7500',
+  liquidationBonus: '10750',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+};
+
+export const strategyMOOMIM_2CRV: IReserveParams = {
+  strategy: rateStrategyMOOMIM_2CRV,
   baseLTVAsCollateral: '0', //'7000',
   liquidationThreshold: '7500',
   liquidationBonus: '10750',

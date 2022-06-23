@@ -274,21 +274,23 @@ export const initReservesByHelper = async (
 
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
 
-  //FXSStableYieldDistributor config
-  let response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
-  const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
-  await FXSStableYieldDistributor.configureAssets(
-    [response.aTokenAddress],
-    [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
-  );
+  if (tokenAddresses['cvxFRAX_3CRV']) {
+    //FXSStableYieldDistributor config
+    let response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
+    const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
+    await FXSStableYieldDistributor.configureAssets(
+      [response.aTokenAddress],
+      [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
+    );
 
-  //CRV VariableYieldDistributor config
-  response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
-  const VariableYieldDistributor = await getVariableYieldDistribution();
-  await VariableYieldDistributor.registerAsset(
-    response.aTokenAddress,
-    yieldAddresses['cvxFRAX_3CRV']
-  );
+    //CRV VariableYieldDistributor config
+    response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['cvxFRAX_3CRV']
+    );
+  }
 
   return gasUsage; // Deprecated
 };

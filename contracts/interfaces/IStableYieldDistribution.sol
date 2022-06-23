@@ -13,4 +13,19 @@ interface IStableYieldDistribution {
     external
     view
     returns (uint256);
+
+  function REWARD_TOKEN() external view returns (address);
+
+  function getDistributionEnd() external view returns (uint256);
+
+  function getAssetData(address asset)
+    external
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    );
+
+  function getUserAssetData(address user, address asset) external view returns (uint256);
 }

@@ -10,6 +10,7 @@ interface IUiIncentiveDataProvider {
     IncentiveData aIncentiveData;
     IncentiveData vIncentiveData;
     IncentiveData sIncentiveData;
+    RewardData rewardData;
   }
 
   struct IncentiveData {
@@ -24,11 +25,28 @@ interface IUiIncentiveDataProvider {
     uint8 precision;
   }
 
+  struct RewardData {
+    // stable reward info
+    uint256 emissionPerSecond;
+    uint256 incentivesLastUpdateTimestamp;
+    uint256 emissionEndTimestamp;
+    // variable reward info
+    uint256 incentiveRatio;
+    uint256 lastAvailableRewards;
+    // common reward info
+    uint256 tokenIncentivesIndex;
+    address tokenAddress;
+    address rewardTokenAddress;
+    address distributorAddress;
+    uint8 rewardTokenDecimals;
+  }
+
   struct UserReserveIncentiveData {
     address underlyingAsset;
     UserIncentiveData aTokenIncentivesUserData;
     UserIncentiveData vTokenIncentivesUserData;
     UserIncentiveData sTokenIncentivesUserData;
+    UserRewardData rewardUserData;
   }
 
   struct UserIncentiveData {
@@ -37,6 +55,15 @@ interface IUiIncentiveDataProvider {
     address tokenAddress;
     address rewardTokenAddress;
     address incentiveControllerAddress;
+    uint8 rewardTokenDecimals;
+  }
+
+  struct UserRewardData {
+    uint256 tokenincentivesUserIndex;
+    uint256 userUnclaimedRewards;
+    address tokenAddress;
+    address rewardTokenAddress;
+    address distributorAddress;
     uint8 rewardTokenDecimals;
   }
 

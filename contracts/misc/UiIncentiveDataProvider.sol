@@ -12,6 +12,11 @@ import {IStableDebtToken} from '../interfaces/IStableDebtToken.sol';
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
+import {IYieldDistribution} from '../interfaces/IYieldDistribution.sol';
+import {IStableYieldDistribution} from '../interfaces/IStableYieldDistribution.sol';
+import {IVariableYieldDistribution, AggregatedRewardsData} from '../interfaces/IVariableYieldDistribution.sol';
+import {IIncentiveVault} from '../interfaces/IIncentiveVault.sol';
 
 contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
   using UserConfiguration for DataTypes.UserConfigurationMap;
@@ -77,25 +82,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             );
           } catch (
             bytes memory /*lowLevelData*/
-          ) {
-            //no need
-            // (
-            //   uint256 aEmissionPerSecond,
-            //   uint256 aIncentivesLastUpdateTimestamp,
-            //   uint256 aTokenIncentivesIndex
-            // ) = aTokenIncentiveController.assets(baseData.aTokenAddress);
-            // reserveIncentiveData.aIncentiveData = IncentiveData(
-            //   aEmissionPerSecond,
-            //   aIncentivesLastUpdateTimestamp,
-            //   aTokenIncentivesIndex,
-            //   aTokenIncentiveController.DISTRIBUTION_END(),
-            //   baseData.aTokenAddress,
-            //   aRewardToken,
-            //   address(aTokenIncentiveController),
-            //   IERC20Detailed(aRewardToken).decimals(),
-            //   aTokenIncentiveController.PRECISION()
-            // );
-          }
+          ) {}
         }
       } catch (
         bytes memory /*lowLevelData*/
@@ -126,25 +113,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             );
           } catch (
             bytes memory /*lowLevelData*/
-          ) {
-            //no need
-            // (
-            //   uint256 sEmissionPerSecond,
-            //   uint256 sIncentivesLastUpdateTimestamp,
-            //   uint256 sTokenIncentivesIndex
-            // ) = sTokenIncentiveController.assets(baseData.stableDebtTokenAddress);
-            // reserveIncentiveData.sIncentiveData = IncentiveData(
-            //   sEmissionPerSecond,
-            //   sIncentivesLastUpdateTimestamp,
-            //   sTokenIncentivesIndex,
-            //   sTokenIncentiveController.DISTRIBUTION_END(),
-            //   baseData.stableDebtTokenAddress,
-            //   sRewardToken,
-            //   address(sTokenIncentiveController),
-            //   IERC20Detailed(sRewardToken).decimals(),
-            //   sTokenIncentiveController.PRECISION()
-            // );
-          }
+          ) {}
         }
       } catch (
         bytes memory /*lowLevelData*/
@@ -176,30 +145,72 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             );
           } catch (
             bytes memory /*lowLevelData*/
-          ) {
-            //no need
-            // (
-            //   uint256 vEmissionPerSecond,
-            //   uint256 vIncentivesLastUpdateTimestamp,
-            //   uint256 vTokenIncentivesIndex
-            // ) = vTokenIncentiveController.assets(baseData.variableDebtTokenAddress);
-            // reserveIncentiveData.vIncentiveData = IncentiveData(
-            //   vEmissionPerSecond,
-            //   vIncentivesLastUpdateTimestamp,
-            //   vTokenIncentivesIndex,
-            //   vTokenIncentiveController.DISTRIBUTION_END(),
-            //   baseData.variableDebtTokenAddress,
-            //   vRewardToken,
-            //   address(vTokenIncentiveController),
-            //   IERC20Detailed(vRewardToken).decimals(),
-            //   vTokenIncentiveController.PRECISION()
-            // );
-          }
+          ) {}
         }
       } catch (
         bytes memory /*lowLevelData*/
       ) {
         // Will not get here
+      }
+
+      address yieldDistributor = IReserveInterestRateStrategy(baseData.interestRateStrategyAddress)
+        .yieldDistributor();
+      if (yieldDistributor != address(0)) {
+        // get stable reward data
+        try IStableYieldDistribution(yieldDistributor).REWARD_TOKEN() returns (
+          address rewardToken
+        ) {
+          if (rewardToken != address(0)) {
+            (
+              uint256 tokenIncentivesIndex,
+              uint256 emissionPerSecond,
+              uint256 incentivesLastUpdateTimestamp
+            ) = IStableYieldDistribution(yieldDistributor).getAssetData(baseData.aTokenAddress);
+
+            reserveIncentiveData.rewardData = RewardData(
+              // stable reward info
+              emissionPerSecond,
+              incentivesLastUpdateTimestamp,
+              IStableYieldDistribution(yieldDistributor).getDistributionEnd(),
+              // variable reward info
+              0,
+              0,
+              // common reward info
+              tokenIncentivesIndex,
+              baseData.aTokenAddress,
+              rewardToken,
+              yieldDistributor,
+              IERC20Detailed(rewardToken).decimals()
+            );
+          }
+        } catch (
+          bytes memory /*lowLevelData*/
+        ) {
+          // get variable reward data
+          (
+            uint256 tokenIncentivesIndex,
+            address vaultAddress,
+            address rewardToken,
+            uint256 lastAvailableRewards
+          ) = IVariableYieldDistribution(yieldDistributor).getAssetData(baseData.aTokenAddress);
+          uint256 incentiveRatio = IIncentiveVault(vaultAddress).getIncentiveRatio();
+
+          reserveIncentiveData.rewardData = RewardData(
+            // stable reward info
+            0,
+            0,
+            0,
+            // variable reward info
+            incentiveRatio,
+            lastAvailableRewards,
+            // common reward info
+            tokenIncentivesIndex,
+            baseData.aTokenAddress,
+            rewardToken,
+            yieldDistributor,
+            IERC20Detailed(rewardToken).decimals()
+          );
+        }
       }
     }
     return (reservesIncentiveData);
@@ -304,8 +315,73 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
       ) {}
 
       userReservesIncentivesData[i].sTokenIncentivesUserData = sUserIncentiveData;
+
+      address yieldDistributor = IReserveInterestRateStrategy(baseData.interestRateStrategyAddress)
+        .yieldDistributor();
+      if (yieldDistributor != address(0)) {
+        UserRewardData memory rewardUserData;
+
+        // get stable reward user data
+        try IStableYieldDistribution(yieldDistributor).REWARD_TOKEN() returns (
+          address rewardToken
+        ) {
+          rewardUserData = _getUserStableRewardData(
+            user,
+            baseData.aTokenAddress,
+            rewardToken,
+            yieldDistributor
+          );
+        } catch (
+          bytes memory /*lowLevelData*/
+        ) {
+          // get variable reward user data
+          rewardUserData = _getUserVariableRewardData(
+            user,
+            baseData.aTokenAddress,
+            yieldDistributor
+          );
+        }
+
+        userReservesIncentivesData[i].rewardUserData = rewardUserData;
+      }
     }
 
     return (userReservesIncentivesData);
+  }
+
+  function _getUserStableRewardData(
+    address user,
+    address asset,
+    address rewardToken,
+    address yieldDistributor
+  ) private view returns (UserRewardData memory rewardUserData) {
+    rewardUserData.tokenincentivesUserIndex = IStableYieldDistribution(yieldDistributor)
+      .getUserAssetData(user, asset);
+    address[] memory assets = new address[](1);
+    assets[0] = asset;
+    rewardUserData.userUnclaimedRewards = IStableYieldDistribution(yieldDistributor)
+      .getRewardsBalance(assets, user);
+    rewardUserData.tokenAddress = asset;
+    rewardUserData.rewardTokenAddress = rewardToken;
+    rewardUserData.distributorAddress = yieldDistributor;
+    rewardUserData.rewardTokenDecimals = IERC20Detailed(rewardToken).decimals();
+  }
+
+  function _getUserVariableRewardData(
+    address user,
+    address asset,
+    address yieldDistributor
+  ) private view returns (UserRewardData memory rewardUserData) {
+    (rewardUserData.tokenincentivesUserIndex, , ) = IVariableYieldDistribution(yieldDistributor)
+      .getUserAssetData(user, asset);
+    address[] memory assets = new address[](1);
+    assets[0] = asset;
+    AggregatedRewardsData[] memory rewardData = IVariableYieldDistribution(yieldDistributor)
+      .getRewardsBalance(assets, user);
+    rewardUserData.userUnclaimedRewards = rewardData[0].balance;
+    rewardUserData.tokenAddress = asset;
+    rewardUserData.rewardTokenAddress = rewardData[0].rewardToken;
+    rewardUserData.distributorAddress = yieldDistributor;
+    rewardUserData.rewardTokenDecimals = IERC20Detailed(rewardData[0].rewardToken).decimals();
   }
 }

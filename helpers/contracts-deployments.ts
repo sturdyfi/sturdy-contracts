@@ -34,6 +34,7 @@ import {
   getYearnFBEETSVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getBeefyMIM2CRVVault,
   getYearnCRVVault,
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
@@ -135,6 +136,8 @@ import {
   DAIUSDCUSDTSUSDOracleFactory,
   VariableYieldDistributionFactory,
   HBTCWBTCOracleFactory,
+  BeefyMIM2CRVVaultFactory,
+  MIM2CRVOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -388,6 +391,14 @@ export const deployBasedMiMaticLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BasedMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
     eContractid.BasedMiMaticLPOracle,
+    [],
+    verify
+  );
+
+export const deployMIM2CRVLPOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new MIM2CRVOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.MIM2CRVOracle,
     [],
     verify
   );
@@ -1617,6 +1628,54 @@ export const deployBasedMiMaticBeefyVault = async (verify?: boolean) => {
   );
 
   return await getBasedMiMaticBeefyVault();
+};
+
+export const deployBeefyMIM2CRVVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BeefyMIM2CRVVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.BeefyMIM2CRVVaultImpl,
+    [],
+    verify
+  );
+
+export const deployBeefyMIM2CRVVault = async (verify?: boolean) => {
+  const beefyMIM2CRVVaultImpl = await withSaveAndVerify(
+    await new BeefyMIM2CRVVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.BeefyMIM2CRVVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('BEEFY_MIM2CRV_VAULT'),
+      beefyMIM2CRVVaultImpl.address
+    )
+  );
+
+  const config: IFantomConfiguration = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
+  const network = <eNetwork>DRE.network.name;
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('MOOMIM2CRV'),
+      getParamPerNetwork(config.BeefyMIM2CRVVault, network)
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('MIM_2CRV_LP'),
+      getParamPerNetwork(config.MIM_2CRV_LP, network)
+    )
+  );
+
+  const beefyMIM2CRVVaultProxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('BEEFY_MIM2CRV_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.BeefyMIM2CRVVault, beefyMIM2CRVVaultProxyAddress);
+
+  return await getBeefyMIM2CRVVault();
 };
 
 export const deployYearnFBeetsVaultImpl = async (verify?: boolean) =>

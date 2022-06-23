@@ -3,9 +3,7 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {DistributionTypes} from '../lib/DistributionTypes.sol';
 import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
-import {DistributionManager} from './DistributionManager.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from '../interfaces/IScaledBalanceToken.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';

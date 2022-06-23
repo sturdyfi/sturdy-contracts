@@ -353,11 +353,11 @@
   },
   "UiIncentiveDataProvider": {
     "main": {
-      "address": "0x216A01322cCECF933bd57dd6e92aC8B10Fb36316",
+      "address": "0x46c05BB4205BfC2E063EaB565Fde488561a0a281",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x216A01322cCECF933bd57dd6e92aC8B10Fb36316",
+      "address": "0x46c05BB4205BfC2E063EaB565Fde488561a0a281",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -429,11 +429,11 @@
   },
   "VariableYieldDistributionImpl": {
     "main": {
-      "address": "0xc6eC262e5926D7e5D8d5C7235dEb1440E0F55e79",
+      "address": "0x12cf91718F530714def56EdC6c4b23E66E765b67",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xc6eC262e5926D7e5D8d5C7235dEb1440E0F55e79",
+      "address": "0x12cf91718F530714def56EdC6c4b23E66E765b67",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

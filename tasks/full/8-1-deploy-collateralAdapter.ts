@@ -11,6 +11,7 @@ import {
   getYearnWETHVault,
   getYearnLINKVault,
   getBeefyETHVault,
+  getBeefyMIM2CRVVault,
   getYearnCRVVault,
   getYearnSPELLVault,
   getBasedMiMaticBeefyVault,
@@ -100,6 +101,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
             yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
             mooWETH: getParamPerNetwork((poolConfig as IFantomConfiguration).WETH, network),
+            mooMIM_2CRV: getParamPerNetwork(
+              (poolConfig as IFantomConfiguration).MIM_2CRV_LP,
+              network
+            ),
             yvCRV: getParamPerNetwork((poolConfig as IFantomConfiguration).CRV, network),
             yvSPELL: getParamPerNetwork((poolConfig as IFantomConfiguration).SPELL, network),
           };
@@ -127,6 +132,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvfBEETS: (await getYearnFBEETSVault()).address,
             yvLINK: (await getYearnLINKVault()).address,
             mooWETH: (await getBeefyETHVault()).address,
+            mooMIM_2CRV: (await getBeefyMIM2CRVVault()).address,
             yvCRV: (await getYearnCRVVault()).address,
             yvSPELL: (await getYearnSPELLVault()).address,
           };

@@ -62,6 +62,7 @@ export enum eContractid {
   BeetsOracle = 'BeetsOracle',
   BasedOracle = 'BasedOracle',
   BasedMiMaticLPOracle = 'BasedMiMaticLPOracle',
+  MIM2CRVOracle = 'MIM2CRVOracle',
   RETHWstETHLPOracle = 'RETHWstETHLPOracle',
   FRAX3CRVOracle = 'FRAX3CRVOracle',
   STECRVOracle = 'STECRVOracle',
@@ -140,6 +141,8 @@ export enum eContractid {
   YearnSPELLVault = 'YearnSPELLVault',
   BasedMiMaticBeefyVaultImpl = 'BasedMiMaticBeefyVaultImpl',
   BasedMiMaticBeefyVault = 'BasedMiMaticBeefyVault',
+  BeefyMIM2CRVVaultImpl = 'BeefyMIM2CRVVaultImpl',
+  BeefyMIM2CRVVault = 'BeefyMIM2CRVVault',
   MockyvWFTM = 'MockyvWFTM',
   MockyvWETH = 'MockyvWETH',
   MockyvWBTC = 'MockyvWBTC',
@@ -304,6 +307,7 @@ export interface iAssetBase<T> {
   yvCRV: T;
   yvSPELL: T;
   mooBASED_MIMATIC: T;
+  mooMIM_2CRV: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -342,6 +346,7 @@ export type iFantomPoolAssets<T> = Pick<
   | 'yvCRV'
   | 'yvSPELL'
   | 'mooBASED_MIMATIC'
+  | 'mooMIM_2CRV'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
@@ -375,6 +380,7 @@ export enum TokenContractId {
   yvCRV = 'yvCRV',
   yvSPELL = 'yvSPELL',
   mooBASED_MATIC = 'mooBASED_MATIC',
+  mooMIM_2CRV = 'mooMIM_2CRV',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -543,6 +549,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   TOMB_FTM_LP: iParamsPerNetwork<tEthereumAddress>;
   TOMB_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
   BASED_MIMATIC_LP: iParamsPerNetwork<tEthereumAddress>;
+  MIM_2CRV_LP: iParamsPerNetwork<tEthereumAddress>;
   fBEETS: iParamsPerNetwork<tEthereumAddress>;
   BEETS: iParamsPerNetwork<tEthereumAddress>;
   LINK: iParamsPerNetwork<tEthereumAddress>;
@@ -558,6 +565,7 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   YearnFBEETSVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnLINKVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   BeefyETHVault: iParamsPerNetwork<tEthereumAddress>;
+  BeefyMIM2CRVVault: iParamsPerNetwork<tEthereumAddress>;
   YearnCRVVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   YearnSPELLVaultFTM: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

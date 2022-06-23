@@ -48,6 +48,7 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   mooTOMB_FTM: oneEther.multipliedBy('0.0009231134739412').toFixed(),
   mooTOMB_MIMATIC: oneEther.multipliedBy('0.0006223868749347').toFixed(),
   mooBASED_MIMATIC: oneEther.multipliedBy('0.0006942426404167').toFixed(),
+  mooMIM_2CRV: oneEther.multipliedBy('0.0008659606685').toFixed(),
   yvLINK: oneEther.multipliedBy('0.005101').toFixed(),
   USD: '373068412860',
   BEETS: oneEther.multipliedBy('0.0002285').toFixed(),

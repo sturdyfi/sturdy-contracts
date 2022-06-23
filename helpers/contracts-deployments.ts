@@ -50,6 +50,7 @@ import {
   getFXSStableYieldDistribution,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
+  getConvexHBTCWBTCVault,
   getVariableYieldDistributionImpl,
   getVariableYieldDistribution,
 } from './contracts-getters';
@@ -134,6 +135,7 @@ import {
   MIM3CRVOracleFactory,
   DAIUSDCUSDTSUSDOracleFactory,
   VariableYieldDistributionFactory,
+  HBTCWBTCOracleFactory,
   BeefyMIM2CRVVaultFactory,
   MIM2CRVOracleFactory,
 } from '../types';
@@ -445,6 +447,14 @@ export const deployDAIUSDCUSDTSUSDOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new DAIUSDCUSDTSUSDOracleFactory(await getFirstSigner()).deploy(),
     eContractid.DAIUSDCUSDTSUSDOracle,
+    [],
+    verify
+  );
+
+export const deployHBTCWBTCOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new HBTCWBTCOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.HBTCWBTCOracle,
     [],
     verify
   );
@@ -1201,6 +1211,39 @@ export const deployConvexDAIUSDCUSDTSUSDVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexDAIUSDCUSDTSUSDVault, proxyAddress);
 
   return await getConvexDAIUSDCUSDTSUSDVault();
+};
+
+export const deployConvexHBTCWBTCVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexHBTCWBTCVaultImpl,
+    [],
+    verify
+  );
+
+export const deployConvexHBTCWBTCVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexHBTCWBTCVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('CONVEX_HBTC_WBTC_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('CONVEX_HBTC_WBTC_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.ConvexHBTCWBTCVault, proxyAddress);
+
+  return await getConvexHBTCWBTCVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

@@ -69,6 +69,7 @@ export enum eContractid {
   DOLA3CRVOracle = 'DOLA3CRVOracle',
   MIM3CRVOracle = 'MIM3CRVOracle',
   DAIUSDCUSDTSUSDOracle = 'DAIUSDCUSDTSUSDOracle',
+  HBTCWBTCOracle = 'HBTCWBTCOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -119,6 +120,8 @@ export enum eContractid {
   ConvexMIM3CRVVault = 'ConvexMIM3CRVVault',
   ConvexDAIUSDCUSDTSUSDVaultImpl = 'ConvexDAIUSDCUSDTSUSDVaultImpl',
   ConvexDAIUSDCUSDTSUSDVault = 'ConvexDAIUSDCUSDTSUSDVault',
+  ConvexHBTCWBTCVaultImpl = 'ConvexHBTCWBTCVaultImpl',
+  ConvexHBTCWBTCVault = 'ConvexHBTCWBTCVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -295,6 +298,7 @@ export interface iAssetBase<T> {
   cvxDOLA_3CRV: T;
   cvxMIM_3CRV: T;
   cvxDAI_USDC_USDT_SUSD: T;
+  cvxHBTC_WBTC: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -327,6 +331,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxDOLA_3CRV'
   | 'cvxMIM_3CRV'
   | 'cvxDAI_USDC_USDT_SUSD'
+  | 'cvxHBTC_WBTC'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -368,6 +373,7 @@ export enum TokenContractId {
   cvxDOLA_3CRV = 'cvxDOLA_3CRV',
   cvxMIM_3CRV = 'cvxMIM_3CRV',
   cvxDAI_USDC_USDT_SUSD = 'cvxDAI_USDC_USDT_SUSD',
+  cvxHBTC_WBTC = 'cvxHBTC_WBTC',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -531,6 +537,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   DOLA_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
   MIM_3CRV_LP: iParamsPerNetwork<tEthereumAddress>;
   DAI_USDC_USDT_SUSD_LP: iParamsPerNetwork<tEthereumAddress>;
+  HBTC_WBTC_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;

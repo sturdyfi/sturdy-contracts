@@ -13,6 +13,7 @@ import {
   strategyUSDT,
   strategyCVXMIM_3CRV,
   strategyCVXDAI_USDC_USDT_SUSD,
+  strategyCVXHBTC_WBTC,
 } from './reservesConfigs';
 
 // ----------------
@@ -35,6 +36,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxDOLA_3CRV: strategyCVXDOLA_3CRV,
     cvxMIM_3CRV: strategyCVXMIM_3CRV,
     cvxDAI_USDC_USDT_SUSD: strategyCVXDAI_USDC_USDT_SUSD,
+    cvxHBTC_WBTC: strategyCVXHBTC_WBTC,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -62,6 +64,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxMIM_3CRV: '0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxDAI_USDC_USDT_SUSD: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e',
+      cvxHBTC_WBTC: '',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -75,6 +78,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxMIM_3CRV: '0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxDAI_USDC_USDT_SUSD: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e',
+      cvxHBTC_WBTC: '',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',
@@ -200,6 +204,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xC25a3A3b969415c80451098fa907EC722572917F',
     [eEthereumNetwork.tenderly]: '0xC25a3A3b969415c80451098fa907EC722572917F',
+    [eEthereumNetwork.goerli]: '',
+  },
+  HBTC_WBTC_LP: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0xb19059ebb43466C323583928285a49f558E572Fd',
+    [eEthereumNetwork.tenderly]: '0xb19059ebb43466C323583928285a49f558E572Fd',
     [eEthereumNetwork.goerli]: '',
   },
   YearnRETHWstETHVault: {

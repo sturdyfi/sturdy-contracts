@@ -63,6 +63,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6-7. Deploy Convex DAI USDC USDT SUSD vault');
     await DRE.run('full:deploy-convex-dai-usdc-usdt-susd-vault', { pool: POOL_NAME, verify });
 
+    console.log('6-8. Deploy Convex HBTC WBTC vault');
+    await DRE.run('full:deploy-convex-hbtc-wbtc-vault', { pool: POOL_NAME, verify });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME, verify });
 

@@ -4,6 +4,7 @@ import {
   eEthereumNetwork,
   eNetwork,
   IFantomConfiguration,
+  ISturdyConfiguration,
   PoolConfiguration,
 } from '../../helpers/types';
 import { getTreasuryAddress, loadPoolConfig } from '../../helpers/configuration';
@@ -49,7 +50,7 @@ const isSymbolValid = (
 task('external:get-param-for-new-vault', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
-  .addParam('yieldDistributor', `Yield Distribution address`)
+  .addParam('yieldDistributor', `Yield Distribution address`, ZERO_ADDRESS)
   .addFlag('verify', 'Verify contracts at Etherscan')
   .setAction(async ({ pool, verify, symbol, yieldDistributor }, localBRE) => {
     const poolConfig = loadPoolConfig(pool);
@@ -84,7 +85,7 @@ WRONG RESERVE ASSET SETUP:
     const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
     // ToDo: Deploy yieldDistributor parts instead parameter
-
+    console.log('Yield Distributor Address: ', yieldDistributor);
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,
@@ -95,7 +96,7 @@ WRONG RESERVE ASSET SETUP:
         strategyParams.strategy.stableRateSlope1,
         strategyParams.strategy.stableRateSlope2,
         strategyParams.strategy.capacity,
-        yieldDistributor || ZERO_ADDRESS,
+        yieldDistributor,
       ],
       verify
     );
@@ -316,29 +317,16 @@ WRONG RESERVE ASSET SETUP:
       // Deploy vault impl
       const impladdress = (await deployConvexMIM3CRVVaultImpl(verify)).address;
 
-      // Deploy and Register new oracle for new vault
-      if (network === 'main') {
-        // Deploy MIM3CRV oracle
-        // need to perform after deploy vault by helper, Because don't know the internalAsset address and vault proxy address.
-        // let MIM3CRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).cvxMIM_3CRV;
-        // if (!MIM3CRVOracleAddress) {
-        //   const MIM3CRVOracle = await deployMIM3CRVPOracle(verify);
-        //   MIM3CRVOracleAddress = MIM3CRVOracle.address;
-        // }
-        // const sturdyOracle = await getSturdyOracle();
-        // await waitForTx(
-        //   await sturdyOracle.setAssetSources(
-        //     [getParamPerNetwork(ReserveAssets, <eNetwork>network).yvCRV],
-        //     [getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).yvCRV]
-        //   )
-        // );
-      }
       console.log('_ids: ', [
         localBRE.ethers.utils.formatBytes32String('CONVEX_MIM_3CRV_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('CVXFRAX_3CRV').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('MIM_3CRV_LP').toString(), //external asset id
         //etc...
       ]);
       console.log('_addresses: ', [
         impladdress, //implement address
+        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxMIM_3CRV, //internal asset
+        getParamPerNetwork((poolConfig as ISturdyConfiguration).MIM_3CRV_LP, <eNetwork>network), //exterenal asset
         //etc...
       ]);
     }
@@ -365,7 +353,7 @@ WRONG RESERVE ASSET SETUP:
         stableDebtTokenImpl: (await getStableDebtToken()).address,
         variableDebtTokenImpl: (await getVariableDebtToken()).address,
         underlyingAssetDecimals: strategyParams.reserveDecimals,
-        interestRateStrategyAddress: rates.address,
+        interestRateStrategyAddress: '0x21709ECE5F0203Cc79eE414AA4eD03AD37F7c943',
         yieldAddress: ZERO_ADDRESS,
         underlyingAsset: reserveAssetAddress,
         treasury: treasuryAddress,

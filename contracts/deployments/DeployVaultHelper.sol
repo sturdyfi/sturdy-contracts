@@ -62,7 +62,7 @@ contract DeployVaultHelper is Ownable {
     provider.setPoolAdmin(address(this));
 
     // deploy vault, _ids[0] and addresses[0] are the id and impl address of new vault
-    provider.setAddressAsProxy(_ids[0], _addresses[0]);
+    // provider.setAddressAsProxy(_ids[0], _addresses[0]);
 
     // set addresses
     for (uint256 i = 1; i < _ids.length; ++i) {

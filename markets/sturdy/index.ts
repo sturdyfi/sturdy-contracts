@@ -63,7 +63,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxMIM_3CRV: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
-      cvxDAI_USDC_USDT_SUSD: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e',
+      cvxDAI_USDC_USDT_SUSD: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
       cvxHBTC_WBTC: '',
     },
     [eEthereumNetwork.tenderly]: {
@@ -77,7 +77,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
       cvxMIM_3CRV: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
-      cvxDAI_USDC_USDT_SUSD: '0xE72aAEEFA3821594c1D7fe2aB81361F0eC9e6e3e',
+      cvxDAI_USDC_USDT_SUSD: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
       cvxHBTC_WBTC: '',
     },
     [eEthereumNetwork.goerli]: {

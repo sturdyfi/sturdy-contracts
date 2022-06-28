@@ -24,6 +24,7 @@ import {
   deployBasedMiMaticBeefyVaultImpl,
   deployBasedMiMaticLPOracle,
   deployBasedOracle,
+  deployConvexDAIUSDCUSDTSUSDVaultImpl,
   deployConvexMIM3CRVVaultImpl,
   deployDefaultReserveInterestRateStrategy,
   deployMIM3CRVPOracle,
@@ -312,21 +313,47 @@ WRONG RESERVE ASSET SETUP:
     // }
 
     // ========== Ethereum Vault ===========
-    // cvxMIM_3CRV reserve
+    // // cvxMIM_3CRV reserve
+    // {
+    //   // Deploy vault impl
+    //   const vaultImpl = await deployConvexMIM3CRVVaultImpl(verify);
+    //   const addressesProvider = await getLendingPoolAddressesProvider();
+    //   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('CONVEX_MIM_3CRV_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('CVXFRAX_3CRV').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('MIM_3CRV_LP').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     vaultImpl.address, //implement address
+    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxMIM_3CRV, //internal asset
+    //     getParamPerNetwork((poolConfig as ISturdyConfiguration).MIM_3CRV_LP, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
+
+    // cvxDAI_USDC_USDT_SUSD reserve
     {
       // Deploy vault impl
-      const impladdress = (await deployConvexMIM3CRVVaultImpl(verify)).address;
+      const vaultImpl = await deployConvexDAIUSDCUSDTSUSDVaultImpl(verify);
+      const addressesProvider = await getLendingPoolAddressesProvider();
+      await waitForTx(await vaultImpl.initialize(addressesProvider.address));
 
       console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('CONVEX_MIM_3CRV_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('CVXFRAX_3CRV').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('MIM_3CRV_LP').toString(), //external asset id
+        localBRE.ethers.utils.formatBytes32String('CONVEX_DAI_USDC_USDT_SUSD_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('CVXDAI_USDC_USDT_SUSD').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('DAI_USDC_USDT_SUSD_LP').toString(), //external asset id
         //etc...
       ]);
       console.log('_addresses: ', [
-        impladdress, //implement address
-        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxMIM_3CRV, //internal asset
-        getParamPerNetwork((poolConfig as ISturdyConfiguration).MIM_3CRV_LP, <eNetwork>network), //exterenal asset
+        vaultImpl.address, //implement address
+        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxDAI_USDC_USDT_SUSD, //internal asset
+        getParamPerNetwork(
+          (poolConfig as ISturdyConfiguration).DAI_USDC_USDT_SUSD_LP,
+          <eNetwork>network
+        ), //exterenal asset
         //etc...
       ]);
     }
@@ -353,7 +380,7 @@ WRONG RESERVE ASSET SETUP:
         stableDebtTokenImpl: (await getStableDebtToken()).address,
         variableDebtTokenImpl: (await getVariableDebtToken()).address,
         underlyingAssetDecimals: strategyParams.reserveDecimals,
-        interestRateStrategyAddress: '0x21709ECE5F0203Cc79eE414AA4eD03AD37F7c943',
+        interestRateStrategyAddress: rates.address,
         yieldAddress: ZERO_ADDRESS,
         underlyingAsset: reserveAssetAddress,
         treasury: treasuryAddress,

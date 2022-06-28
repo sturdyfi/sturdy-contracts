@@ -22,7 +22,7 @@ contract DAIUSDCUSDTSUSDOracle is IOracle {
   IChainlinkAggregator private constant USDT =
     IChainlinkAggregator(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46);
   IChainlinkAggregator private constant SUSD =
-    IChainlinkAggregator(0x8e0b7e6062272b5ef4524250bfff8e5bd3497757);
+    IChainlinkAggregator(0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757);
 
   /**
    * @dev Get LP Token Price

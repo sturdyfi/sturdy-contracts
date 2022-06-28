@@ -477,11 +477,11 @@
   },
   "DAIUSDCUSDTSUSDOracle": {
     "main": {
-      "address": "0x90361DDF0396e278539c8C1D6C02D096023D434A",
+      "address": "0xd14A2bd5043F1909A6b20B14E465309FdAc3bf50",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x90361DDF0396e278539c8C1D6C02D096023D434A",
+      "address": "0xd14A2bd5043F1909A6b20B14E465309FdAc3bf50",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

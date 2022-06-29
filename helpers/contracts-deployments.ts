@@ -53,6 +53,7 @@ import {
   getConvexHBTCWBTCVault,
   getVariableYieldDistributionImpl,
   getVariableYieldDistribution,
+  getConvexIronBankVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -138,6 +139,7 @@ import {
   HBTCWBTCOracleFactory,
   BeefyMIM2CRVVaultFactory,
   MIM2CRVOracleFactory,
+  IronBankOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -455,6 +457,14 @@ export const deployHBTCWBTCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new HBTCWBTCOracleFactory(await getFirstSigner()).deploy(),
     eContractid.HBTCWBTCOracle,
+    [],
+    verify
+  );
+
+export const deployIronBankOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new IronBankOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.IronBankOracle,
     [],
     verify
   );
@@ -1244,6 +1254,39 @@ export const deployConvexHBTCWBTCVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexHBTCWBTCVault, proxyAddress);
 
   return await getConvexHBTCWBTCVault();
+};
+
+export const deployConvexIronBankVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexIronBankVaultImpl,
+    [],
+    verify
+  );
+
+export const deployConvexIronBankVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexIronBankVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('CONVEX_IRON_BANK_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('CONVEX_IRON_BANK_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.ConvexIronBankVault, proxyAddress);
+
+  return await getConvexIronBankVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

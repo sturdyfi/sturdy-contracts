@@ -63,4 +63,5 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   cvxMIM_3CRV: oneEther.multipliedBy('0.0003453649').toFixed(),
   cvxDAI_USDC_USDT_SUSD: oneEther.multipliedBy('0.0003453649').toFixed(),
   cvxHBTC_WBTC: oneEther.multipliedBy('18.5478562').toFixed(),
+  cvxIRON_BANK: oneEther.multipliedBy('18.5478562').toFixed(),
 };

@@ -5,15 +5,15 @@ pragma experimental ABIEncoderV2;
 
 import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
+import '../interfaces/CTokenInterface.sol';
 import '../interfaces/ICurvePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 
 /**
- * @dev Oracle contract for MIM3CRV LP Token
+ * @dev Oracle contract for IronBank LP Token
  */
-contract MIM3CRVOracle is IOracle {
-  ICurvePool private constant MIM3CRV = ICurvePool(0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
-  ICurvePool private constant CRV3 = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+contract IronBankOracle is IOracle {
+  ICurvePool private constant IronBank = ICurvePool(0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF);
 
   IChainlinkAggregator private constant DAI =
     IChainlinkAggregator(0x773616E4d11A78F511299002da57A0a94577F1f4);
@@ -21,37 +21,45 @@ contract MIM3CRVOracle is IOracle {
     IChainlinkAggregator(0x986b5E1e1755e3C2440e960477f25201B0a8bbD4);
   IChainlinkAggregator private constant USDT =
     IChainlinkAggregator(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46);
-  IChainlinkAggregator private constant MIM =
-    IChainlinkAggregator(0x7A364e8770418566e3eb2001A96116E6138Eb32F);
-  IChainlinkAggregator private constant ETH =
-    IChainlinkAggregator(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
-
-  /**
-   * @dev Get price for 3Pool LP Token
-   */
-  function _get3CRVPrice() internal view returns (uint256) {
-    (, int256 daiPrice, , , ) = DAI.latestRoundData();
-    (, int256 usdcPrice, , , ) = USDC.latestRoundData();
-    (, int256 usdtPrice, , , ) = USDT.latestRoundData();
-    uint256 minStable = Math.min(
-      uint256(daiPrice),
-      Math.min(uint256(usdcPrice), uint256(usdtPrice))
-    );
-    return (CRV3.get_virtual_price() * minStable) / 1e18;
-  }
+  CTokenInterface private constant cyDAI =
+    CTokenInterface(0x8e595470Ed749b85C6F7669de83EAe304C2ec68F);
+  CTokenInterface private constant cyUSDC =
+    CTokenInterface(0x76Eb2FE28b36B3ee97F3Adae0C69606eeDB2A37c);
+  CTokenInterface private constant cyUSDT =
+    CTokenInterface(0x48759F220ED983dB51fA7A8C0D2AAb8f3ce4166a);
 
   /**
    * @dev Get LP Token Price
    */
   function _get() internal view returns (uint256) {
-    uint256 lp3crvPrice = _get3CRVPrice();
-    (, int256 mimPrice, , , ) = MIM.latestRoundData();
-    (, int256 ethPrice, , , ) = ETH.latestRoundData();
+    (, int256 daiPrice, , , ) = DAI.latestRoundData();
+    (, int256 usdcPrice, , , ) = USDC.latestRoundData();
+    (, int256 usdtPrice, , , ) = USDT.latestRoundData();
 
-    // convert mimPrice from usd unit to eth unit and get min value
-    uint256 minValue = Math.min((uint256(mimPrice) * 1e18) / uint256(ethPrice), lp3crvPrice);
+    uint256 minValue = Math.min(
+      Math.min(
+        // cyDAI Price
+        _getPriceOfToken(uint256(daiPrice), cyDAI.exchangeRateStored(), 18, 8),
+        // cyUSDC Price
+        _getPriceOfToken(uint256(usdcPrice), cyUSDC.exchangeRateStored(), 6, 8)
+      ),
+      // cyUSDT Price
+      _getPriceOfToken(uint256(usdtPrice), cyUSDT.exchangeRateStored(), 6, 8)
+    );
 
-    return (MIM3CRV.get_virtual_price() * minValue) / 1e18;
+    return (IronBank.get_virtual_price() * minValue) / 1e18;
+  }
+
+  /**
+   * @dev Get cyToken Price
+   */
+  function _getPriceOfToken(
+    uint256 assetPrice,
+    uint256 cyAssetRatio,
+    uint256 assetDecimal,
+    uint256 cyAssetDecimal
+  ) private pure returns (uint256) {
+    return (cyAssetRatio * uint256(assetPrice)) / 10**(18 - cyAssetDecimal) / 10**assetDecimal;
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

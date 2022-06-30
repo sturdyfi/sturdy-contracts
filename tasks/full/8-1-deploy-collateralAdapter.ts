@@ -24,6 +24,7 @@ import {
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
   getConvexHBTCWBTCVault,
+  getConvexIronBankVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -85,6 +86,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as ISturdyConfiguration).HBTC_WBTC_LP,
               network
             ),
+            cvxIRON_BANK: getParamPerNetwork(
+              (poolConfig as ISturdyConfiguration).IRON_BANK_LP,
+              network
+            ),
           }
         : {
             yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
@@ -126,6 +131,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
             cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
             cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
+            cvxIRON_BANK: (await getConvexIronBankVault()).address,
           }
         : {
             yvWFTM: (await getYearnVault()).address,

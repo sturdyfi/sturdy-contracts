@@ -789,3 +789,177 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     expect(afterBalance.sub(beforeBalance).sub(availableRewards)).to.be.equal(0);
   });
 });
+
+/**
+ * Scenario #6 Description
+ *  1. User1 deposits 1,000 token
+ *  2. The next day, someone execute processYield, and User1 takes the half of his rewards
+ *  3. The 2nd day, User1 queries his claimalbe rewards, and deposits again 2,000 token
+ *  4. The 3rd day, User1 withdraw 1,000 token, and User2 deposits 5,000 token
+ *  5. The 4th day, someone execute processYield
+ *  6. User1 takes all available rewards.
+ *  *
+ * Expected: User1 should be available to take all amount from getRewardsBalance()
+ */
+makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
+  it('User1 deposits 1,000 IRON_BANK', async () => {
+    const { users, aCVXIRON_BANK, convexIronBankVault, IRON_BANK_LP, variableYieldDistributor } =
+      testEnv;
+    const ethers = (DRE as any).ethers;
+    const user1 = users[1];
+
+    const IronBankLPOwnerAddress = '0x64ea5a109a6f8d5ca30f9565b0d7f72de781ce7d';
+    const depositIronBank = '1000';
+    const depositIronBankAmount = await convertToCurrencyDecimals(
+      IRON_BANK_LP.address,
+      depositIronBank
+    );
+
+    await impersonateAccountsHardhat([IronBankLPOwnerAddress]);
+    let signer = await ethers.provider.getSigner(IronBankLPOwnerAddress);
+    await IRON_BANK_LP.connect(signer).transfer(user1.address, depositIronBankAmount);
+    await IRON_BANK_LP.connect(user1.signer).approve(
+      convexIronBankVault.address,
+      APPROVAL_AMOUNT_LENDING_POOL
+    );
+
+    // deposit collateral to borrow
+    await convexIronBankVault
+      .connect(user1.signer)
+      .depositCollateral(IRON_BANK_LP.address, depositIronBankAmount);
+
+    let assetData = await variableYieldDistributor.getAssetData(aCVXIRON_BANK.address);
+    expect(assetData[0]).to.be.equal(0); // index
+    expect(assetData[3]).to.be.equal(0); // last available rewards
+  });
+  it('The next day, execute processYield and User1 takes the half of his rewards', async () => {
+    const { users, CRV, aCVXIRON_BANK, convexIronBankVault, variableYieldDistributor } = testEnv;
+    const user1 = users[1];
+
+    await advanceBlock((await timeLatest()).plus(86400).toNumber());
+
+    // processYield
+    let beforeBalance = await CRV.balanceOf(variableYieldDistributor.address);
+    await convexIronBankVault.processYield();
+    let afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
+    const receivedAmount = afterBalance.sub(beforeBalance);
+    expect(receivedAmount).to.be.gt(0);
+
+    let response = await variableYieldDistributor.getRewardsBalance(
+      [aCVXIRON_BANK.address],
+      user1.address
+    );
+    const availableRewards = response[0].balance;
+
+    expect(
+      receivedAmount
+        .sub(availableRewards)
+        .abs()
+        .lte(await convertToCurrencyDecimals(CRV.address, '0.00001'))
+    ).to.be.equal(true);
+
+    beforeBalance = await CRV.balanceOf(user1.address);
+    const claimAmount = availableRewards.div(2);
+    await variableYieldDistributor
+      .connect(user1.signer)
+      .claimRewards(aCVXIRON_BANK.address, claimAmount, user1.address);
+    afterBalance = await CRV.balanceOf(user1.address);
+    expect(afterBalance.sub(beforeBalance).sub(claimAmount)).to.be.equal(0);
+  });
+  it('The 2nd day, User1 queries his claimalbe rewards, and deposits again 2,000', async () => {
+    const { users, aCVXIRON_BANK, convexIronBankVault, IRON_BANK_LP, variableYieldDistributor } =
+      testEnv;
+    const ethers = (DRE as any).ethers;
+    const user1 = users[1];
+
+    await advanceBlock((await timeLatest()).plus(86400).toNumber());
+
+    // queries his claimable rewards
+    const response = await variableYieldDistributor.getRewardsBalance(
+      [aCVXIRON_BANK.address],
+      user1.address
+    );
+    const rewardsAmount = response[0].balance;
+    expect(rewardsAmount).to.be.gt(0);
+
+    // deposits again
+    const IronBankLPOwnerAddress = '0x64ea5a109a6f8d5ca30f9565b0d7f72de781ce7d';
+    const depositIronBank = '2000';
+    const depositIronBankAmount = await convertToCurrencyDecimals(
+      IRON_BANK_LP.address,
+      depositIronBank
+    );
+
+    await impersonateAccountsHardhat([IronBankLPOwnerAddress]);
+    let signer = await ethers.provider.getSigner(IronBankLPOwnerAddress);
+    await IRON_BANK_LP.connect(signer).transfer(user1.address, depositIronBankAmount);
+    await IRON_BANK_LP.connect(user1.signer).approve(
+      convexIronBankVault.address,
+      APPROVAL_AMOUNT_LENDING_POOL
+    );
+
+    await convexIronBankVault
+      .connect(user1.signer)
+      .depositCollateral(IRON_BANK_LP.address, depositIronBankAmount);
+  });
+  it('The 3rd day, User1 withdraw 1,000 token, and User2 deposits 5,000', async () => {
+    const { users, aCVXIRON_BANK, convexIronBankVault, IRON_BANK_LP, variableYieldDistributor } =
+      testEnv;
+    const ethers = (DRE as any).ethers;
+    const user1 = users[1];
+    const user2 = users[2];
+    const IronBankLPOwnerAddress = '0x64ea5a109a6f8d5ca30f9565b0d7f72de781ce7d';
+
+    await advanceBlock((await timeLatest()).plus(86400).toNumber());
+
+    // User1 withdraws
+    let amountAsset = await convertToCurrencyDecimals(IRON_BANK_LP.address, '1000');
+    await expect(
+      convexIronBankVault
+        .connect(user1.signer)
+        .withdrawCollateral(IRON_BANK_LP.address, amountAsset, 100, user2.address)
+    ).to.not.be.reverted;
+
+    // User2 deposits
+    amountAsset = await convertToCurrencyDecimals(IRON_BANK_LP.address, '5000');
+    await impersonateAccountsHardhat([IronBankLPOwnerAddress]);
+    let signer = await ethers.provider.getSigner(IronBankLPOwnerAddress);
+    await IRON_BANK_LP.connect(signer).transfer(user2.address, amountAsset);
+    await IRON_BANK_LP.connect(user2.signer).approve(
+      convexIronBankVault.address,
+      APPROVAL_AMOUNT_LENDING_POOL
+    );
+
+    await expect(
+      convexIronBankVault.connect(user2.signer).depositCollateral(IRON_BANK_LP.address, amountAsset)
+    ).to.not.be.reverted;
+  });
+  it('The 4th day, someone execute processYield', async () => {
+    const { CRV, convexIronBankVault, variableYieldDistributor } = testEnv;
+
+    const beforeBalance = await CRV.balanceOf(variableYieldDistributor.address);
+
+    await convexIronBankVault.processYield();
+
+    const afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
+
+    expect(afterBalance.sub(beforeBalance)).to.be.gt(0);
+  });
+  it('User1 takes all available rewards.', async () => {
+    const { users, aCVXIRON_BANK, CRV, variableYieldDistributor } = testEnv;
+    const user1 = users[1];
+
+    let response = await variableYieldDistributor.getRewardsBalance(
+      [aCVXIRON_BANK.address],
+      user1.address
+    );
+    const availableRewards = response[0].balance;
+
+    const beforeBalance = await CRV.balanceOf(user1.address);
+    await variableYieldDistributor
+      .connect(user1.signer)
+      .claimRewards(aCVXIRON_BANK.address, availableRewards, user1.address);
+    const afterBalance = await CRV.balanceOf(user1.address);
+    expect(afterBalance.sub(beforeBalance).sub(availableRewards)).to.be.equal(0);
+  });
+});

@@ -292,6 +292,16 @@ export const initReservesByHelper = async (
     );
   }
 
+  if (tokenAddresses['cvxIRON_BANK']) {
+    //CRV VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.cvxIRON_BANK);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['cvxIRON_BANK']
+    );
+  }
+
   return gasUsage; // Deprecated
 };
 

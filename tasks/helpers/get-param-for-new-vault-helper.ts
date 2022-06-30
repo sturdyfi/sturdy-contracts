@@ -25,6 +25,7 @@ import {
   deployBasedMiMaticLPOracle,
   deployBasedOracle,
   deployConvexDAIUSDCUSDTSUSDVaultImpl,
+  deployConvexIronBankVaultImpl,
   deployConvexMIM3CRVVaultImpl,
   deployDefaultReserveInterestRateStrategy,
   deployMIM3CRVPOracle,
@@ -51,9 +52,9 @@ const isSymbolValid = (
 task('external:get-param-for-new-vault', 'Deploy A token, Debt Tokens, Risk Parameters')
   .addParam('pool', `Pool name to retrieve configuration`)
   .addParam('symbol', `Asset symbol, needs to have configuration ready`)
-  .addParam('yieldDistributor', `Yield Distribution address`, ZERO_ADDRESS)
+  .addParam('yielddistributor', `Yield Distribution address`, ZERO_ADDRESS)
   .addFlag('verify', 'Verify contracts at Etherscan')
-  .setAction(async ({ pool, verify, symbol, yieldDistributor }, localBRE) => {
+  .setAction(async ({ pool, verify, symbol, yielddistributor }, localBRE) => {
     const poolConfig = loadPoolConfig(pool);
     const reserveConfigs = getReserveConfigs(pool);
     const network = process.env.FORK || localBRE.network.name;
@@ -85,8 +86,8 @@ WRONG RESERVE ASSET SETUP:
     const incentivesController = await getSturdyIncentivesController();
     const atokenAndRatesDeployer = await getATokensAndRatesHelper();
 
-    // ToDo: Deploy yieldDistributor parts instead parameter
-    console.log('Yield Distributor Address: ', yieldDistributor);
+    // ToDo: Deploy yielddistributor parts instead parameter
+    console.log('Yield Distributor Address: ', yielddistributor);
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,
@@ -97,7 +98,7 @@ WRONG RESERVE ASSET SETUP:
         strategyParams.strategy.stableRateSlope1,
         strategyParams.strategy.stableRateSlope2,
         strategyParams.strategy.capacity,
-        yieldDistributor,
+        yielddistributor,
       ],
       verify
     );
@@ -334,26 +335,47 @@ WRONG RESERVE ASSET SETUP:
     //   ]);
     // }
 
-    // cvxDAI_USDC_USDT_SUSD reserve
+    // // cvxDAI_USDC_USDT_SUSD reserve
+    // {
+    //   // Deploy vault impl
+    //   const vaultImpl = await deployConvexDAIUSDCUSDTSUSDVaultImpl(verify);
+    //   const addressesProvider = await getLendingPoolAddressesProvider();
+    //   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('CONVEX_DAI_USDC_USDT_SUSD_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('CVXDAI_USDC_USDT_SUSD').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('DAI_USDC_USDT_SUSD_LP').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     vaultImpl.address, //implement address
+    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxDAI_USDC_USDT_SUSD, //internal asset
+    //     getParamPerNetwork(
+    //       (poolConfig as ISturdyConfiguration).DAI_USDC_USDT_SUSD_LP,
+    //       <eNetwork>network
+    //     ), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
+
+    // cvxIRON_BANK reserve
     {
       // Deploy vault impl
-      const vaultImpl = await deployConvexDAIUSDCUSDTSUSDVaultImpl(verify);
+      const vaultImpl = await deployConvexIronBankVaultImpl(verify);
       const addressesProvider = await getLendingPoolAddressesProvider();
       await waitForTx(await vaultImpl.initialize(addressesProvider.address));
 
       console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('CONVEX_DAI_USDC_USDT_SUSD_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('CVXDAI_USDC_USDT_SUSD').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('DAI_USDC_USDT_SUSD_LP').toString(), //external asset id
+        localBRE.ethers.utils.formatBytes32String('CONVEX_IRON_BANK_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('CVXIRON_BANK').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('IRON_BANK_LP').toString(), //external asset id
         //etc...
       ]);
       console.log('_addresses: ', [
         vaultImpl.address, //implement address
-        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxDAI_USDC_USDT_SUSD, //internal asset
-        getParamPerNetwork(
-          (poolConfig as ISturdyConfiguration).DAI_USDC_USDT_SUSD_LP,
-          <eNetwork>network
-        ), //exterenal asset
+        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxIRON_BANK, //internal asset
+        getParamPerNetwork((poolConfig as ISturdyConfiguration).IRON_BANK_LP, <eNetwork>network), //exterenal asset
         //etc...
       ]);
     }

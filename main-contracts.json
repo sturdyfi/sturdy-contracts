@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0xE0E62dDEb16De3dD87aE5F42428AD22308CBCc16",
+      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xE0E62dDEb16De3dD87aE5F42428AD22308CBCc16",
+      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -482,6 +482,42 @@
     },
     "localhost": {
       "address": "0xd14A2bd5043F1909A6b20B14E465309FdAc3bf50",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "rateStrategyCVXIRON_BANK": {
+    "main": {
+      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105"
+    },
+    "localhost": {
+      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105"
+    }
+  },
+  "ConvexIronBankVaultImpl": {
+    "main": {
+      "address": "0xA004DF37c84a43FEB90142e209430649F4025EB3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xA004DF37c84a43FEB90142e209430649F4025EB3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "ConvexIronBankVault": {
+    "main": {
+      "address": "0xCD1B342cd04A29D7ae86aE54FfCCB8b4580a7192"
+    },
+    "localhost": {
+      "address": "0xCD1B342cd04A29D7ae86aE54FfCCB8b4580a7192"
+    }
+  },
+  "IronBankOracle": {
+    "main": {
+      "address": "0x4c1009119E2888Fd0D230BB952154ef886AD0332",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x4c1009119E2888Fd0D230BB952154ef886AD0332",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

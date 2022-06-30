@@ -107,6 +107,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
           ? {
               // cvxFRAX_3CRV: (await getFXSStableYieldDistribution()).address,
               cvxFRAX_3CRV: (await getVariableYieldDistribution()).address,
+              cvxIRON_BANK: (await getVariableYieldDistribution()).address,
             }
           : {};
 

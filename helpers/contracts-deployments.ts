@@ -54,6 +54,7 @@ import {
   getVariableYieldDistributionImpl,
   getVariableYieldDistribution,
   getConvexIronBankVault,
+  getConvexFRAXUSDCVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -140,6 +141,7 @@ import {
   BeefyMIM2CRVVaultFactory,
   MIM2CRVOracleFactory,
   IronBankOracleFactory,
+  FRAXUSDCOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -465,6 +467,14 @@ export const deployIronBankOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new IronBankOracleFactory(await getFirstSigner()).deploy(),
     eContractid.IronBankOracle,
+    [],
+    verify
+  );
+
+export const deployFRAXUSDCOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new FRAXUSDCOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.FRAXUSDCOracle,
     [],
     verify
   );
@@ -1287,6 +1297,39 @@ export const deployConvexIronBankVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexIronBankVault, proxyAddress);
 
   return await getConvexIronBankVault();
+};
+
+export const deployConvexFRAXUSDCVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexFRAXUSDCVaultImpl,
+    [],
+    verify
+  );
+
+export const deployConvexFRAXUSDCVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexFRAXUSDCVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('CONVEX_FRAX_USDC_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('CONVEX_FRAX_USDC_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.ConvexFRAXUSDCVault, proxyAddress);
+
+  return await getConvexFRAXUSDCVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

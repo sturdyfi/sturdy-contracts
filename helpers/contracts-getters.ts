@@ -69,6 +69,7 @@ import {
   StableYieldDistributionFactory,
   VariableYieldDistributionFactory,
   BeefyMIM2CRVVaultFactory,
+  LeverageSwapManagerFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -1053,3 +1054,12 @@ export const getCurveswapAdapterAddress = async () => {
   const db = await getDb().get(`${eContractid.CurveswapAdapter}.${DRE.network.name}`).value();
   return db?.address;
 };
+
+export const getLeverageSwapManager = async (address?: tEthereumAddress) =>
+  await LeverageSwapManagerFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.LeverageSwapManager}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );

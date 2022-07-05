@@ -175,6 +175,10 @@ export enum eContractid {
   YieldManager = 'YieldManager',
   UniswapAdapter = 'UniswapAdapter',
   CurveswapAdapter = 'CurveswapAdapter',
+  LeverageSwapManagerImpl = 'LeverageSwapManagerImpl',
+  LeverageSwapManager = 'LeverageSwapManager',
+  LevSwap3CrvFrax = 'LevSwap3CrvFrax',
+  LevSwapCrvPlain3SUSD = 'LevSwapCrvPlain3SUSD',
 }
 
 /*

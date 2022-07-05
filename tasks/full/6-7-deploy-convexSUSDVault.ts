@@ -49,7 +49,10 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
     // Register cDAIUSDCUSDTSUSD-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [DAIUSDCUSDTSUSDOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network)],
+        [DAIUSDCUSDTSUSDOracleAddress, DAIUSDCUSDTSUSDOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

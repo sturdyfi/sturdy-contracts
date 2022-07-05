@@ -84,6 +84,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('8-4. Deploy Yield Manager');
     await DRE.run('full:deploy-yield-manager', { pool: POOL_NAME, verify });
 
+    console.log('8-5. Deploy Leverage Swap Manager');
+    await DRE.run('full:deploy-leverage-swap-manager', { pool: POOL_NAME, verify });
+
     // if (verify) {
     //   printContracts();
     //   console.log('9. Veryfing contracts');

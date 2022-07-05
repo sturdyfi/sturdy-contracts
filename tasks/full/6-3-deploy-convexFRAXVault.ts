@@ -48,8 +48,14 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(CRV, network), getParamPerNetwork(CVX, network)],
         [
+          internalAssetAddress,
+          getParamPerNetwork(FRAX_3CRV_LP, network),
+          getParamPerNetwork(CRV, network),
+          getParamPerNetwork(CVX, network),
+        ],
+        [
+          FRAX3CRVOracleAddress,
           FRAX3CRVOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).CRV,
           getParamPerNetwork(ChainlinkAggregator, network).CVX,

@@ -54,6 +54,7 @@ import {
   getVariableYieldDistributionImpl,
   getVariableYieldDistribution,
   getConvexIronBankVault,
+  getLeverageSwapManager,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -140,6 +141,9 @@ import {
   BeefyMIM2CRVVaultFactory,
   MIM2CRVOracleFactory,
   IronBankOracleFactory,
+  LeverageSwapManagerFactory,
+  ThreeCrvFraxLevSwapFactory,
+  CrvPlain3SUSDLevSwapFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -2437,3 +2441,59 @@ export const deployYieldManager = async (verify?: boolean) => {
 
   return await getYieldManager();
 };
+
+export const deployLeverageSwapManagerImpl = async (verify?: boolean) => {
+  withSaveAndVerify(
+    await new LeverageSwapManagerFactory(await getFirstSigner()).deploy(),
+    eContractid.LeverageSwapManagerImpl,
+    [],
+    verify
+  );
+};
+
+export const deployLeverageSwapManager = async (verify?: boolean) => {
+  const leverageManagerImpl = await withSaveAndVerify(
+    await new LeverageSwapManagerFactory(await getFirstSigner()).deploy(),
+    eContractid.LeverageSwapManagerImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await leverageManagerImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('LEVERAGE_SWAP_MANAGER'),
+      leverageManagerImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('LEVERAGE_SWAP_MANAGER')
+  );
+  await insertContractAddressInDb(eContractid.LeverageSwapManager, proxyAddress);
+
+  return await getLeverageSwapManager();
+};
+
+export const deploy3CrvFraxLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ThreeCrvFraxLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.LevSwap3CrvFrax,
+    args,
+    verify
+  );
+
+export const deployCrvPlain3SUSDLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new CrvPlain3SUSDLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.LevSwapCrvPlain3SUSD,
+    args,
+    verify
+  );

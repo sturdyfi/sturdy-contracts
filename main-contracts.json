@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105",
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105",
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -518,6 +518,42 @@
     },
     "localhost": {
       "address": "0x66C6074c5A5144877a12E542BBb8dD37110D7567",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "rateStrategyCVXFRAX_USDC": {
+    "main": {
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a"
+    },
+    "localhost": {
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a"
+    }
+  },
+  "ConvexFRAXUSDCVaultImpl": {
+    "main": {
+      "address": "0x8dA78b4CA9C961791840226849bf6015D427cF95",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x8dA78b4CA9C961791840226849bf6015D427cF95",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "ConvexFRAXUSDCVault": {
+    "main": {
+      "address": "0xf8C91E5BfFDD79Ef7D1d6F9ae3391E021fFCBD73"
+    },
+    "localhost": {
+      "address": "0xf8C91E5BfFDD79Ef7D1d6F9ae3391E021fFCBD73"
+    }
+  },
+  "FRAXUSDCOracle": {
+    "main": {
+      "address": "0xfE3b8248f5bFDE88233c87eE17D49143849f9f28",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xfE3b8248f5bFDE88233c87eE17D49143849f9f28",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

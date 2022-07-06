@@ -25,6 +25,7 @@ import {
   deployBasedMiMaticLPOracle,
   deployBasedOracle,
   deployConvexDAIUSDCUSDTSUSDVaultImpl,
+  deployConvexFRAXUSDCVaultImpl,
   deployConvexIronBankVaultImpl,
   deployConvexMIM3CRVVaultImpl,
   deployDefaultReserveInterestRateStrategy,
@@ -359,23 +360,44 @@ WRONG RESERVE ASSET SETUP:
     //   ]);
     // }
 
-    // cvxIRON_BANK reserve
+    // // cvxIRON_BANK reserve
+    // {
+    //   // Deploy vault impl
+    //   const vaultImpl = await deployConvexIronBankVaultImpl(verify);
+    //   const addressesProvider = await getLendingPoolAddressesProvider();
+    //   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('CONVEX_IRON_BANK_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('CVXIRON_BANK').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('IRON_BANK_LP').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     vaultImpl.address, //implement address
+    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxIRON_BANK, //internal asset
+    //     getParamPerNetwork((poolConfig as ISturdyConfiguration).IRON_BANK_LP, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
+
+    // cvxFRAX_USDC reserve
     {
       // Deploy vault impl
-      const vaultImpl = await deployConvexIronBankVaultImpl(verify);
+      const vaultImpl = await deployConvexFRAXUSDCVaultImpl(verify);
       const addressesProvider = await getLendingPoolAddressesProvider();
       await waitForTx(await vaultImpl.initialize(addressesProvider.address));
 
       console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('CONVEX_IRON_BANK_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('CVXIRON_BANK').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('IRON_BANK_LP').toString(), //external asset id
+        localBRE.ethers.utils.formatBytes32String('CONVEX_FRAX_USDC_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('CVXFRAX_USDC').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('FRAX_USDC_LP').toString(), //external asset id
         //etc...
       ]);
       console.log('_addresses: ', [
         vaultImpl.address, //implement address
-        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxIRON_BANK, //internal asset
-        getParamPerNetwork((poolConfig as ISturdyConfiguration).IRON_BANK_LP, <eNetwork>network), //exterenal asset
+        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxFRAX_USDC, //internal asset
+        getParamPerNetwork((poolConfig as ISturdyConfiguration).FRAX_USDC_LP, <eNetwork>network), //exterenal asset
         //etc...
       ]);
     }

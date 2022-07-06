@@ -70,7 +70,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxDAI_USDC_USDT_SUSD: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
       cvxHBTC_WBTC: '',
       cvxIRON_BANK: '0xABad46DcF632351Cc74f2087D9a359Ac3299804a',
-      cvxFRAX_USDC: '',
+      cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -86,7 +86,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxDAI_USDC_USDT_SUSD: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
       cvxHBTC_WBTC: '',
       cvxIRON_BANK: '0xABad46DcF632351Cc74f2087D9a359Ac3299804a',
-      cvxFRAX_USDC: '',
+      cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',

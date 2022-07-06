@@ -15,8 +15,10 @@ import {
   getConvexIronBankVault,
   getConvexMIM3CRVVault,
   getDeployVaultHelper,
+  getLendingPool,
   getLendingPoolAddressesProvider,
   getSturdyOracle,
+  getVariableYieldDistribution,
 } from '../../helpers/contracts-getters';
 import {
   getEthersSigners,
@@ -515,6 +517,15 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
 
     //   // update the oracle configuration
     //   // common.ts
+
+    //   //CRV VariableYieldDistributor config
+    //   const pool = await getLendingPool();
+    //   const response = await pool.getReserveData(internalAsset);
+    //   const VariableYieldDistributor = await getVariableYieldDistribution();
+    //   await VariableYieldDistributor.connect(signer).registerAsset(
+    //     response.aTokenAddress,
+    //     newVaultProxyAddress
+    //   );
     // }
 
     // cvxFRAX_USDC reserve
@@ -622,6 +633,15 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
 
       // update the oracle configuration
       // common.ts
+
+      //CRV VariableYieldDistributor config
+      const pool = await getLendingPool();
+      const response = await pool.getReserveData(internalAsset);
+      const VariableYieldDistributor = await getVariableYieldDistribution();
+      await VariableYieldDistributor.connect(signer).registerAsset(
+        response.aTokenAddress,
+        newVaultProxyAddress
+      );
     }
 
     console.log(await addressProvider.owner());

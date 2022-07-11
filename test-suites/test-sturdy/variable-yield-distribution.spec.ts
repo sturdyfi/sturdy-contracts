@@ -150,7 +150,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     await expect(
       variableYieldDistributor
         .connect(borrower.signer)
-        .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, ZERO_ADDRESS)
+        .claimRewards([aCVXFRAX_3CRV.address], [result[0].balance], ZERO_ADDRESS)
     ).to.be.reverted;
   });
   // it('ClaimRewards: borrower can not get any rewards before processYield', async () => {
@@ -168,7 +168,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
 
   //   await variableYieldDistributor
   //     .connect(borrower.signer)
-  //     .claimRewards(aCVXFRAX_3CRV.address, result[0].balance, borrower.address);
+  //     .claimRewards([aCVXFRAX_3CRV.address], [result[0].balance], borrower.address);
 
   //   crvBalanceOfUser = await CRV.balanceOf(borrower.address);
   //   expect(crvBalanceOfUser).to.be.equal(0);
@@ -189,7 +189,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
 
     await variableYieldDistributor
       .connect(borrower.signer)
-      .claimRewards(aCVXFRAX_3CRV.address, availableRewards, borrower.address);
+      .claimRewards([aCVXFRAX_3CRV.address], [availableRewards], borrower.address);
 
     crvBalanceOfUser = await CRV.balanceOf(borrower.address);
     expect(crvBalanceOfUser).to.be.eq(availableRewards);
@@ -688,7 +688,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     const claimAmount = availableRewards.div(2);
     await variableYieldDistributor
       .connect(user1.signer)
-      .claimRewards(aCVXFRAX_3CRV.address, claimAmount, user1.address);
+      .claimRewards([aCVXFRAX_3CRV.address], [claimAmount], user1.address);
     afterBalance = await CRV.balanceOf(user1.address);
     expect(afterBalance.sub(beforeBalance).sub(claimAmount)).to.be.equal(0);
   });
@@ -784,7 +784,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     const beforeBalance = await CRV.balanceOf(user1.address);
     await variableYieldDistributor
       .connect(user1.signer)
-      .claimRewards(aCVXFRAX_3CRV.address, availableRewards, user1.address);
+      .claimRewards([aCVXFRAX_3CRV.address], [availableRewards], user1.address);
     const afterBalance = await CRV.balanceOf(user1.address);
     expect(afterBalance.sub(beforeBalance).sub(availableRewards)).to.be.equal(0);
   });
@@ -862,7 +862,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     const claimAmount = availableRewards.div(2);
     await variableYieldDistributor
       .connect(user1.signer)
-      .claimRewards(aCVXIRON_BANK.address, claimAmount, user1.address);
+      .claimRewards([aCVXIRON_BANK.address], [claimAmount], user1.address);
     afterBalance = await CRV.balanceOf(user1.address);
     expect(afterBalance.sub(beforeBalance).sub(claimAmount)).to.be.equal(0);
   });
@@ -958,7 +958,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     const beforeBalance = await CRV.balanceOf(user1.address);
     await variableYieldDistributor
       .connect(user1.signer)
-      .claimRewards(aCVXIRON_BANK.address, availableRewards, user1.address);
+      .claimRewards([aCVXIRON_BANK.address], [availableRewards], user1.address);
     const afterBalance = await CRV.balanceOf(user1.address);
     expect(afterBalance.sub(beforeBalance).sub(availableRewards)).to.be.equal(0);
   });

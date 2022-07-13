@@ -32,6 +32,7 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
     await vault.setConfiguration(getParamPerNetwork(MIM_3CRV_LP, network), 40); // set curve lp token & convex pool id
+    await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);

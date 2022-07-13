@@ -381,26 +381,26 @@ WRONG RESERVE ASSET SETUP:
     //   ]);
     // }
 
-    // cvxFRAX_USDC reserve
-    {
-      // Deploy vault impl
-      const vaultImpl = await deployConvexFRAXUSDCVaultImpl(verify);
-      const addressesProvider = await getLendingPoolAddressesProvider();
-      await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+    // // cvxFRAX_USDC reserve
+    // {
+    //   // Deploy vault impl
+    //   const vaultImpl = await deployConvexFRAXUSDCVaultImpl(verify);
+    //   const addressesProvider = await getLendingPoolAddressesProvider();
+    //   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
 
-      console.log('_ids: ', [
-        localBRE.ethers.utils.formatBytes32String('CONVEX_FRAX_USDC_VAULT').toString(), //implement id
-        localBRE.ethers.utils.formatBytes32String('CVXFRAX_USDC').toString(), //internal asset id
-        localBRE.ethers.utils.formatBytes32String('FRAX_USDC_LP').toString(), //external asset id
-        //etc...
-      ]);
-      console.log('_addresses: ', [
-        vaultImpl.address, //implement address
-        getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxFRAX_USDC, //internal asset
-        getParamPerNetwork((poolConfig as ISturdyConfiguration).FRAX_USDC_LP, <eNetwork>network), //exterenal asset
-        //etc...
-      ]);
-    }
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('CONVEX_FRAX_USDC_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('CVXFRAX_USDC').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('FRAX_USDC_LP').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     vaultImpl.address, //implement address
+    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxFRAX_USDC, //internal asset
+    //     getParamPerNetwork((poolConfig as ISturdyConfiguration).FRAX_USDC_LP, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
 
     console.log('_treasuryAddress: ', ReserveFactorTreasuryAddress[network]);
     console.log('_treasuryFee: ', '1000');

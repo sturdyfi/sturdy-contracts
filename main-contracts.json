@@ -313,6 +313,14 @@
       "address": "0x5747D28D9317A930279CB6c958C06f802d988828"
     }
   },
+  "rateStrategyCVXMIM_3CRV": {
+    "main": {
+      "address": "0x84dcDE91a81FE6199641f5a11cC858dd90D2759C"
+    },
+    "localhost": {
+      "address": "0x84dcDE91a81FE6199641f5a11cC858dd90D2759C"
+    }
+  },
   "LendingPoolCollateralManagerImpl": {
     "main": {
       "address": "0x56045D514799074E474ee0AC9508162202f62d32"
@@ -457,6 +465,14 @@
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
+  "ConvexMIM3CRVVault": {
+    "main": {
+      "address": "0xe2Cac13bbff65d30BA31C1709B73c60573cFbDA0"
+    },
+    "localhost": {
+      "address": "0xe2Cac13bbff65d30BA31C1709B73c60573cFbDA0"
+    }
+  },
   "ConvexDAIUSDCUSDTSUSDVaultImpl": {
     "main": {
       "address": "0x68d74ab0A28Ab3A4E04b6538CEd7cb2BDC3db541",
@@ -554,6 +570,16 @@
     },
     "localhost": {
       "address": "0xfE3b8248f5bFDE88233c87eE17D49143849f9f28",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "MIM3CRVOracle": {
+    "main": {
+      "address": "0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

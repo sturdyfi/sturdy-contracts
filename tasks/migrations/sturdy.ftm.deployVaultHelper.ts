@@ -17,6 +17,7 @@ import {
   getDeployVaultHelper,
   getLendingPool,
   getLendingPoolAddressesProvider,
+  getSturdyIncentivesController,
   getSturdyOracle,
   getVariableYieldDistribution,
 } from '../../helpers/contracts-getters';
@@ -25,6 +26,7 @@ import {
   getParamPerNetwork,
   insertContractAddressInDb,
 } from '../../helpers/contracts-helpers';
+import { getReserveConfigs } from '../../helpers/init-helpers';
 import { impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
 import { eContractid, eNetwork } from '../../helpers/types';
 
@@ -636,12 +638,19 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //   // common.ts
 
     //   //CRV VariableYieldDistributor config
-    //   const pool = await getLendingPool();
-    //   const response = await pool.getReserveData(internalAsset);
+    //   const lendingPool = await getLendingPool();
+    //   const response = await lendingPool.getReserveData(internalAsset);
     //   const VariableYieldDistributor = await getVariableYieldDistribution();
     //   await VariableYieldDistributor.connect(signer).registerAsset(
     //     response.aTokenAddress,
     //     newVaultProxyAddress
+    //   );
+    //   const reserveConfigs = getReserveConfigs(pool);
+    //   const strategyParams = reserveConfigs['strategyCVXFRAX_USDC'];
+    //   const incentivesController = await getSturdyIncentivesController();
+    //   await incentivesController.configureAssets(
+    //     [response.aTokenAddress, response.variableDebtTokenAddress],
+    //     [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
     //   );
     // }
 

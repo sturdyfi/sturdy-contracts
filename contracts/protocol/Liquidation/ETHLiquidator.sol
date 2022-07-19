@@ -13,6 +13,8 @@ import {IWETH} from '../../misc/interfaces/IWETH.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {CurveswapAdapter} from '../libraries/swap/CurveswapAdapter.sol';
 import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
+import {IChainlinkAggregator} from '../../interfaces/IChainlinkAggregator.sol';
+import {Math} from '../../dependencies/openzeppelin/contracts/Math.sol';
 
 /**
  * @title ETHLiquidator
@@ -23,26 +25,31 @@ import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
 interface ICurvePool {
   function coins(uint256) external view returns (address);
 
-  function calc_withdraw_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    bool _previous
-  ) external view returns (uint256);
+  function coins(int128) external view returns (address);
 
   function calc_withdraw_one_coin(uint256 _burn_amount, int128 i) external view returns (uint256);
 
   function remove_liquidity_one_coin(
     uint256 _burn_amount,
     int128 i,
-    uint256 _min_received,
-    address _receiver
+    uint256 _min_received
   ) external returns (uint256);
 
-  function remove_liquidity_one_coin(
-    uint256 _burn_amount,
+  function remove_liquidity_imbalance(uint256[4] calldata amounts, uint256 max_burn_amount)
+    external;
+
+  function exchange(
     int128 i,
-    uint256 _min_received
-  ) external;
+    int128 j,
+    uint256 dx,
+    uint256 min_dy
+  ) external returns (uint256);
+
+  function get_virtual_price() external view returns (uint256 price);
+}
+
+interface CYAsset {
+  function redeem(uint256 redeemTokens) external returns (uint256);
 }
 
 contract ETHLiquidator is IFlashLoanReceiver, Ownable {
@@ -51,7 +58,24 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
   address private constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
   address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
   address private constant FRAX_3CRV_LP_ADDRESS = 0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B;
+  address private constant MIM_3CRV_LP_ADDRESS = 0x5a6A4D54456819380173272A5E8E9B9904BdF41B;
+  address private constant DAI_USDC_USDT_SUSD_LP_ADDRESS =
+    0xC25a3A3b969415c80451098fa907EC722572917F;
+  address private constant DAI_USDC_USDT_SUSD_POOL_ADDRESS =
+    0xA5407eAE9Ba41422680e2e00537571bcC53efBfD;
+  address private constant IRON_BANK_LP_ADDRESS = 0x5282a4eF67D9C33135340fB3289cc1711c13638C;
+  address private constant IRON_BANK_POOL_ADDRESS = 0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF;
+  address private constant FRAX_USDC_LP_ADDRESS = 0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC;
+  address private constant FRAX_USDC_POOL_ADDRESS = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
   address private constant POOL_3CRV_ADDRESS = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
+
+  address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+  address private constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
+  address private constant CYDAI = 0x8e595470Ed749b85C6F7669de83EAe304C2ec68F;
+  address private constant CYUSDC = 0x76Eb2FE28b36B3ee97F3Adae0C69606eeDB2A37c;
+  address private constant CYUSDT = 0x48759F220ED983dB51fA7A8C0D2AAb8f3ce4166a;
 
   ILendingPoolAddressesProvider internal _addressesProvider;
 
@@ -99,7 +123,7 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
       false
     );
 
-    _convertCollateral(collateralAddress, assets[0]);
+    _convertCollateral(collateralAddress, assets[0], amounts[0] + premiums[0]);
 
     // Approve the LendingPool contract allowance to *pull* the owed amount
     IERC20(assets[0]).safeApprove(AAVE_LENDING_POOL_ADDRESS, 0);
@@ -131,7 +155,11 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
   /**
    * Swap from collateralAsset to debtAsset
    */
-  function _convertCollateral(address collateralAsset, address asset) internal {
+  function _convertCollateral(
+    address collateralAsset,
+    address asset,
+    uint256 minAssetAmount
+  ) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     uint256 collateralAmount = IERC20(collateralAsset).balanceOf(address(this));
 
@@ -139,6 +167,14 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
       _convertLIDO(provider, asset, collateralAmount);
     } else if (collateralAsset == FRAX_3CRV_LP_ADDRESS) {
       _convertFRAX_3CRV(asset, collateralAmount);
+    } else if (collateralAsset == MIM_3CRV_LP_ADDRESS) {
+      _convertMIM_3CRV(asset, collateralAmount);
+    } else if (collateralAsset == DAI_USDC_USDT_SUSD_LP_ADDRESS) {
+      _convertDAI_USDC_USDT_SUSD(asset, collateralAmount, minAssetAmount);
+    } else if (collateralAsset == IRON_BANK_LP_ADDRESS) {
+      _convertIRON_BANK(asset, collateralAmount);
+    } else if (collateralAsset == FRAX_USDC_LP_ADDRESS) {
+      _convertFRAX_USDC(asset, collateralAmount);
     }
   }
 
@@ -154,7 +190,7 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
       provider.getAddress('LIDO'),
       ETH,
       collateralAmount,
-      500
+      500 //0.05%
     );
 
     // ETH -> WETH
@@ -173,27 +209,27 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     UniswapAdapter.swapExactTokensForTokens(provider, weth, asset, receivedETHAmount, path, 500);
   }
 
-  function _convertFRAX_3CRV(address asset, uint256 collateralAmount) internal {
+  function _convertFRAX_3CRV(address _asset, uint256 _collateralAmount) internal {
     // Withdraw a single asset(3CRV) from the pool
-    uint256 _amount = _withdrawFromCurvePool(collateralAmount);
+    uint256 amount = _withdrawFromCurvePool(_collateralAmount, FRAX_3CRV_LP_ADDRESS, 1);
 
     // Swap 3CRV to asset
-    _swap3CRV(asset, _amount);
+    _swap3CRV(_asset, amount);
   }
 
-  function _withdrawFromCurvePool(uint256 _amount) internal returns (uint256 amount3CRV) {
-    int128 _underlying_coin_index = 1; // 3CRV
-
-    uint256 _minAmount = ICurvePool(FRAX_3CRV_LP_ADDRESS).calc_withdraw_one_coin(
+  function _withdrawFromCurvePool(
+    uint256 _amount,
+    address _poolAddress,
+    int128 _underlying_coin_index
+  ) internal returns (uint256 amount) {
+    uint256 minAmount = ICurvePool(_poolAddress).calc_withdraw_one_coin(
       _amount,
-      _underlying_coin_index,
-      false
+      _underlying_coin_index
     );
-    amount3CRV = ICurvePool(FRAX_3CRV_LP_ADDRESS).remove_liquidity_one_coin(
+    amount = ICurvePool(_poolAddress).remove_liquidity_one_coin(
       _amount,
       _underlying_coin_index,
-      _minAmount,
-      address(this)
+      minAmount
     );
   }
 
@@ -210,7 +246,7 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
 
     require(_coin_index < 3, Errors.LP_LIQUIDATION_CONVERT_FAILED);
 
-    uint256 _minAmount = ICurvePool(POOL_3CRV_ADDRESS).calc_withdraw_one_coin(
+    uint256 minAmount = ICurvePool(POOL_3CRV_ADDRESS).calc_withdraw_one_coin(
       _amount,
       int128(_coin_index)
     );
@@ -218,7 +254,86 @@ contract ETHLiquidator is IFlashLoanReceiver, Ownable {
     ICurvePool(POOL_3CRV_ADDRESS).remove_liquidity_one_coin(
       _amount,
       int128(_coin_index),
-      _minAmount
+      minAmount
     );
+  }
+
+  function _convertMIM_3CRV(address _asset, uint256 _collateralAmount) internal {
+    // Withdraw a single asset(3CRV) from the pool
+    uint256 amount = _withdrawFromCurvePool(_collateralAmount, MIM_3CRV_LP_ADDRESS, 1);
+
+    // Swap 3CRV to asset
+    _swap3CRV(_asset, amount);
+  }
+
+  function _convertDAI_USDC_USDT_SUSD(
+    address _asset,
+    uint256 _collateralAmount,
+    uint256 _minAssetAmount
+  ) internal {
+    // Find the coin index of asset
+    uint256[4] memory amounts;
+    for (uint256 i; i < 4; ++i) {
+      if (ICurvePool(DAI_USDC_USDT_SUSD_POOL_ADDRESS).coins(int128(int256(i))) == _asset) {
+        amounts[i] = _minAssetAmount;
+        break;
+      }
+    }
+
+    // Withdraw a single asset from the pool
+    ICurvePool(DAI_USDC_USDT_SUSD_POOL_ADDRESS).remove_liquidity_imbalance(
+      amounts,
+      _collateralAmount
+    );
+  }
+
+  function _convertIRON_BANK(address _asset, uint256 _collateralAmount) internal {
+    int128 _coin_index = 3;
+    address _cyAsset;
+
+    // Find coin index from asset
+    if (_asset == DAI) {
+      _coin_index = 0;
+      _cyAsset = CYDAI;
+    } else if (_asset == USDC) {
+      _coin_index = 1;
+      _cyAsset = CYUSDC;
+    } else if (_asset == USDT) {
+      _coin_index = 2;
+      _cyAsset = CYUSDT;
+    }
+
+    require(_coin_index < 3, Errors.LP_LIQUIDATION_CONVERT_FAILED);
+
+    // Withdraw a single cyAsset from the pool
+    uint256 amount = _withdrawFromCurvePool(_collateralAmount, IRON_BANK_POOL_ADDRESS, _coin_index);
+
+    // Swap cyAsset to asset
+    CYAsset(_cyAsset).redeem(amount);
+  }
+
+  function _convertFRAX_USDC(address _asset, uint256 _collateralAmount) internal {
+    int128 _coin_index;
+
+    //Find coin index from asset
+    if (_asset == USDC) {
+      _coin_index = 1;
+    }
+
+    // Withdraw a USDC or FRAX from the pool
+    uint256 amount = _withdrawFromCurvePool(_collateralAmount, FRAX_USDC_POOL_ADDRESS, _coin_index);
+
+    // Swap FRAX to asset
+    if (_coin_index == 0) {
+      UniswapAdapter.Path memory path;
+      path.tokens = new address[](2);
+      path.tokens[0] = FRAX;
+      path.tokens[1] = _asset;
+
+      path.fees = new uint256[](1);
+      path.fees[0] = 500; //0.05%
+
+      UniswapAdapter.swapExactTokensForTokens(_addressesProvider, FRAX, _asset, amount, path, 500);
+    }
   }
 }

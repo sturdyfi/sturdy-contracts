@@ -112,6 +112,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               cvxIRON_BANK: (await getVariableYieldDistribution()).address,
               cvxFRAX_USDC: (await getVariableYieldDistribution()).address,
               cvxMIM_3CRV: (await getVariableYieldDistribution()).address,
+              cvxDAI_USDC_USDT_SUSD: (await getVariableYieldDistribution()).address,
             }
           : {};
 

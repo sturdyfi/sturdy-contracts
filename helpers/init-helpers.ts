@@ -322,6 +322,16 @@ export const initReservesByHelper = async (
     );
   }
 
+  if (tokenAddresses['cvxDAI_USDC_USDT_SUSD']) {
+    //CRV VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.cvxDAI_USDC_USDT_SUSD);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['cvxDAI_USDC_USDT_SUSD']
+    );
+  }
+
   return gasUsage; // Deprecated
 };
 

@@ -32,6 +32,7 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
     await vault.setConfiguration(getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network), 4); // set curve lp token & convex pool id
+    await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);

@@ -304,6 +304,22 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
 
     //   // update the oracle configuration
     //   // common.ts
+
+    //   //CRV VariableYieldDistributor config
+    //   const lendingPool = await getLendingPool();
+    //   const response = await lendingPool.getReserveData(internalAsset);
+    //   const VariableYieldDistributor = await getVariableYieldDistribution();
+    //   await VariableYieldDistributor.connect(signer).registerAsset(
+    //     response.aTokenAddress,
+    //     newVaultProxyAddress
+    //   );
+    //   const reserveConfigs = getReserveConfigs(pool);
+    //   const strategyParams = reserveConfigs['strategyCVXMIM_3CRV'];
+    //   const incentivesController = await getSturdyIncentivesController();
+    //   await incentivesController.configureAssets(
+    //     [response.aTokenAddress, response.variableDebtTokenAddress],
+    //     [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
+    //   );
     // }
 
     // // cvxDAI_USDC_USDT_SUSD reserve
@@ -330,6 +346,7 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //       /*DAI_USDC_USDT_SUSD_LP*/ '0xC25a3A3b969415c80451098fa907EC722572917F',
     //       4
     //     ); // set curve lp token & convex pool id
+    //   await vault.connect(signer).setIncentiveRatio('7500');
     //   const internalAsset = await vault.getInternalAsset();
     //   console.log('Internal Asset: ', internalAsset);
 
@@ -413,6 +430,22 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
 
     //   // update the oracle configuration
     //   // common.ts
+
+    //   //CRV VariableYieldDistributor config
+    //   const lendingPool = await getLendingPool();
+    //   const response = await lendingPool.getReserveData(internalAsset);
+    //   const VariableYieldDistributor = await getVariableYieldDistribution();
+    //   await VariableYieldDistributor.connect(signer).registerAsset(
+    //     response.aTokenAddress,
+    //     newVaultProxyAddress
+    //   );
+    //   const reserveConfigs = getReserveConfigs(pool);
+    //   const strategyParams = reserveConfigs['strategyCVXDAI_USDC_USDT_SUSD'];
+    //   const incentivesController = await getSturdyIncentivesController();
+    //   await incentivesController.configureAssets(
+    //     [response.aTokenAddress, response.variableDebtTokenAddress],
+    //     [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
+    //   );
     // }
 
     // // cvxIRON_BANK reserve
@@ -522,12 +555,19 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //   // common.ts
 
     //   //CRV VariableYieldDistributor config
-    //   const pool = await getLendingPool();
-    //   const response = await pool.getReserveData(internalAsset);
+    //   const lendingPool = await getLendingPool();
+    //   const response = await lendingPool.getReserveData(internalAsset);
     //   const VariableYieldDistributor = await getVariableYieldDistribution();
     //   await VariableYieldDistributor.connect(signer).registerAsset(
     //     response.aTokenAddress,
     //     newVaultProxyAddress
+    //   );
+    //   const reserveConfigs = getReserveConfigs(pool);
+    //   const strategyParams = reserveConfigs['strategyCVXIRON_BANK'];
+    //   const incentivesController = await getSturdyIncentivesController();
+    //   await incentivesController.configureAssets(
+    //     [response.aTokenAddress, response.variableDebtTokenAddress],
+    //     [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
     //   );
     // }
 

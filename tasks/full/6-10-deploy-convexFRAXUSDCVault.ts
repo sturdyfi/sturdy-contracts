@@ -1,17 +1,17 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
-  deployConvexIronBankVault,
-  deployIronBankOracle,
+  deployConvexFRAXUSDCVault,
+  deployFRAXUSDCOracle,
 } from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 
-const CONTRACT_NAME = 'ConvexIronBankVault';
+const CONTRACT_NAME = 'ConvexFRAXUSDCVault';
 
-task(`full:deploy-convex-iron-bank-vault`, `Deploys the ${CONTRACT_NAME} contract`)
+task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contract`)
   .addParam('pool', `Pool name to retrieve configuration, supported: ${Object.values(ConfigNames)}`)
   .addFlag('verify', `Verify ${CONTRACT_NAME} contract via Etherscan API.`)
   .setAction(async ({ verify, pool }, localBRE) => {
@@ -23,31 +23,30 @@ task(`full:deploy-convex-iron-bank-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, IRON_BANK_LP } =
+    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, FRAX_USDC_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
-    const vault = await deployConvexIronBankVault(verify);
+    const vault = await deployConvexFRAXUSDCVault(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
-    await vault.setConfiguration(getParamPerNetwork(IRON_BANK_LP, network), 29); // set curve lp token & convex pool id
-    await vault.setIncentiveRatio('7500');
+    await vault.setConfiguration(getParamPerNetwork(FRAX_USDC_LP, network), 100); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
     console.log(`internal token: ${internalAssetAddress}`);
 
-    // Deploy IronBankOracle oracle
-    let IronBankOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxIRON_BANK;
-    if (!IronBankOracleAddress) {
-      const IronBankOracle = await deployIronBankOracle(verify);
-      IronBankOracleAddress = IronBankOracle.address;
+    // Deploy FRAXUSDCOracle oracle
+    let FRAXUSDCOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxFRAX_USDC;
+    if (!FRAXUSDCOracleAddress) {
+      const FRAXUSDCOracle = await deployFRAXUSDCOracle(verify);
+      FRAXUSDCOracleAddress = FRAXUSDCOracle.address;
     }
 
     // Register
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [IronBankOracleAddress])
+      await sturdyOracle.setAssetSources([internalAssetAddress], [FRAXUSDCOracleAddress])
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

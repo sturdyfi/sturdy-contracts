@@ -71,6 +71,7 @@ export enum eContractid {
   DAIUSDCUSDTSUSDOracle = 'DAIUSDCUSDTSUSDOracle',
   HBTCWBTCOracle = 'HBTCWBTCOracle',
   IronBankOracle = 'IronBankOracle',
+  FRAXUSDCOracle = 'FRAXUSDCOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -125,6 +126,8 @@ export enum eContractid {
   ConvexHBTCWBTCVault = 'ConvexHBTCWBTCVault',
   ConvexIronBankVaultImpl = 'ConvexIronBankVaultImpl',
   ConvexIronBankVault = 'ConvexIronBankVault',
+  ConvexFRAXUSDCVaultImpl = 'ConvexFRAXUSDCVaultImpl',
+  ConvexFRAXUSDCVault = 'ConvexFRAXUSDCVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -307,6 +310,7 @@ export interface iAssetBase<T> {
   cvxDAI_USDC_USDT_SUSD: T;
   cvxHBTC_WBTC: T;
   cvxIRON_BANK: T;
+  cvxFRAX_USDC: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -341,6 +345,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxDAI_USDC_USDT_SUSD'
   | 'cvxHBTC_WBTC'
   | 'cvxIRON_BANK'
+  | 'cvxFRAX_USDC'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -384,6 +389,7 @@ export enum TokenContractId {
   cvxDAI_USDC_USDT_SUSD = 'cvxDAI_USDC_USDT_SUSD',
   cvxHBTC_WBTC = 'cvxHBTC_WBTC',
   cvxIRON_BANK = 'cvxIRON_BANK',
+  cvxFRAX_USDC = 'cvxFRAX_USDC',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -549,6 +555,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   DAI_USDC_USDT_SUSD_LP: iParamsPerNetwork<tEthereumAddress>;
   HBTC_WBTC_LP: iParamsPerNetwork<tEthereumAddress>;
   IRON_BANK_LP: iParamsPerNetwork<tEthereumAddress>;
+  FRAX_USDC_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;

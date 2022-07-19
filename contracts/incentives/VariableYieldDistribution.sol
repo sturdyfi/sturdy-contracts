@@ -159,12 +159,19 @@ contract VariableYieldDistribution is VersionedInitializable {
   }
 
   function claimRewards(
-    address asset,
-    uint256 amount,
+    address[] calldata assets,
+    uint256[] calldata amounts,
     address to
   ) external returns (uint256) {
     require(to != address(0), 'INVALID_TO_ADDRESS');
-    return _claimRewards(asset, amount, msg.sender, to);
+    require(assets.length == amounts.length, Errors.YD_VR_INVALID_REWARDS_AMOUNT);
+
+    uint256 claimedAmount;
+    for (uint256 i; i < assets.length; ++i) {
+      claimedAmount += _claimRewards(assets[i], amounts[i], msg.sender, to);
+    }
+
+    return claimedAmount;
   }
 
   function getUserAssetData(address user, address asset)

@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105",
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xaE9dfa3beAF1CFB5cAf41B87C0cdC389D62e7105",
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -311,6 +311,14 @@
     },
     "localhost": {
       "address": "0x5747D28D9317A930279CB6c958C06f802d988828"
+    }
+  },
+  "rateStrategyCVXMIM_3CRV": {
+    "main": {
+      "address": "0x84dcDE91a81FE6199641f5a11cC858dd90D2759C"
+    },
+    "localhost": {
+      "address": "0x84dcDE91a81FE6199641f5a11cC858dd90D2759C"
     }
   },
   "LendingPoolCollateralManagerImpl": {
@@ -429,11 +437,11 @@
   },
   "VariableYieldDistributionImpl": {
     "main": {
-      "address": "0x12cf91718F530714def56EdC6c4b23E66E765b67",
+      "address": "0xcD137da80193b60de953aBf74bAD89408A552c47",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x12cf91718F530714def56EdC6c4b23E66E765b67",
+      "address": "0xcD137da80193b60de953aBf74bAD89408A552c47",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -455,6 +463,14 @@
     "localhost": {
       "address": "0xce22EB8aB9C6bc8a6d756e80713B4008501D7bc7",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "ConvexMIM3CRVVault": {
+    "main": {
+      "address": "0xe2Cac13bbff65d30BA31C1709B73c60573cFbDA0"
+    },
+    "localhost": {
+      "address": "0xe2Cac13bbff65d30BA31C1709B73c60573cFbDA0"
     }
   },
   "ConvexDAIUSDCUSDTSUSDVaultImpl": {
@@ -513,11 +529,57 @@
   },
   "IronBankOracle": {
     "main": {
-      "address": "0x4c1009119E2888Fd0D230BB952154ef886AD0332",
+      "address": "0x66C6074c5A5144877a12E542BBb8dD37110D7567",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x4c1009119E2888Fd0D230BB952154ef886AD0332",
+      "address": "0x66C6074c5A5144877a12E542BBb8dD37110D7567",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "rateStrategyCVXFRAX_USDC": {
+    "main": {
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a"
+    },
+    "localhost": {
+      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a"
+    }
+  },
+  "ConvexFRAXUSDCVaultImpl": {
+    "main": {
+      "address": "0x8dA78b4CA9C961791840226849bf6015D427cF95",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x8dA78b4CA9C961791840226849bf6015D427cF95",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "ConvexFRAXUSDCVault": {
+    "main": {
+      "address": "0xf8C91E5BfFDD79Ef7D1d6F9ae3391E021fFCBD73"
+    },
+    "localhost": {
+      "address": "0xf8C91E5BfFDD79Ef7D1d6F9ae3391E021fFCBD73"
+    }
+  },
+  "FRAXUSDCOracle": {
+    "main": {
+      "address": "0xfE3b8248f5bFDE88233c87eE17D49143849f9f28",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xfE3b8248f5bFDE88233c87eE17D49143849f9f28",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "MIM3CRVOracle": {
+    "main": {
+      "address": "0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

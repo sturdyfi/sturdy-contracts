@@ -69,6 +69,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6-9. Deploy Convex Iron Bank vault');
     await DRE.run('full:deploy-convex-iron-bank-vault', { pool: POOL_NAME, verify });
 
+    console.log('6-10. Deploy Convex FRAX USDC vault');
+    await DRE.run('full:deploy-convex-frax-usdc-vault', { pool: POOL_NAME, verify });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME, verify });
 

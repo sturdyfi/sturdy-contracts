@@ -302,6 +302,26 @@ export const initReservesByHelper = async (
     );
   }
 
+  if (tokenAddresses['cvxFRAX_USDC']) {
+    //CRV VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.cvxFRAX_USDC);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['cvxFRAX_USDC']
+    );
+  }
+
+  if (tokenAddresses['cvxMIM_3CRV']) {
+    //CRV VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.cvxMIM_3CRV);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['cvxMIM_3CRV']
+    );
+  }
+
   return gasUsage; // Deprecated
 };
 

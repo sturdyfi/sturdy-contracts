@@ -15,6 +15,7 @@ import {
   strategyCVXDAI_USDC_USDT_SUSD,
   strategyCVXHBTC_WBTC,
   strategyCVXIRON_BANK,
+  strategyCVXFRAX_USDC,
 } from './reservesConfigs';
 
 // ----------------
@@ -39,6 +40,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxDAI_USDC_USDT_SUSD: strategyCVXDAI_USDC_USDT_SUSD,
     cvxHBTC_WBTC: strategyCVXHBTC_WBTC,
     cvxIRON_BANK: strategyCVXIRON_BANK,
+    cvxFRAX_USDC: strategyCVXFRAX_USDC,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -64,10 +66,11 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxFRAX_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
-      cvxMIM_3CRV: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
+      cvxMIM_3CRV: '0xd17dF4734cAC425F64e83DeC1AC4622a4e909405',
       cvxDAI_USDC_USDT_SUSD: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
       cvxHBTC_WBTC: '',
       cvxIRON_BANK: '0xABad46DcF632351Cc74f2087D9a359Ac3299804a',
+      cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -79,10 +82,11 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxFRAX_3CRV: '0x001dfC794bf68c47fEC0A3F031c710E71318FA2a',
       // cvxSTECRV: '', //'0xA22B79730CBEA3426CA0AA9597Cbe053460667E3',
       // cvxDOLA_3CRV: '', //'0xA0ecbe4a0e87b1559C962bb6E1F46286D41394Bf',
-      cvxMIM_3CRV: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
+      cvxMIM_3CRV: '0xd17dF4734cAC425F64e83DeC1AC4622a4e909405',
       cvxDAI_USDC_USDT_SUSD: '0xc6DC0Bf66e759d4892AEDA7C9d02eB671F2c3016',
       cvxHBTC_WBTC: '',
       cvxIRON_BANK: '0xABad46DcF632351Cc74f2087D9a359Ac3299804a',
+      cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',
@@ -232,6 +236,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0x5282a4eF67D9C33135340fB3289cc1711c13638C',
     [eEthereumNetwork.tenderly]: '0x5282a4eF67D9C33135340fB3289cc1711c13638C',
+    [eEthereumNetwork.goerli]: '',
+  },
+  FRAX_USDC_LP: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC',
+    [eEthereumNetwork.tenderly]: '0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC',
     [eEthereumNetwork.goerli]: '',
   },
   YearnRETHWstETHVault: {

@@ -25,8 +25,8 @@ struct AggregatedRewardsData {
 
 interface IVariableYieldDistribution {
   function claimRewards(
-    address asset,
-    uint256 amount,
+    address[] calldata assets,
+    uint256[] calldata amounts,
     address to
   ) external returns (uint256);
 

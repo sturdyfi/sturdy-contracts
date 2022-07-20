@@ -427,11 +427,11 @@
   },
   "ETHLiquidator": {
     "main": {
-      "address": "0xda2410558019BdA540f7B9422b331cb6349430fF",
+      "address": "0x4F47e0a441f02B9f7F90638E03F69F245f7559f9",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xda2410558019BdA540f7B9422b331cb6349430fF",
+      "address": "0x4F47e0a441f02B9f7F90638E03F69F245f7559f9",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

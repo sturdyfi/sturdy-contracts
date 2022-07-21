@@ -11,6 +11,8 @@ interface ICollateralAdapter {
 
   function getInternalCollateralAsset(address _externalAsset) external view returns (address);
 
+  function getExternalCollateralAsset(address _internalAsset) external view returns (address);
+
   function addCollateralAsset(
     address _externalAsset,
     address _internalAsset,

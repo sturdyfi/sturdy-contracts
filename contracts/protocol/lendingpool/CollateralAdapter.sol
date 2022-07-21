@@ -27,6 +27,8 @@ contract CollateralAdapter is VersionedInitializable {
   mapping(address => address) internal _assetToVaults;
   // External collateral asset -> internal collateral asset
   mapping(address => address) internal _collateralAssets;
+  // Internal collateral asset -> External collateral asset
+  mapping(address => address) internal _externalCollateralAssets;
 
   /**
    * @dev Emitted on addCollateralAsset()
@@ -55,6 +57,7 @@ contract CollateralAdapter is VersionedInitializable {
   ) external payable onlyAdmin {
     _assetToVaults[_externalAsset] = _acceptVault;
     _collateralAssets[_externalAsset] = _internalAsset;
+    _externalCollateralAssets[_internalAsset] = _externalAsset;
 
     emit AddCollateral(_externalAsset, _internalAsset, _acceptVault);
   }
@@ -65,5 +68,9 @@ contract CollateralAdapter is VersionedInitializable {
 
   function getInternalCollateralAsset(address _externalAsset) external view returns (address) {
     return _collateralAssets[_externalAsset];
+  }
+
+  function getExternalCollateralAsset(address _internalAsset) external view returns (address) {
+    return _externalCollateralAssets[_internalAsset];
   }
 }

@@ -379,11 +379,11 @@
   },
   "CollateralAdapterImpl": {
     "ftm": {
-      "address": "0x1a692c0C52e77F88907B021c4C19bbCAD68125B2",
+      "address": "0xF91D52C52A9006a43BD18feE758C38E23bBF940a",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x1a692c0C52e77F88907B021c4C19bbCAD68125B2",
+      "address": "0xF91D52C52A9006a43BD18feE758C38E23bBF940a",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

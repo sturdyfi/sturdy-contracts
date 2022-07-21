@@ -241,8 +241,8 @@ export async function initializeMakeSuite() {
   const poolConfig = loadPoolConfig(ConfigNames.Fantom) as IFantomConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const yvwftmAddress = getParamPerNetwork(poolConfig.YearnVaultFTM, network);
-  const moowethAddress = getParamPerNetwork(poolConfig.BeefyETHVault, network);
-  const mooMim2CrvLPAddress = getParamPerNetwork(poolConfig.BeefyMIM2CRVVault, network);
+  // const moowethAddress = getParamPerNetwork(poolConfig.BeefyETHVault, network);
+  // const mooMim2CrvLPAddress = getParamPerNetwork(poolConfig.BeefyMIM2CRVVault, network);
   const yvwethAddress = getParamPerNetwork(poolConfig.YearnWETHVaultFTM, network);
   const yvwbtcAddress = getParamPerNetwork(poolConfig.YearnWBTCVaultFTM, network);
   const yvbooAddress = getParamPerNetwork(poolConfig.YearnBOOVaultFTM, network);
@@ -260,7 +260,7 @@ export async function initializeMakeSuite() {
   const tombFtmLPAddress = getParamPerNetwork(poolConfig.TOMB_FTM_LP, network);
   const tombMiMaticLPAddress = getParamPerNetwork(poolConfig.TOMB_MIMATIC_LP, network);
   const basedMiMaticLPAddress = getParamPerNetwork(poolConfig.BASED_MIMATIC_LP, network);
-  const mim2CrvLPAddress = getParamPerNetwork(poolConfig.MIM_2CRV_LP, network);
+  // const mim2CrvLPAddress = getParamPerNetwork(poolConfig.MIM_2CRV_LP, network);
   const fbeetsAddress = getParamPerNetwork(poolConfig.fBEETS, network);
   const beetsAddress = getParamPerNetwork(poolConfig.BEETS, network);
   const linkAddress = getParamPerNetwork(poolConfig.LINK, network);
@@ -336,7 +336,7 @@ export async function initializeMakeSuite() {
   testEnv.pool = await getLendingPool();
   testEnv.yearnVault = await getYearnVault();
   testEnv.beefyETHVault = await getBeefyETHVault();
-  testEnv.beefyMIM2CRVVault = await getBeefyMIM2CRVVault();
+  // testEnv.beefyMIM2CRVVault = await getBeefyMIM2CRVVault();
   testEnv.yearnWETHVault = await getYearnWETHVault();
   testEnv.yearnWBTCVault = await getYearnWBTCVault();
   testEnv.yearnBOOVault = await getYearnBOOVault();
@@ -392,8 +392,8 @@ export async function initializeMakeSuite() {
   const aYVCRVAddress = allTokens.find((aToken) => aToken.symbol === 'ayvCRV' || aToken.symbol === 'syvCRV')?.tokenAddress;
   const aYVSPELLAddress = allTokens.find((aToken) => aToken.symbol === 'ayvSPELL' || aToken.symbol === 'syvSPELL')?.tokenAddress;
   
-  const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH' || aToken.symbol === 'smooWETH')?.tokenAddress;
-  const aMooMIM_2CRV_Address = allTokens.find((aToken) => aToken.symbol === 'amooMIM_2CRV' || aToken.symbol === 'smooMIM_2CRV')?.tokenAddress;
+  // const aMOOWETHAddress = allTokens.find((aToken) => aToken.symbol === 'amooWETH' || aToken.symbol === 'smooWETH')?.tokenAddress;
+  // const aMooMIM_2CRV_Address = allTokens.find((aToken) => aToken.symbol === 'amooMIM_2CRV' || aToken.symbol === 'smooMIM_2CRV')?.tokenAddress;
   const aUsdcAddress = allTokens.find((aToken) => aToken.symbol === 'aUSDC' || aToken.symbol === 'sUSDC')?.tokenAddress;
   const aUsdtAddress = allTokens.find((aToken) => aToken.symbol === 'afUSDT' || aToken.symbol === 'sfUSDT')?.tokenAddress;
 
@@ -406,7 +406,7 @@ export async function initializeMakeSuite() {
   if (!aDaiAddress || !aUsdcAddress || !aUsdtAddress || !aYVWFTMAddress || 
       !aYVWETHAddress || !aYVWBTCAddress || !aYVBOOAddress || !aMooTOMB_FTM_Address ||
       !aMooTOMB_MIMATIC_Address || !aMooBASED_MIMATIC_Address  || !aYVFBEETSAddress || !aYVLINKAddress ||
-      !aYVCRVAddress || !aYVSPELLAddress || !aMooMIM_2CRV_Address) {
+      !aYVCRVAddress || !aYVSPELLAddress /*|| !aMOOWETHAddress || !aMooMIM_2CRV_Address*/) {
     process.exit(1);
   }
   if (!daiAddress || !usdcAddress || !usdtAddress) {
@@ -425,8 +425,8 @@ export async function initializeMakeSuite() {
   testEnv.aYVLINK = await getAToken(aYVLINKAddress);
   testEnv.aYVCRV = await getAToken(aYVCRVAddress);
   testEnv.aYVSPELL = await getAToken(aYVSPELLAddress);
-  testEnv.aMOOWETH = await getAToken(aMOOWETHAddress);
-  testEnv.aMooMIM_2CRV = await getAToken(aMooMIM_2CRV_Address);
+  // testEnv.aMOOWETH = await getAToken(aMOOWETHAddress);
+  // testEnv.aMooMIM_2CRV = await getAToken(aMooMIM_2CRV_Address);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
   testEnv.aUsdt = await getAToken(aUsdtAddress);
 
@@ -440,7 +440,7 @@ export async function initializeMakeSuite() {
   testEnv.TOMB_FTM_LP = await getMintableERC20(tombFtmLPAddress);
   testEnv.TOMB_MIMATIC_LP = await getMintableERC20(tombMiMaticLPAddress);
   testEnv.BASED_MIMATIC_LP = await getMintableERC20(basedMiMaticLPAddress);
-  testEnv.MIM_2CRV_LP = await getMintableERC20(mim2CrvLPAddress);
+  // testEnv.MIM_2CRV_LP = await getMintableERC20(mim2CrvLPAddress);
   testEnv.fBEETS = await getMintableERC20(fbeetsAddress);
   testEnv.BEETS = await getMintableERC20(beetsAddress);
   testEnv.LINK = await getMintableERC20(linkAddress);
@@ -454,12 +454,12 @@ export async function initializeMakeSuite() {
   testEnv.mootomb_ftm = IERC20DetailedFactory.connect(mooTombFtmAddress, deployer.signer);
   testEnv.mootomb_mimatic = IERC20DetailedFactory.connect(mooTombMiMaticAddress, deployer.signer);
   testEnv.moobased_mimatic = IERC20DetailedFactory.connect(mooBasedMiMaticAddress, deployer.signer);
-  testEnv.moomim_2crv = IERC20DetailedFactory.connect(mooMim2CrvLPAddress, deployer.signer);
+  // testEnv.moomim_2crv = IERC20DetailedFactory.connect(mooMim2CrvLPAddress, deployer.signer);
   testEnv.yvfbeets = IERC20DetailedFactory.connect(yvfbeetsAddress, deployer.signer);
   testEnv.yvlink = IERC20DetailedFactory.connect(yvlinkAddress, deployer.signer);
   testEnv.yvcrv = IERC20DetailedFactory.connect(yvcrvAddress, deployer.signer);
   testEnv.yvspell = IERC20DetailedFactory.connect(yvspellAddress, deployer.signer);
-  testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);
+  // testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

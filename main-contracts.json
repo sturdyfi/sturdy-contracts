@@ -371,11 +371,11 @@
   },
   "CollateralAdapterImpl": {
     "main": {
-      "address": "0x4f6B83Aa7Ea6590c4AFD9d2Fc14eD4ba6a46b4f3",
+      "address": "0x617b89B0E0c87267a2AE3F77fc1b7F83379456dA",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x4f6B83Aa7Ea6590c4AFD9d2Fc14eD4ba6a46b4f3",
+      "address": "0x617b89B0E0c87267a2AE3F77fc1b7F83379456dA",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

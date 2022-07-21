@@ -83,10 +83,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as ISturdyConfiguration).DAI_USDC_USDT_SUSD_LP,
               network
             ),
-            cvxHBTC_WBTC: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).HBTC_WBTC_LP,
-              network
-            ),
+            // cvxHBTC_WBTC: getParamPerNetwork(
+            //   (poolConfig as ISturdyConfiguration).HBTC_WBTC_LP,
+            //   network
+            // ),
             cvxIRON_BANK: getParamPerNetwork(
               (poolConfig as ISturdyConfiguration).IRON_BANK_LP,
               network
@@ -115,11 +115,11 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             ),
             yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
             yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
-            mooWETH: getParamPerNetwork((poolConfig as IFantomConfiguration).WETH, network),
-            mooMIM_2CRV: getParamPerNetwork(
-              (poolConfig as IFantomConfiguration).MIM_2CRV_LP,
-              network
-            ),
+            // mooWETH: getParamPerNetwork((poolConfig as IFantomConfiguration).WETH, network),
+            // mooMIM_2CRV: getParamPerNetwork(
+            //   (poolConfig as IFantomConfiguration).MIM_2CRV_LP,
+            //   network
+            // ),
             yvCRV: getParamPerNetwork((poolConfig as IFantomConfiguration).CRV, network),
             yvSPELL: getParamPerNetwork((poolConfig as IFantomConfiguration).SPELL, network),
           };
@@ -135,7 +135,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             // cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,
             cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
             cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
-            cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
+            // cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
             cvxIRON_BANK: (await getConvexIronBankVault()).address,
             cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
           }
@@ -149,8 +149,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             mooBASED_MIMATIC: (await getBasedMiMaticBeefyVault()).address,
             yvfBEETS: (await getYearnFBEETSVault()).address,
             yvLINK: (await getYearnLINKVault()).address,
-            mooWETH: (await getBeefyETHVault()).address,
-            mooMIM_2CRV: (await getBeefyMIM2CRVVault()).address,
+            // mooWETH: (await getBeefyETHVault()).address,
+            // mooMIM_2CRV: (await getBeefyMIM2CRVVault()).address,
             yvCRV: (await getYearnCRVVault()).address,
             yvSPELL: (await getYearnSPELLVault()).address,
           };

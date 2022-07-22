@@ -39,11 +39,10 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
 
     // deploy & register 3CrvFraxLevSwap
     const fraxVault = await getConvexFRAX3CRVVault();
-    const fraxLevSwap = await deploy3CrvFraxLevSwap([
-      getParamPerNetwork(FRAX_3CRV_LP, network),
-      fraxVault.address,
-      addressProvider.address,
-    ]);
+    const fraxLevSwap = await deploy3CrvFraxLevSwap(
+      [getParamPerNetwork(FRAX_3CRV_LP, network), fraxVault.address, addressProvider.address],
+      verify
+    );
 
     await leverageManager.registerLevSwapper(
       getParamPerNetwork(ReserveAssets, network).cvxFRAX_3CRV,
@@ -53,11 +52,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
 
     // deploy & register CrvPlain3SUSDLevSwap
     const susdVault = await getConvexDAIUSDCUSDTSUSDVault();
-    const susdLevSwap = await deployCrvPlain3SUSDLevSwap([
-      getParamPerNetwork(FRAX_3CRV_LP, network),
-      susdVault.address,
-      addressProvider.address,
-    ]);
+    const susdLevSwap = await deployCrvPlain3SUSDLevSwap(
+      [
+        getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network),
+        susdVault.address,
+        addressProvider.address,
+      ],
+      verify
+    );
 
     await leverageManager.registerLevSwapper(
       getParamPerNetwork(ReserveAssets, network).cvxDAI_USDC_USDT_SUSD,

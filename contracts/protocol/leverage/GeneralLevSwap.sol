@@ -148,7 +148,7 @@ contract GeneralLevSwap {
     return availableBorrowsAsset;
   }
 
-  function _swap(address stableAsset, uint256 _swapAmount) internal virtual returns (uint256) {
+  function _swap(address, uint256) internal virtual returns (uint256) {
     return 0;
   }
 }

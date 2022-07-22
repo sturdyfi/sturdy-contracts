@@ -351,11 +351,11 @@
   },
   "UiPoolDataProvider": {
     "main": {
-      "address": "0x51A43906AA02973D05C4c259AB46a58616085162",
+      "address": "0x7BE637cA0e8B5623345C365A9a8248E5f3550A29",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x51A43906AA02973D05C4c259AB46a58616085162",
+      "address": "0x7BE637cA0e8B5623345C365A9a8248E5f3550A29",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -580,6 +580,44 @@
     },
     "localhost": {
       "address": "0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "LeverageSwapManagerImpl": {
+    "main": {
+      "address": "0x368122b4743959e08727a70591a266dEE3Ff4F4a",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x368122b4743959e08727a70591a266dEE3Ff4F4a",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "LeverageSwapManager": {
+    "main": {
+      "address": "0x3bC6db5e3e3C1e262ae0b28AE35f02e485F3dda3"
+    },
+    "localhost": {
+      "address": "0x3bC6db5e3e3C1e262ae0b28AE35f02e485F3dda3"
+    }
+  },
+  "LevSwap3CrvFrax": {
+    "main": {
+      "address": "0xa26a6F2eB4Bc7005aF8eA5a1dd5B7bc1d8973592",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xa26a6F2eB4Bc7005aF8eA5a1dd5B7bc1d8973592",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "LevSwapCrvPlain3SUSD": {
+    "main": {
+      "address": "0x176199B256C74e3ba400Ea17bE8C2F015C14B902",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x176199B256C74e3ba400Ea17bE8C2F015C14B902",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

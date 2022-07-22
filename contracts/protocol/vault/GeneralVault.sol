@@ -9,6 +9,7 @@ import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeabi
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /**
  * @title GeneralVault
@@ -18,6 +19,7 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 
 abstract contract GeneralVault is VersionedInitializable {
   using PercentageMath for uint256;
+  using SafeERC20 for IERC20;
 
   event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
   event DepositCollateral(address indexed collateralAsset, address indexed from, uint256 amount);
@@ -90,6 +92,33 @@ abstract contract GeneralVault is VersionedInitializable {
     );
 
     emit DepositCollateral(_asset, msg.sender, _amount);
+  }
+
+  function depositCollateralFrom(
+    address _asset,
+    uint256 _amount,
+    address onBehalfOf
+  ) external payable {
+    if (_asset != address(0)) {
+      // asset = ERC20
+      require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    } else {
+      // asset = ETH
+      require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
+    }
+    // Deposit asset to vault and receive stAsset
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
+    (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
+
+    // Deposit stAsset to lendingPool, then user will get aToken of stAsset
+    ILendingPool(_addressesProvider.getLendingPool()).deposit(
+      _stAsset,
+      _stAssetAmount,
+      onBehalfOf,
+      0
+    );
+
+    emit DepositCollateral(_asset, onBehalfOf, _amount);
   }
 
   /**

@@ -17,6 +17,7 @@ import {UserConfiguration} from '../protocol/libraries/configuration/UserConfigu
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
+import {LeverageSwapManager} from '../protocol/leverage/LeverageSwapManager.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
@@ -266,6 +267,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       AggregatedReserveData memory reserveData = reservesData[i];
       reserveData.underlyingAsset = reserves[i];
 
+      // leverage feature
+      reserveData.leverageEnabled = getLevSwapAddress(provider, reserves[i]) != address(0);
+
       // reserve current state
       DataTypes.ReserveData memory baseData = lendingPool.getReserveData(
         reserveData.underlyingAsset
@@ -418,5 +422,17 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
       oracle.getAssetPrice(MOCK_USD_ADDRESS),
       incentivesControllerData
     );
+  }
+
+  function getLevSwapAddress(ILendingPoolAddressesProvider provider, address underlyingAsset)
+    internal
+    view
+    returns (address levSwapper)
+  {
+    address levSwapManagerAddress = provider.getAddress('LEVERAGE_SWAP_MANAGER');
+    if (levSwapManagerAddress != address(0)) {
+      LeverageSwapManager levSwapManager = LeverageSwapManager(levSwapManagerAddress);
+      levSwapper = levSwapManager.getLevSwapper(underlyingAsset);
+    }
   }
 }

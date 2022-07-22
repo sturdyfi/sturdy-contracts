@@ -53,6 +53,8 @@ interface IUiPoolDataProvider {
     uint256 aTokenIncentivesIndex;
     uint256 vTokenIncentivesIndex;
     uint256 sTokenIncentivesIndex;
+    // leverage
+    bool leverageEnabled;
   }
 
   struct UserReserveData {

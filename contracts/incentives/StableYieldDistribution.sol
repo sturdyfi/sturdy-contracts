@@ -75,27 +75,27 @@ contract StableYieldDistribution is VersionedInitializable {
     _addressProvider = _provider;
   }
 
-  function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
+  function configureAssets(address[] calldata _assets, uint256[] calldata _emissionsPerSecond)
     external
     payable
     onlyEmissionManager
   {
-    uint256 length = assets.length;
-    require(length == emissionsPerSecond.length, Errors.YD_INVALID_CONFIGURATION);
+    uint256 length = _assets.length;
+    require(length == _emissionsPerSecond.length, Errors.YD_INVALID_CONFIGURATION);
 
     DistributionTypes.AssetConfigInput[]
-      memory assetsConfig = new DistributionTypes.AssetConfigInput[](assets.length);
+      memory assetsConfig = new DistributionTypes.AssetConfigInput[](_assets.length);
 
     for (uint256 i; i < length; ++i) {
-      assetsConfig[i].underlyingAsset = assets[i];
-      assetsConfig[i].emissionPerSecond = uint104(emissionsPerSecond[i]);
+      assetsConfig[i].underlyingAsset = _assets[i];
+      assetsConfig[i].emissionPerSecond = uint104(_emissionsPerSecond[i]);
 
       require(
-        assetsConfig[i].emissionPerSecond == emissionsPerSecond[i],
+        assetsConfig[i].emissionPerSecond == _emissionsPerSecond[i],
         Errors.YD_INVALID_CONFIGURATION
       );
 
-      assetsConfig[i].totalStaked = IScaledBalanceToken(assets[i]).scaledTotalSupply();
+      assetsConfig[i].totalStaked = IScaledBalanceToken(_assets[i]).scaledTotalSupply();
     }
     _configureAssets(assetsConfig);
   }
@@ -113,32 +113,32 @@ contract StableYieldDistribution is VersionedInitializable {
     }
   }
 
-  function getRewardsBalance(address[] calldata assets, address user)
+  function getRewardsBalance(address[] calldata _assets, address _user)
     external
     view
     returns (uint256)
   {
-    uint256 unclaimedRewards = _usersUnclaimedRewards[user];
-    uint256 length = assets.length;
+    uint256 unclaimedRewards = _usersUnclaimedRewards[_user];
+    uint256 length = _assets.length;
     DistributionTypes.UserStakeInput[] memory userState = new DistributionTypes.UserStakeInput[](
       length
     );
     for (uint256 i; i < length; ++i) {
-      userState[i].underlyingAsset = assets[i];
-      (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(assets[i])
-        .getScaledUserBalanceAndSupply(user);
+      userState[i].underlyingAsset = _assets[i];
+      (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(_assets[i])
+        .getScaledUserBalanceAndSupply(_user);
     }
-    unclaimedRewards += _getUnclaimedRewards(user, userState);
+    unclaimedRewards += _getUnclaimedRewards(_user, userState);
     return unclaimedRewards;
   }
 
   function claimRewards(
-    address[] calldata assets,
-    uint256 amount,
-    address to
+    address[] calldata _assets,
+    uint256 _amount,
+    address _to
   ) external returns (uint256) {
-    require(to != address(0), Errors.YD_INVALID_CONFIGURATION);
-    return _claimRewards(assets, amount, msg.sender, msg.sender, to);
+    require(_to != address(0), Errors.YD_INVALID_CONFIGURATION);
+    return _claimRewards(_assets, _amount, msg.sender, msg.sender, _to);
   }
 
   function getUserUnclaimedRewards(address _user) external view returns (uint256) {
@@ -187,51 +187,53 @@ contract StableYieldDistribution is VersionedInitializable {
 
   /**
    * @dev Claims reward for an user on behalf, on all the assets of the lending pool, accumulating the pending rewards.
-   * @param amount Amount of rewards to claim
-   * @param user Address to check and claim rewards
-   * @param to Address that will be receiving the rewards
+   * @param _assets reward asset list
+   * @param _amount Amount of rewards to claim
+   * @param _claimer claimer address which is same with _user
+   * @param _user Address to check and claim rewards
+   * @param _to Address that will be receiving the rewards
    * @return Rewards claimed
    **/
   function _claimRewards(
-    address[] calldata assets,
-    uint256 amount,
-    address claimer,
-    address user,
-    address to
+    address[] calldata _assets,
+    uint256 _amount,
+    address _claimer,
+    address _user,
+    address _to
   ) internal returns (uint256) {
-    if (amount == 0) {
+    if (_amount == 0) {
       return 0;
     }
-    uint256 unclaimedRewards = _usersUnclaimedRewards[user];
-    uint256 length = assets.length;
+    uint256 unclaimedRewards = _usersUnclaimedRewards[_user];
+    uint256 length = _assets.length;
     DistributionTypes.UserStakeInput[] memory userState = new DistributionTypes.UserStakeInput[](
       length
     );
     for (uint256 i; i < length; ++i) {
-      userState[i].underlyingAsset = assets[i];
-      (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(assets[i])
-        .getScaledUserBalanceAndSupply(user);
+      userState[i].underlyingAsset = _assets[i];
+      (userState[i].stakedByUser, userState[i].totalStaked) = IScaledBalanceToken(_assets[i])
+        .getScaledUserBalanceAndSupply(_user);
     }
 
-    uint256 accruedRewards = _claimRewards(user, userState);
+    uint256 accruedRewards = _claimRewards(_user, userState);
     if (accruedRewards != 0) {
       unclaimedRewards += accruedRewards;
-      emit RewardsAccrued(user, accruedRewards);
+      emit RewardsAccrued(_user, accruedRewards);
     }
 
     if (unclaimedRewards == 0) {
       return 0;
     }
 
-    uint256 amountToClaim = amount > unclaimedRewards ? unclaimedRewards : amount;
-    _usersUnclaimedRewards[user] = unclaimedRewards - amountToClaim; // Safe due to the previous line
+    uint256 amountToClaim = _amount > unclaimedRewards ? unclaimedRewards : _amount;
+    _usersUnclaimedRewards[_user] = unclaimedRewards - amountToClaim; // Safe due to the previous line
 
     IERC20 stakeToken = IERC20(REWARD_TOKEN);
     if (stakeToken.balanceOf(address(this)) >= amountToClaim) {
-      stakeToken.safeTransfer(to, amountToClaim);
+      stakeToken.safeTransfer(_to, amountToClaim);
     }
 
-    emit RewardsClaimed(user, to, claimer, amountToClaim);
+    emit RewardsClaimed(_user, _to, _claimer, amountToClaim);
 
     return amountToClaim;
   }

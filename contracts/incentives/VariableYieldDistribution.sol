@@ -136,21 +136,22 @@ contract VariableYieldDistribution is VersionedInitializable {
     }
   }
 
-  function getRewardsBalance(address[] calldata assets, address user)
+  function getRewardsBalance(address[] calldata _assets, address _user)
     external
     view
     returns (AggregatedRewardsData[] memory)
   {
-    uint256 length = assets.length;
+    uint256 length = _assets.length;
     AggregatedRewardsData[] memory rewards = new AggregatedRewardsData[](length);
 
     for (uint256 i; i < length; ++i) {
-      (uint256 stakedByUser, uint256 totalStaked) = IScaledBalanceToken(assets[i])
-        .getScaledUserBalanceAndSupply(user);
-      rewards[i].asset = assets[i];
+      (uint256 stakedByUser, ) = IScaledBalanceToken(_assets[i]).getScaledUserBalanceAndSupply(
+        _user
+      );
+      rewards[i].asset = _assets[i];
       (rewards[i].rewardToken, rewards[i].balance) = _getUnclaimedRewards(
-        user,
-        assets[i],
+        _user,
+        _assets[i],
         stakedByUser
       );
     }
@@ -159,16 +160,16 @@ contract VariableYieldDistribution is VersionedInitializable {
   }
 
   function claimRewards(
-    address[] calldata assets,
-    uint256[] calldata amounts,
-    address to
+    address[] calldata _assets,
+    uint256[] calldata _amounts,
+    address _to
   ) external returns (uint256) {
-    require(to != address(0), 'INVALID_TO_ADDRESS');
-    require(assets.length == amounts.length, Errors.YD_VR_INVALID_REWARDS_AMOUNT);
+    require(_to != address(0), 'INVALID_TO_ADDRESS');
+    require(_assets.length == _amounts.length, Errors.YD_VR_INVALID_REWARDS_AMOUNT);
 
     uint256 claimedAmount;
-    for (uint256 i; i < assets.length; ++i) {
-      claimedAmount += _claimRewards(assets[i], amounts[i], msg.sender, to);
+    for (uint256 i; i < _assets.length; ++i) {
+      claimedAmount += _claimRewards(_assets[i], _amounts[i], msg.sender, _to);
     }
 
     return claimedAmount;

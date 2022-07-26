@@ -143,8 +143,8 @@ import {
   MIM2CRVOracleFactory,
   IronBankOracleFactory,
   LeverageSwapManagerFactory,
-  ThreeCrvFraxLevSwapFactory,
-  CrvPlain3SUSDLevSwapFactory,
+  FRAX3CRVLevSwapFactory,
+  DAIUSDCUSDTSUSDLevSwapFactory,
   FRAXUSDCOracleFactory,
 } from '../types';
 import {
@@ -2505,24 +2505,24 @@ export const deployLeverageSwapManager = async (verify?: boolean) => {
   return await getLeverageSwapManager();
 };
 
-export const deploy3CrvFraxLevSwap = async (
+export const deployFRAX3CRVLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new ThreeCrvFraxLevSwapFactory(await getFirstSigner()).deploy(...args),
-    eContractid.LevSwap3CrvFrax,
+    await new FRAX3CRVLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.FRAX3CRVLevSwap,
     args,
     verify
   );
 
-export const deployCrvPlain3SUSDLevSwap = async (
+export const deployDAIUSDCUSDTSUSDLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new CrvPlain3SUSDLevSwapFactory(await getFirstSigner()).deploy(...args),
-    eContractid.LevSwapCrvPlain3SUSD,
+    await new DAIUSDCUSDTSUSDLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.DAIUSDCUSDTSUSDLevSwap,
     args,
     verify
   );

@@ -1,21 +1,17 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
-  getFirstSigner,
   getLendingPoolAddressesProvider,
-  getLendingPoolConfiguratorProxy,
   getConvexFRAX3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
 } from '../../helpers/contracts-getters';
 import {
   deployLeverageSwapManager,
-  deploy3CrvFraxLevSwap,
-  deployCrvPlain3SUSDLevSwap,
+  deployFRAX3CRVLevSwap,
+  deployDAIUSDCUSDTSUSDLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
-import { waitForTx } from '../../helpers/misc-utils';
-import { ThreeCrvFraxLevSwap, CrvPlain3SUSDLevSwap } from '../../types';
 
 const CONTRACT_NAME = 'LeverageSwapManager';
 
@@ -39,7 +35,7 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
 
     // deploy & register 3CrvFraxLevSwap
     const fraxVault = await getConvexFRAX3CRVVault();
-    const fraxLevSwap = await deploy3CrvFraxLevSwap(
+    const fraxLevSwap = await deployFRAX3CRVLevSwap(
       [getParamPerNetwork(FRAX_3CRV_LP, network), fraxVault.address, addressProvider.address],
       verify
     );
@@ -48,11 +44,11 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       getParamPerNetwork(ReserveAssets, network).cvxFRAX_3CRV,
       fraxLevSwap.address
     );
-    console.log('3CrvFraxLevSwap: %s', fraxLevSwap.address);
+    console.log('FRAX3CRVLevSwap: %s', fraxLevSwap.address);
 
     // deploy & register CrvPlain3SUSDLevSwap
     const susdVault = await getConvexDAIUSDCUSDTSUSDVault();
-    const susdLevSwap = await deployCrvPlain3SUSDLevSwap(
+    const susdLevSwap = await deployDAIUSDCUSDTSUSDLevSwap(
       [
         getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network),
         susdVault.address,
@@ -65,7 +61,7 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       getParamPerNetwork(ReserveAssets, network).cvxDAI_USDC_USDT_SUSD,
       susdLevSwap.address
     );
-    console.log('CrvPlain3SUSDLevSwap: %s', susdLevSwap.address);
+    console.log('DAIUSDCUSDTSUSDLevSwap: %s', susdLevSwap.address);
 
     console.log(`${CONTRACT_NAME}.address`, leverageManager.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

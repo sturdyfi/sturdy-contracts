@@ -23,7 +23,12 @@ abstract contract GeneralVault is VersionedInitializable {
 
   event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
   event DepositCollateral(address indexed collateralAsset, address indexed from, uint256 amount);
-  event WithdrawCollateral(address indexed collateralAsset, address indexed to, uint256 amount);
+  event WithdrawCollateral(
+    address indexed collateralAsset,
+    address indexed to,
+    address indexed user,
+    uint256 amount
+  );
   event SetTreasuryInfo(address indexed treasuryAddress, uint256 fee);
 
   modifier onlyAdmin() {
@@ -72,53 +77,22 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _amount The deposit amount
    */
   function depositCollateral(address _asset, uint256 _amount) external payable virtual {
-    if (_asset != address(0)) {
-      // asset = ERC20
-      require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    } else {
-      // asset = ETH
-      require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
-    }
-    // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
-    (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
-
-    // Deposit stAsset to lendingPool, then user will get aToken of stAsset
-    ILendingPool(_addressesProvider.getLendingPool()).deposit(
-      _stAsset,
-      _stAssetAmount,
-      msg.sender,
-      0
-    );
-
-    emit DepositCollateral(_asset, msg.sender, _amount);
+    _deposit(_asset, _amount, msg.sender);
   }
 
+  /**
+   * @dev Deposits an `amount` of asset as collateral to borrow other asset.
+   * @param _asset The asset address for collateral
+   *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
+   * @param _amount The deposit amount
+   * @param _user The depositor address
+   */
   function depositCollateralFrom(
     address _asset,
     uint256 _amount,
-    address onBehalfOf
-  ) external payable {
-    if (_asset != address(0)) {
-      // asset = ERC20
-      require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    } else {
-      // asset = ETH
-      require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
-    }
-    // Deposit asset to vault and receive stAsset
-    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
-    (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
-
-    // Deposit stAsset to lendingPool, then user will get aToken of stAsset
-    ILendingPool(_addressesProvider.getLendingPool()).deposit(
-      _stAsset,
-      _stAssetAmount,
-      onBehalfOf,
-      0
-    );
-
-    emit DepositCollateral(_asset, onBehalfOf, _amount);
+    address _user
+  ) external payable virtual {
+    _deposit(_asset, _amount, _user);
   }
 
   /**
@@ -137,38 +111,7 @@ abstract contract GeneralVault is VersionedInitializable {
     uint256 _slippage,
     address _to
   ) external virtual {
-    // Before withdraw from lending pool, get the stAsset address and withdrawal amount
-    // Ex: In Lido vault, it will return stETH address and same amount
-    (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
-
-    // withdraw from lendingPool, it will convert user's aToken to stAsset
-    uint256 _amountToWithdraw = ILendingPool(_addressesProvider.getLendingPool()).withdrawFrom(
-      _stAsset,
-      _stAssetAmount,
-      msg.sender,
-      address(this)
-    );
-
-    // Withdraw from vault, it will convert stAsset to asset and send to user
-    // Ex: In Lido vault, it will return ETH or stETH to user
-    uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
-
-    if (_amount == type(uint256).max) {
-      uint256 decimal;
-      if (_asset == address(0)) {
-        decimal = 18;
-      } else {
-        decimal = IERC20Detailed(_asset).decimals();
-      }
-
-      _amount = (_amountToWithdraw * this.pricePerShare()) / 10**decimal;
-    }
-    require(
-      withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR - _slippage),
-      Errors.VT_WITHDRAW_AMOUNT_MISMATCH
-    );
-
-    emit WithdrawCollateral(_asset, _to, _amount);
+    _withdraw(_asset, _amount, _slippage, msg.sender, _to);
   }
 
   /**
@@ -202,6 +145,75 @@ abstract contract GeneralVault is VersionedInitializable {
     _vaultFee = _fee;
 
     emit SetTreasuryInfo(_treasury, _fee);
+  }
+
+  /**
+   * @dev withdraw collateral asset from lending pool
+   */
+  function _withdraw(
+    address _asset,
+    uint256 _amount,
+    uint256 _slippage,
+    address _user,
+    address _to
+  ) internal {
+    // Before withdraw from lending pool, get the stAsset address and withdrawal amount
+    // Ex: In Lido vault, it will return stETH address and same amount
+    (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
+
+    // withdraw from lendingPool, it will convert user's aToken to stAsset
+    uint256 _amountToWithdraw = ILendingPool(_addressesProvider.getLendingPool()).withdrawFrom(
+      _stAsset,
+      _stAssetAmount,
+      _user,
+      address(this)
+    );
+
+    // Withdraw from vault, it will convert stAsset to asset and send to user
+    // Ex: In Lido vault, it will return ETH or stETH to user
+    uint256 withdrawAmount = _withdrawFromYieldPool(_asset, _amountToWithdraw, _to);
+
+    if (_amount == type(uint256).max) {
+      uint256 decimal;
+      if (_asset == address(0)) {
+        decimal = 18;
+      } else {
+        decimal = IERC20Detailed(_asset).decimals();
+      }
+
+      _amount = (_amountToWithdraw * this.pricePerShare()) / 10**decimal;
+    }
+    require(
+      withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR - _slippage),
+      Errors.VT_WITHDRAW_AMOUNT_MISMATCH
+    );
+
+    emit WithdrawCollateral(_asset, _to, _user, _amount);
+  }
+
+  /**
+   * @dev deposit collateral asset to lending pool
+   */
+  function _deposit(
+    address _asset,
+    uint256 _amount,
+    address _user
+  ) internal {
+    if (_asset != address(0)) {
+      // asset = ERC20
+      require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    } else {
+      // asset = ETH
+      require(msg.value == _amount, Errors.VT_COLLATERAL_DEPOSIT_REQUIRE_ETH);
+    }
+    // Deposit asset to vault and receive stAsset
+    // Ex: if user deposit 100ETH, this will deposit 100ETH to Lido and receive 100stETH
+    (address _stAsset, uint256 _stAssetAmount) = _depositToYieldPool(_asset, _amount);
+
+    // Deposit stAsset to lendingPool, then user will get aToken of stAsset
+    ILendingPool(_addressesProvider.getLendingPool()).deposit(_stAsset, _stAssetAmount, _user, 0);
+
+    emit DepositCollateral(_asset, _user, _amount);
   }
 
   /**

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
@@ -11,7 +12,7 @@ interface CurvePool {
   function add_liquidity(uint256[4] memory amounts, uint256 _min_mint_amount) external;
 }
 
-contract CrvPlain3SUSDLevSwap is GeneralLevSwap {
+contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
   CurvePool public constant POOL = CurvePool(0xA5407eAE9Ba41422680e2e00537571bcC53efBfD);
@@ -21,10 +22,10 @@ contract CrvPlain3SUSDLevSwap is GeneralLevSwap {
   address internal constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
 
   constructor(
-    address asset,
-    address vault,
+    address _asset,
+    address _vault,
     address _provider
-  ) GeneralLevSwap(asset, vault, _provider) {
+  ) GeneralLevSwap(_asset, _vault, _provider) {
     ENABLED_STABLE_COINS[DAI] = true;
     ENABLED_STABLE_COINS[USDC] = true;
     ENABLED_STABLE_COINS[USDT] = true;
@@ -37,19 +38,19 @@ contract CrvPlain3SUSDLevSwap is GeneralLevSwap {
     assets[2] = USDT;
   }
 
-  function _getCoinIndex(address stableAsset) internal pure returns (uint256) {
-    if (stableAsset == DAI) return 0;
-    if (stableAsset == USDC) return 1;
-    require(stableAsset == USDT, 'Invalid stable coin');
+  function _getCoinIndex(address _stableAsset) internal pure returns (uint256) {
+    if (_stableAsset == DAI) return 0;
+    if (_stableAsset == USDC) return 1;
+    require(_stableAsset == USDT, 'Invalid stable coin');
     return 2;
   }
 
-  function _swap(address stableAsset, uint256 _amount) internal override returns (uint256) {
-    // stable coin -> crvPlain3andSUSD
-    IERC20(stableAsset).safeApprove(address(POOL), 0);
-    IERC20(stableAsset).safeApprove(address(POOL), _amount);
+  function _swap(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+    // stable coin -> DAIUSDCUSDTSUSD
+    IERC20(_stableAsset).safeApprove(address(POOL), 0);
+    IERC20(_stableAsset).safeApprove(address(POOL), _amount);
 
-    uint256 coinIndex = _getCoinIndex(stableAsset);
+    uint256 coinIndex = _getCoinIndex(_stableAsset);
     uint256[4] memory amountsAdded;
     amountsAdded[coinIndex] = _amount;
 

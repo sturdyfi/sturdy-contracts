@@ -17,7 +17,7 @@ import {UserConfiguration} from '../protocol/libraries/configuration/UserConfigu
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {DefaultReserveInterestRateStrategy} from '../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol';
 import {ReserveLogic} from '../protocol/libraries/logic/ReserveLogic.sol';
-import {LeverageSwapManager} from '../protocol/leverage/LeverageSwapManager.sol';
+import {ILeverageSwapManager} from '../interfaces/ILeverageSwapManager.sol';
 
 contract UiPoolDataProvider is IUiPoolDataProvider {
   using WadRayMath for uint256;
@@ -431,7 +431,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
   {
     address levSwapManagerAddress = provider.getAddress('LEVERAGE_SWAP_MANAGER');
     if (levSwapManagerAddress != address(0)) {
-      LeverageSwapManager levSwapManager = LeverageSwapManager(levSwapManagerAddress);
+      ILeverageSwapManager levSwapManager = ILeverageSwapManager(levSwapManagerAddress);
       levSwapper = levSwapManager.getLevSwapper(underlyingAsset);
     }
   }

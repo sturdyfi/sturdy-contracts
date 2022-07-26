@@ -37,26 +37,28 @@ contract GeneralLevSwap {
     address indexed borrowedCoin
   );
 
+  event LeavePosition(uint256 amount, address indexed borrowedCoin);
+
   /**
-   * @param asset The external asset ex. wFTM
-   * @param vault The deployed vault address
+   * @param _asset The external asset ex. wFTM
+   * @param _vault The deployed vault address
    * @param _provider The deployed AddressProvider
    */
   constructor(
-    address asset,
-    address vault,
+    address _asset,
+    address _vault,
     address _provider
   ) {
     require(
-      asset != address(0) && _provider != address(0) && vault != address(0),
+      _asset != address(0) && _provider != address(0) && _vault != address(0),
       Errors.LS_INVALID_CONFIGURATION
     );
 
-    COLLATERAL = asset;
-    DECIMALS = IERC20Detailed(asset).decimals();
-    VAULT = vault;
+    COLLATERAL = _asset;
+    DECIMALS = IERC20Detailed(_asset).decimals();
+    VAULT = _vault;
     _addressesProvider = ILendingPoolAddressesProvider(_provider);
-    IERC20(COLLATERAL).approve(vault, type(uint256).max);
+    IERC20(COLLATERAL).approve(_vault, type(uint256).max);
   }
 
   /**
@@ -75,56 +77,73 @@ contract GeneralLevSwap {
   }
 
   /**
-   * @param principal - The amount of collateral
-   * @param iterations - Loop count
-   * @param ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 8250
-   * @param stableAsset - The borrowing stable asset address when leverage works
+   * @param _principal - The amount of collateral
+   * @param _iterations - Loop count
+   * @param _ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 8250
+   * @param _stableAsset - The borrowing stable asset address when leverage works
    */
   function enterPosition(
-    uint256 principal,
-    uint256 iterations,
-    uint256 ltv,
-    address stableAsset
+    uint256 _principal,
+    uint256 _iterations,
+    uint256 _ltv,
+    address _stableAsset
   ) public {
-    require(principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(ENABLED_STABLE_COINS[stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
-    require(IERC20(COLLATERAL).balanceOf(msg.sender) >= principal, Errors.LS_SUPPLY_NOT_ALLOWED);
+    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
+    require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
 
-    IERC20(COLLATERAL).safeTransferFrom(msg.sender, address(this), principal);
+    IERC20(COLLATERAL).safeTransferFrom(msg.sender, address(this), _principal);
 
-    _supply(principal);
+    _supply(_principal);
 
-    uint256 _suppliedAmount = principal;
-    uint256 _borrowAmount = 0;
-    uint256 _stableAssetDecimals = IERC20Detailed(stableAsset).decimals();
-    for (uint256 i = 0; i < iterations; i++) {
-      _borrowAmount = _calcBorrowableAmount(
-        _suppliedAmount,
-        ltv,
-        stableAsset,
-        _stableAssetDecimals
-      );
-      if (_borrowAmount > 0) {
+    uint256 suppliedAmount = _principal;
+    uint256 borrowAmount = 0;
+    uint256 stableAssetDecimals = IERC20Detailed(_stableAsset).decimals();
+    for (uint256 i = 0; i < _iterations; i++) {
+      borrowAmount = _calcBorrowableAmount(suppliedAmount, _ltv, _stableAsset, stableAssetDecimals);
+      if (borrowAmount > 0) {
         // borrow stable coin
-        _borrow(stableAsset, _borrowAmount);
+        _borrow(_stableAsset, borrowAmount);
         // swap stable coin to collateral
-        _suppliedAmount = _swap(stableAsset, _borrowAmount);
+        suppliedAmount = _swap(_stableAsset, borrowAmount);
         // supply to LP
-        _supply(_suppliedAmount);
+        _supply(suppliedAmount);
       }
     }
 
-    emit EnterPosition(principal, iterations, ltv, stableAsset);
+    emit EnterPosition(_principal, _iterations, _ltv, _stableAsset);
   }
 
-  function _supply(uint256 amount) internal {
-    GeneralVault(VAULT).depositCollateralFrom(COLLATERAL, amount, msg.sender);
+  /**
+   * @param _principal - The amount of collateral
+   * @param _slippage - The slippage of the every withdrawal amount. 1% = 100
+   * @param _stableAsset - The borrowing stable asset address when leverage works
+   */
+  function leavePosition(
+    uint256 _principal,
+    uint256 _slippage,
+    address _stableAsset
+  ) public {
+    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
+
+    _remove(_principal, _slippage);
+
+    emit LeavePosition(_principal, _stableAsset);
   }
 
-  function _borrow(address stableAsset, uint256 amount) internal {
+  function _supply(uint256 _amount) internal {
+    GeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, msg.sender);
+  }
+
+  function _remove(uint256 _amount, uint256 _slippage) internal {
+    GeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
+  }
+
+  function _borrow(address _stableAsset, uint256 _amount) internal {
     ILendingPool(_addressesProvider.getLendingPool()).borrow(
-      stableAsset,
-      amount,
+      _stableAsset,
+      _amount,
       USE_VARIABLE_DEBT,
       0,
       msg.sender
@@ -132,18 +151,18 @@ contract GeneralLevSwap {
   }
 
   function _calcBorrowableAmount(
-    uint256 collateralAmount,
-    uint256 ltv,
-    address borrowAsset,
-    uint256 assetDecimals
+    uint256 _collateralAmount,
+    uint256 _ltv,
+    address _borrowAsset,
+    uint256 _assetDecimals
   ) internal view returns (uint256) {
-    uint256 availableBorrowsETH = (collateralAmount * getAssetPrice(COLLATERAL).percentMul(ltv)) /
+    uint256 availableBorrowsETH = (_collateralAmount * getAssetPrice(COLLATERAL).percentMul(_ltv)) /
       (10**DECIMALS);
 
     availableBorrowsETH = availableBorrowsETH > SAFE_BUFFER ? availableBorrowsETH - SAFE_BUFFER : 0;
 
-    uint256 availableBorrowsAsset = (availableBorrowsETH * (10**assetDecimals)) /
-      getAssetPrice(borrowAsset);
+    uint256 availableBorrowsAsset = (availableBorrowsETH * (10**_assetDecimals)) /
+      getAssetPrice(_borrowAsset);
 
     return availableBorrowsAsset;
   }

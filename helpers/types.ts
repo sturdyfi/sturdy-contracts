@@ -180,8 +180,8 @@ export enum eContractid {
   CurveswapAdapter = 'CurveswapAdapter',
   LeverageSwapManagerImpl = 'LeverageSwapManagerImpl',
   LeverageSwapManager = 'LeverageSwapManager',
-  LevSwap3CrvFrax = 'LevSwap3CrvFrax',
-  LevSwapCrvPlain3SUSD = 'LevSwapCrvPlain3SUSD',
+  FRAX3CRVLevSwap = 'FRAX3CRVLevSwap',
+  DAIUSDCUSDTSUSDLevSwap = 'DAIUSDCUSDTSUSDLevSwap',
 }
 
 /*

@@ -9,7 +9,7 @@ import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {GeneralVault} from '../vault/GeneralVault.sol';
+import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 contract GeneralLevSwap {
@@ -133,11 +133,11 @@ contract GeneralLevSwap {
   }
 
   function _supply(uint256 _amount) internal {
-    GeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, msg.sender);
+    IGeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, msg.sender);
   }
 
   function _remove(uint256 _amount, uint256 _slippage) internal {
-    GeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
+    IGeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
   }
 
   function _borrow(address _stableAsset, uint256 _amount) internal {

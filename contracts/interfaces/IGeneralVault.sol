@@ -13,4 +13,27 @@ interface IGeneralVault {
   function getYieldAmount() external view returns (uint256);
 
   function setTreasuryInfo(address _treasury, uint256 _fee) external;
+
+  function depositCollateral(address _asset, uint256 _amount) external payable;
+
+  function depositCollateralFrom(
+    address _asset,
+    uint256 _amount,
+    address _user
+  ) external payable;
+
+  function withdrawCollateral(
+    address _asset,
+    uint256 _amount,
+    uint256 _slippage,
+    address _to
+  ) external;
+
+  function withdrawCollateralFrom(
+    address _asset,
+    uint256 _amount,
+    uint256 _slippage,
+    address _user,
+    address _to
+  ) external;
 }

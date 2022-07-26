@@ -197,11 +197,11 @@
   },
   "ConvexFRAX3CRVVaultImpl": {
     "main": {
-      "address": "0xAe7Ad62cf5Eb7488e254b31c75822525D2D8aacf",
+      "address": "0xe12B0fd4E480de4659eb3742e1465257E58CD750",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xAe7Ad62cf5Eb7488e254b31c75822525D2D8aacf",
+      "address": "0xe12B0fd4E480de4659eb3742e1465257E58CD750",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -475,11 +475,11 @@
   },
   "ConvexDAIUSDCUSDTSUSDVaultImpl": {
     "main": {
-      "address": "0x68d74ab0A28Ab3A4E04b6538CEd7cb2BDC3db541",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x68d74ab0A28Ab3A4E04b6538CEd7cb2BDC3db541",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

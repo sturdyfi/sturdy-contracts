@@ -9,7 +9,6 @@ import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeabi
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /**
  * @title GeneralVault
@@ -19,7 +18,6 @@ import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol
 
 abstract contract GeneralVault is VersionedInitializable {
   using PercentageMath for uint256;
-  using SafeERC20 for IERC20;
 
   event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
   event DepositCollateral(address indexed collateralAsset, address indexed from, uint256 amount);

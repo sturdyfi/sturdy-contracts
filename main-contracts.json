@@ -457,11 +457,11 @@
   },
   "ConvexMIM3CRVVaultImpl": {
     "main": {
-      "address": "0xce22EB8aB9C6bc8a6d756e80713B4008501D7bc7",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xce22EB8aB9C6bc8a6d756e80713B4008501D7bc7",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -511,11 +511,11 @@
   },
   "ConvexIronBankVaultImpl": {
     "main": {
-      "address": "0xA004DF37c84a43FEB90142e209430649F4025EB3",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xA004DF37c84a43FEB90142e209430649F4025EB3",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -547,11 +547,11 @@
   },
   "ConvexFRAXUSDCVaultImpl": {
     "main": {
-      "address": "0x8dA78b4CA9C961791840226849bf6015D427cF95",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x8dA78b4CA9C961791840226849bf6015D427cF95",
+      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

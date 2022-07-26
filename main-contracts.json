@@ -601,7 +601,7 @@
       "address": "0x3bC6db5e3e3C1e262ae0b28AE35f02e485F3dda3"
     }
   },
-  "LevSwap3CrvFrax": {
+  "FRAX3CRVLevSwap": {
     "main": {
       "address": "0xa26a6F2eB4Bc7005aF8eA5a1dd5B7bc1d8973592",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
@@ -611,7 +611,7 @@
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
-  "LevSwapCrvPlain3SUSD": {
+  "DAIUSDCUSDTSUSDLevSwap": {
     "main": {
       "address": "0x176199B256C74e3ba400Ea17bE8C2F015C14B902",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"

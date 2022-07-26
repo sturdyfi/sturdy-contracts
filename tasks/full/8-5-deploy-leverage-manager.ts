@@ -33,7 +33,7 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
 
     const leverageManager = await deployLeverageSwapManager(verify);
 
-    // deploy & register 3CrvFraxLevSwap
+    // deploy & register FRAX3CRVLevSwap
     const fraxVault = await getConvexFRAX3CRVVault();
     const fraxLevSwap = await deployFRAX3CRVLevSwap(
       [getParamPerNetwork(FRAX_3CRV_LP, network), fraxVault.address, addressProvider.address],
@@ -46,7 +46,7 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
     );
     console.log('FRAX3CRVLevSwap: %s', fraxLevSwap.address);
 
-    // deploy & register CrvPlain3SUSDLevSwap
+    // deploy & register DAIUSDCUSDTSUSDLevSwap
     const susdVault = await getConvexDAIUSDCUSDTSUSDVault();
     const susdLevSwap = await deployDAIUSDCUSDTSUSDLevSwap(
       [

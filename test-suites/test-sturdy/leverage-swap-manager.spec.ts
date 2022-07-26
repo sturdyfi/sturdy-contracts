@@ -107,8 +107,8 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { FRAX_3CRV_LP, helpersContract, cvxfrax_3crv } = testEnv;
-    fraxLevSwap = await getCollateralLevSwapper(testEnv, FRAX_3CRV_LP.address);
+    const { helpersContract, cvxfrax_3crv } = testEnv;
+    fraxLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_3crv.address);
     ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_3crv.address)).ltv.toString();
   });
   describe('configuration', () => {
@@ -343,7 +343,7 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
         usdt.address,
         borrower.address
       );
-      expect(userReserveDataAfter.currentVariableDebt.toString()).to.be.bignumber.gt('0');
+      expect(userReserveDataAfter.currentVariableDebt.toString()).to.be.bignumber.equal('0');
 
       const withdraAmount = await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount);
       await expect(
@@ -433,8 +433,8 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { DAI_USDC_USDT_SUSD_LP, helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
-    susdLevSwap = await getCollateralLevSwapper(testEnv, DAI_USDC_USDT_SUSD_LP.address);
+    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
+    susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
@@ -741,13 +741,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         borrower.address
       );
 
-      expect(
-        userReserveDataAfter.currentVariableDebt
-          .multipliedBy(2)
-          .minus(userReserveDataBefore.currentVariableDebt)
-          .abs()
-          .toString()
-      ).to.be.bignumber.lt('10');
+      expect(userReserveDataAfter.currentVariableDebt).to.be.bignumber.lt(
+        userReserveDataBefore.currentVariableDebt.toFixed(0)
+      );
     });
   });
 });

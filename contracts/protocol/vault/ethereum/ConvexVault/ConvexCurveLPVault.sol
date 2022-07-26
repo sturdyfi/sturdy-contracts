@@ -13,7 +13,6 @@ import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol
 import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../../../libraries/types/DataTypes.sol';
 import {ILendingPool} from '../../../../interfaces/ILendingPool.sol';
-import {ILeverageSwapManager} from '../../../../interfaces/ILeverageSwapManager.sol';
 
 interface IRewards {
   function rewardToken() external view returns (address);
@@ -148,34 +147,6 @@ contract ConvexCurveLPVault is IncentiveVault {
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);
     }
-  }
-
-  /**
-   * @dev Withdraw an `amount` of asset used as collateral to user.
-   * @param _asset The asset address for collateral
-   *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
-   * @param _amount The amount to be withdrawn
-   * @param _slippage The slippage of the withdrawal amount. 1% = 100
-   * @param _user user address who is going to withdraw collateral
-   * @param _to Address that will receive the underlying, same as msg.sender if the user
-   *   wants to receive it on his own wallet, or a different address if the beneficiary is a
-   *   different wallet
-   */
-  function withdrawCollateralFrom(
-    address _asset,
-    uint256 _amount,
-    uint256 _slippage,
-    address _user,
-    address _to
-  ) external {
-    address levSwapManager = _addressesProvider.getAddress('LEVERAGE_SWAP_MANAGER');
-    require(levSwapManager != address(0), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
-
-    require(
-      ILeverageSwapManager(levSwapManager).getLevSwapper(internalAssetToken) == msg.sender,
-      Errors.VT_COLLATERAL_WITHDRAW_INVALID
-    );
-    _withdraw(_asset, _amount, _slippage, _user, _to);
   }
 
   /**

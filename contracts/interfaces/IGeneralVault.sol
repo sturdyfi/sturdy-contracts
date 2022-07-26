@@ -28,12 +28,4 @@ interface IGeneralVault {
     uint256 _slippage,
     address _to
   ) external;
-
-  function withdrawCollateralFrom(
-    address _asset,
-    uint256 _amount,
-    uint256 _slippage,
-    address _user,
-    address _to
-  ) external;
 }

@@ -2536,7 +2536,7 @@ export const deployMIM3CRVLevSwap = async (
 ) =>
   withSaveAndVerify(
     await new MIM3CRVLevSwapFactory(await getFirstSigner()).deploy(...args),
-    eContractid.FRAX3CRVLevSwap,
+    eContractid.MIM3CRVLevSwap,
     args,
     verify
   );

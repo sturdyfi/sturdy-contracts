@@ -43,7 +43,10 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     // Register csteCRV oracle
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [steCRVOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(STECRV_LP, network)],
+        [steCRVOracleAddress, steCRVOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

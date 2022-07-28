@@ -46,7 +46,10 @@ task(`full:deploy-convex-dola-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     // Register cDOLA3POOL3CRV-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [DOLA3CRVOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(DOLA_3CRV_LP, network)],
+        [DOLA3CRVOracleAddress, DOLA3CRVOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

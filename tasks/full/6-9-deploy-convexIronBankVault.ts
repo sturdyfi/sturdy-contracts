@@ -47,7 +47,10 @@ task(`full:deploy-convex-iron-bank-vault`, `Deploys the ${CONTRACT_NAME} contrac
     // Register
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [IronBankOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(IRON_BANK_LP, network)],
+        [IronBankOracleAddress, IronBankOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

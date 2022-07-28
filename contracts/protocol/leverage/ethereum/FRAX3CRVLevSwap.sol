@@ -6,24 +6,34 @@ import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
-interface CurveBasePool {
-  function add_liquidity(uint256[3] memory amounts, uint256 _min_mint_amount) external;
-
+interface ICurvePool {
   function coins(int128) external view returns (address);
-}
 
-interface CurveMetaPool {
-  function coins(int128) external view returns (address);
+  function calc_withdraw_one_coin(uint256 _burn_amount, int128 i) external view returns (uint256);
 
   function add_liquidity(uint256[2] memory amounts, uint256 _min_mint_amount) external;
+
+  function add_liquidity(uint256[3] memory amounts, uint256 _min_mint_amount) external;
+
+  function remove_liquidity_one_coin(
+    uint256 _burn_amount,
+    int128 i,
+    uint256 _min_received,
+    address _receiver
+  ) external returns (uint256);
+
+  function remove_liquidity_one_coin(
+    uint256 _burn_amount,
+    int128 i,
+    uint256 _min_received
+  ) external;
 }
 
 contract FRAX3CRVLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
-  CurveMetaPool public constant POOL = CurveMetaPool(0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B);
-  CurveBasePool public constant THREECRV =
-    CurveBasePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+  ICurvePool public constant POOL = ICurvePool(0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B);
+  ICurvePool public constant THREECRV = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
 
   IERC20 public constant THREECRV_TOKEN = IERC20(0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490); // 3crv
 
@@ -55,7 +65,7 @@ contract FRAX3CRVLevSwap is GeneralLevSwap {
     return 2;
   }
 
-  function _swap(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
     uint256 coinIndex = _getCoinIndex(_stableAsset);
 
     // stable coin -> 3CRV
@@ -74,5 +84,26 @@ contract FRAX3CRVLevSwap is GeneralLevSwap {
     amountTo = IERC20(COLLATERAL).balanceOf(address(this));
 
     return amountTo;
+  }
+
+  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+    // FRAX3CRV -> 3CRV
+    int256 coinIndex = 1;
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    uint256 minAmount = POOL.calc_withdraw_one_coin(collateralAmount, int128(coinIndex));
+    uint256 threeCRVAmount = POOL.remove_liquidity_one_coin(
+      collateralAmount,
+      int128(coinIndex),
+      minAmount,
+      address(this)
+    );
+
+    // 3CRV -> stable coin
+    coinIndex = int256(_getCoinIndex(_stableAsset));
+    minAmount = THREECRV.calc_withdraw_one_coin(threeCRVAmount, int128(coinIndex));
+
+    THREECRV.remove_liquidity_one_coin(threeCRVAmount, int128(coinIndex), minAmount);
+
+    return IERC20(_stableAsset).balanceOf(address(this));
   }
 }

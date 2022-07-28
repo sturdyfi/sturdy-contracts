@@ -46,7 +46,10 @@ task(`full:deploy-convex-hbtc-wbtc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     // Register chCRV
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [HBTCWBTCOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(HBTC_WBTC_LP, network)],
+        [HBTCWBTCOracleAddress, HBTCWBTCOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

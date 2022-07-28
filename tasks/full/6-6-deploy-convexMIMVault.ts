@@ -47,7 +47,10 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
     // Register cMIM3CRV-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [MIM3CRVOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(MIM_3CRV_LP, network)],
+        [MIM3CRVOracleAddress, MIM3CRVOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

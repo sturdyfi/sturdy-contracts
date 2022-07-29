@@ -139,6 +139,7 @@ library Errors {
   string internal constant LS_STABLE_COIN_NOT_SUPPORTED = '114'; // Doesn't support swap for the stable coin
   string internal constant LS_SUPPLY_NOT_ALLOWED = '115'; // no sufficient funds
   string internal constant LS_SUPPLY_FAILED = '116'; // Deposit fails when leverage works
+  string internal constant LS_REMOVE_ITERATION_OVER = '117'; // Withdraw iteration limit over
 
   enum CollateralManagerErrors {
     NO_ERROR,

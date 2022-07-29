@@ -6,24 +6,19 @@ import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
-interface CurveBasePool {
+interface ICurvePool {
   function add_liquidity(uint256[3] memory amounts, uint256 _min_mint_amount) external;
 
-  function coins(int128) external view returns (address);
-}
-
-interface CurveMetaPool {
-  function coins(int128) external view returns (address);
-
   function add_liquidity(uint256[2] memory amounts, uint256 _min_mint_amount) external;
+
+  function coins(int128) external view returns (address);
 }
 
 contract MIM3CRVLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
-  CurveMetaPool public constant POOL = CurveMetaPool(0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
-  CurveBasePool public constant THREECRV =
-    CurveBasePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
+  ICurvePool public constant POOL = ICurvePool(0x5a6A4D54456819380173272A5E8E9B9904BdF41B);
+  ICurvePool public constant THREECRV = ICurvePool(0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7);
 
   IERC20 public constant THREECRV_TOKEN = IERC20(0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490); // 3crv
 
@@ -55,7 +50,7 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
     return 2;
   }
 
-  function _swap(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
     uint256 coinIndex = _getCoinIndex(_stableAsset);
 
     // stable coin -> 3CRV
@@ -74,5 +69,9 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
     amountTo = IERC20(COLLATERAL).balanceOf(address(this));
 
     return amountTo;
+  }
+
+  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+    return 0;
   }
 }

@@ -10,11 +10,16 @@ import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
+import {IAToken} from '../../interfaces/IAToken.sol';
+import {DataTypes} from '../libraries/types/DataTypes.sol';
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {Math} from '../../dependencies/openzeppelin/contracts/Math.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
-contract GeneralLevSwap {
+abstract contract GeneralLevSwap {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   uint256 public constant USE_VARIABLE_DEBT = 2;
 
@@ -24,11 +29,15 @@ contract GeneralLevSwap {
 
   address public immutable VAULT; // The address of vault
 
-  ILendingPoolAddressesProvider internal _addressesProvider;
-
   uint256 public constant SAFE_BUFFER = 5000;
 
   mapping(address => bool) ENABLED_STABLE_COINS;
+
+  ILendingPoolAddressesProvider internal immutable PROVIDER;
+
+  IPriceOracleGetter internal immutable ORACLE;
+
+  ILendingPool internal immutable LENDING_POOL;
 
   event EnterPosition(
     uint256 amount,
@@ -57,7 +66,9 @@ contract GeneralLevSwap {
     COLLATERAL = _asset;
     DECIMALS = IERC20Detailed(_asset).decimals();
     VAULT = _vault;
-    _addressesProvider = ILendingPoolAddressesProvider(_provider);
+    PROVIDER = ILendingPoolAddressesProvider(_provider);
+    ORACLE = IPriceOracleGetter(PROVIDER.getPriceOracle());
+    LENDING_POOL = ILendingPool(PROVIDER.getLendingPool());
     IERC20(COLLATERAL).approve(_vault, type(uint256).max);
   }
 
@@ -72,15 +83,14 @@ contract GeneralLevSwap {
    * @return The asset price in ETH according to Sturdy PriceOracle
    */
   function getAssetPrice(address _asset) public view returns (uint256) {
-    IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
-    return oracle.getAssetPrice(_asset);
+    return ORACLE.getAssetPrice(_asset);
   }
 
   /**
    * @param _principal - The amount of collateral
    * @param _iterations - Loop count
    * @param _ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 8250
-   * @param _stableAsset - The borrowing stable asset address when leverage works
+   * @param _stableAsset - The borrowing stable coin address when leverage works
    */
   function enterPosition(
     uint256 _principal,
@@ -105,7 +115,7 @@ contract GeneralLevSwap {
         // borrow stable coin
         _borrow(_stableAsset, borrowAmount);
         // swap stable coin to collateral
-        suppliedAmount = _swap(_stableAsset, borrowAmount);
+        suppliedAmount = _swapTo(_stableAsset, borrowAmount);
         // supply to LP
         _supply(suppliedAmount);
       }
@@ -115,19 +125,60 @@ contract GeneralLevSwap {
   }
 
   /**
-   * @param _principal - The amount of collateral
+   * @param _principal - The amount of collateral, uint256 max value should withdraw all collateral
    * @param _slippage - The slippage of the every withdrawal amount. 1% = 100
-   * @param _stableAsset - The borrowing stable asset address when leverage works
+   * @param _iterations - Loop count
+   * @param _stableAsset - The borrowing stable coin address when leverage works
+   * @param _sAsset - staked asset address of collateral internal asset
    */
   function leavePosition(
     uint256 _principal,
     uint256 _slippage,
-    address _stableAsset
+    uint256 _iterations,
+    address _stableAsset,
+    address _sAsset
   ) public {
     require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
+    require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
 
-    _remove(_principal, _slippage);
+    uint256 count;
+    do {
+      // limit loop count
+      require(count < _iterations, Errors.LS_REMOVE_ITERATION_OVER);
+
+      // withdraw collateral
+      uint256 availableAmount = _getWithdrawalAmount(_sAsset);
+      if (availableAmount == 0) break;
+
+      uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+      uint256 requiredAmount = _principal - collateralAmount;
+      uint256 removeAmount = Math.min(availableAmount, requiredAmount);
+      IERC20(_sAsset).safeTransferFrom(msg.sender, address(this), removeAmount);
+      _remove(removeAmount, _slippage);
+
+      if (removeAmount == requiredAmount) break;
+
+      // swap collateral to stable coin
+      // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
+      uint256 stableAssetAmount = _swapFrom(_stableAsset);
+
+      // repay
+      _repay(_stableAsset, stableAssetAmount);
+      uint256 debtAmount = _getDebtAmount(_stableAsset);
+      if (debtAmount == 0) {
+        // swap stable coin to collateral in case of extra ramined stable coin after repay
+        _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
+      }
+
+      count++;
+    } while (true);
+
+    // finally deliver the required collateral amount to user
+    IERC20(COLLATERAL).safeTransfer(
+      msg.sender,
+      Math.min(_principal, IERC20(COLLATERAL).balanceOf(address(this)))
+    );
 
     emit LeavePosition(_principal, _stableAsset);
   }
@@ -140,14 +191,53 @@ contract GeneralLevSwap {
     IGeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
   }
 
-  function _borrow(address _stableAsset, uint256 _amount) internal {
-    ILendingPool(_addressesProvider.getLendingPool()).borrow(
-      _stableAsset,
-      _amount,
-      USE_VARIABLE_DEBT,
-      0,
-      msg.sender
+  function _getWithdrawalAmount(address _sAsset) internal view returns (uint256) {
+    // get internal asset address
+    address internalAsset = IAToken(_sAsset).UNDERLYING_ASSET_ADDRESS();
+
+    // get reserve info of internal asset
+    DataTypes.ReserveConfigurationMap memory configuration = LENDING_POOL.getConfiguration(
+      internalAsset
     );
+    (, uint256 assetLiquidationThreshold, , , ) = configuration.getParamsMemory();
+
+    // get user info
+    (
+      uint256 totalCollateralETH,
+      uint256 totalDebtETH,
+      ,
+      uint256 currentLiquidationThreshold,
+      ,
+
+    ) = LENDING_POOL.getUserAccountData(msg.sender);
+
+    uint256 withdrawalAmountETH = (totalCollateralETH *
+      currentLiquidationThreshold -
+      totalDebtETH) / assetLiquidationThreshold;
+
+    return
+      Math.min(
+        IERC20(_sAsset).balanceOf(msg.sender),
+        (withdrawalAmountETH * (10**DECIMALS)) / getAssetPrice(COLLATERAL)
+      );
+  }
+
+  function _getDebtAmount(address _stableAsset) internal view returns (uint256) {
+    // get internal asset's info for user
+    DataTypes.ReserveData memory reserve = LENDING_POOL.getReserveData(_stableAsset);
+
+    return IERC20(reserve.variableDebtTokenAddress).balanceOf(msg.sender);
+  }
+
+  function _borrow(address _stableAsset, uint256 _amount) internal {
+    LENDING_POOL.borrow(_stableAsset, _amount, USE_VARIABLE_DEBT, 0, msg.sender);
+  }
+
+  function _repay(address _stableAsset, uint256 _amount) internal {
+    IERC20(_stableAsset).safeApprove(address(LENDING_POOL), 0);
+    IERC20(_stableAsset).safeApprove(address(LENDING_POOL), _amount);
+
+    LENDING_POOL.repay(_stableAsset, _amount, USE_VARIABLE_DEBT, msg.sender);
   }
 
   function _calcBorrowableAmount(
@@ -167,7 +257,7 @@ contract GeneralLevSwap {
     return availableBorrowsAsset;
   }
 
-  function _swap(address, uint256) internal virtual returns (uint256) {
-    return 0;
-  }
+  function _swapTo(address _stableAsset, uint256 _amount) internal virtual returns (uint256);
+
+  function _swapFrom(address _stableAsset) internal virtual returns (uint256);
 }

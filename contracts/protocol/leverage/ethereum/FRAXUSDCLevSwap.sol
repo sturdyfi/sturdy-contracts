@@ -7,7 +7,7 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {UniswapAdapter} from '../../libraries/swap/UniswapAdapter.sol';
 
-interface CurveBasePool {
+interface ICurvePool {
   function coins(uint256) external view returns (address);
 
   function add_liquidity(uint256[2] memory amounts, uint256 _min_mint_amount) external;
@@ -16,8 +16,7 @@ interface CurveBasePool {
 contract FRAXUSDCLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
-  CurveBasePool public constant FRAXUSDC =
-    CurveBasePool(0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2);
+  ICurvePool public constant FRAXUSDC = ICurvePool(0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2);
 
   address internal constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -50,17 +49,10 @@ contract FRAXUSDCLevSwap is GeneralLevSwap {
     path.fees[0] = 500; //0.05%
 
     return
-      UniswapAdapter.swapExactTokensForTokens(
-        _addressesProvider,
-        _stableAsset,
-        USDC,
-        _amount,
-        path,
-        500
-      );
+      UniswapAdapter.swapExactTokensForTokens(PROVIDER, _stableAsset, USDC, _amount, path, 500);
   }
 
-  function _swap(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
     uint256 amountTo = _amount;
 
     if (_stableAsset != USDC) {
@@ -73,5 +65,9 @@ contract FRAXUSDCLevSwap is GeneralLevSwap {
     amountsAdded[1] = amountTo;
     FRAXUSDC.add_liquidity(amountsAdded, 0);
     return IERC20(COLLATERAL).balanceOf(address(this));
+  }
+
+  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+    return 0;
   }
 }

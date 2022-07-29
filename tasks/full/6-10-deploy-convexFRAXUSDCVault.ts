@@ -47,7 +47,10 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     // Register
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [FRAXUSDCOracleAddress])
+      await sturdyOracle.setAssetSources(
+        [internalAssetAddress, getParamPerNetwork(FRAX_USDC_LP, network)],
+        [FRAXUSDCOracleAddress, FRAXUSDCOracleAddress]
+      )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

@@ -7,7 +7,7 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {UniswapAdapter} from '../../libraries/swap/UniswapAdapter.sol';
 
-interface CurveBasePool {
+interface ICurvePool {
   function add_liquidity(
     uint256[3] memory amounts,
     uint256 _min_mint_amount,
@@ -18,8 +18,7 @@ interface CurveBasePool {
 contract IRONBANKLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
-  CurveBasePool public constant IRONBANK =
-    CurveBasePool(0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF);
+  ICurvePool public constant IRONBANK = ICurvePool(0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF);
 
   address internal constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -49,7 +48,7 @@ contract IRONBANKLevSwap is GeneralLevSwap {
     return 2;
   }
 
-  function _swap(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
     uint256 coinIndex = _getCoinIndex(_stableAsset);
 
     IERC20(_stableAsset).safeApprove(address(IRONBANK), 0);
@@ -59,5 +58,9 @@ contract IRONBANKLevSwap is GeneralLevSwap {
     amountsAdded[coinIndex] = _amount;
     IRONBANK.add_liquidity(amountsAdded, 0, true);
     return IERC20(COLLATERAL).balanceOf(address(this));
+  }
+
+  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+    return 0;
   }
 }

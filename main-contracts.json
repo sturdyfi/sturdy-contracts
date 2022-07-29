@@ -620,5 +620,35 @@
       "address": "0x176199B256C74e3ba400Ea17bE8C2F015C14B902",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "FRAXUSDCLevSwap": {
+    "main": {
+      "address": "0xa4a5BE294bA4179bD8B054fe7A466d89AdF986b6",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xa4a5BE294bA4179bD8B054fe7A466d89AdF986b6",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "IRONBANKLevSwap": {
+    "main": {
+      "address": "0x01Eac83b91158e09EaE57a86eE4538134ff47e26",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x01Eac83b91158e09EaE57a86eE4538134ff47e26",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "MIM3CRVLevSwap": {
+    "main": {
+      "address": "0x4b00AbCA8276Aef29adA38f8b4fC386203F71bc4",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x4b00AbCA8276Aef29adA38f8b4fC386203F71bc4",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

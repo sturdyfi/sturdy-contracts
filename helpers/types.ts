@@ -182,6 +182,9 @@ export enum eContractid {
   LeverageSwapManager = 'LeverageSwapManager',
   FRAX3CRVLevSwap = 'FRAX3CRVLevSwap',
   DAIUSDCUSDTSUSDLevSwap = 'DAIUSDCUSDTSUSDLevSwap',
+  MIM3CRVLevSwap = 'MIM3CRVLevSwap',
+  FRAXUSDCLevSwap = 'FRAXUSDCLevSwap',
+  IRONBANKLevSwap = 'IRONBANKLevSwap',
 }
 
 /*

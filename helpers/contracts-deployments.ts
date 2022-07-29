@@ -146,6 +146,9 @@ import {
   FRAX3CRVLevSwapFactory,
   DAIUSDCUSDTSUSDLevSwapFactory,
   FRAXUSDCOracleFactory,
+  MIM3CRVLevSwapFactory,
+  IRONBANKLevSwapFactory,
+  FRAXUSDCLevSwapFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -2336,7 +2339,7 @@ export const deployFTMLiquidator = async (args: [string], verify?: boolean) => {
 };
 
 export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
-  const libraries = await deployYieldManagerLibraries(verify);
+  const libraries = await deploySwapAdapterLibraries(verify);
   const liquidator = await withSaveAndVerify(
     await new ETHLiquidatorFactory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.ETHLiquidator,
@@ -2420,7 +2423,7 @@ export const deployCurveswapAdapterLibrary = async (verify?: boolean) => {
   return withSaveAndVerify(curveswapAdapter, eContractid.CurveswapAdapter, [], verify);
 };
 
-export const deployYieldManagerLibraries = async (
+export const deploySwapAdapterLibraries = async (
   verify?: boolean
 ): Promise<YieldManagerLibraryAddresses> => {
   const uniswapAdapter = await deployUniswapAdapterLibrary(verify);
@@ -2433,7 +2436,7 @@ export const deployYieldManagerLibraries = async (
 };
 
 export const deployYieldManagerImpl = async (verify?: boolean) => {
-  const libraries = await deployYieldManagerLibraries(verify);
+  const libraries = await deploySwapAdapterLibraries(verify);
   withSaveAndVerify(
     await new YieldManagerFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.YieldManagerImpl,
@@ -2446,7 +2449,7 @@ export const deployYieldManager = async (verify?: boolean) => {
   const config: ISturdyConfiguration = loadPoolConfig(ConfigNames.Sturdy) as ISturdyConfiguration;
   const network = <eNetwork>DRE.network.name;
 
-  const libraries = await deployYieldManagerLibraries(verify);
+  const libraries = await deploySwapAdapterLibraries(verify);
   const yieldManagerImpl = await withSaveAndVerify(
     await new YieldManagerFactory(libraries, await getFirstSigner()).deploy(),
     eContractid.YieldManagerImpl,
@@ -2526,3 +2529,41 @@ export const deployDAIUSDCUSDTSUSDLevSwap = async (
     args,
     verify
   );
+
+export const deployMIM3CRVLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new MIM3CRVLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.MIM3CRVLevSwap,
+    args,
+    verify
+  );
+
+export const deployIRONBANKLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new IRONBANKLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.IRONBANKLevSwap,
+    args,
+    verify
+  );
+
+export const deployFRAXUSDCLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new FRAXUSDCLevSwapFactory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.FRAXUSDCLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};

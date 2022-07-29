@@ -1,17 +1,25 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
+  getSturdyOracle,
   getLendingPoolAddressesProvider,
   getConvexFRAX3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
+  getConvexMIM3CRVVault,
+  getConvexFRAXUSDCVault,
+  getConvexIronBankVault,
 } from '../../helpers/contracts-getters';
 import {
   deployLeverageSwapManager,
   deployFRAX3CRVLevSwap,
   deployDAIUSDCUSDTSUSDLevSwap,
+  deployMIM3CRVLevSwap,
+  deployFRAXUSDCLevSwap,
+  deployIRONBANKLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { waitForTx } from '../../helpers/misc-utils';
 
 const CONTRACT_NAME = 'LeverageSwapManager';
 
@@ -26,8 +34,17 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { FRAX_3CRV_LP, DAI_USDC_USDT_SUSD_LP, ReserveAssets } =
-      poolConfig as ISturdyConfiguration;
+    const {
+      FRAX_3CRV_LP,
+      DAI_USDC_USDT_SUSD_LP,
+      FRAX_USDC_LP,
+      IRON_BANK_LP,
+      MIM_3CRV_LP,
+      ReserveAssets,
+      ChainlinkAggregator,
+    } = poolConfig as ISturdyConfiguration;
+
+    const sturdyOracle = await getSturdyOracle();
 
     const addressProvider = await getLendingPoolAddressesProvider();
 
@@ -62,6 +79,70 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       susdLevSwap.address
     );
     console.log('DAIUSDCUSDTSUSDLevSwap: %s', susdLevSwap.address);
+
+    // deploy & register FRAXUSDCLevSwap
+    const fraxusdcVault = await getConvexFRAXUSDCVault();
+    const fraxusdcLevSwap = await deployFRAXUSDCLevSwap(
+      [getParamPerNetwork(FRAX_USDC_LP, network), fraxusdcVault.address, addressProvider.address],
+      verify
+    );
+
+    let FRAXUSDCOracleAddress = await sturdyOracle.getSourceOfAsset(
+      getParamPerNetwork(ReserveAssets, network).cvxFRAX_USDC
+    );
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(FRAX_USDC_LP, network)],
+        [FRAXUSDCOracleAddress]
+      )
+    );
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).cvxFRAX_USDC,
+      fraxusdcLevSwap.address
+    );
+    console.log('FRAXUSDCLevSwap: %s', fraxusdcLevSwap.address);
+
+    // deploy & register IRONBANKLevSwap
+    const ironbankVault = await getConvexIronBankVault();
+    const ironbankLevSwap = await deployIRONBANKLevSwap(
+      [getParamPerNetwork(IRON_BANK_LP, network), ironbankVault.address, addressProvider.address],
+      verify
+    );
+    let IronBankOracleAddress = await sturdyOracle.getSourceOfAsset(
+      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK
+    );
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(IRON_BANK_LP, network)],
+        [IronBankOracleAddress]
+      )
+    );
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
+      ironbankLevSwap.address
+    );
+    console.log('IRONBANKLevSwap: %s', ironbankLevSwap.address);
+
+    // deploy & register MIM3CRVLevSwap
+    const mim3crvVault = await getConvexMIM3CRVVault();
+    const mim3crvLevSwap = await deployMIM3CRVLevSwap(
+      [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
+      verify
+    );
+    let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
+      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
+    );
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(MIM_3CRV_LP, network)],
+        [MIM3CRVOracleAddress]
+      )
+    );
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
+      mim3crvLevSwap.address
+    );
+    console.log('MIM3CRVLevSwap: %s', mim3crvLevSwap.address);
 
     console.log(`${CONTRACT_NAME}.address`, leverageManager.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

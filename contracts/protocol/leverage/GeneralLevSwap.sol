@@ -16,7 +16,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {Math} from '../../dependencies/openzeppelin/contracts/Math.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
-abstract contract GeneralLevSwap {
+contract GeneralLevSwap {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -257,7 +257,11 @@ abstract contract GeneralLevSwap {
     return availableBorrowsAsset;
   }
 
-  function _swapTo(address _stableAsset, uint256 _amount) internal virtual returns (uint256);
+  function _swapTo(address _stableAsset, uint256 _amount) internal virtual returns (uint256) {
+    return 0;
+  }
 
-  function _swapFrom(address _stableAsset) internal virtual returns (uint256);
+  function _swapFrom(address _stableAsset) internal virtual returns (uint256) {
+    return 0;
+  }
 }

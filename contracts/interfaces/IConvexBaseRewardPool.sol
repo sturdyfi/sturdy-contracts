@@ -15,4 +15,8 @@ interface IConvexBaseRewardPool {
   function extraRewardsLength() external view returns (uint256);
 
   function extraRewards(uint256) external view returns (address);
+
+  function rewardRate() external view returns (uint256);
+
+  function totalSupply() external view returns (uint256);
 }

@@ -109,7 +109,7 @@ contract GeneralLevSwap {
     uint256 suppliedAmount = _principal;
     uint256 borrowAmount = 0;
     uint256 stableAssetDecimals = IERC20Detailed(_stableAsset).decimals();
-    for (uint256 i = 0; i < _iterations; i++) {
+    for (uint256 i; i < _iterations; ++i) {
       borrowAmount = _calcBorrowableAmount(suppliedAmount, _ltv, _stableAsset, stableAssetDecimals);
       if (borrowAmount > 0) {
         // borrow stable coin

@@ -650,5 +650,15 @@
       "address": "0x4b00AbCA8276Aef29adA38f8b4fC386203F71bc4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "SturdyAPRDataProvider": {
+    "main": {
+      "address": "0x8F5273205c687508347eb89f81e9b99DA3f01383",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x8F5273205c687508347eb89f81e9b99DA3f01383",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

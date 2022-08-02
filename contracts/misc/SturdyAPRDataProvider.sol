@@ -16,10 +16,13 @@ import {IIncentiveVault} from '../interfaces/IIncentiveVault.sol';
 import {IGeneralVault} from '../interfaces/IGeneralVault.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {PercentageMath} from '../protocol/libraries/math/PercentageMath.sol';
+import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
 
 contract SturdyAPRDataProvider is Ownable {
   using PercentageMath for uint256;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   struct ConvexPoolInfo {
     uint256 poolId;
@@ -76,6 +79,12 @@ contract SturdyAPRDataProvider is Ownable {
       _getTotalLiquidity(USDT, true);
 
     for (uint256 i; i < reserveCount; ++i) {
+      DataTypes.ReserveConfigurationMap memory reserveConfiguration = LENDING_POOL.getConfiguration(
+        reserves[i]
+      );
+      (, , , , bool isCollateral) = reserveConfiguration.getFlagsMemory();
+      if (!isCollateral) continue;
+
       if (reserves[i] == LIDO) {
         totalYieldInPrice += _lidoVaultYieldInPrice();
       } else {
@@ -133,12 +142,14 @@ contract SturdyAPRDataProvider is Ownable {
 
     uint256 convexLPCollateral = _getTotalLiquidity(_reserve, false);
     uint8 decimals = IERC20Detailed(_reserve).decimals();
-    uint256 convexLPYieldInPrice = ((_convexCRVCVXAPYInPrice(
+    (uint256 crvAPYInPrice, uint256 cvxAPYInPrice) = _convexCRVCVXAPYInPrice(
       poolInfo.crvRewards,
       reserveInfo.poolAddress
-    ) * convexLPCollateral) / 10**decimals).percentMul(
-        PercentageMath.PERCENTAGE_FACTOR - STURDY_FEE - incentiveFee
-      );
+    );
+    uint256 convexLPYieldInPrice = ((crvAPYInPrice.percentMul(
+      PercentageMath.PERCENTAGE_FACTOR - STURDY_FEE - incentiveFee
+    ) + cvxAPYInPrice.percentMul(PercentageMath.PERCENTAGE_FACTOR - STURDY_FEE)) *
+      convexLPCollateral) / 10**decimals;
 
     return convexLPYieldInPrice * 1e18;
   }
@@ -175,7 +186,7 @@ contract SturdyAPRDataProvider is Ownable {
   function _convexCRVCVXAPYInPrice(address _stakeContract, address _poolAddress)
     internal
     view
-    returns (uint256)
+    returns (uint256, uint256)
   {
     uint256 virtualPrice = ICurvePool(_poolAddress).get_virtual_price(); //decimal 18
     uint256 rate = IConvexBaseRewardPool(_stakeContract).rewardRate(); //decimal 18
@@ -185,7 +196,10 @@ contract SturdyAPRDataProvider is Ownable {
     uint256 crvPerUnderlying = (rate * 1e36) / (supply * virtualPrice);
     uint256 crvPerYear = crvPerUnderlying * 365 days;
     uint256 cvxPerYear = _getCVXMintAmount(crvPerYear);
-    return (crvPerYear * ORACLE.getAssetPrice(CRV) + cvxPerYear * ORACLE.getAssetPrice(CVX)) / 1e18; //crv/cvx decimal 18
+    return (
+      (crvPerYear * ORACLE.getAssetPrice(CRV)) / 1e18,
+      (cvxPerYear * ORACLE.getAssetPrice(CVX)) / 1e18
+    ); //crv/cvx decimal 18
   }
 
   function _getTotalLiquidity(address _asset, bool _inPrice)

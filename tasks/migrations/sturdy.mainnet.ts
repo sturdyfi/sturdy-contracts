@@ -90,6 +90,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('8-5. Deploy Leverage Swap Manager');
     await DRE.run('full:deploy-leverage-swap-manager', { pool: POOL_NAME, verify });
 
+    console.log('8-6. Deploy APR Data Provider');
+    await DRE.run('full:deploy-sturdy-apr-data-provider', { pool: POOL_NAME, verify });
+
     // if (verify) {
     //   printContracts();
     //   console.log('9. Veryfing contracts');

@@ -185,6 +185,7 @@ export enum eContractid {
   MIM3CRVLevSwap = 'MIM3CRVLevSwap',
   FRAXUSDCLevSwap = 'FRAXUSDCLevSwap',
   IRONBANKLevSwap = 'IRONBANKLevSwap',
+  SturdyAPRDataProvider = 'SturdyAPRDataProvider',
 }
 
 /*

@@ -70,6 +70,7 @@ import {
   VariableYieldDistributionFactory,
   BeefyMIM2CRVVaultFactory,
   LeverageSwapManagerFactory,
+  SturdyAPRDataProviderFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -1069,6 +1070,15 @@ export const getLeverageSwapManager = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.LeverageSwapManager}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getSturdyAPRDataProvider = async (address?: tEthereumAddress) =>
+  await SturdyAPRDataProviderFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.SturdyAPRDataProvider}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

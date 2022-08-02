@@ -70,7 +70,7 @@ contract SturdyAPRDataProvider is Ownable {
   /**
    * @dev Get APR with wad decimal(=18)
    */
-  function APR() external view returns (uint256) {
+  function APR(address _borrowReserve) external view returns (uint256) {
     address[] memory reserves = LENDING_POOL.getReservesList();
     uint256 reserveCount = reserves.length;
     uint256 totalYieldInPrice;
@@ -92,14 +92,19 @@ contract SturdyAPRDataProvider is Ownable {
       }
     }
 
-    return totalYieldInPrice / totalBorrowableLiquidityInPrice;
+    uint256 totalVaultAPR = totalYieldInPrice / totalBorrowableLiquidityInPrice;
+    uint256 liquidityRate = uint256(
+      LENDING_POOL.getReserveData(_borrowReserve).currentLiquidityRate
+    ) / 1e9; // dividing by 1e9 to pass from ray to wad
+
+    return totalVaultAPR + liquidityRate;
   }
 
   /**
    * @dev Get vault APR with wad decimal(=18)
    * @param _reserve - vault's internal asset address
    */
-  function reserveAPR(address _reserve) external view returns (uint256) {
+  function vaultReserveAPR(address _reserve) external view returns (uint256) {
     uint256 totalBorrowableLiquidityInPrice = _getTotalLiquidity(DAI, true) +
       _getTotalLiquidity(USDC, true) +
       _getTotalLiquidity(USDT, true);

@@ -52,7 +52,10 @@ task(`full:deploy-sturdy-apr-data-provider`, `Deploys the ${CONTRACT_NAME} contr
       '0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2' //convex LP pool address
     );
 
-    console.log('APR: ', (await aprProvider.APR()).toString());
+    console.log(
+      'USDC APR: ',
+      (await aprProvider.APR(getParamPerNetwork(ReserveAssets, network).USDC)).toString()
+    );
 
     console.log(`${CONTRACT_NAME}.address`, aprProvider.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

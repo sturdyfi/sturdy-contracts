@@ -149,6 +149,7 @@ import {
   MIM3CRVLevSwapFactory,
   IRONBANKLevSwapFactory,
   FRAXUSDCLevSwapFactory,
+  SturdyAPRDataProviderFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -2567,3 +2568,11 @@ export const deployFRAXUSDCLevSwap = async (
 
   return levSwap;
 };
+
+export const deploySturdyAPRDataProvider = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new SturdyAPRDataProviderFactory(await getFirstSigner()).deploy(),
+    eContractid.SturdyAPRDataProvider,
+    [],
+    verify
+  );

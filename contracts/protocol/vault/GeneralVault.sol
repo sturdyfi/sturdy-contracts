@@ -158,6 +158,13 @@ abstract contract GeneralVault is VersionedInitializable {
   function pricePerShare() external view virtual returns (uint256);
 
   /**
+   * @dev Get vault Yield per year with wad decimal(=18)
+   */
+  function vaultYieldInPrice() external view virtual returns (uint256) {
+    return 0;
+  }
+
+  /**
    * @dev Set treasury address and vault fee
    * @param _treasury The treasury address
    * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00

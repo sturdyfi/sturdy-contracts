@@ -11,17 +11,23 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
+import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {IAaveFlashLoan} from '../../interfaces/IAaveFlashLoan.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {Math} from '../../dependencies/openzeppelin/contracts/Math.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
-contract GeneralLevSwap {
+contract GeneralLevSwap is IFlashLoanReceiver {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
-  uint256 public constant USE_VARIABLE_DEBT = 2;
+  uint256 private constant SAFE_BUFFER = 5000;
+
+  uint256 private constant USE_VARIABLE_DEBT = 2;
+
+  address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
 
   address public immutable COLLATERAL; // The addrss of external asset
 
@@ -29,15 +35,13 @@ contract GeneralLevSwap {
 
   address public immutable VAULT; // The address of vault
 
-  uint256 public constant SAFE_BUFFER = 5000;
-
-  mapping(address => bool) ENABLED_STABLE_COINS;
-
   ILendingPoolAddressesProvider internal immutable PROVIDER;
 
   IPriceOracleGetter internal immutable ORACLE;
 
   ILendingPool internal immutable LENDING_POOL;
+
+  mapping(address => bool) ENABLED_STABLE_COINS;
 
   event EnterPosition(
     uint256 amount,
@@ -79,17 +83,42 @@ contract GeneralLevSwap {
     return new address[](0);
   }
 
-  /**
-   * @return The asset price in ETH according to Sturdy PriceOracle
-   */
-  function getAssetPrice(address _asset) public view returns (uint256) {
+  function _getAssetPrice(address _asset) internal view returns (uint256) {
     return ORACLE.getAssetPrice(_asset);
+  }
+
+  /**
+   * This function is called after your contract has received the flash loaned amount
+   * overriding executeOperation() in IFlashLoanReceiver
+   */
+  function executeOperation(
+    address[] calldata assets,
+    uint256[] calldata amounts,
+    uint256[] calldata premiums,
+    address,
+    bytes calldata params
+  ) external override returns (bool) {
+    // parse params
+    (uint256 arg0, uint256 arg1, bool isEnterPosition) = abi.decode(
+      params,
+      (uint256, uint256, bool)
+    );
+
+    if (isEnterPosition) {
+      _enterPositionWithFlashloan(arg0, arg1, assets[0], amounts[0], premiums[0]);
+    }
+
+    // approve the Aave LendingPool contract allowance to *pull* the owed amount
+    IERC20(assets[0]).safeApprove(AAVE_LENDING_POOL_ADDRESS, 0);
+    IERC20(assets[0]).safeApprove(AAVE_LENDING_POOL_ADDRESS, amounts[0] + premiums[0]);
+
+    return true;
   }
 
   /**
    * @param _principal - The amount of collateral
    * @param _iterations - Loop count
-   * @param _ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 8250
+   * @param _ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 82_50
    * @param _stableAsset - The borrowing stable coin address when leverage works
    */
   function enterPosition(
@@ -97,7 +126,7 @@ contract GeneralLevSwap {
     uint256 _iterations,
     uint256 _ltv,
     address _stableAsset
-  ) public {
+  ) external {
     require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
@@ -125,6 +154,54 @@ contract GeneralLevSwap {
   }
 
   /**
+   * @param _principal - The amount of collateral
+   * @param _leverage - Extra leverage value and must be greater than 0, ex. 300% = 300_00
+   *                    _principal + _principal * _leverage should be used as collateral
+   * @param _slippage - Slippage valule to borrow enough asset by flashloan,
+   *                    Must be greater than 0%.
+   *                    Borrowing amount = _principal * _leverage * _slippage
+   * @param _stableAsset - The borrowing stable coin address when leverage works
+   */
+  function enterPositionWithFlashloan(
+    uint256 _principal,
+    uint256 _leverage,
+    uint256 _slippage,
+    address _stableAsset
+  ) external {
+    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_leverage > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_slippage > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
+    require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
+
+    IERC20(COLLATERAL).safeTransferFrom(msg.sender, address(this), _principal);
+
+    IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS);
+    uint256 stableAssetDecimals = IERC20Detailed(_stableAsset).decimals();
+
+    address[] memory assets = new address[](1);
+    assets[0] = _stableAsset;
+
+    uint256[] memory amounts = new uint256[](1);
+    amounts[0] = ((((_principal * _getAssetPrice(COLLATERAL)) / 10**DECIMALS) *
+      10**stableAssetDecimals) / _getAssetPrice(_stableAsset)).percentMul(_leverage).percentMul(
+        PercentageMath.PERCENTAGE_FACTOR + _slippage
+      );
+
+    // 0 means revert the transaction if not validated
+    uint256[] memory modes = new uint256[](1);
+    modes[0] = 0;
+
+    bytes memory params = abi.encode(
+      _principal,
+      _leverage,
+      true /*enterPosition*/
+    );
+
+    AAVE_LENDING_POOL.flashLoan(address(this), assets, amounts, modes, address(this), params, 0);
+  }
+
+  /**
    * @param _principal - The amount of collateral, uint256 max value should withdraw all collateral
    * @param _slippage - The slippage of the every withdrawal amount. 1% = 100
    * @param _iterations - Loop count
@@ -137,7 +214,7 @@ contract GeneralLevSwap {
     uint256 _iterations,
     address _stableAsset,
     address _sAsset
-  ) public {
+  ) external {
     require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
@@ -183,6 +260,24 @@ contract GeneralLevSwap {
     emit LeavePosition(_principal, _stableAsset);
   }
 
+  function _enterPositionWithFlashloan(
+    uint256 _principal,
+    uint256 _leverage,
+    address _stableAsset,
+    uint256 _borrowedAmount,
+    uint256 _fee
+  ) internal {
+    //swap stable coin to collateral
+    uint256 swappedAmount = _swapTo(_stableAsset, _borrowedAmount);
+    require(swappedAmount >= _principal.percentMul(_leverage), Errors.LS_SUPPLY_FAILED);
+
+    //deposit collateral
+    _supply(_principal + swappedAmount);
+
+    //borrow stable coin
+    _borrow(_stableAsset, _borrowedAmount + _fee);
+  }
+
   function _supply(uint256 _amount) internal {
     IGeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, msg.sender);
   }
@@ -218,7 +313,7 @@ contract GeneralLevSwap {
     return
       Math.min(
         IERC20(_sAsset).balanceOf(msg.sender),
-        (withdrawalAmountETH * (10**DECIMALS)) / getAssetPrice(COLLATERAL)
+        (withdrawalAmountETH * (10**DECIMALS)) / _getAssetPrice(COLLATERAL)
       );
   }
 
@@ -246,13 +341,13 @@ contract GeneralLevSwap {
     address _borrowAsset,
     uint256 _assetDecimals
   ) internal view returns (uint256) {
-    uint256 availableBorrowsETH = (_collateralAmount * getAssetPrice(COLLATERAL).percentMul(_ltv)) /
-      (10**DECIMALS);
+    uint256 availableBorrowsETH = (_collateralAmount *
+      _getAssetPrice(COLLATERAL).percentMul(_ltv)) / (10**DECIMALS);
 
     availableBorrowsETH = availableBorrowsETH > SAFE_BUFFER ? availableBorrowsETH - SAFE_BUFFER : 0;
 
     uint256 availableBorrowsAsset = (availableBorrowsETH * (10**_assetDecimals)) /
-      getAssetPrice(_borrowAsset);
+      _getAssetPrice(_borrowAsset);
 
     return availableBorrowsAsset;
   }

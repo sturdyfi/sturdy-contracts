@@ -12,6 +12,21 @@ interface ICurvePool {
   function add_liquidity(uint256[2] memory amounts, uint256 _min_mint_amount) external;
 
   function coins(int128) external view returns (address);
+
+  function calc_withdraw_one_coin(uint256 _token_amount, int128 i) external view returns (uint256);
+
+  function remove_liquidity_one_coin(
+    uint256 _burn_amount,
+    int128 i,
+    uint256 _min_received,
+    address _receiver
+  ) external returns (uint256);
+
+  function remove_liquidity_one_coin(
+    uint256 _burn_amount,
+    int128 i,
+    uint256 _min_received
+  ) external;
 }
 
 contract MIM3CRVLevSwap is GeneralLevSwap {
@@ -72,6 +87,23 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
   }
 
   function _swapFrom(address _stableAsset) internal override returns (uint256) {
-    return 0;
+    // MIM3CRV -> 3CRV
+    int256 coinIndex = 1;
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    uint256 minAmount = POOL.calc_withdraw_one_coin(collateralAmount, int128(coinIndex));
+    uint256 threeCRVAmount = POOL.remove_liquidity_one_coin(
+      collateralAmount,
+      int128(coinIndex),
+      minAmount,
+      address(this)
+    );
+
+    // 3CRV -> stable coin
+    coinIndex = int256(_getCoinIndex(_stableAsset));
+    minAmount = THREECRV.calc_withdraw_one_coin(threeCRVAmount, int128(coinIndex));
+
+    THREECRV.remove_liquidity_one_coin(threeCRVAmount, int128(coinIndex), minAmount);
+
+    return IERC20(_stableAsset).balanceOf(address(this));
   }
 }

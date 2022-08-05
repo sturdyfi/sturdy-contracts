@@ -159,26 +159,25 @@ contract GeneralLevSwap {
 
       if (removeAmount == requiredAmount) break;
 
-      // swap collateral to stable coin
-      // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
-      uint256 stableAssetAmount = _swapFrom(_stableAsset);
-
-      // repay
-      _repay(_stableAsset, stableAssetAmount);
       uint256 debtAmount = _getDebtAmount(_stableAsset);
-      if (debtAmount == 0) {
-        // swap stable coin to collateral in case of extra ramined stable coin after repay
-        _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
+      if (debtAmount > 0) {
+        // swap collateral to stable coin
+        // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
+        uint256 stableAssetAmount = _swapFrom(_stableAsset);
+        uint256 repayAmount = Math.min(debtAmount, stableAssetAmount);
+        // repay
+        _repay(_stableAsset, repayAmount);
+        if (stableAssetAmount > repayAmount) {
+          // swap stable coin to collateral in case of extra ramined stable coin after repay
+          _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
+        }
       }
 
       count++;
     } while (true);
 
     // finally deliver the required collateral amount to user
-    IERC20(COLLATERAL).safeTransfer(
-      msg.sender,
-      Math.min(_principal, IERC20(COLLATERAL).balanceOf(address(this)))
-    );
+    IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
 
     emit LeavePosition(_principal, _stableAsset);
   }
@@ -201,6 +200,7 @@ contract GeneralLevSwap {
     );
     (, uint256 assetLiquidationThreshold, , , ) = configuration.getParamsMemory();
 
+    require(assetLiquidationThreshold != 0, Errors.LS_INVALID_CONFIGURATION);
     // get user info
     (
       uint256 totalCollateralETH,
@@ -211,9 +211,8 @@ contract GeneralLevSwap {
 
     ) = LENDING_POOL.getUserAccountData(msg.sender);
 
-    uint256 withdrawalAmountETH = (totalCollateralETH *
-      currentLiquidationThreshold -
-      totalDebtETH) / assetLiquidationThreshold;
+    uint256 withdrawalAmountETH = (totalCollateralETH.percentMul(currentLiquidationThreshold) -
+      totalDebtETH).percentDiv(assetLiquidationThreshold);
 
     return
       Math.min(

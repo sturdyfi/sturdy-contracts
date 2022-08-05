@@ -13,6 +13,19 @@ interface ICurvePool {
     uint256 _min_mint_amount,
     bool _use_underlying
   ) external;
+
+  function calc_withdraw_one_coin(
+    uint256 _token_amount,
+    int128 i,
+    bool _use_underlying
+  ) external returns (uint256);
+
+  function remove_liquidity_one_coin(
+    uint256 _token_amount,
+    int128 i,
+    uint256 _min_amount,
+    bool _use_underlying
+  ) external returns (uint256);
 }
 
 contract IRONBANKLevSwap is GeneralLevSwap {
@@ -61,6 +74,10 @@ contract IRONBANKLevSwap is GeneralLevSwap {
   }
 
   function _swapFrom(address _stableAsset) internal override returns (uint256) {
-    return 0;
+    int256 coinIndex = int256(_getCoinIndex(_stableAsset));
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    uint256 minAmount = IRONBANK.calc_withdraw_one_coin(collateralAmount, int128(coinIndex), true);
+
+    return IRONBANK.remove_liquidity_one_coin(collateralAmount, int128(coinIndex), minAmount, true);
   }
 }

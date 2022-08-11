@@ -115,7 +115,7 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
-makeSuite('FRAX3CRV Deleverage', (testEnv) => {
+makeSuite('FRAX3CRV Deleverage without Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage = '100';
@@ -367,77 +367,32 @@ makeSuite('FRAX3CRV Deleverage', (testEnv) => {
   });
 });
 
-makeSuite('SUSD Deleverage', (testEnv) => {
+makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage = '100';
   const iterations = 3;
-  let susdLevSwap = {} as GeneralLevSwap;
+  let fraxLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
-    susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
-    ltv = (
-      await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
-    ).ltv.toString();
+    const { helpersContract, cvxfrax_3crv } = testEnv;
+    fraxLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_3crv.address);
+    ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_3crv.address)).ltv.toString();
   });
-  describe('leavePosition(): Prerequisite checker', () => {
-    it('should be reverted if try to use zero amount', async () => {
-      const { dai, aCVXDAI_USDC_USDT_SUSD } = testEnv;
-      const principalAmount = 0;
-      await expect(
-        susdLevSwap.leavePosition(
-          principalAmount,
-          slippage,
-          iterations,
-          dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
-        )
-      ).to.be.revertedWith('113');
-    });
-    it('should be reverted if try to use invalid stable coin', async () => {
-      const { aDai, aCVXDAI_USDC_USDT_SUSD } = testEnv;
-      const principalAmount = 10;
-      await expect(
-        susdLevSwap.leavePosition(
-          principalAmount,
-          slippage,
-          iterations,
-          aDai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
-        )
-      ).to.be.revertedWith('114');
-    });
-    it('should be reverted if try to use zero address as a aToken', async () => {
-      const { dai } = testEnv;
-      const principalAmount = 10;
-      await expect(
-        susdLevSwap.leavePosition(principalAmount, slippage, iterations, dai.address, ZERO_ADDRESS)
-      ).to.be.revertedWith('112');
-    });
-  });
-  describe('leavePosition():', async () => {
+  describe('leavePosition with Flashloan():', async () => {
     it('USDT as borrowing asset', async () => {
-      const {
-        users,
-        usdt,
-        aUsdt,
-        aCVXDAI_USDC_USDT_SUSD,
-        DAI_USDC_USDT_SUSD_LP,
-        pool,
-        helpersContract,
-      } = testEnv;
+      const { users, usdt, aUsdt, aCVXFRAX_3CRV, FRAX_3CRV_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -450,11 +405,8 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(fraxLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
@@ -462,14 +414,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(fraxLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await fraxLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
@@ -482,35 +434,32 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
-        .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy);
+      const balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV.connect(borrower.signer).approve(fraxLevSwap.address, balanceInSturdy);
 
-      await susdLevSwap
+      await fraxLevSwap
         .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', usdt.address, aCVXDAI_USDC_USDT_SUSD.address);
+        .leavePositionWithFlashloan(principalAmount, slippage, usdt.address, aCVXFRAX_3CRV.address);
 
-      const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, DAI_USDC_USDT_SUSD_LP, aCVXDAI_USDC_USDT_SUSD, pool, helpersContract } =
-        testEnv;
+      const { users, usdc, FRAX_3CRV_LP, aCVXFRAX_3CRV, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -522,11 +471,8 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(fraxLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
@@ -534,14 +480,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(fraxLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await fraxLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
@@ -554,35 +500,32 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
-        .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy);
+      const balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV.connect(borrower.signer).approve(fraxLevSwap.address, balanceInSturdy);
 
-      await susdLevSwap
+      await fraxLevSwap
         .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', usdc.address, aCVXDAI_USDC_USDT_SUSD.address);
+        .leavePositionWithFlashloan(principalAmount, slippage, usdc.address, aCVXFRAX_3CRV.address);
 
-      const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, DAI_USDC_USDT_SUSD_LP, aCVXDAI_USDC_USDT_SUSD, pool, helpersContract } =
-        testEnv;
+      const { users, dai, FRAX_3CRV_LP, aCVXFRAX_3CRV, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -594,11 +537,8 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(fraxLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
@@ -606,14 +546,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(fraxLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await fraxLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
@@ -626,286 +566,562 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
-        .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy);
+      const balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV.connect(borrower.signer).approve(fraxLevSwap.address, balanceInSturdy);
 
-      await susdLevSwap
+      await fraxLevSwap
         .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', dai.address, aCVXDAI_USDC_USDT_SUSD.address);
+        .leavePositionWithFlashloan(principalAmount, slippage, dai.address, aCVXFRAX_3CRV.address);
 
-      const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
   });
 });
+// makeSuite('SUSD Deleverage', (testEnv) => {
+//   const { INVALID_HF } = ProtocolErrors;
+//   const LPAmount = '1000';
+//   const slippage = '100';
+//   const iterations = 3;
+//   let susdLevSwap = {} as GeneralLevSwap;
+//   let ltv = '';
 
-makeSuite('IRONBANK Deleverage', (testEnv) => {
-  const { INVALID_HF } = ProtocolErrors;
-  const LPAmount = '200';
-  const slippage = '100';
-  const iterations = 3;
-  let ironbankLevSwap = {} as GeneralLevSwap;
-  let ltv = '';
+//   before(async () => {
+//     const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
+//     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
+//     ltv = (
+//       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
+//     ).ltv.toString();
+//   });
+//   describe('leavePosition(): Prerequisite checker', () => {
+//     it('should be reverted if try to use zero amount', async () => {
+//       const { dai, aCVXDAI_USDC_USDT_SUSD } = testEnv;
+//       const principalAmount = 0;
+//       await expect(
+//         susdLevSwap.leavePosition(
+//           principalAmount,
+//           slippage,
+//           iterations,
+//           dai.address,
+//           aCVXDAI_USDC_USDT_SUSD.address
+//         )
+//       ).to.be.revertedWith('113');
+//     });
+//     it('should be reverted if try to use invalid stable coin', async () => {
+//       const { aDai, aCVXDAI_USDC_USDT_SUSD } = testEnv;
+//       const principalAmount = 10;
+//       await expect(
+//         susdLevSwap.leavePosition(
+//           principalAmount,
+//           slippage,
+//           iterations,
+//           aDai.address,
+//           aCVXDAI_USDC_USDT_SUSD.address
+//         )
+//       ).to.be.revertedWith('114');
+//     });
+//     it('should be reverted if try to use zero address as a aToken', async () => {
+//       const { dai } = testEnv;
+//       const principalAmount = 10;
+//       await expect(
+//         susdLevSwap.leavePosition(principalAmount, slippage, iterations, dai.address, ZERO_ADDRESS)
+//       ).to.be.revertedWith('112');
+//     });
+//   });
+//   describe('leavePosition():', async () => {
+//     it('USDT as borrowing asset', async () => {
+//       const {
+//         users,
+//         usdt,
+//         aUsdt,
+//         aCVXDAI_USDC_USDT_SUSD,
+//         DAI_USDC_USDT_SUSD_LP,
+//         pool,
+//         helpersContract,
+//       } = testEnv;
 
-  before(async () => {
-    const { helpersContract, cvxiron_bank } = testEnv;
-    ironbankLevSwap = await getCollateralLevSwapper(testEnv, cvxiron_bank.address);
-    ltv = (await helpersContract.getReserveConfigurationData(cvxiron_bank.address)).ltv.toString();
-  });
-  describe('leavePosition(): Prerequisite checker', () => {
-    it('should be reverted if try to use zero amount', async () => {
-      const { dai, aCVXIRON_BANK } = testEnv;
-      const principalAmount = 0;
-      await expect(
-        ironbankLevSwap.leavePosition(
-          principalAmount,
-          slippage,
-          iterations,
-          dai.address,
-          aCVXIRON_BANK.address
-        )
-      ).to.be.revertedWith('113');
-    });
-    it('should be reverted if try to use invalid stable coin', async () => {
-      const { aDai, aCVXIRON_BANK } = testEnv;
-      const principalAmount = 10;
-      await expect(
-        ironbankLevSwap.leavePosition(
-          principalAmount,
-          slippage,
-          iterations,
-          aDai.address,
-          aCVXIRON_BANK.address
-        )
-      ).to.be.revertedWith('114');
-    });
-    it('should be reverted if try to use zero address as a aToken', async () => {
-      const { dai } = testEnv;
-      const principalAmount = 10;
-      await expect(
-        ironbankLevSwap.leavePosition(
-          principalAmount,
-          slippage,
-          iterations,
-          dai.address,
-          ZERO_ADDRESS
-        )
-      ).to.be.revertedWith('112');
-    });
-  });
-  describe('leavePosition():', async () => {
-    it('USDT as borrowing asset', async () => {
-      const { users, usdt, aUsdt, aCVXIRON_BANK, IRON_BANK_LP, pool, helpersContract } = testEnv;
+//       const depositor = users[0];
+//       const borrower = users[1];
+//       const principalAmount = (
+//         await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+//       ).toString();
+//       const amountToDelegate = (
+//         await calcTotalBorrowAmount(
+//           testEnv,
+//           DAI_USDC_USDT_SUSD_LP.address,
+//           LPAmount,
+//           ltv,
+//           iterations,
+//           usdt.address
+//         )
+//       ).toString();
 
-      const depositor = users[0];
-      const borrower = users[1];
-      const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
-      ).toString();
-      const amountToDelegate = (
-        await calcTotalBorrowAmount(
-          testEnv,
-          IRON_BANK_LP.address,
-          LPAmount,
-          ltv,
-          iterations,
-          usdt.address
-        )
-      ).toString();
+//       // Deposit USDT to Lending Pool
+//       await mint('USDT', amountToDelegate, depositor, testEnv);
+//       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
-      // Deposit USDT to Lending Pool
-      await mint('USDT', amountToDelegate, depositor, testEnv);
-      await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
+//       // Prepare Collateral
+//       await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
+//       await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
+//         susdLevSwap.address,
+//         principalAmount
+//       );
 
-      // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+//       // approve delegate borrow
+//       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
+//         .variableDebtTokenAddress;
+//       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+//       await varDebtToken
+//         .connect(borrower.signer)
+//         .approveDelegation(susdLevSwap.address, amountToDelegate);
 
-      // approve delegate borrow
-      const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
-        .variableDebtTokenAddress;
-      const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
-      await varDebtToken
-        .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+//       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+//       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
-      const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
-      expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
-      expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+//       // leverage
+//       await susdLevSwap
+//         .connect(borrower.signer)
+//         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
-      // leverage
-      await ironbankLevSwap
-        .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, usdt.address);
+//       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
-      const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+//         oneEther.toFixed(0),
+//         INVALID_HF
+//       );
 
-      expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
-      expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
-      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
-        oneEther.toFixed(0),
-        INVALID_HF
-      );
+//       const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+//       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
-      expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
+//       const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
+//       await aCVXDAI_USDC_USDT_SUSD
+//         .connect(borrower.signer)
+//         .approve(susdLevSwap.address, balanceInSturdy);
 
-      const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
-        .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy);
+//       await susdLevSwap
+//         .connect(borrower.signer)
+//         .leavePosition(principalAmount, '100', '10', usdt.address, aCVXDAI_USDC_USDT_SUSD.address);
 
-      await ironbankLevSwap
-        .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', usdt.address, aCVXIRON_BANK.address);
+//       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+//       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
+//         '99'
+//       );
+//     });
+//     it('USDC as borrowing asset', async () => {
+//       const { users, usdc, DAI_USDC_USDT_SUSD_LP, aCVXDAI_USDC_USDT_SUSD, pool, helpersContract } =
+//         testEnv;
+//       const depositor = users[0];
+//       const borrower = users[2];
+//       const principalAmount = (
+//         await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+//       ).toString();
+//       const amountToDelegate = (
+//         await calcTotalBorrowAmount(
+//           testEnv,
+//           DAI_USDC_USDT_SUSD_LP.address,
+//           LPAmount,
+//           ltv,
+//           iterations,
+//           usdc.address
+//         )
+//       ).toString();
+//       // Depositor deposits USDT to Lending Pool
+//       await mint('USDC', amountToDelegate, depositor, testEnv);
+//       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
-      const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
-      expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
-      );
-    });
-    it('USDC as borrowing asset', async () => {
-      const { users, usdc, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
-      const depositor = users[0];
-      const borrower = users[2];
-      const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
-      ).toString();
-      const amountToDelegate = (
-        await calcTotalBorrowAmount(
-          testEnv,
-          IRON_BANK_LP.address,
-          LPAmount,
-          ltv,
-          iterations,
-          usdc.address
-        )
-      ).toString();
-      // Depositor deposits USDT to Lending Pool
-      await mint('USDC', amountToDelegate, depositor, testEnv);
-      await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
+//       // Prepare Collateral
+//       await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
+//       await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
+//         susdLevSwap.address,
+//         principalAmount
+//       );
 
-      // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+//       // approve delegate borrow
+//       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
+//         .variableDebtTokenAddress;
+//       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+//       await varDebtToken
+//         .connect(borrower.signer)
+//         .approveDelegation(susdLevSwap.address, amountToDelegate);
 
-      // approve delegate borrow
-      const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
-        .variableDebtTokenAddress;
-      const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
-      await varDebtToken
-        .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+//       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+//       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
-      const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
-      expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
-      expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+//       // leverage
+//       await susdLevSwap
+//         .connect(borrower.signer)
+//         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
-      // leverage
-      await ironbankLevSwap
-        .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, usdc.address);
+//       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
-      const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+//         oneEther.toFixed(0),
+//         INVALID_HF
+//       );
 
-      expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
-      expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
-      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
-        oneEther.toFixed(0),
-        INVALID_HF
-      );
+//       const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+//       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
-      expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
+//       const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
+//       await aCVXDAI_USDC_USDT_SUSD
+//         .connect(borrower.signer)
+//         .approve(susdLevSwap.address, balanceInSturdy);
 
-      const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
-        .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy);
+//       await susdLevSwap
+//         .connect(borrower.signer)
+//         .leavePosition(principalAmount, '100', '10', usdc.address, aCVXDAI_USDC_USDT_SUSD.address);
 
-      await ironbankLevSwap
-        .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', usdc.address, aCVXIRON_BANK.address);
+//       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+//       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
+//         '99'
+//       );
+//     });
+//     it('DAI as borrowing asset', async () => {
+//       const { users, dai, DAI_USDC_USDT_SUSD_LP, aCVXDAI_USDC_USDT_SUSD, pool, helpersContract } =
+//         testEnv;
+//       const depositor = users[0];
+//       const borrower = users[3];
+//       const principalAmount = (
+//         await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+//       ).toString();
+//       const amountToDelegate = (
+//         await calcTotalBorrowAmount(
+//           testEnv,
+//           DAI_USDC_USDT_SUSD_LP.address,
+//           LPAmount,
+//           ltv,
+//           iterations,
+//           dai.address
+//         )
+//       ).toString();
 
-      const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
-      expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
-      );
-    });
-    it('DAI as borrowing asset', async () => {
-      const { users, dai, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
-      const depositor = users[0];
-      const borrower = users[3];
-      const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
-      ).toString();
-      const amountToDelegate = (
-        await calcTotalBorrowAmount(
-          testEnv,
-          IRON_BANK_LP.address,
-          LPAmount,
-          ltv,
-          iterations,
-          dai.address
-        )
-      ).toString();
+//       await mint('DAI', amountToDelegate, depositor, testEnv);
+//       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
-      await mint('DAI', amountToDelegate, depositor, testEnv);
-      await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
+//       // Prepare Collateral
+//       await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
+//       await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
+//         susdLevSwap.address,
+//         principalAmount
+//       );
 
-      // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+//       // approve delegate borrow
+//       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
+//         .variableDebtTokenAddress;
+//       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+//       await varDebtToken
+//         .connect(borrower.signer)
+//         .approveDelegation(susdLevSwap.address, amountToDelegate);
 
-      // approve delegate borrow
-      const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
-        .variableDebtTokenAddress;
-      const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
-      await varDebtToken
-        .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+//       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+//       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
-      const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
-      expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
-      expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+//       // leverage
+//       await susdLevSwap
+//         .connect(borrower.signer)
+//         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
-      // leverage
-      await ironbankLevSwap
-        .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, dai.address);
+//       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
-      const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+//         oneEther.toFixed(0),
+//         INVALID_HF
+//       );
 
-      expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
-      expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
-      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
-        oneEther.toFixed(0),
-        INVALID_HF
-      );
+//       const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+//       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
-      expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
+//       const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
+//       await aCVXDAI_USDC_USDT_SUSD
+//         .connect(borrower.signer)
+//         .approve(susdLevSwap.address, balanceInSturdy);
 
-      const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
-        .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy);
+//       await susdLevSwap
+//         .connect(borrower.signer)
+//         .leavePosition(principalAmount, '100', '10', dai.address, aCVXDAI_USDC_USDT_SUSD.address);
 
-      await ironbankLevSwap
-        .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', dai.address, aCVXIRON_BANK.address);
+//       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+//       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
+//         '99'
+//       );
+//     });
+//   });
+// });
 
-      const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
-      expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
-      );
-    });
-  });
-});
+// makeSuite('IRONBANK Deleverage', (testEnv) => {
+//   const { INVALID_HF } = ProtocolErrors;
+//   const LPAmount = '200';
+//   const slippage = '100';
+//   const iterations = 3;
+//   let ironbankLevSwap = {} as GeneralLevSwap;
+//   let ltv = '';
+
+//   before(async () => {
+//     const { helpersContract, cvxiron_bank } = testEnv;
+//     ironbankLevSwap = await getCollateralLevSwapper(testEnv, cvxiron_bank.address);
+//     ltv = (await helpersContract.getReserveConfigurationData(cvxiron_bank.address)).ltv.toString();
+//   });
+//   describe('leavePosition(): Prerequisite checker', () => {
+//     it('should be reverted if try to use zero amount', async () => {
+//       const { dai, aCVXIRON_BANK } = testEnv;
+//       const principalAmount = 0;
+//       await expect(
+//         ironbankLevSwap.leavePosition(
+//           principalAmount,
+//           slippage,
+//           iterations,
+//           dai.address,
+//           aCVXIRON_BANK.address
+//         )
+//       ).to.be.revertedWith('113');
+//     });
+//     it('should be reverted if try to use invalid stable coin', async () => {
+//       const { aDai, aCVXIRON_BANK } = testEnv;
+//       const principalAmount = 10;
+//       await expect(
+//         ironbankLevSwap.leavePosition(
+//           principalAmount,
+//           slippage,
+//           iterations,
+//           aDai.address,
+//           aCVXIRON_BANK.address
+//         )
+//       ).to.be.revertedWith('114');
+//     });
+//     it('should be reverted if try to use zero address as a aToken', async () => {
+//       const { dai } = testEnv;
+//       const principalAmount = 10;
+//       await expect(
+//         ironbankLevSwap.leavePosition(
+//           principalAmount,
+//           slippage,
+//           iterations,
+//           dai.address,
+//           ZERO_ADDRESS
+//         )
+//       ).to.be.revertedWith('112');
+//     });
+//   });
+//   describe('leavePosition():', async () => {
+//     it('USDT as borrowing asset', async () => {
+//       const { users, usdt, aUsdt, aCVXIRON_BANK, IRON_BANK_LP, pool, helpersContract } = testEnv;
+
+//       const depositor = users[0];
+//       const borrower = users[1];
+//       const principalAmount = (
+//         await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+//       ).toString();
+//       const amountToDelegate = (
+//         await calcTotalBorrowAmount(
+//           testEnv,
+//           IRON_BANK_LP.address,
+//           LPAmount,
+//           ltv,
+//           iterations,
+//           usdt.address
+//         )
+//       ).toString();
+
+//       // Deposit USDT to Lending Pool
+//       await mint('USDT', amountToDelegate, depositor, testEnv);
+//       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
+
+//       // Prepare Collateral
+//       await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
+//       await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+
+//       // approve delegate borrow
+//       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
+//         .variableDebtTokenAddress;
+//       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+//       await varDebtToken
+//         .connect(borrower.signer)
+//         .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+
+//       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+//       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+
+//       // leverage
+//       await ironbankLevSwap
+//         .connect(borrower.signer)
+//         .enterPosition(principalAmount, iterations, ltv, usdt.address);
+
+//       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+
+//       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+//         oneEther.toFixed(0),
+//         INVALID_HF
+//       );
+
+//       const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+//       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
+
+//       const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
+//       await aCVXIRON_BANK
+//         .connect(borrower.signer)
+//         .approve(ironbankLevSwap.address, balanceInSturdy);
+
+//       await ironbankLevSwap
+//         .connect(borrower.signer)
+//         .leavePosition(principalAmount, '100', '10', usdt.address, aCVXIRON_BANK.address);
+
+//       const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+//       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
+//         '99'
+//       );
+//     });
+//     it('USDC as borrowing asset', async () => {
+//       const { users, usdc, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
+//       const depositor = users[0];
+//       const borrower = users[2];
+//       const principalAmount = (
+//         await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+//       ).toString();
+//       const amountToDelegate = (
+//         await calcTotalBorrowAmount(
+//           testEnv,
+//           IRON_BANK_LP.address,
+//           LPAmount,
+//           ltv,
+//           iterations,
+//           usdc.address
+//         )
+//       ).toString();
+//       // Depositor deposits USDT to Lending Pool
+//       await mint('USDC', amountToDelegate, depositor, testEnv);
+//       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
+
+//       // Prepare Collateral
+//       await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
+//       await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+
+//       // approve delegate borrow
+//       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
+//         .variableDebtTokenAddress;
+//       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+//       await varDebtToken
+//         .connect(borrower.signer)
+//         .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+
+//       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+//       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+
+//       // leverage
+//       await ironbankLevSwap
+//         .connect(borrower.signer)
+//         .enterPosition(principalAmount, iterations, ltv, usdc.address);
+
+//       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+
+//       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+//         oneEther.toFixed(0),
+//         INVALID_HF
+//       );
+
+//       const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+//       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
+
+//       const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
+//       await aCVXIRON_BANK
+//         .connect(borrower.signer)
+//         .approve(ironbankLevSwap.address, balanceInSturdy);
+
+//       await ironbankLevSwap
+//         .connect(borrower.signer)
+//         .leavePosition(principalAmount, '100', '10', usdc.address, aCVXIRON_BANK.address);
+
+//       const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+//       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
+//         '99'
+//       );
+//     });
+//     it('DAI as borrowing asset', async () => {
+//       const { users, dai, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
+//       const depositor = users[0];
+//       const borrower = users[3];
+//       const principalAmount = (
+//         await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+//       ).toString();
+//       const amountToDelegate = (
+//         await calcTotalBorrowAmount(
+//           testEnv,
+//           IRON_BANK_LP.address,
+//           LPAmount,
+//           ltv,
+//           iterations,
+//           dai.address
+//         )
+//       ).toString();
+
+//       await mint('DAI', amountToDelegate, depositor, testEnv);
+//       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
+
+//       // Prepare Collateral
+//       await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
+//       await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+
+//       // approve delegate borrow
+//       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
+//         .variableDebtTokenAddress;
+//       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+//       await varDebtToken
+//         .connect(borrower.signer)
+//         .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+
+//       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+//       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+//       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+
+//       // leverage
+//       await ironbankLevSwap
+//         .connect(borrower.signer)
+//         .enterPosition(principalAmount, iterations, ltv, dai.address);
+
+//       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+
+//       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+//       expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+//         oneEther.toFixed(0),
+//         INVALID_HF
+//       );
+
+//       const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+//       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
+
+//       const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
+//       await aCVXIRON_BANK
+//         .connect(borrower.signer)
+//         .approve(ironbankLevSwap.address, balanceInSturdy);
+
+//       await ironbankLevSwap
+//         .connect(borrower.signer)
+//         .leavePosition(principalAmount, '100', '10', dai.address, aCVXIRON_BANK.address);
+
+//       const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+//       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
+//         '99'
+//       );
+//     });
+//   });
+// });

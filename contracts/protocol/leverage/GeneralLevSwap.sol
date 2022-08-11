@@ -268,6 +268,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     } while (true);
 
     // finally deliver the required collateral amount to user
+    // before check this contract has required collateral amount
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    require(collateralAmount >= _principal, LS_SUPPLY_NOT_ALLOWED);
     IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
 
     emit LeavePosition(_principal, _stableAsset);
@@ -294,7 +297,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     uint256 availableAmount = _getWithdrawalAmount(_sAsset, msg.sender);
     uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
-    uint256 requiredAmount = _principal - availableAmount;
+    uint256 requiredAmount = _principal > availableAmount ? _principal - availableAmount : 0;
     if (requiredAmount > 0) {
       IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS);
       address[] memory assets = new address[](1);

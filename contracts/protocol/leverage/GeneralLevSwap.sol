@@ -270,7 +270,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     // finally deliver the required collateral amount to user
     // before check this contract has required collateral amount
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    require(collateralAmount >= _principal, LS_SUPPLY_NOT_ALLOWED);
+    require(collateralAmount >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
     IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
 
     emit LeavePosition(_principal, _stableAsset);

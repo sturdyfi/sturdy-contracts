@@ -281,7 +281,10 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     // finally deliver the required collateral amount to user
     // before check this contract has required collateral amount
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    require(collateralAmount >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
+    require(
+      collateralAmount >= _principal.percentMul(PercentageMath.PERCENTAGE_FACTOR - _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
     IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
 
     emit LeavePosition(_principal, _stableAsset);
@@ -388,7 +391,6 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   ) internal {
     // withdraw available collateral
     uint256 requireAmount = _amount;
-    uint256 count;
     do {
       uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
       if (debtAmount == 0) break;
@@ -416,14 +418,12 @@ contract GeneralLevSwap is IFlashLoanReceiver {
         removeAmount -= collateralAmount;
       }
 
-      requireAmount -= removeAmount;
-      // completed the required amount to reduce leverage
-      if (requireAmount == 0) break;
-
       // one time reduce leverage
       if (_amount == 0) break;
 
-      count++;
+      requireAmount -= removeAmount;
+      // completed the required amount to reduce leverage
+      if (requireAmount == 0) break;
     } while (true);
   }
 
@@ -493,8 +493,10 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     ) = LENDING_POOL.getUserAccountData(_user);
 
-    uint256 withdrawalAmountETH = (totalCollateralETH.percentMul(currentLiquidationThreshold) -
-      totalDebtETH.wadMul(healthFactor)).percentDiv(assetLiquidationThreshold);
+    uint256 withdrawalAmountETH = (((totalCollateralETH * currentLiquidationThreshold) /
+      PercentageMath.PERCENTAGE_FACTOR -
+      (totalDebtETH * healthFactor) /
+      WadRayMath.wad()) * PercentageMath.PERCENTAGE_FACTOR) / assetLiquidationThreshold;
 
     return
       Math.min(

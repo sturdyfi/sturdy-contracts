@@ -77,7 +77,10 @@ contract IRONBANKLevSwap is GeneralLevSwap {
     int256 coinIndex = int256(_getCoinIndex(_stableAsset));
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     uint256 minAmount = IRONBANK.calc_withdraw_one_coin(collateralAmount, int128(coinIndex), true);
+    uint256 balanceBefore = IERC20(_stableAsset).balanceOf(address(this));
 
-    return IRONBANK.remove_liquidity_one_coin(collateralAmount, int128(coinIndex), minAmount, true);
+    IRONBANK.remove_liquidity_one_coin(collateralAmount, int128(coinIndex), minAmount, true);
+
+    return IERC20(_stableAsset).balanceOf(address(this)) - balanceBefore;
   }
 }

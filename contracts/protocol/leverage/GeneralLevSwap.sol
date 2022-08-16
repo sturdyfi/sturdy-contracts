@@ -278,13 +278,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       count++;
     } while (true);
 
-    // finally deliver the required collateral amount to user
-    // before check this contract has required collateral amount
-    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    require(
-      collateralAmount >= _principal.percentMul(PercentageMath.PERCENTAGE_FACTOR - _slippage),
-      Errors.LS_SUPPLY_NOT_ALLOWED
-    );
+    // finally deliver the collateral to user
     IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
 
     emit LeavePosition(_principal, _stableAsset);
@@ -336,11 +330,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     // remained stable coin -> collateral
     _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
 
-    // deliver to user
-    IERC20(COLLATERAL).safeTransfer(msg.sender, _principal);
-
-    //deposit remained collateral
-    _supply(IERC20(COLLATERAL).balanceOf(address(this)), msg.sender);
+    // finally deliver the collateral to user
+    IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
   }
 
   function _enterPositionWithFlashloan(
@@ -463,9 +454,13 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 stableAssetDecimals = IERC20Detailed(_stableAsset).decimals();
     uint256 requiredInETH = (_required * _getAssetPrice(COLLATERAL)) / 10**DECIMALS;
     return
-      (requiredInETH.percentMul(assetLiquidationThreshold).wadDiv(
-        _healthFactor - WadRayMath.wad().percentMul(slippage).percentMul(assetLiquidationThreshold)
-      ) * 10**stableAssetDecimals) / _getAssetPrice(_stableAsset);
+      (((((requiredInETH * assetLiquidationThreshold) / PercentageMath.PERCENTAGE_FACTOR) *
+        WadRayMath.wad()) /
+        (_healthFactor -
+          (((WadRayMath.wad() * slippage) / PercentageMath.PERCENTAGE_FACTOR) *
+            assetLiquidationThreshold) /
+          PercentageMath.PERCENTAGE_FACTOR)) * 10**stableAssetDecimals) /
+      _getAssetPrice(_stableAsset);
   }
 
   function _getWithdrawalAmount(
@@ -495,8 +490,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     uint256 withdrawalAmountETH = (((totalCollateralETH * currentLiquidationThreshold) /
       PercentageMath.PERCENTAGE_FACTOR -
-      (totalDebtETH * healthFactor) /
-      WadRayMath.wad()) * PercentageMath.PERCENTAGE_FACTOR) / assetLiquidationThreshold;
+      totalDebtETH.wadMul(healthFactor)) * PercentageMath.PERCENTAGE_FACTOR) /
+      assetLiquidationThreshold;
 
     return
       Math.min(

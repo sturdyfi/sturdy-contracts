@@ -204,7 +204,7 @@ contract YearnSPELLVault is GeneralVault {
 
   /**
    * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
-   * @param _asset The address of collateral external asset
+   * @param - The address of collateral external asset
    * @param _amount The withdrawal amount of collateral internal asset
    * @param _to The address of receiving collateral external asset
    * @return The amount of collateral external asset

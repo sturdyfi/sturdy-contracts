@@ -115,7 +115,7 @@ contract YearnRETHWstETHVault is GeneralVault {
    * @dev  Withdraw collateral external asset from Curve pool and receive wstETH
    * @param _poolAddress The address of Curve pool
    * @param _amount The amount of collateral external asset
-   * @return The amount of wstETH
+   * @return amountWstETH - The amount of wstETH
    */
   function _withdrawLiquidityPool(address _poolAddress, uint256 _amount)
     internal
@@ -200,7 +200,7 @@ contract YearnRETHWstETHVault is GeneralVault {
 
   /**
    * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
-   * @param _asset The address of collateral external asset
+   * @param - The address of collateral external asset
    * @param _amount The withdrawal amount of collateral internal asset
    * @param _to The address of receiving collateral external asset
    * @return The amount of collateral external asset

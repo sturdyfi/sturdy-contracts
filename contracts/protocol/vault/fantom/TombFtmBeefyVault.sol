@@ -111,8 +111,8 @@ contract TombFtmBeefyVault is GeneralVault {
    * @dev  Withdraw collateral external asset from Spookyswap pool and receive FTM and TOMB
    * @param _poolAddress The address of Spookyswap pool
    * @param _amount The amount of collateral external asset
-   * @return The amount of TOMB
-   * @return The amount of FTM
+   * @return amountToken - The amount of TOMB
+   * @return amountFTM - The amount of FTM
    */
   function _withdrawLiquidityPool(address _poolAddress, uint256 _amount)
     internal
@@ -303,7 +303,7 @@ contract TombFtmBeefyVault is GeneralVault {
 
   /**
    * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
-   * @param _asset The address of collateral external asset
+   * @param - The address of collateral external asset
    * @param _amount The withdrawal amount of collateral internal asset
    * @param _to The address of receiving collateral external asset
    * @return The amount of collateral external asset

@@ -351,7 +351,7 @@ interface ILendingPool {
    * interest rate strategy
    * - Only callable by the LendingPoolConfigurator contract
    * - Caller is only LendingPoolConfigurator
-   * @param asset The address of the underlying asset of the reserve
+   * @param reserve The address of the underlying asset of the reserve
    * @param yieldAddress The address of the underlying asset's yield contract of the reserve
    * @param aTokenAddress The address of the aToken that will be assigned to the reserve
    * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
@@ -370,7 +370,7 @@ interface ILendingPool {
   /**
    * @dev Updates the address of the interest rate strategy contract
    * - Caller is only LendingPoolConfigurator
-   * @param asset The address of the underlying asset of the reserve
+   * @param reserve The address of the underlying asset of the reserve
    * @param rateStrategyAddress The address of the interest rate strategy contract
    **/
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
@@ -380,7 +380,7 @@ interface ILendingPool {
   /**
    * @dev Sets the configuration bitmap of the reserve as a whole
    * - Caller is only LendingPoolConfigurator
-   * @param asset The address of the underlying asset of the reserve
+   * @param reserve The address of the underlying asset of the reserve
    * @param configuration The new configuration bitmap
    **/
   function setConfiguration(address reserve, uint256 configuration) external payable;
@@ -434,7 +434,7 @@ interface ILendingPool {
    * @param from The user from which the aTokens are transferred
    * @param to The user receiving the aTokens
    * @param amount The amount being transferred/withdrawn
-   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
+   * @param balanceFromAfter The aToken balance of the `from` user before the transfer
    * @param balanceToBefore The aToken balance of the `to` user before the transfer
    */
   function finalizeTransfer(

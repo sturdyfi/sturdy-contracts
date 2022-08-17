@@ -45,6 +45,7 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   /**
    * @dev The function to set parameters related to convex/curve
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    * @param _lpToken The address of Curve LP Token which will be used in vault
    * @param _poolId  The convex pool Id for Curve LP Token
    */
@@ -66,6 +67,7 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   /**
    * @dev The function to get internal asset address
+   * @return The address of collateral internal asset
    */
   function getInternalAsset() external view returns (address) {
     return internalAssetToken;
@@ -73,6 +75,7 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   /**
    * @dev The function to get rewards token address
+   * @return The address of rewards token
    */
   function getBaseRewardPool() internal view returns (address) {
     IConvexBooster.PoolInfo memory poolInfo = CONVEX_BOOSTER.poolInfo(convexPoolId);
@@ -119,6 +122,10 @@ contract ConvexCurveLPVault is IncentiveVault {
     emit ProcessYield(_asset, yieldAmount);
   }
 
+  /**
+   * @dev Get yield based on strategy and re-deposit
+   * - Caller is anyone
+   */
   function processYield() external override {
     // Claim Rewards(CRV, CVX, Extra incentive tokens)
     address baseRewardPool = getBaseRewardPool();
@@ -133,6 +140,7 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   /**
    * @dev The function to transfer extra incentive token to YieldManager
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    * @param _offset extraRewards start offset.
    * @param _count extraRewards count
    */
@@ -151,6 +159,7 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(internalAssetToken);
@@ -158,6 +167,7 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
     uint256 decimals = IERC20Detailed(internalAssetToken).decimals();
@@ -165,7 +175,11 @@ contract ConvexCurveLPVault is IncentiveVault {
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and mint internal asset
+   * @dev Deposit collateral external asset to yield pool based on strategy and mint collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -193,7 +207,11 @@ contract ConvexCurveLPVault is IncentiveVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of Curve LP Token based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -207,6 +225,11 @@ contract ConvexCurveLPVault is IncentiveVault {
     return (internalAssetToken, _amount);
   }
 
+  /**
+   * @dev Burn an `_amount` of collateral internal asset and send the required collateral external asset to `_to`
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
     // Withdraw from Convex
     address baseRewardPool = getBaseRewardPool();
@@ -221,6 +244,13 @@ contract ConvexCurveLPVault is IncentiveVault {
     return _amount;
   }
 
+  /**
+   * @dev Burn an `_amount` of collateral internal asset and send the required collateral external asset to caller on liquidation
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     override
@@ -233,21 +263,33 @@ contract ConvexCurveLPVault is IncentiveVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy and deliver asset
+   * @dev Burn an `_amount` of collateral internal asset and deliver required collateral external asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
-    address,
+    address _asset,
     uint256 _amount,
     address _to
   ) internal override returns (uint256) {
     return _withdraw(_amount, _to);
   }
 
+  /**
+   * @dev Get the incentive token address supported on this vault
+   * @return The address of incentive token
+   */
   function getIncentiveToken() public view override returns (address) {
     address baseRewardPool = getBaseRewardPool();
     return IConvexBaseRewardPool(baseRewardPool).rewardToken();
   }
 
+  /**
+   * @dev Get current total incentive amount
+   * @return The total amount of incentive token
+   */
   function getCurrentTotalIncentiveAmount() external view override returns (uint256) {
     if (_incentiveRatio > 0) {
       address baseRewardPool = getBaseRewardPool();
@@ -257,10 +299,18 @@ contract ConvexCurveLPVault is IncentiveVault {
     return 0;
   }
 
+  /**
+   * @dev Get Incentive Ratio
+   * @return The incentive ratio value
+   */
   function getIncentiveRatio() external view override returns (uint256) {
     return _incentiveRatio;
   }
 
+  /**
+   * @dev Set Incentive Ratio
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   */
   function setIncentiveRatio(uint256 _ratio) external override onlyAdmin {
     require(_vaultFee + _ratio <= PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
 
@@ -275,6 +325,10 @@ contract ConvexCurveLPVault is IncentiveVault {
     emit SetIncentiveRatio(_ratio);
   }
 
+  /**
+   * @dev Get AToken address for the vault
+   * @return The AToken address for the vault
+   */
   function _getAToken() internal view override returns (address) {
     address internalAsset = internalAssetToken;
     DataTypes.ReserveData memory reserveData = ILendingPool(_addressesProvider.getLendingPool())
@@ -282,6 +336,9 @@ contract ConvexCurveLPVault is IncentiveVault {
     return reserveData.aTokenAddress;
   }
 
+  /**
+   * @dev Claim all rewards and send some to YieldDistributor
+   */
   function _clearRewards() internal override {
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).getReward();

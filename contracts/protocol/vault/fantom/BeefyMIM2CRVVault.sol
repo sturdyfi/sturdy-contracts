@@ -26,6 +26,11 @@ contract BeefyMIM2CRVVault is GeneralVault {
 
   address internal constant USDC = 0x04068DA6C83AFCFA0e13ba15A6696662335D5B75;
 
+  /**
+   * @dev Grab excess collateral internal asset which was from yield pool (Beefy)
+   *  And convert to stable asset, transfer to lending pool
+   * - Caller is only YieldProcessor which is multisig-wallet, but in the future anyone can call
+   */
   function processYield() external override onlyYieldProcessor {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
@@ -63,6 +68,12 @@ contract BeefyMIM2CRVVault is GeneralVault {
     emit ProcessYield(MIM2CRV, yieldMIM2CRV);
   }
 
+  /**
+   * @dev  Withdraw collateral external asset from Curve pool and receive USDC
+   * @param _poolAddress The address of Curve pool
+   * @param _amount The amount of collateral external asset
+   * @return The amount of USDC
+   */
   function _withdrawFromLiquidityPool(address _poolAddress, uint256 _amount)
     internal
     returns (uint256 amountUSDC)
@@ -84,7 +95,9 @@ contract BeefyMIM2CRVVault is GeneralVault {
   }
 
   /**
-   * @dev Swap 'USDC' with stable coins using SpookySwap
+   * @dev  Convert from USDC to stable asset and deposit to lending pool
+   * @param _tokenOut The address of stable asset
+   * @param _usdcAmount The amount of USDC
    */
   function _convertAndDepositYield(address _tokenOut, uint256 _usdcAmount) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
@@ -134,6 +147,13 @@ contract BeefyMIM2CRVVault is GeneralVault {
     _depositYield(_tokenOut, _tokenAmount);
   }
 
+  /**
+   * @dev Convert an `_amount` of collateral internal asset to collateral external asset and send to caller on liquidation.
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     override
@@ -158,6 +178,7 @@ contract BeefyMIM2CRVVault is GeneralVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(_addressesProvider.getAddress('MOOMIM2CRV'));
@@ -165,13 +186,18 @@ contract BeefyMIM2CRVVault is GeneralVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
     return IBeefyVault(_addressesProvider.getAddress('MOOMIM2CRV')).getPricePerFullShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive MOOMIM2CRV
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -201,7 +227,11 @@ contract BeefyMIM2CRVVault is GeneralVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of mooScreamETH based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -218,7 +248,11 @@ contract BeefyMIM2CRVVault is GeneralVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with mooAbrcdbrMIM-2CRV and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address,
@@ -239,7 +273,9 @@ contract BeefyMIM2CRVVault is GeneralVault {
   }
 
   /**
-   * @dev Get the list of asset and asset's yield amount
+   * @dev Get the list of assets and distributed yield amount per asset based on asset's TVL
+   * @param _amount The amount of yield which is going to distribute per asset
+   * @return The list of assets and distributed yield amount per asset
    **/
   function _getAssetYields(uint256 _amount) internal view returns (AssetYield[] memory) {
     // Get total borrowing asset volume and volumes and assets
@@ -272,12 +308,19 @@ contract BeefyMIM2CRVVault is GeneralVault {
     return assetYields;
   }
 
+  /**
+   * @dev Deposit yield amount to lending pool
+   * @param _asset The address of stable asset
+   * @param _amount The amount of stable asset
+   **/
   function _depositYield(address _asset, uint256 _amount) internal {
     ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
   }
 
   /**
    * @dev Move some yield to treasury
+   * @param _yieldAmount The yield amount of collateral internal asset
+   * @return The yield amount for treasury
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);

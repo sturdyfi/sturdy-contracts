@@ -19,9 +19,34 @@ import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20De
 abstract contract GeneralVault is VersionedInitializable {
   using PercentageMath for uint256;
 
+  /**
+   * @dev Emitted on processYield()
+   * @param collateralAsset The address of the collateral asset
+   * @param yieldAmount The processed yield amount
+   **/
   event ProcessYield(address indexed collateralAsset, uint256 yieldAmount);
+
+  /**
+   * @dev Emitted on depositCollateral()
+   * @param collateralAsset The address of the collateral asset
+   * @param from The address of depositor
+   * @param amount The deposit amount
+   **/
   event DepositCollateral(address indexed collateralAsset, address indexed from, uint256 amount);
+
+  /**
+   * @dev Emitted on withdrawCollateral()
+   * @param collateralAsset The address of the collateral asset
+   * @param to The address of receiving collateral
+   * @param amount The withdrawal amount
+   **/
   event WithdrawCollateral(address indexed collateralAsset, address indexed to, uint256 amount);
+
+  /**
+   * @dev Emitted on setTreasuryInfo()
+   * @param treasuryAddress The address of treasury
+   * @param fee The vault fee
+   **/
   event SetTreasuryInfo(address indexed treasuryAddress, uint256 fee);
 
   modifier onlyAdmin() {
@@ -53,6 +78,7 @@ abstract contract GeneralVault is VersionedInitializable {
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
+   * - Caller is initializer (LendingPoolAddressesProvider or deployer)
    * @param _provider The address of the provider
    **/
   function initialize(ILendingPoolAddressesProvider _provider) external initializer {
@@ -64,8 +90,9 @@ abstract contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Deposits an `amount` of asset as collateral to borrow other asset.
-   * @param _asset The asset address for collateral
+   * @dev Deposits an `_amount` of asset as collateral to borrow other asset.
+   * - Caller is anyone
+   * @param _asset The address for collateral external asset
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The deposit amount
    */
@@ -74,8 +101,9 @@ abstract contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Deposits an `amount` of asset as collateral to borrow other asset.
-   * @param _asset The asset address for collateral
+   * @dev Deposits an `_amount` of asset as collateral to borrow other asset.
+   * - Caller is anyone
+   * @param _asset The address for collateral external asset
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
    * @param _amount The deposit amount
    * @param _user The depositor address
@@ -89,10 +117,11 @@ abstract contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Withdraw an `amount` of asset used as collateral to user.
-   * @param _asset The asset address for collateral
+   * @dev Withdraw an `_amount` of asset used as collateral to user.
+   * - Caller is anyone
+   * @param _asset The address for collateral external asset
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
-   * @param _amount The amount to be withdrawn
+   * @param _amount The collateral external asset's amount to be withdrawn
    * @param _slippage The slippage of the withdrawal amount. 1% = 100
    * @param _to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
@@ -139,26 +168,36 @@ abstract contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Withdraw an `amount` of asset used as collateral to user on liquidation.
+   * @dev Convert an `_amount` of collateral internal asset to collateral external asset and send to caller on liquidation.
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
    *  _asset = 0x0000000000000000000000000000000000000000 means to use ETH as collateral
-   * @param _amount The amount to be withdrawn
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address, uint256 _amount) external virtual returns (uint256) {
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    virtual
+    returns (uint256)
+  {
     return _amount;
   }
 
   /**
    * @dev Get yield based on strategy and re-deposit
+   * - Caller is anyone
    */
   function processYield() external virtual;
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view virtual returns (uint256);
 
   /**
    * @dev Get vault Yield per year with wad decimal(=18)
+   * @return The vault yield value per year
    */
   function vaultYieldInPrice() external view virtual returns (uint256) {
     return 0;
@@ -166,6 +205,7 @@ abstract contract GeneralVault is VersionedInitializable {
 
   /**
    * @dev Set treasury address and vault fee
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    * @param _treasury The treasury address
    * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
    */
@@ -180,6 +220,9 @@ abstract contract GeneralVault is VersionedInitializable {
 
   /**
    * @dev deposit collateral asset to lending pool
+   * @param _asset The address of collateral external asset
+   * @param _amount Collateral external asset amount
+   * @param _user The address of user
    */
   function _deposit(
     address _asset,
@@ -205,6 +248,8 @@ abstract contract GeneralVault is VersionedInitializable {
 
   /**
    * @dev Get yield based on strategy and re-deposit
+   * @param _stAsset The address of collateral internal asset
+   * @return yield amount of collateral internal asset
    */
   function _getYield(address _stAsset) internal returns (uint256) {
     uint256 yieldStAsset = _getYieldAmount(_stAsset);
@@ -216,6 +261,8 @@ abstract contract GeneralVault is VersionedInitializable {
 
   /**
    * @dev Get yield amount based on strategy
+   * @param _stAsset The address of collateral internal asset
+   * @return yield amount of collateral internal asset
    */
   function _getYieldAmount(address _stAsset) internal view returns (uint256) {
     (uint256 stAssetBalance, uint256 aTokenBalance) = ILendingPool(
@@ -231,7 +278,11 @@ abstract contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive stAsset
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -239,7 +290,11 @@ abstract contract GeneralVault is VersionedInitializable {
     returns (address, uint256);
 
   /**
-   * @dev Withdraw from yield pool based on strategy with stAsset and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address _asset,
@@ -248,7 +303,11 @@ abstract contract GeneralVault is VersionedInitializable {
   ) internal virtual returns (uint256);
 
   /**
-   * @dev Get Withdrawal amount of stAsset based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal

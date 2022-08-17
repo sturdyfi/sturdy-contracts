@@ -155,6 +155,7 @@ interface ILendingPool {
   /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
+   * - Caller is anyone.
    * @param asset The address of the underlying asset to deposit
    * @param amount The amount to be deposited
    * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
@@ -170,12 +171,32 @@ interface ILendingPool {
     uint16 referralCode
   ) external;
 
+  /**
+   * @dev Deposits an `amount` of underlying asset into the reserve for supplier from vault
+   * - Caller is only Vault which is registered in this contract
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   **/
   function depositYield(address asset, uint256 amount) external;
 
+  /**
+   * @dev Grab an Yield `amount` of underlying asset into the vault
+   * - Caller is only Vault which is registered in this contract
+   * @param asset The address of the underlying asset to get yield
+   * @param amount The yield amount
+   **/
   function getYield(address asset, uint256 amount) external;
 
+  /**
+   * @dev Get underlying asset and aToken's total balance
+   * @param asset The address of the underlying asset
+   **/
   function getTotalBalanceOfAssetPair(address asset) external view returns (uint256, uint256);
 
+  /**
+   * @dev Get total underlying asset which is borrowable
+   *  and also list of underlying asset
+   **/
   function getBorrowingAssetAndVolumes()
     external
     view
@@ -186,11 +207,18 @@ interface ILendingPool {
       uint256
     );
 
+  /**
+   * @dev Register the vault address
+   * - To check if the caller is vault for some functions
+   * - Caller is only LendingPoolConfigurator
+   * @param _vaultAddress The address of the Vault
+   **/
   function registerVault(address _vaultAddress) external payable;
 
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
-   * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
+   * - E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
+   * - Caller is anyone
    * @param asset The address of the underlying asset to withdraw
    * @param amount The underlying amount to be withdrawn
    *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
@@ -205,6 +233,19 @@ interface ILendingPool {
     address to
   ) external returns (uint256);
 
+  /**
+   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
+   * - E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
+   * - Caller is anyone
+   * @param asset The address of the underlying asset to withdraw
+   * @param amount The underlying amount to be withdrawn
+   *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
+   * @param from The address of user who is depositor of underlying asset
+   * @param to Address that will receive the underlying, same as msg.sender if the user
+   *   wants to receive it on his own wallet, or a different address if the beneficiary is a
+   *   different wallet
+   * @return The final amount withdrawn
+   **/
   function withdrawFrom(
     address asset,
     uint256 amount,
@@ -218,6 +259,7 @@ interface ILendingPool {
    * corresponding debt token (StableDebtToken or VariableDebtToken)
    * - E.g. User borrows 100 USDC passing as `onBehalfOf` his own address, receiving the 100 USDC in his wallet
    *   and 100 stable/variable debt tokens, depending on the `interestRateMode`
+   * - Caller is anyone
    * @param asset The address of the underlying asset to borrow
    * @param amount The amount to be borrowed
    * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
@@ -238,6 +280,7 @@ interface ILendingPool {
   /**
    * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
    * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
+   * - Caller is anyone
    * @param asset The address of the borrowed underlying asset previously borrowed
    * @param amount The amount to repay
    * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
@@ -265,6 +308,7 @@ interface ILendingPool {
    * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
    * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
    *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
+   * - Caller is anyone
    * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
    * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
    * @param user The address of the borrower getting liquidated
@@ -302,6 +346,18 @@ interface ILendingPool {
       uint256 healthFactor
     );
 
+  /**
+   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
+   * interest rate strategy
+   * - Only callable by the LendingPoolConfigurator contract
+   * - Caller is only LendingPoolConfigurator
+   * @param asset The address of the underlying asset of the reserve
+   * @param yieldAddress The address of the underlying asset's yield contract of the reserve
+   * @param aTokenAddress The address of the aToken that will be assigned to the reserve
+   * @param stableDebtAddress The address of the StableDebtToken that will be assigned to the reserve
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
+   **/
   function initReserve(
     address reserve,
     address yieldAddress,
@@ -311,10 +367,22 @@ interface ILendingPool {
     address interestRateStrategyAddress
   ) external payable;
 
+  /**
+   * @dev Updates the address of the interest rate strategy contract
+   * - Caller is only LendingPoolConfigurator
+   * @param asset The address of the underlying asset of the reserve
+   * @param rateStrategyAddress The address of the interest rate strategy contract
+   **/
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
     external
     payable;
 
+  /**
+   * @dev Sets the configuration bitmap of the reserve as a whole
+   * - Caller is only LendingPoolConfigurator
+   * @param asset The address of the underlying asset of the reserve
+   * @param configuration The new configuration bitmap
+   **/
   function setConfiguration(address reserve, uint256 configuration) external payable;
 
   /**
@@ -358,6 +426,17 @@ interface ILendingPool {
    **/
   function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
 
+  /**
+   * @dev Validates and finalizes an aToken transfer
+   * - Only callable by the overlying aToken of the `asset`
+   * - Caller is only aToken contract which is storing the underlying asset of depositors
+   * @param asset The address of the underlying asset of the aToken
+   * @param from The user from which the aTokens are transferred
+   * @param to The user receiving the aTokens
+   * @param amount The amount being transferred/withdrawn
+   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
+   * @param balanceToBefore The aToken balance of the `to` user before the transfer
+   */
   function finalizeTransfer(
     address asset,
     address from,
@@ -367,11 +446,25 @@ interface ILendingPool {
     uint256 balanceToBefore
   ) external;
 
+  /**
+   * @dev Returns the list of the initialized reserves
+   **/
   function getReservesList() external view returns (address[] memory);
 
+  /**
+   * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
+   **/
   function getAddressesProvider() external view returns (ILendingPoolAddressesProvider);
 
+  /**
+   * @dev Set the _pause state of a reserve
+   * - Caller is only LendingPoolConfigurator
+   * @param val `true` to pause the reserve, `false` to un-pause it
+   */
   function setPause(bool val) external payable;
 
+  /**
+   * @dev Returns if the LendingPool is paused
+   */
   function paused() external view returns (bool);
 }

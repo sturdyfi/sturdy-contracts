@@ -20,6 +20,7 @@ contract SturdyInternalAsset is ERC20, Ownable {
 
   /**
    * @dev Function to mint token
+   * Caller is only owner which is vault address
    * @param user The user which token is mint
    * @param amount The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
@@ -31,6 +32,7 @@ contract SturdyInternalAsset is ERC20, Ownable {
 
   /**
    * @dev Function to burn token
+   * Caller is only owner which is vault address
    * @param user The user which token is burned
    * @param amount The amount of tokens to burn
    */

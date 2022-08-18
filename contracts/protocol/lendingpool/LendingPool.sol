@@ -304,6 +304,18 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     return _withdraw(asset, amount, from, to);
   }
 
+  /**
+   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
+   * - E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
+   * @param asset The address of the underlying asset to withdraw
+   * @param amount The underlying amount to be withdrawn
+   *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
+   * @param from The address of user who is depositor of underlying asset
+   * @param to Address that will receive the underlying, same as msg.sender if the user
+   *   wants to receive it on his own wallet, or a different address if the beneficiary is a
+   *   different wallet
+   * @return The final amount withdrawn
+   **/
   function _withdraw(
     address asset,
     uint256 amount,
@@ -665,6 +677,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns if the LendingPool is paused
+   * @return `true` if the lending pool is paused
    */
   function paused() external view override returns (bool) {
     return _paused;
@@ -672,6 +685,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the list of the initialized reserves
+   * @return The list of the reserves
    **/
   function getReservesList() external view override returns (address[] memory) {
     uint256 reserveCount = _reservesCount;
@@ -685,6 +699,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
+   * @return The address of LendingPoolAddressesProvider
    **/
   function getAddressesProvider() external view override returns (ILendingPoolAddressesProvider) {
     return _addressesProvider;
@@ -692,6 +707,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the percentage of available liquidity that can be borrowed at once at stable rate
+   * @return The percentage value of available liquidity that can be borrwed at once at stable rate
    */
   function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() public view returns (uint256) {
     return _maxStableRateBorrowSizePercent;
@@ -699,6 +715,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the fee on flash loans
+   * @return The fee value of flash loan
    */
   function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
     return _flashLoanPremiumTotal;
@@ -706,6 +723,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
   /**
    * @dev Returns the maximum number of reserves supported to be listed in this LendingPool
+   * @return The max number of reserves count
    */
   function MAX_NUMBER_RESERVES() public view returns (uint256) {
     return _maxNumberOfReserves;
@@ -761,7 +779,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
    * interest rate strategy
-   * - Only callable by the LendingPoolConfigurator contract
    * - Caller is only LendingPoolConfigurator
    * @param asset The address of the underlying asset of the reserve
    * @param yieldAddress The address of the underlying asset's yield contract of the reserve
@@ -924,6 +941,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
   }
 
+  /**
+   * @dev Add the asset to reserves list
+   * @param asset The address of the underlying asset of the reserve
+   **/
   function _addReserveToList(address asset) internal {
     uint256 reservesCount = _reservesCount;
 
@@ -939,6 +960,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
   }
 
+  /**
+   * @dev Check the availability of interest rate
+   * @param interestRateStrategyAddress The address of interest rate strategy contract
+   * @return The availability of interest rate
+   **/
   function _isInterestRateAvailable(address interestRateStrategyAddress)
     internal
     view

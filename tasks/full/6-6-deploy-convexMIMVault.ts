@@ -23,7 +23,7 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, MIM_3CRV_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, MIM_3CRV_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -35,6 +35,7 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
     await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxMIM_3CRV = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy MIM3CRV oracle

@@ -23,8 +23,12 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, DAI_USDC_USDT_SUSD_LP } =
-      poolConfig as ISturdyConfiguration;
+    const {
+      ReserveAssets,
+      ReserveFactorTreasuryAddress,
+      ChainlinkAggregator,
+      DAI_USDC_USDT_SUSD_LP,
+    } = poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexDAIUSDCUSDTSUSDVault(verify);
@@ -35,6 +39,7 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
     await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxDAI_USDC_USDT_SUSD = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy DAIUSDCUSDTSUSD oracle

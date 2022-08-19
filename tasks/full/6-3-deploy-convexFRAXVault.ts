@@ -23,8 +23,14 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, CRV, CVX, FRAX_3CRV_LP } =
-      poolConfig as ISturdyConfiguration;
+    const {
+      ReserveAssets,
+      ReserveFactorTreasuryAddress,
+      ChainlinkAggregator,
+      CRV,
+      CVX,
+      FRAX_3CRV_LP,
+    } = poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexFRAX3CRVVault(verify);
@@ -35,6 +41,7 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await vault.setIncentiveRatio('4000');
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxFRAX_3CRV = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy FRAX3CRV oracle

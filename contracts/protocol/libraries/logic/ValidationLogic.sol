@@ -413,6 +413,8 @@ library ValidationLogic {
    * @param userHealthFactor The user's health factor
    * @param userStableDebt Total stable debt balance of the user
    * @param userVariableDebt Total variable debt balance of the user
+   * @return The collateral manager error code
+   * @return The global error code
    **/
   function validateLiquidationCall(
     DataTypes.ReserveData storage collateralReserve,

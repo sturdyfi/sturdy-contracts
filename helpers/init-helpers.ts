@@ -246,7 +246,6 @@ export const initReservesByHelper = async (
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   console.log(`----------chunkedSymbols---------------`, chunkedSymbols);
   for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
-    //todo: this place should be checked before deploying on mainnet. dd gas limit as in comment pointed
     const tx3 = await waitForTx(
       //possibly for mainnet gas limit is required. On local node this transaction failed without gas limit
       // await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex], { gasPrice: 1000000000, gasLimit:7850000})

@@ -44,6 +44,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
 
   /**
    * @dev Allows to set the market which this LendingPoolAddressesProvider represents
+   * - Caller is only owner which is multisig wallet
    * @param marketId The market id
    */
   function setMarketId(string memory marketId) external payable override onlyOwner {
@@ -56,6 +57,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * set as implementation the `implementationAddress`
    * IMPORTANT Use this function carefully, only for ids that don't have an explicit
    * setter function, in order to avoid unexpected consequences
+   * - Caller is only owner which is multisig wallet
    * @param id The id
    * @param implementationAddress The address of the new implementation
    */
@@ -72,6 +74,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   /**
    * @dev Sets an address for an id replacing the address saved in the addresses map
    * IMPORTANT Use this function carefully, as it will do a hard replacement
+   * - Caller is only owner which is multisig wallet
    * @param id The id
    * @param newAddress The address to set
    */
@@ -99,6 +102,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   /**
    * @dev Updates the implementation of the LendingPool, or creates the proxy
    * setting the new `pool` implementation on the first time calling it
+   * - Caller is only owner which is multisig wallet
    * @param pool The new LendingPool implementation
    **/
   function setLendingPoolImpl(address pool) external payable override onlyOwner {
@@ -117,6 +121,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   /**
    * @dev Updates the implementation of the IncentiveController, or creates the proxy
    * setting the new `incentiveController` implementation on the first time calling it
+   * - Caller is only owner which is multisig wallet
    * @param incentiveController The new IncentiveController implementation
    **/
   function setIncentiveControllerImpl(address incentiveController)
@@ -140,6 +145,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   /**
    * @dev Updates the implementation of the IncentiveToken, or creates the proxy
    * setting the new `incentiveToken` implementation on the first time calling it
+   * - Caller is only owner which is multisig wallet
    * @param incentiveToken The new IncentiveToken implementation
    **/
   function setIncentiveTokenImpl(address incentiveToken) external payable override onlyOwner {
@@ -158,6 +164,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   /**
    * @dev Updates the implementation of the LendingPoolConfigurator, or creates the proxy
    * setting the new `configurator` implementation on the first time calling it
+   * - Caller is only owner which is multisig wallet
    * @param configurator The new LendingPoolConfigurator implementation
    **/
   function setLendingPoolConfiguratorImpl(address configurator)
@@ -184,6 +191,7 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   /**
    * @dev Updates the address of the LendingPoolCollateralManager
    * @param manager The new LendingPoolCollateralManager address
+   * - Caller is only owner which is multisig wallet
    **/
   function setLendingPoolCollateralManager(address manager) external payable override onlyOwner {
     _addresses[LENDING_POOL_COLLATERAL_MANAGER] = manager;
@@ -191,41 +199,69 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
   }
 
   /**
-   * @dev The functions below are getters/setters of addresses that are outside the context
-   * of the protocol hence the upgradable proxy pattern is not used
+   * @dev Get the address of poolAdmin which has the permission of pool management
+   * @return The address of poolAdmin
    **/
-
   function getPoolAdmin() external view override returns (address) {
     return getAddress(POOL_ADMIN);
   }
 
+  /**
+   * @dev Set the poolAdmin which has the permission of pool management
+   * Caller is only owner which is multisig wallet
+   * @param admin The address of poolAdmin
+   **/
   function setPoolAdmin(address admin) external payable override onlyOwner {
     _addresses[POOL_ADMIN] = admin;
     emit ConfigurationAdminUpdated(admin);
   }
 
+  /**
+   * @dev Get the address of emergencyAdmin which has the permission of pool
+   * @return The address of emergencyAdmin
+   **/
   function getEmergencyAdmin() external view override returns (address) {
     return getAddress(EMERGENCY_ADMIN);
   }
 
+  /**
+   * @dev Set the address of emergencyAdmin which has the permission of pool
+   * - Caller is only owner which is multisig wallet
+   **/
   function setEmergencyAdmin(address emergencyAdmin) external payable override onlyOwner {
     _addresses[EMERGENCY_ADMIN] = emergencyAdmin;
     emit EmergencyAdminUpdated(emergencyAdmin);
   }
 
+  /**
+   * @dev Get the address of oracle contract
+   * @return The address of oracle contract
+   **/
   function getPriceOracle() external view override returns (address) {
     return getAddress(PRICE_ORACLE);
   }
 
+  /**
+   * @dev Set the address of oracle contract
+   * - Caller is only owner which is multisig wallet
+   **/
   function setPriceOracle(address priceOracle) external payable override onlyOwner {
     _addresses[PRICE_ORACLE] = priceOracle;
     emit PriceOracleUpdated(priceOracle);
   }
 
+  /**
+   * @dev Get the address of LendingRateOracle contract
+   * @return The address of LendingRateOracle contract
+   **/
   function getLendingRateOracle() external view override returns (address) {
     return getAddress(LENDING_RATE_ORACLE);
   }
 
+  /**
+   * @dev Set the address of LendingRateOracle contract
+   * - Caller is only owner which is multisig wallet
+   **/
   function setLendingRateOracle(address lendingRateOracle) external payable override onlyOwner {
     _addresses[LENDING_RATE_ORACLE] = lendingRateOracle;
     emit LendingRateOracleUpdated(lendingRateOracle);
@@ -258,6 +294,10 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
     }
   }
 
+  /**
+   * @dev Set the market index number
+   * @param marketId The market id
+   */
   function _setMarketId(string memory marketId) internal {
     _marketId = marketId;
     emit MarketIdSet(marketId);

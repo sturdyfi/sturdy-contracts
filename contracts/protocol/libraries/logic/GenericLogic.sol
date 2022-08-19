@@ -41,6 +41,7 @@ library GenericLogic {
   /**
    * @dev Checks if a specific balance decrease is allowed
    * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
+   * - Caller is anyone
    * @param asset The address of the underlying asset of the reserve
    * @param user The address of the user
    * @param amount The amount to decrease

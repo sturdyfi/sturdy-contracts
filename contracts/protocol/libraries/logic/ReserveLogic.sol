@@ -15,11 +15,6 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {Errors} from '../helpers/Errors.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
-//todo:to block collateral to be borrowed
-//todo:how the aToken ~==~ stETH calculated for balance
-
-//todo:new reserve logic - maybe
-
 /**
  * @title ReserveLogic library
  * @author Sturdy, inspiration from Aave
@@ -158,6 +153,7 @@ library ReserveLogic {
 
   /**
    * @dev Initializes a reserve
+   * - Caller is anyone
    * @param reserve The reserve object
    * @param aTokenAddress The address of the overlying atoken contract
    * @param yieldAddress The address of the underlying asset's yield contract of the reserve
@@ -334,6 +330,8 @@ library ReserveLogic {
    * @param scaledVariableDebt The scaled variable debt
    * @param liquidityIndex The last stored liquidity index
    * @param variableBorrowIndex The last stored variable borrow index
+   * @return The new liquidity index value
+   * @return The new variable borrow index value
    **/
   function _updateIndexes(
     DataTypes.ReserveData storage reserve,
@@ -382,6 +380,7 @@ library ReserveLogic {
   /**
    * @dev Get the reserve indexes from the pricePerShare of yield contract
    * @param reserve The reserve reserve to be updated
+   * @return The index value from vault's pricePerShare
    **/
   function getIndexFromPricePerShare(DataTypes.ReserveData storage reserve)
     internal
@@ -394,6 +393,7 @@ library ReserveLogic {
   /**
    * @dev Get the memory reserve indexes from the pricePerShare of yield contract
    * @param reserve The reserve reserve to be updated
+   * @return The index value from vault's pricePerShare
    **/
   function getIndexFromPricePerShareMemory(DataTypes.ReserveData memory reserve)
     internal

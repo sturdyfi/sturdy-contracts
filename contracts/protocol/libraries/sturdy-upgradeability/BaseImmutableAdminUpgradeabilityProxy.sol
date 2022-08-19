@@ -29,6 +29,8 @@ contract BaseImmutableAdminUpgradeabilityProxy is BaseUpgradeabilityProxy {
   }
 
   /**
+   * @dev Get the address of the proxy admin
+   * - Caller is only admin which is LendingPoolAddressesProvider
    * @return The address of the proxy admin.
    */
   function admin() external ifAdmin returns (address) {
@@ -36,6 +38,8 @@ contract BaseImmutableAdminUpgradeabilityProxy is BaseUpgradeabilityProxy {
   }
 
   /**
+   * @dev Get the address of the implementation
+   * - Caller is only admin which is LendingPoolAddressesProvider
    * @return The address of the implementation.
    */
   function implementation() external ifAdmin returns (address) {
@@ -45,6 +49,7 @@ contract BaseImmutableAdminUpgradeabilityProxy is BaseUpgradeabilityProxy {
   /**
    * @dev Upgrade the backing implementation of the proxy.
    * Only the admin can call this function.
+   * - Caller is only admin which is LendingPoolAddressesProvider
    * @param newImplementation Address of the new implementation.
    */
   function upgradeTo(address newImplementation) external ifAdmin {
@@ -55,6 +60,7 @@ contract BaseImmutableAdminUpgradeabilityProxy is BaseUpgradeabilityProxy {
    * @dev Upgrade the backing implementation of the proxy and call a function
    * on the new implementation.
    * This is useful to initialize the proxied contract.
+   * - Caller is only admin which is LendingPoolAddressesProvider
    * @param newImplementation Address of the new implementation.
    * @param data Data to send as msg.data in the low level call.
    * It should include the signature and the parameters of the function to be called, as described in

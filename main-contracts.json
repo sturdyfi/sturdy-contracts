@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a",
+      "address": "0x58e0232C621F476e3a797e470651eF8d8984632B",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x3E233E6F1C6709Be546Ee2Ef10bAFCe59819577a",
+      "address": "0x58e0232C621F476e3a797e470651eF8d8984632B",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

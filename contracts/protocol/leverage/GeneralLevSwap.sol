@@ -311,8 +311,10 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address[] memory assets = new address[](1);
     assets[0] = _stableAsset;
 
+    uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
     uint256[] memory amounts = new uint256[](1);
     amounts[0] = _getBorrowAmount(_sAsset, _stableAsset, _principal, _slippage1, healthFactor);
+    amounts[0] = Math.min(amounts[0], debtAmount);
 
     // 0 means revert the transaction if not validated
     uint256[] memory modes = new uint256[](1);
@@ -330,8 +332,14 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     // remained stable coin -> collateral
     _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
 
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    if (collateralAmount > _principal) {
+      _supply(collateralAmount - _principal, msg.sender);
+      collateralAmount = _principal;
+    }
+
     // finally deliver the collateral to user
-    IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
+    IERC20(COLLATERAL).safeTransfer(msg.sender, collateralAmount);
   }
 
   function _enterPositionWithFlashloan(
@@ -361,9 +369,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 _borrowedAmount
   ) internal {
     // repay
-    uint256 debtAmount = _getDebtAmount(_stableAsset, _user);
-    uint256 repayAmount = Math.min(debtAmount, _borrowedAmount);
-    _repay(_stableAsset, repayAmount, _user);
+    _repay(_stableAsset, _borrowedAmount, _user);
 
     // withdraw collateral
     uint256 removeAmount = _getWithdrawalAmount(_sAsset, _user, _healthFactor);

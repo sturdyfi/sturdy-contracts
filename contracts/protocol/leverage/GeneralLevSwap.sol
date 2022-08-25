@@ -236,7 +236,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
 
-    (, , , , , uint256 healthFactor) = LENDING_POOL.getUserAccountData(msg.sender);
+    (, , , uint256 liquidationThreshold, uint256 ltv, ) = LENDING_POOL.getUserAccountData(
+      msg.sender
+    );
     // reduce leverage to increase healthFactor
     if (_iterations > 0) {
       _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, 0);
@@ -250,8 +252,12 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       // limit loop count
       require(count < _iterations, Errors.LS_REMOVE_ITERATION_OVER);
 
-      // withdraw collateral keeping the original healthFactor
-      uint256 availableAmount = _getWithdrawalAmount(_sAsset, msg.sender, healthFactor);
+      // withdraw collateral keeping the normal healthFactor (T / LTV)
+      uint256 availableAmount = _getWithdrawalAmount(
+        _sAsset,
+        msg.sender,
+        (WadRayMath.wad() * liquidationThreshold) / ltv
+      );
       if (availableAmount == 0) break;
 
       uint256 requiredAmount = _principal - IERC20(COLLATERAL).balanceOf(address(this));

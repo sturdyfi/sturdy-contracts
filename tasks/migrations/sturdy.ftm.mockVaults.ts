@@ -20,9 +20,11 @@ import {
   deployDefaultReserveInterestRateStrategy,
 } from '../../helpers/contracts-deployments';
 import {
+  getAToken,
   getFirstSigner,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
+  getLeverageSwapManager,
   getMintableERC20,
   getSwapinERC20,
 } from '../../helpers/contracts-getters';
@@ -32,8 +34,9 @@ import {
   verifyContract,
 } from '../../helpers/contracts-helpers';
 import { verifyEtherscanContract } from '../../helpers/etherscan-verification';
+import { impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { eNetwork, IFantomConfiguration, eContractid } from '../../helpers/types';
-import { DaiFactory } from '../../types';
+import { DaiFactory, GeneralLevSwapFactory } from '../../types';
 
 task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -54,6 +57,22 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     const fbeetsAddress = getParamPerNetwork(poolConfig.fBEETS, network);
     const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
     const spellAddress = getParamPerNetwork(poolConfig.SPELL, network);
+
+    // const deployerAddress = '0xDB478114EB8301A7acE35513c3312C1EEB8D99d0';
+    // const ethers = (DRE as any).ethers;
+    // await impersonateAccountsHardhat([deployerAddress]);
+    // let signer = await ethers.provider.getSigner(deployerAddress);
+
+    // const aCVXFRAX_USDC = await getAToken('0x62FBF417978259a67a362aB603e09bC8795159E6');
+    // const abalance = await aCVXFRAX_USDC.balanceOf(deployerAddress);
+
+    // const swapManager = await getLeverageSwapManager();
+    // const fraxusdcSwapper = await GeneralLevSwapFactory.connect(await swapManager.getLevSwapper('0x27403B2756E9c2f436FB13e0B188Dd231F1da170'), signer);
+    // await aCVXFRAX_USDC
+    //     .connect(signer)
+    //     .approve(fraxusdcSwapper.address, abalance.mul(2));
+    // await fraxusdcSwapper.leavePosition(parseEther('30000'), 100, 12, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', '0x62FBF417978259a67a362aB603e09bC8795159E6', {gasLimit: 12450000});
+    // await fraxusdcSwapper.leavePositionWithFlashloan(parseEther('30000'), 200, 100, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', '0x62FBF417978259a67a362aB603e09bC8795159E6')
 
     // // Frozen vault on testnet: TOMB_MIMATIC_LP, TOMB_FTM_LP
     // const configurator = await getLendingPoolConfiguratorProxy();

@@ -23,7 +23,7 @@ task(`full:deploy-convex-iron-bank-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, IRON_BANK_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, IRON_BANK_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -35,6 +35,7 @@ task(`full:deploy-convex-iron-bank-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxIRON_BANK = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy IronBankOracle oracle

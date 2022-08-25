@@ -16,7 +16,7 @@ import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAdd
 
 /**
  * @title YearnRETHWstETHVault
- * @notice yvCurve-rETHwstETH/rETHwstETH-f Vault by using Yearn on Fantom
+ * @notice yvCurve-rETHwstETH/rETHwstETH-f Vault by using Yearn on Ethereum
  * @author Sturdy
  **/
 contract YearnRETHWstETHVault is GeneralVault {
@@ -28,6 +28,11 @@ contract YearnRETHWstETHVault is GeneralVault {
    */
   receive() external payable {}
 
+  /**
+   * @dev Grab excess collateral internal asset which was from yield pool (Yearn)
+   *  And convert to stable asset, transfer to yield manager contract
+   * - Caller is anyone
+   */
   function processYield() external override {
     // Get yield from lendingPool
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
@@ -76,6 +81,13 @@ contract YearnRETHWstETHVault is GeneralVault {
     emit ProcessYield(_addressesProvider.getAddress('RETH_WSTETH'), yieldRETH_WSTETH);
   }
 
+  /**
+   * @dev Convert an `_amount` of collateral internal asset to collateral external asset and send to caller on liquidation.
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     override
@@ -99,6 +111,12 @@ contract YearnRETHWstETHVault is GeneralVault {
     return assetAmount;
   }
 
+  /**
+   * @dev  Withdraw collateral external asset from Curve pool and receive wstETH
+   * @param _poolAddress The address of Curve pool
+   * @param _amount The amount of collateral external asset
+   * @return amountWstETH - The amount of wstETH
+   */
   function _withdrawLiquidityPool(address _poolAddress, uint256 _amount)
     internal
     returns (uint256 amountWstETH)
@@ -114,6 +132,7 @@ contract YearnRETHWstETHVault is GeneralVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(_addressesProvider.getAddress('YVRETH_WSTETH'));
@@ -121,13 +140,18 @@ contract YearnRETHWstETHVault is GeneralVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
     return IYearnVault(_addressesProvider.getAddress('YVRETH_WSTETH')).pricePerShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive YVRETH_WSTETH
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -154,7 +178,11 @@ contract YearnRETHWstETHVault is GeneralVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of YVRETH_WSTETH based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -171,7 +199,11 @@ contract YearnRETHWstETHVault is GeneralVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with YVRETH_WSTETH and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param - The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address,
@@ -195,6 +227,8 @@ contract YearnRETHWstETHVault is GeneralVault {
 
   /**
    * @dev Move some yield to treasury
+   * @param _yieldAmount The yield amount of collateral internal asset
+   * @return The yield amount for treasury
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);

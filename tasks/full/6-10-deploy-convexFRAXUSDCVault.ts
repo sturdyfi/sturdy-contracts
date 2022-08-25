@@ -20,10 +20,11 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     if (!localBRE.network.config.chainId) {
       throw new Error('INVALID_CHAIN_ID');
     }
+    console.log(localBRE.network.name);
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, FRAX_USDC_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, FRAX_USDC_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -35,6 +36,7 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxFRAX_USDC = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy FRAXUSDCOracle oracle

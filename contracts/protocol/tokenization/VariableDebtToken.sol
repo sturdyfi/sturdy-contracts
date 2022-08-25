@@ -25,6 +25,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Initializes the debt token.
+   * - Caller is initializer (LendingPoolAddressesProvider or deployer)
    * @param pool The address of the lending pool where this aToken will be used
    * @param underlyingAsset The address of the underlying asset of this aToken (E.g. WETH for aWETH)
    * @param incentivesController The smart contract managing potential incentives distribution
@@ -84,7 +85,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Mints debt token to the `onBehalfOf` address
-   * -  Only callable by the LendingPool
+   * - Caller is only lending pool
    * @param user The address receiving the borrowed underlying, being the delegatee in case
    * of credit delegate, or same as `onBehalfOf` otherwise
    * @param onBehalfOf The address receiving the debt tokens
@@ -116,7 +117,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Burns user variable debt
-   * - Only callable by the LendingPool
+   * - Caller is only lending pool
    * @param user The user whose debt is getting burned
    * @param amount The amount getting burned
    * @param index The variable debt index of the reserve
@@ -176,6 +177,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   * @return The address of the underlying asset
    **/
   function UNDERLYING_ASSET_ADDRESS() public view returns (address) {
     return _underlyingAsset;
@@ -183,6 +185,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Returns the address of the incentives controller contract
+   * @return The address of the incentive controller
    **/
   function getIncentivesController() external view override returns (ISturdyIncentivesController) {
     return _getIncentivesController();
@@ -190,19 +193,32 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Returns the address of the lending pool where this aToken is used
+   * @return The address of lending pool
    **/
   function POOL() public view returns (ILendingPool) {
     return _pool;
   }
 
+  /**
+   * @dev Returns the address of the incentives controller contract
+   * @return The address of the incentive controller
+   **/
   function _getIncentivesController() internal view override returns (ISturdyIncentivesController) {
     return _incentivesController;
   }
 
+  /**
+   * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   * @return The address of the underlying asset
+   **/
   function _getUnderlyingAssetAddress() internal view override returns (address) {
     return _underlyingAsset;
   }
 
+  /**
+   * @dev Returns the address of the lending pool where this aToken is used
+   * @return The address of lending pool
+   **/
   function _getLendingPool() internal view override returns (ILendingPool) {
     return _pool;
   }

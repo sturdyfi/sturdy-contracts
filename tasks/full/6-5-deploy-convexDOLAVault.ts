@@ -23,7 +23,7 @@ task(`full:deploy-convex-dola-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, DOLA_3CRV_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, DOLA_3CRV_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -34,6 +34,7 @@ task(`full:deploy-convex-dola-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await vault.setConfiguration(getParamPerNetwork(DOLA_3CRV_LP, network), 62); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxDOLA_3CRV = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy DOLA3CRV oracle

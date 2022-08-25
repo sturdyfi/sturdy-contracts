@@ -20,7 +20,7 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, STECRV_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, STECRV_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -31,6 +31,7 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await vault.setConfiguration(getParamPerNetwork(STECRV_LP, network), 25); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxSTECRV = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy steCRV oracle

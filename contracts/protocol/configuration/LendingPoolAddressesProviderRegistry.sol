@@ -39,6 +39,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev Registers an addresses provider
+   * - Caller is only owner which is deployer
    * @param provider The address of the new LendingPoolAddressesProvider
    * @param id The id for the new LendingPoolAddressesProvider, referring to the market it belongs to
    **/
@@ -57,6 +58,7 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
 
   /**
    * @dev Removes a LendingPoolAddressesProvider from the list of registered addresses provider
+   * - Caller is only owner which is deployer
    * @param provider The LendingPoolAddressesProvider address
    **/
   function unregisterAddressesProvider(address provider) external payable override onlyOwner {
@@ -78,6 +80,10 @@ contract LendingPoolAddressesProviderRegistry is Ownable, ILendingPoolAddressesP
     return _addressesProviders[addressesProvider];
   }
 
+  /**
+   * @dev Add an addresses provider to list
+   * @param provider The address of the new LendingPoolAddressesProvider
+   **/
   function _addToAddressesProvidersList(address provider) internal {
     uint256 providersCount = _addressesProvidersList.length;
 

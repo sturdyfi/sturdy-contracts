@@ -48,13 +48,23 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     return CONFIGURATOR_REVISION;
   }
 
+  /**
+   * @dev Function is invoked by the proxy contract when the LendingPoolConfigurator contract is added to the
+   * LendingPoolAddressesProvider of the market.
+   * - Caching the address of the LendingPoolAddressesProvider in order to reduce gas consumption
+   *   on subsequent operations
+   * - Caller is initializer (LendingPoolAddressesProvider or deployer)
+   * @param provider The address of the LendingPoolAddressesProvider
+   **/
   function initialize(ILendingPoolAddressesProvider provider) external initializer {
     addressesProvider = provider;
     pool = ILendingPool(addressesProvider.getLendingPool());
   }
 
   /**
-   * @dev register vault
+   * @dev register vault to pool
+   * - Caller is only poolAdmin
+   * @param _vaultAddress The address of vault
    **/
   function registerVault(address _vaultAddress) external payable override onlyPoolAdmin {
     pool.registerVault(_vaultAddress);
@@ -62,6 +72,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Initializes reserves in batch
+   * - Caller is only poolAdmin
+   * @param input The init data of reserve
    **/
   function batchInitReserve(InitReserveInput[] calldata input)
     external
@@ -151,6 +163,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Updates the aToken implementation for the reserve
+   * - Caller is only poolAdmin
+   * @param input The init data to update the aToken implementation
    **/
   function updateAToken(UpdateATokenInput calldata input) external payable onlyPoolAdmin {
     ILendingPool cachedPool = pool;
@@ -178,6 +192,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Updates the stable debt token implementation for the reserve
+   * - Caller is only poolAdmin
+   * @param input The init data to update the stable debt implementation
    **/
   function updateStableDebtToken(UpdateDebtTokenInput calldata input)
     external
@@ -216,6 +232,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Updates the variable debt token implementation for the asset
+   * - Caller is only poolAdmin
+   * @param input The init data to update the variable debt implementation
    **/
   function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
     external
@@ -254,6 +272,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Enables borrowing on a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
@@ -274,6 +293,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Disables borrowing on a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function disableBorrowingOnReserve(address asset) external payable onlyPoolAdmin {
@@ -287,6 +307,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Enables collateral on a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    * @param collateralEnabled True
    **/
@@ -306,6 +327,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Disables collateral on a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function disableCollateralOnReserve(address asset) external payable onlyPoolAdmin {
@@ -320,6 +342,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Configures the reserve collateralization parameters
    * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    * @param ltv The loan to value of the asset when used as collateral
    * @param liquidationThreshold The threshold at which loans using this asset as collateral will be considered undercollateralized
@@ -372,6 +395,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Enable stable rate borrowing on a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function enableReserveStableRate(address asset) external payable onlyPoolAdmin {
@@ -386,6 +410,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Disable stable rate borrowing on a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function disableReserveStableRate(address asset) external payable onlyPoolAdmin {
@@ -400,6 +425,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Activates a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function activateReserve(address asset) external payable onlyPoolAdmin {
@@ -414,6 +440,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Deactivates a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function deactivateReserve(address asset) external payable onlyPoolAdmin {
@@ -431,6 +458,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   /**
    * @dev Freezes a reserve. A frozen reserve doesn't allow any new deposit, borrow or rate swap
    *  but allows repayments, liquidations, rate rebalances and withdrawals
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function freezeReserve(address asset) external payable onlyPoolAdmin {
@@ -445,6 +473,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Unfreezes a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    **/
   function unfreezeReserve(address asset) external payable onlyPoolAdmin {
@@ -459,6 +488,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Updates the reserve factor of a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    * @param reserveFactor The new reserve factor of the reserve
    **/
@@ -474,6 +504,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev Sets the interest rate strategy of a reserve
+   * - Caller is only poolAdmin
    * @param asset The address of the underlying asset of the reserve
    * @param rateStrategyAddress The new address of the interest strategy contract
    **/
@@ -488,12 +519,18 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
 
   /**
    * @dev pauses or unpauses all the actions of the protocol, including aToken transfers
+   * - Caller is only emergencyAdmin
    * @param val true if protocol needs to be paused, false otherwise
    **/
   function setPoolPause(bool val) external payable onlyEmergencyAdmin {
     pool.setPause(val);
   }
 
+  /**
+   * @dev Initializes aToken/StableDebtToken/VariableDebtToken
+   * @param implementation The address of the aToken/StableDebtToken/VariableDebtToken implementation
+   * @param initParams The init data
+   **/
   function _initTokenWithProxy(address implementation, bytes memory initParams)
     internal
     returns (address)
@@ -507,6 +544,12 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     return address(proxy);
   }
 
+  /**
+   * @dev Updates the aToken/StableDebtToken/VariableDebtToken implementation
+   * @param proxyAddress The address of aToken/StableDebtToken/VariableDebtToken which is proxy contract to upgrade
+   * @param implementation The address of implementation
+   * @param initParams The init data to update
+   **/
   function _upgradeTokenImplementation(
     address proxyAddress,
     address implementation,
@@ -519,6 +562,10 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     proxy.upgradeToAndCall(implementation, initParams);
   }
 
+  /**
+   * @dev Check no liquidity is deposited
+   * @param asset The address of reserve
+   */
   function _checkNoLiquidity(address asset) internal view {
     DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
 

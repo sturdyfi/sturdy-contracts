@@ -30,6 +30,7 @@ abstract contract DebtTokenBase is
 
   /**
    * @dev delegates borrowing power to a user on the specific debt token
+   * - Caller is anyone
    * @param delegatee the address receiving the delegated borrowing power
    * @param amount the maximum amount being delegated. Delegation will still
    * respect the liquidation constraints (even if delegated, a delegatee cannot
@@ -56,8 +57,12 @@ abstract contract DebtTokenBase is
   }
 
   /**
-   * @dev Being non transferrable, the debt token does not implement any of the
+   * @dev the debt token does not implement any of the
    * standard ERC20 functions for transfer and allowance.
+   * - Caller is anyone
+   * @param recipient The address of receiving user
+   * @param amount The amount of transfer
+   * @return No return because always revert
    **/
   function transfer(address recipient, uint256 amount) external virtual override returns (bool) {
     recipient;
@@ -65,6 +70,13 @@ abstract contract DebtTokenBase is
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
+  /**
+   * @dev the debt token does not implement any of the
+   * standard ERC20 functions for transfer and allowance.
+   * @param owner The address of token owner
+   * @param spender The address of token spender
+   * @return No return because always revert
+   **/
   function allowance(address owner, address spender)
     public
     view
@@ -77,12 +89,29 @@ abstract contract DebtTokenBase is
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
+  /**
+   * @dev the debt token does not implement any of the
+   * standard ERC20 functions for transfer and allowance.
+   * - Caller is anyone
+   * @param spender The address of token spender
+   * @param amount The amount of token to spend
+   * @return No return because always revert
+   **/
   function approve(address spender, uint256 amount) external virtual override returns (bool) {
     spender;
     amount;
     revert('APPROVAL_NOT_SUPPORTED');
   }
 
+  /**
+   * @dev the debt token does not implement any of the
+   * standard ERC20 functions for transfer and allowance.
+   * - Caller is anyone
+   * @param sender The address of token sender
+   * @param recipient The address of token recipient
+   * @param amount The amount of transfer
+   * @return No return because always revert
+   **/
   function transferFrom(
     address sender,
     address recipient,
@@ -94,6 +123,13 @@ abstract contract DebtTokenBase is
     revert('TRANSFER_NOT_SUPPORTED');
   }
 
+  /**
+   * @dev the debt token does not implement any of the
+   * standard ERC20 functions for transfer and allowance.
+   * - Caller is anyone
+   * @param spender The address of token spender
+   * @param addedValue The increasing amount to spend token
+   **/
   function increaseAllowance(address spender, uint256 addedValue)
     public
     virtual
@@ -105,6 +141,13 @@ abstract contract DebtTokenBase is
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
+  /**
+   * @dev the debt token does not implement any of the
+   * standard ERC20 functions for transfer and allowance.
+   * - Caller is anyone
+   * @param spender The address of token spender
+   * @param subtractedValue The decreasing amount to spend token
+   **/
   function decreaseAllowance(address spender, uint256 subtractedValue)
     public
     virtual
@@ -116,6 +159,12 @@ abstract contract DebtTokenBase is
     revert('ALLOWANCE_NOT_SUPPORTED');
   }
 
+  /**
+   * @dev decrease the allowed amount of borrowing
+   * @param delegator The address of borrower
+   * @param delegatee The address of user who is borrowing behalf of borrower
+   * @param amount The decreasing allowed amount
+   **/
   function _decreaseBorrowAllowance(
     address delegator,
     address delegatee,

@@ -23,6 +23,11 @@ contract YearnWBTCVault is GeneralVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
+  /**
+   * @dev Grab excess collateral internal asset which was from yield pool (Yearn)
+   *  And convert to stable asset, transfer to lending pool
+   * - Caller is only YieldProcessor which is multisig-wallet, but in the future anyone can call
+   */
   function processYield() external override onlyYieldProcessor {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
@@ -50,6 +55,13 @@ contract YearnWBTCVault is GeneralVault {
     emit ProcessYield(provider.getAddress('WBTC'), yieldWBTC);
   }
 
+  /**
+   * @dev Convert an `_amount` of collateral internal asset to collateral external asset and send to caller on liquidation.
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     override
@@ -74,6 +86,11 @@ contract YearnWBTCVault is GeneralVault {
     return assetAmount;
   }
 
+  /**
+   * @dev  Convert from WBTC to stable asset and deposit to lending pool
+   * @param _tokenOut The address of stable asset
+   * @param _wbtcAmount The amount of WBTC
+   */
   function _convertAndDepositYield(address _tokenOut, uint256 _wbtcAmount) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
@@ -118,6 +135,7 @@ contract YearnWBTCVault is GeneralVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(_addressesProvider.getAddress('YVWBTC'));
@@ -125,13 +143,18 @@ contract YearnWBTCVault is GeneralVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
     return IYearnVault(_addressesProvider.getAddress('YVWBTC')).pricePerShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive yvWBTC
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -159,7 +182,11 @@ contract YearnWBTCVault is GeneralVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of yvWBTC based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -175,7 +202,11 @@ contract YearnWBTCVault is GeneralVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with yvWBTC and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param - The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address,
@@ -198,7 +229,9 @@ contract YearnWBTCVault is GeneralVault {
   }
 
   /**
-   * @dev Get the list of asset and asset's yield amount
+   * @dev Get the list of assets and distributed yield amount per asset based on asset's TVL
+   * @param _amount The amount of yield which is going to distribute per asset
+   * @return The list of assets and distributed yield amount per asset
    **/
   function _getAssetYields(uint256 _amount) internal view returns (AssetYield[] memory) {
     // Get total borrowing asset volume and volumes and assets
@@ -231,12 +264,19 @@ contract YearnWBTCVault is GeneralVault {
     return assetYields;
   }
 
+  /**
+   * @dev Deposit yield amount to lending pool
+   * @param _asset The address of stable asset
+   * @param _amount The amount of stable asset
+   **/
   function _depositYield(address _asset, uint256 _amount) internal {
     ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
   }
 
   /**
    * @dev Move some yield to treasury
+   * @param _yieldAmount The yield amount of collateral internal asset
+   * @return The yield amount for treasury
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);

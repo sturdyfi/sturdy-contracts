@@ -63,8 +63,8 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6-7. Deploy Convex DAI USDC USDT SUSD vault');
     await DRE.run('full:deploy-convex-dai-usdc-usdt-susd-vault', { pool: POOL_NAME, verify });
 
-    console.log('6-8. Deploy Convex HBTC WBTC vault');
-    await DRE.run('full:deploy-convex-hbtc-wbtc-vault', { pool: POOL_NAME, verify });
+    // console.log('6-8. Deploy Convex HBTC WBTC vault');
+    // await DRE.run('full:deploy-convex-hbtc-wbtc-vault', { pool: POOL_NAME, verify });
 
     console.log('6-9. Deploy Convex Iron Bank vault');
     await DRE.run('full:deploy-convex-iron-bank-vault', { pool: POOL_NAME, verify });

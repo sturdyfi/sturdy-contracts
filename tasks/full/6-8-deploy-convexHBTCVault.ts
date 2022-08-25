@@ -23,7 +23,7 @@ task(`full:deploy-convex-hbtc-wbtc-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, HBTC_WBTC_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, HBTC_WBTC_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -34,6 +34,7 @@ task(`full:deploy-convex-hbtc-wbtc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await vault.setConfiguration(getParamPerNetwork(HBTC_WBTC_LP, network), 8); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxHBTC_WBTC = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy HBTCWBTCOracle oracle

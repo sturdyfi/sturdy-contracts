@@ -28,6 +28,11 @@ contract TombFtmBeefyVault is GeneralVault {
    */
   receive() external payable {}
 
+  /**
+   * @dev Grab excess collateral internal asset which was from yield pool (Beefy)
+   *  And convert to stable asset, transfer to lending pool
+   * - Caller is only YieldProcessor which is multisig-wallet, but in the future anyone can call
+   */
   function processYield() external override onlyYieldProcessor {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
@@ -72,6 +77,13 @@ contract TombFtmBeefyVault is GeneralVault {
     emit ProcessYield(TOMB_FTM_LP, yieldTOMB_FTM_LP);
   }
 
+  /**
+   * @dev Convert an `_amount` of collateral internal asset to collateral external asset and send to caller on liquidation.
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     override
@@ -95,6 +107,13 @@ contract TombFtmBeefyVault is GeneralVault {
     return assetAmount;
   }
 
+  /**
+   * @dev  Withdraw collateral external asset from Spookyswap pool and receive FTM and TOMB
+   * @param _poolAddress The address of Spookyswap pool
+   * @param _amount The amount of collateral external asset
+   * @return amountToken - The amount of TOMB
+   * @return amountFTM - The amount of FTM
+   */
   function _withdrawLiquidityPool(address _poolAddress, uint256 _amount)
     internal
     returns (uint256 amountToken, uint256 amountFTM)
@@ -125,6 +144,11 @@ contract TombFtmBeefyVault is GeneralVault {
     );
   }
 
+  /**
+   * @dev  Convert from TOMB to stable asset and deposit to lending pool
+   * @param _tokenOut The address of stable asset
+   * @param _tombAmount The amount of TOMB
+   */
   function _convertAndDepositTokenYield(address _tokenOut, uint256 _tombAmount) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
@@ -166,6 +190,11 @@ contract TombFtmBeefyVault is GeneralVault {
     _depositYield(_tokenOut, receivedAmounts[2]);
   }
 
+  /**
+   * @dev  Convert from FTM to stable asset and deposit to lending pool
+   * @param _tokenOut The address of stable asset
+   * @param _ftmAmount The amount of FTM
+   */
   function _convertAndDepositYield(address _tokenOut, uint256 _ftmAmount) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     // Approve the uniswapRouter to spend WFTM.
@@ -203,6 +232,7 @@ contract TombFtmBeefyVault is GeneralVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(_addressesProvider.getAddress('mooTombTOMB-FTM'));
@@ -210,13 +240,18 @@ contract TombFtmBeefyVault is GeneralVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
     return IBeefyVault(_addressesProvider.getAddress('mooTombTOMB-FTM')).getPricePerFullShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive mooTombTOMB-FTM
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -246,7 +281,11 @@ contract TombFtmBeefyVault is GeneralVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of mooTombTOMB-FTM based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -263,7 +302,11 @@ contract TombFtmBeefyVault is GeneralVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with mooTombTOMB-FTM and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param - The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address,
@@ -284,7 +327,9 @@ contract TombFtmBeefyVault is GeneralVault {
   }
 
   /**
-   * @dev Get the list of asset and asset's yield amount
+   * @dev Get the list of assets and distributed yield amount per asset based on asset's TVL
+   * @param _amount The amount of yield which is going to distribute per asset
+   * @return The list of assets and distributed yield amount per asset
    **/
   function _getAssetYields(uint256 _amount) internal view returns (AssetYield[] memory) {
     // Get total borrowing asset volume and volumes and assets
@@ -317,12 +362,19 @@ contract TombFtmBeefyVault is GeneralVault {
     return assetYields;
   }
 
+  /**
+   * @dev Deposit yield amount to lending pool
+   * @param _asset The address of stable asset
+   * @param _amount The amount of stable asset
+   **/
   function _depositYield(address _asset, uint256 _amount) internal {
     ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
   }
 
   /**
    * @dev Move some yield to treasury
+   * @param _yieldAmount The yield amount of collateral internal asset
+   * @return The yield amount for treasury
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);

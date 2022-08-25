@@ -275,6 +275,14 @@ contract LendingPoolCollateralManager is
     uint256 collateralDecimals;
   }
 
+  /**
+   * @dev When the vault receives the collateral internal asset(ex: yvWFTM)
+   * it should convert to the collateral external asset
+   * @param collateralReserve The data of the collateral internal asset
+   * @param vars The data of liquidation
+   * @param collateralAsset The address of the collateral external asset
+   * @param user The address of user
+   */
   function _processInternalCollateralAsset(
     DataTypes.ReserveData storage collateralReserve,
     LiquidationCallLocalVars memory vars,

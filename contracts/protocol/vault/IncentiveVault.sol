@@ -16,30 +16,39 @@ import {VariableYieldDistribution} from '../../incentives/VariableYieldDistribut
 abstract contract IncentiveVault is GeneralVault {
   using SafeERC20 for IERC20;
 
+  /**
+   * @dev Emitted on setIncentiveRatio()
+   * @param ratio The incentive ratio value, 1% = 100
+   **/
   event SetIncentiveRatio(uint256 ratio);
 
   /**
    * @dev Get the incentive token address supported on this vault
+   * @return The address of incentive token
    */
   function getIncentiveToken() public view virtual returns (address);
 
   /**
    * @dev Get current total incentive amount
+   * @return The total amount of incentive token
    */
   function getCurrentTotalIncentiveAmount() external view virtual returns (uint256);
 
   /**
    * @dev Get Incentive Ratio
+   * @return The incentive ratio value
    */
   function getIncentiveRatio() external view virtual returns (uint256);
 
   /**
    * @dev Set Incentive Ratio
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    */
   function setIncentiveRatio(uint256 _ratio) external virtual;
 
   /**
    * @dev Get AToken address for the vault
+   * @return The AToken address for the vault
    */
   function _getAToken() internal view virtual returns (address);
 
@@ -50,6 +59,7 @@ abstract contract IncentiveVault is GeneralVault {
 
   /**
    * @dev Send incentive to YieldDistribution
+   * @param amount The amount of incentive token
    */
   function _sendIncentive(uint256 amount) internal {
     address asset = _getAToken();

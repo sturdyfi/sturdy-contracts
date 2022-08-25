@@ -23,7 +23,7 @@ task(`full:deploy-convex-rocket-pool-eth-vault`, `Deploys the ${CONTRACT_NAME} c
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveFactorTreasuryAddress, ChainlinkAggregator, RETH_WSTETH_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, RETH_WSTETH_LP } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -34,6 +34,7 @@ task(`full:deploy-convex-rocket-pool-eth-vault`, `Deploys the ${CONTRACT_NAME} c
     await vault.setConfiguration(getParamPerNetwork(RETH_WSTETH_LP, network), 73); // set curve lp token & convex pool id
 
     const internalAssetAddress = await vault.getInternalAsset();
+    ReserveAssets[network].cvxRETH_WSTETH = internalAssetAddress;
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy rETH_WstETH oracle

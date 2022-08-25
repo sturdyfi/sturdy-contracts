@@ -40,6 +40,7 @@ contract CollateralAdapter is VersionedInitializable {
 
   /**
    * @dev Function is invoked by the proxy contract when the Adapter contract is deployed.
+   * - Caller is initializer (LendingPoolAddressesProvider or deployer)
    * @param _provider The address of the provider
    **/
   function initialize(ILendingPoolAddressesProvider _provider) external initializer {
@@ -50,6 +51,13 @@ contract CollateralAdapter is VersionedInitializable {
     return VAULT_REVISION;
   }
 
+  /**
+   * @dev Register the relation of assets and vaults
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _externalAsset The address of the collateral external asset
+   * @param _internalAsset The address of the collateral internal asset
+   * @param _acceptVault The address of the vault
+   **/
   function addCollateralAsset(
     address _externalAsset,
     address _internalAsset,
@@ -62,14 +70,29 @@ contract CollateralAdapter is VersionedInitializable {
     emit AddCollateral(_externalAsset, _internalAsset, _acceptVault);
   }
 
+  /**
+   * @dev Get the address of related vault from the collateral external asset
+   * @param _externalAsset The address of the collateral external asset
+   * @return The address of vault
+   **/
   function getAcceptableVault(address _externalAsset) external view returns (address) {
     return _assetToVaults[_externalAsset];
   }
 
+  /**
+   * @dev Get the address of the collateral internal asset from the collateral external asset
+   * @param _externalAsset The address of the collateral external asset
+   * @return The address of the collateral internal asset
+   **/
   function getInternalCollateralAsset(address _externalAsset) external view returns (address) {
     return _collateralAssets[_externalAsset];
   }
 
+  /**
+   * @dev Get the address of the collateral external asset from the collateral internal asset
+   * @param _internalAsset The address of the collateral internal asset
+   * @return The address of the collateral external asset
+   **/
   function getExternalCollateralAsset(address _internalAsset) external view returns (address) {
     return _externalCollateralAssets[_internalAsset];
   }

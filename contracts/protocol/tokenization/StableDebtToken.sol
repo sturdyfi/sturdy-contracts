@@ -31,6 +31,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Initializes the debt token.
+   * - Caller is initializer (LendingPoolAddressesProvider or deployer)
    * @param pool The address of the lending pool where this aToken will be used
    * @param underlyingAsset The address of the underlying asset of this aToken (E.g. WETH for aWETH)
    * @param incentivesController The smart contract managing potential incentives distribution
@@ -126,7 +127,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Mints debt token to the `onBehalfOf` address.
-   * -  Only callable by the LendingPool
+   * - Caller is only LendingPool
    * - The resulting rate is the weighted average between the rate of the new debt
    * and the rate of the previous debt
    * @param user The address receiving the borrowed underlying, being the delegatee in case
@@ -134,6 +135,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param onBehalfOf The address receiving the debt tokens
    * @param amount The amount of debt tokens to mint
    * @param rate The rate of the debt being minted
+   * @return `true` if the current balance is 0
    **/
   function mint(
     address user,
@@ -189,6 +191,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Burns debt of `user`
+   * - Caller is only LendingPool
    * @param user The address of the user getting his debt burned
    * @param amount The amount of debt tokens getting burned
    **/
@@ -257,7 +260,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
   /**
    * @dev Calculates the increase in balance since the last user interaction
    * @param user The address of the user for which the interest is being accumulated
-   * @return The previous principal balance, the new principal balance and the balance increase
+   * @return The previous principal balance
+   * @return The new principal balance
+   * @return The balance increase
    **/
   function _calculateBalanceIncrease(address user)
     internal
@@ -282,6 +287,10 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the principal and total supply, the average borrow rate and the last supply update timestamp
+   * @return The principal total supply
+   * @return The total supply
+   * @return The average borrow rate
+   * @return The last supply update timestamp
    **/
   function getSupplyData()
     public
@@ -300,6 +309,8 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the the total supply and the average stable rate
+   * @return The total supply
+   * @return The average stable rate
    **/
   function getTotalSupplyAndAvgRate() public view override returns (uint256, uint256) {
     uint256 avgRate = _avgStableRate;
@@ -308,6 +319,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the total supply
+   * @return The total supply
    **/
   function totalSupply() public view override returns (uint256) {
     return _calcTotalSupply(_avgStableRate);
@@ -315,6 +327,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the timestamp at which the total supply was updated
+   * @return The last supply update timestamp
    **/
   function getTotalSupplyLastUpdated() public view override returns (uint40) {
     return _totalSupplyTimestamp;
@@ -331,6 +344,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
+   * @return The address of the underlying asset of aToken
    **/
   function UNDERLYING_ASSET_ADDRESS() public view returns (address) {
     return _underlyingAsset;
@@ -338,6 +352,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the address of the lending pool where this aToken is used
+   * @return The address of the lending pool
    **/
   function POOL() public view returns (ILendingPool) {
     return _pool;
@@ -345,6 +360,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev Returns the address of the incentives controller contract
+   * @return The address of the incentive controller
    **/
   function getIncentivesController() external view override returns (ISturdyIncentivesController) {
     return _getIncentivesController();
@@ -352,6 +368,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev For internal usage in the logic of the parent contracts
+   * @return The address of the lending pool
    **/
   function _getIncentivesController() internal view override returns (ISturdyIncentivesController) {
     return _incentivesController;
@@ -359,6 +376,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev For internal usage in the logic of the parent contracts
+   * @return The address of the underlying asset of aToken
    **/
   function _getUnderlyingAssetAddress() internal view override returns (address) {
     return _underlyingAsset;
@@ -366,6 +384,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
 
   /**
    * @dev For internal usage in the logic of the parent contracts
+   * @return The address of the lending pool
    **/
   function _getLendingPool() internal view override returns (ILendingPool) {
     return _pool;

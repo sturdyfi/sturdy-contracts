@@ -14,7 +14,7 @@ import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 
 /**
  * @title LidoVault
- * @notice stETH/ETH Vault by using Lido, Uniswap, Curve
+ * @notice stETH/ETH Vault by using Lido, Uniswap, Curve on Ethereum
  * @author Sturdy
  **/
 contract LidoVault is GeneralVault {
@@ -28,13 +28,19 @@ contract LidoVault is GeneralVault {
    */
   receive() external payable {}
 
+  /**
+   * @dev Set the slippage value which is used to convert from stETH to ETH via Curve
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _value The slippage value, 1% = 100
+   */
   function setSlippage(uint256 _value) external payable onlyAdmin {
     slippage = _value;
   }
 
   /**
-   * @dev Grab excess stETH which was from rebasing on Lido
-   *  And convert stETH -> ETH -> asset, deposit to pool
+   * @dev Grab excess collateral internal asset which was from yield pool (LIDO)
+   *  And convert collateral internal asset -> stable asset and deposit stable asset to pool
+   * - Caller is anyone
    */
   function processYield() external override {
     // Get yield from lendingPool
@@ -73,6 +79,7 @@ contract LidoVault is GeneralVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(_addressesProvider.getAddress('LIDO'));
@@ -80,13 +87,18 @@ contract LidoVault is GeneralVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external pure override returns (uint256) {
     return 1e18;
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive stAsset
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -129,7 +141,11 @@ contract LidoVault is GeneralVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of stAsset based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -145,7 +161,11 @@ contract LidoVault is GeneralVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with stAsset and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address _asset,

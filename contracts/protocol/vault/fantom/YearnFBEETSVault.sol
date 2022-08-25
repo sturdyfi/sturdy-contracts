@@ -34,17 +34,25 @@ contract YearnFBEETSVault is GeneralVault {
 
   /**
    * @dev Set BeethOvenx Vault address
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _address The address of BeethOvenx Vault
    */
   function setBeethovenVaultAddress(address _address) external payable onlyAdmin {
     beethovenVault = _address;
   }
 
+  /**
+   * @dev Get BeethOvenx Vault address
+   * @return The address of BeethOvenx Vault
+   */
   function getBeethovenVault() public view returns (IBalancerVault) {
     return IBalancerVault(beethovenVault);
   }
 
   /**
    * @dev Set BeethOvenx Swap Pool Id
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _id The id of BeethOvenx Swap Pool
    */
   function setBeethovenSwapPoolId(bytes32 _id) external payable onlyAdmin {
     beethovenSwapPoolId = _id;
@@ -52,11 +60,18 @@ contract YearnFBEETSVault is GeneralVault {
 
   /**
    * @dev Set BeethOvenx Liquidity Pool Id
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _id The id of BeethOvenx Liquidity Pool
    */
   function setBeethovenLiquidityPoolId(bytes32 _id) external payable onlyAdmin {
     beethoven_BEETS_FTM_PoolId = _id;
   }
 
+  /**
+   * @dev Grab excess collateral internal asset which was from yield pool (Yearn)
+   *  And convert to stable asset, transfer to lending pool
+   * - Caller is only YieldProcessor which is multisig-wallet, but in the future anyone can call
+   */
   function processYield() external override onlyYieldProcessor {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     // Get yield from lendingPool
@@ -101,6 +116,13 @@ contract YearnFBEETSVault is GeneralVault {
     emit ProcessYield(provider.getAddress('fBEETS'), yieldFBEETS);
   }
 
+  /**
+   * @dev Convert an `_amount` of collateral internal asset to collateral external asset and send to caller on liquidation.
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return The amount of collateral external asset
+   */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     override
@@ -126,7 +148,9 @@ contract YearnFBEETSVault is GeneralVault {
   }
 
   /**
-   * @dev Swap 'WFTM' using SpookySwap
+   * @dev  Convert from WFTM to stable asset and deposit to lending pool
+   * @param _tokenOut The address of stable asset
+   * @param _wftmAmount The amount of WFTM
    */
   function _convertAndDepositYield(address _tokenOut, uint256 _wftmAmount) internal {
     ILendingPoolAddressesProvider provider = _addressesProvider;
@@ -169,6 +193,11 @@ contract YearnFBEETSVault is GeneralVault {
     _depositYield(_tokenOut, receivedAmounts[1]);
   }
 
+  /**
+   * @dev  Calculate the minAmount of swapping from BEETS to WFTM
+   * @param _beetsAmount The amount of BEETS
+   * @return The min amount of WFTM
+   */
   function _calcSwapMinAmount(uint256 _beetsAmount) internal view returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address WFTM = provider.getAddress('WFTM');
@@ -188,7 +217,9 @@ contract YearnFBEETSVault is GeneralVault {
   }
 
   /**
-   * @dev Swap BEETS -> WFTM
+   * @dev  Swap from BEETS to WFTM
+   * @param _beetsAmount The amount of BEETS
+   * @return The amount of WFTM
    */
   function _swapBEETS2WFTM(uint256 _beetsAmount) internal returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
@@ -222,7 +253,8 @@ contract YearnFBEETSVault is GeneralVault {
   }
 
   /**
-   * @dev burn fBEETS token & withdraw (BEETS, WFTM)
+   * @dev  Burn fBEETS token and withdraw BEETS, WFTM
+   * @param _fbeetsAmount The amount of fBEETS
    */
   function _withdrawLiquidityPool(uint256 _fbeetsAmount) internal {
     // burn fBEETS token
@@ -268,6 +300,7 @@ contract YearnFBEETSVault is GeneralVault {
 
   /**
    * @dev Get yield amount based on strategy
+   * @return yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
     return _getYieldAmount(_addressesProvider.getAddress('YVFBEETS'));
@@ -275,13 +308,18 @@ contract YearnFBEETSVault is GeneralVault {
 
   /**
    * @dev Get price per share based on yield strategy
+   * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
     return IYearnVault(_addressesProvider.getAddress('YVFBEETS')).pricePerShare();
   }
 
   /**
-   * @dev Deposit to yield pool based on strategy and receive yvfBEETS
+   * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The amount of collateral internal asset
    */
   function _depositToYieldPool(address _asset, uint256 _amount)
     internal
@@ -309,7 +347,11 @@ contract YearnFBEETSVault is GeneralVault {
   }
 
   /**
-   * @dev Get Withdrawal amount of yvfBEETS based on strategy
+   * @dev Get Withdrawal amount of collateral internal asset based on strategy
+   * @param _asset The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral external asset
+   * @return The address of collateral internal asset
+   * @return The withdrawal amount of collateral internal asset
    */
   function _getWithdrawalAmount(address _asset, uint256 _amount)
     internal
@@ -326,7 +368,11 @@ contract YearnFBEETSVault is GeneralVault {
   }
 
   /**
-   * @dev Withdraw from yield pool based on strategy with yvfBEETS and deliver asset
+   * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
+   * @param - The address of collateral external asset
+   * @param _amount The withdrawal amount of collateral internal asset
+   * @param _to The address of receiving collateral external asset
+   * @return The amount of collateral external asset
    */
   function _withdrawFromYieldPool(
     address,
@@ -349,7 +395,9 @@ contract YearnFBEETSVault is GeneralVault {
   }
 
   /**
-   * @dev Get the list of asset and asset's yield amount
+   * @dev Get the list of assets and distributed yield amount per asset based on asset's TVL
+   * @param _amount The amount of yield which is going to distribute per asset
+   * @return The list of assets and distributed yield amount per asset
    **/
   function _getAssetYields(uint256 _amount) internal view returns (AssetYield[] memory) {
     // Get total borrowing asset volume and volumes and assets
@@ -382,12 +430,19 @@ contract YearnFBEETSVault is GeneralVault {
     return assetYields;
   }
 
+  /**
+   * @dev Deposit yield amount to lending pool
+   * @param _asset The address of stable asset
+   * @param _amount The amount of stable asset
+   **/
   function _depositYield(address _asset, uint256 _amount) internal {
     ILendingPool(_addressesProvider.getLendingPool()).depositYield(_asset, _amount);
   }
 
   /**
    * @dev Move some yield to treasury
+   * @param _yieldAmount The yield amount of collateral internal asset
+   * @return The yield amount for treasury
    */
   function _processTreasury(uint256 _yieldAmount) internal returns (uint256) {
     uint256 treasuryAmount = _yieldAmount.percentMul(_vaultFee);

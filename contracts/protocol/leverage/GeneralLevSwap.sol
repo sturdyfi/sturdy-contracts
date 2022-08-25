@@ -236,14 +236,31 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
 
+    DataTypes.ReserveConfigurationMap memory configuration = LENDING_POOL.getConfiguration(
+      IAToken(_sAsset).UNDERLYING_ASSET_ADDRESS()
+    );
+    (, uint256 assetLiquidationThreshold, , , ) = configuration.getParamsMemory();
+    require(assetLiquidationThreshold != 0, Errors.LS_INVALID_CONFIGURATION);
+
     (, , , uint256 liquidationThreshold, uint256 ltv, ) = LENDING_POOL.getUserAccountData(
       msg.sender
     );
+    uint256 normalHealthFactor = (WadRayMath.wad() * liquidationThreshold) / ltv;
+    address variableDebtTokenAddress = LENDING_POOL
+      .getReserveData(_stableAsset)
+      .variableDebtTokenAddress;
+
     // reduce leverage to increase healthFactor
     if (_iterations > 0) {
-      _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, 0);
+      _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, assetLiquidationThreshold, 0);
     } else {
-      _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, _principal);
+      _reduceLeverageWithAmount(
+        _sAsset,
+        _stableAsset,
+        _slippage,
+        assetLiquidationThreshold,
+        _principal
+      );
       return;
     }
 
@@ -256,7 +273,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       uint256 availableAmount = _getWithdrawalAmount(
         _sAsset,
         msg.sender,
-        (WadRayMath.wad() * liquidationThreshold) / ltv
+        assetLiquidationThreshold,
+        normalHealthFactor
       );
       if (availableAmount == 0) break;
 
@@ -267,7 +285,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
       if (removeAmount == requiredAmount) break;
 
-      uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
+      uint256 debtAmount = _getDebtAmount(variableDebtTokenAddress, msg.sender);
       if (debtAmount > 0) {
         // swap collateral to stable coin
         // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
@@ -277,7 +295,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
         _repay(_stableAsset, repayAmount, msg.sender);
         if (stableAssetAmount > repayAmount) {
           // swap stable coin to collateral in case of extra ramined stable coin after repay
-          _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
+          _swapTo(_stableAsset, stableAssetAmount - repayAmount);
         }
       }
 
@@ -317,7 +335,10 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address[] memory assets = new address[](1);
     assets[0] = _stableAsset;
 
-    uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
+    uint256 debtAmount = _getDebtAmount(
+      LENDING_POOL.getReserveData(_stableAsset).variableDebtTokenAddress,
+      msg.sender
+    );
     uint256[] memory amounts = new uint256[](1);
     amounts[0] = _getBorrowAmount(_sAsset, _stableAsset, _principal, _slippage1, healthFactor);
     amounts[0] = Math.min(amounts[0], debtAmount);
@@ -378,7 +399,17 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     _repay(_stableAsset, _borrowedAmount, _user);
 
     // withdraw collateral
-    uint256 removeAmount = _getWithdrawalAmount(_sAsset, _user, _healthFactor);
+    DataTypes.ReserveConfigurationMap memory configuration = LENDING_POOL.getConfiguration(
+      IAToken(_sAsset).UNDERLYING_ASSET_ADDRESS()
+    );
+    (, uint256 assetLiquidationThreshold, , , ) = configuration.getParamsMemory();
+    require(assetLiquidationThreshold != 0, Errors.LS_INVALID_CONFIGURATION);
+    uint256 removeAmount = _getWithdrawalAmount(
+      _sAsset,
+      _user,
+      assetLiquidationThreshold,
+      _healthFactor
+    );
     IERC20(_sAsset).safeTransferFrom(_user, address(this), removeAmount);
     _remove(removeAmount, _slippage);
 
@@ -390,15 +421,25 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address _sAsset,
     address _stableAsset,
     uint256 _slippage,
+    uint256 _assetLiquidationThreshold,
     uint256 _amount
   ) internal {
     // withdraw available collateral
     uint256 requireAmount = _amount;
+    address variableDebtTokenAddress = LENDING_POOL
+      .getReserveData(_stableAsset)
+      .variableDebtTokenAddress;
+
     do {
-      uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
+      uint256 debtAmount = _getDebtAmount(variableDebtTokenAddress, msg.sender);
       if (debtAmount == 0) break;
 
-      uint256 availableAmount = _getWithdrawalAmount(_sAsset, msg.sender, WadRayMath.wad());
+      uint256 availableAmount = _getWithdrawalAmount(
+        _sAsset,
+        msg.sender,
+        _assetLiquidationThreshold,
+        WadRayMath.wad()
+      );
       uint256 removeAmount = _amount > 0
         ? Math.min(availableAmount, requireAmount)
         : availableAmount;
@@ -478,18 +519,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   function _getWithdrawalAmount(
     address _sAsset,
     address _user,
+    uint256 assetLiquidationThreshold,
     uint256 healthFactor
   ) internal view returns (uint256) {
-    // get internal asset address
-    address internalAsset = IAToken(_sAsset).UNDERLYING_ASSET_ADDRESS();
-
-    // get reserve info of internal asset
-    DataTypes.ReserveConfigurationMap memory configuration = LENDING_POOL.getConfiguration(
-      internalAsset
-    );
-    (, uint256 assetLiquidationThreshold, , , ) = configuration.getParamsMemory();
-
-    require(assetLiquidationThreshold != 0, Errors.LS_INVALID_CONFIGURATION);
     // get user info
     (
       uint256 totalCollateralETH,
@@ -512,11 +544,12 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       );
   }
 
-  function _getDebtAmount(address _stableAsset, address _user) internal view returns (uint256) {
-    // get internal asset's info for user
-    DataTypes.ReserveData memory reserve = LENDING_POOL.getReserveData(_stableAsset);
-
-    return IERC20(reserve.variableDebtTokenAddress).balanceOf(_user);
+  function _getDebtAmount(address _variableDebtTokenAddress, address _user)
+    internal
+    view
+    returns (uint256)
+  {
+    return IERC20(_variableDebtTokenAddress).balanceOf(_user);
   }
 
   function _borrow(

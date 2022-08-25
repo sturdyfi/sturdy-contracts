@@ -341,7 +341,7 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
         borrower.address
       );
       expect(userReserveData.currentVariableDebt.toString()).to.be.bignumber.gt('0');
-      const borrowedAmount = userReserveData.currentVariableDebt.toString();
+      const borrowedAmount = userReserveData.currentVariableDebt.multipliedBy(2).toString();
 
       // prepare stable asset
       await mint('USDT', borrowedAmount.toString(), borrower, testEnv);
@@ -438,7 +438,7 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
           .minus(userReserveDataBefore.currentVariableDebt)
           .abs()
           .toString()
-      ).to.be.bignumber.lt('10');
+      ).to.be.bignumber.lt('500');
     });
   });
 });

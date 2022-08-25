@@ -130,7 +130,7 @@ makeSuite('Leverage Swap Manger: configuration', (testEnv) => {});
 makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
@@ -399,7 +399,7 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
         borrower.address
       );
       expect(userReserveData.currentVariableDebt.toString()).to.be.bignumber.gt('0');
-      const borrowedAmount = userReserveData.currentVariableDebt.toString();
+      const borrowedAmount = userReserveData.currentVariableDebt.multipliedBy(2).toString();
 
       // prepare stable asset
       await mint('USDT', borrowedAmount.toString(), borrower, testEnv);
@@ -496,7 +496,7 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
           .minus(userReserveDataBefore.currentVariableDebt)
           .abs()
           .toString()
-      ).to.be.bignumber.lt('10');
+      ).to.be.bignumber.lt('500');
     });
   });
 });
@@ -504,7 +504,7 @@ makeSuite('FRAX3CRV Leverage Swap', (testEnv) => {
 makeSuite('SUSD Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
@@ -888,7 +888,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
 makeSuite('IRONBANK Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '200';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
@@ -1240,7 +1240,7 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
 makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
@@ -1592,7 +1592,7 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
 makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)

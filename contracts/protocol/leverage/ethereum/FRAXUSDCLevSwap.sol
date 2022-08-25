@@ -54,7 +54,7 @@ contract FRAXUSDCLevSwap is GeneralLevSwap {
     path.tokens[1] = USDC;
 
     path.fees = new uint256[](1);
-    path.fees[0] = 500; //0.05%
+    path.fees[0] = 100; //0.01%
 
     return
       UniswapAdapter.swapExactTokensForTokens(PROVIDER, _stableAsset, USDC, _amount, path, 500);
@@ -67,7 +67,7 @@ contract FRAXUSDCLevSwap is GeneralLevSwap {
     path.tokens[1] = _stableAsset;
 
     path.fees = new uint256[](1);
-    path.fees[0] = 500; //0.05%
+    path.fees[0] = 100; //0.01%
 
     return
       UniswapAdapter.swapExactTokensForTokens(

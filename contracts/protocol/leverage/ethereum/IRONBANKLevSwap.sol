@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {UniswapAdapter} from '../../libraries/swap/UniswapAdapter.sol';
 
 interface ICurvePool {
   function add_liquidity(

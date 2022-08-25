@@ -236,7 +236,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
 
-    (, , , , , uint256 healthFactor) = LENDING_POOL.getUserAccountData(msg.sender);
+    (, , , uint256 liquidationThreshold, uint256 ltv, ) = LENDING_POOL.getUserAccountData(
+      msg.sender
+    );
     // reduce leverage to increase healthFactor
     if (_iterations > 0) {
       _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, 0);
@@ -250,8 +252,12 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       // limit loop count
       require(count < _iterations, Errors.LS_REMOVE_ITERATION_OVER);
 
-      // withdraw collateral keeping the original healthFactor
-      uint256 availableAmount = _getWithdrawalAmount(_sAsset, msg.sender, healthFactor);
+      // withdraw collateral keeping the normal healthFactor (T / LTV)
+      uint256 availableAmount = _getWithdrawalAmount(
+        _sAsset,
+        msg.sender,
+        (WadRayMath.wad() * liquidationThreshold) / ltv
+      );
       if (availableAmount == 0) break;
 
       uint256 requiredAmount = _principal - IERC20(COLLATERAL).balanceOf(address(this));
@@ -311,8 +317,10 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address[] memory assets = new address[](1);
     assets[0] = _stableAsset;
 
+    uint256 debtAmount = _getDebtAmount(_stableAsset, msg.sender);
     uint256[] memory amounts = new uint256[](1);
     amounts[0] = _getBorrowAmount(_sAsset, _stableAsset, _principal, _slippage1, healthFactor);
+    amounts[0] = Math.min(amounts[0], debtAmount);
 
     // 0 means revert the transaction if not validated
     uint256[] memory modes = new uint256[](1);
@@ -330,8 +338,14 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     // remained stable coin -> collateral
     _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
 
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    if (collateralAmount > _principal) {
+      _supply(collateralAmount - _principal, msg.sender);
+      collateralAmount = _principal;
+    }
+
     // finally deliver the collateral to user
-    IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
+    IERC20(COLLATERAL).safeTransfer(msg.sender, collateralAmount);
   }
 
   function _enterPositionWithFlashloan(
@@ -361,9 +375,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 _borrowedAmount
   ) internal {
     // repay
-    uint256 debtAmount = _getDebtAmount(_stableAsset, _user);
-    uint256 repayAmount = Math.min(debtAmount, _borrowedAmount);
-    _repay(_stableAsset, repayAmount, _user);
+    _repay(_stableAsset, _borrowedAmount, _user);
 
     // withdraw collateral
     uint256 removeAmount = _getWithdrawalAmount(_sAsset, _user, _healthFactor);

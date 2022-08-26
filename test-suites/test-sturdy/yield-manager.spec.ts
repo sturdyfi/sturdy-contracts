@@ -29,7 +29,7 @@ const simulateYield = async (testEnv: TestEnv) => {
 const simulateYieldInLidoVault = async (testEnv: TestEnv) => {
   const { pool, lidoVault, users, lido, aStETH } = testEnv;
   const ethers = (DRE as any).ethers;
-  const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+  const stETHOwnerAddress = '0x41318419cfa25396b47a94896ffa2c77c6434040';
   const depositStETH = '10';
   const depositStETHAmount = await convertToCurrencyDecimals(lido.address, depositStETH);
 
@@ -44,8 +44,8 @@ const simulateYieldInConvexFRAXVault = async (testEnv: TestEnv) => {
   const { convexFRAX3CRVVault, users, cvxfrax_3crv, aCVXFRAX_3CRV, FRAX_3CRV_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const FRAX3CRVLPOwnerAddress = '0xccf6c29d87eb2c0bafede74f5df35f84541f4549';
-  const depositFRAX3CRV = '1552600';
+  const FRAX3CRVLPOwnerAddress = '0xba16e2070f7AD862D3fccD7af835B3Cb3A35FCfb';
+  const depositFRAX3CRV = '15520';
   const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
     FRAX_3CRV_LP.address,
     depositFRAX3CRV
@@ -354,7 +354,20 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     );
   });
   it('Distribute yield', async () => {
-    const { yieldManager, dai, aDai, usdc, usdt, aUsdc, aUsdt, users, CRV, CVX, WETH } = testEnv;
+    const {
+      yieldManager,
+      dai,
+      aDai,
+      usdc,
+      usdt,
+      aUsdc,
+      aUsdt,
+      users,
+      CRV,
+      CVX,
+      WETH,
+      aprProvider,
+    } = testEnv;
 
     // suppliers deposit asset to pool
     const depositor1 = users[0];
@@ -396,5 +409,7 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     expect((await aUsdc.balanceOf(depositor1.address)).gt(depositUSDCAmount)).to.be.equal(true);
     expect((await aDai.balanceOf(depositor2.address)).gt(depositDAIAmount)).to.be.equal(true);
     expect((await aUsdt.balanceOf(depositor3.address)).gt(depositUSDTAmount)).to.be.equal(true);
+    expect((await aprProvider.APR(usdc.address, true)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(usdc.address, true)) / 1e18) * 100);
   });
 });

@@ -2569,10 +2569,10 @@ export const deployFRAXUSDCLevSwap = async (
   return levSwap;
 };
 
-export const deploySturdyAPRDataProvider = async (verify?: boolean) =>
+export const deploySturdyAPRDataProvider = async (args: [tEthereumAddress], verify?: boolean) =>
   withSaveAndVerify(
-    await new SturdyAPRDataProviderFactory(await getFirstSigner()).deploy(),
+    await new SturdyAPRDataProviderFactory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyAPRDataProvider,
-    [],
+    args,
     verify
   );

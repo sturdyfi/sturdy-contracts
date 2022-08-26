@@ -32,6 +32,7 @@ import {
   getConvexIronBankVault,
   getLeverageSwapManager,
   getConvexFRAXUSDCVault,
+  getSturdyAPRDataProvider,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -61,6 +62,7 @@ import {
   YieldManager,
   VariableYieldDistribution,
   LeverageSwapManager,
+  SturdyAPRDataProvider,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -150,6 +152,7 @@ export interface TestEnv {
   CVX: IERC20Detailed;
   variableYieldDistributor: VariableYieldDistribution;
   levSwapManager: LeverageSwapManager;
+  aprProvider: SturdyAPRDataProvider;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -225,6 +228,7 @@ const testEnv: TestEnv = {
   CVX: {} as IERC20Detailed,
   variableYieldDistributor: {} as VariableYieldDistribution,
   levSwapManager: {} as LeverageSwapManager,
+  aprProvider: {} as SturdyAPRDataProvider,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -333,6 +337,7 @@ export async function initializeMakeSuite() {
 
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
   testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
+  testEnv.aprProvider = await getSturdyAPRDataProvider();
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(

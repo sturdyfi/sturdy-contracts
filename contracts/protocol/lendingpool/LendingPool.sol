@@ -10,6 +10,7 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {ISturdyAPRDataProvider} from '../../interfaces/ISturdyAPRDataProvider.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
@@ -172,16 +173,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param amount The amount to be deposited
    **/
   function depositYield(address asset, uint256 amount) external override whenNotPaused {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+    require(_availableVaults[msg.sender] == true, Errors.VT_PROCESS_YIELD_INVALID);
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     reserve.updateState();
 
     // update liquidityIndex based on yield amount
-    reserve.cumulateToLiquidityIndex(IERC20(reserve.aTokenAddress).totalSupply(), amount);
+    uint256 totalAmount = IERC20(reserve.aTokenAddress).totalSupply();
+    reserve.cumulateToLiquidityIndex(totalAmount, amount);
 
     reserve.updateInterestRates(asset, reserve.aTokenAddress, amount, 0);
+
+    // update APR
+    address aprDataProvider = _addressesProvider.getAddress('APR_PROVIDER');
+    ISturdyAPRDataProvider(aprDataProvider).updateAPR(asset, amount, totalAmount);
 
     IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
   }

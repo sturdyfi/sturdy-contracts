@@ -2,9 +2,14 @@
 Sturdy is a DeFi lending protocol. Sturdy enables 'suppliers' to earn yield on their stablecoins and 'borrowers' to take out interest-free stablecoin loans against their collateral. This interest-free mechanic is made possible through rehypothecation: when a borrower deposits their collateral (e.g. ETH), it is staked (e.g. turned into stETH via Lido). Over time, this stETH will grow in quantity over time because of its rebasing mechanic; we harvest this yield, convert it to stablecoins, and distribute it to stablecoin suppliers.
 
 ## Dev Environment
-- EnvironmentFile (.env)
+- Configure environment file (.env)
 ```
 ALCHEMY_KEY="xxx"
+```
+
+- Install
+```
+yarn install
 ```
 
 - Compile
@@ -22,7 +27,7 @@ FORK=main yarn hardhat node
 yarn sturdy:evm:fork:mainnet:migration
 ```
 
-- For test, run the following task to have a test of sample contract on the localhost.
+- For test, run the following task 
 ```
-yarn test
+yarn audit:test
 ```

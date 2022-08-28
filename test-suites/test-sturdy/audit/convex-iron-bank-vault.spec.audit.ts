@@ -128,38 +128,3 @@ makeSuite('ConvexIronBankVault - Deposit & Withdraw', (testEnv: TestEnv) => {
     expect(await IRON_BANK_LP.balanceOf(convexIronBankVault.address)).to.be.equal(0);
   });
 });
-
-makeSuite('convexIronBankVault - Process Yield', (testEnv: TestEnv) => {
-  it('send yield to YieldManager', async () => {
-    const { convexIronBankVault, users, IRON_BANK_LP, CRV, CVX, yieldManager } = testEnv;
-    const borrower = users[1];
-
-    // borrower provides IRON_BANK_LP
-    const assetAmountToDeposit = await convertToCurrencyDecimals(
-      IRON_BANK_LP.address,
-      DEPOSIT_AMOUNT
-    );
-    await prepareCollateralForUser(testEnv, borrower, assetAmountToDeposit);
-    await IRON_BANK_LP.connect(borrower.signer).approve(
-      convexIronBankVault.address,
-      APPROVAL_AMOUNT_LENDING_POOL
-    );
-    await convexIronBankVault
-      .connect(borrower.signer)
-      .depositCollateral(IRON_BANK_LP.address, assetAmountToDeposit);
-    expect(await convexIronBankVault.getYieldAmount()).to.be.equal(0);
-    const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
-
-    // Simulate yield
-    await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
-
-    // process yield, so all yield should be sent to YieldManager
-    await convexIronBankVault.processYield();
-
-    const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
-    expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
-    expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
-  });
-});

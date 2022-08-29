@@ -153,11 +153,7 @@ contract SturdyAPRDataProvider is Ownable {
    * @dev Get APR with wad decimal(=18)
    */
   function _getAPRBasedonYield(address _borrowReserve) internal view returns (uint256) {
-    uint256 liquidityRate = uint256(
-      LENDING_POOL.getReserveData(_borrowReserve).currentLiquidityRate
-    ) / 1e9; // dividing by 1e9 to pass from ray to wad
-
-    return yieldRatio[_borrowReserve] + liquidityRate;
+    return yieldRatio[_borrowReserve];
   }
 
   /**

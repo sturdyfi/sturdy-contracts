@@ -109,12 +109,12 @@ contract ConvexCurveLPVault is IncentiveVault {
       yieldAmount -= treasuryAmount;
     }
 
-    if (incentiveAmount > 0) {
+    if (incentiveAmount != 0) {
       yieldAmount -= incentiveAmount;
     }
 
     // transfer to yieldManager
-    if (yieldAmount > 0) {
+    if (yieldAmount != 0) {
       address yieldManager = _addressesProvider.getAddress('YIELD_MANAGER');
       IERC20(_asset).safeTransfer(yieldManager, yieldAmount);
     }
@@ -291,7 +291,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The total amount of incentive token
    */
   function getCurrentTotalIncentiveAmount() external view override returns (uint256) {
-    if (_incentiveRatio > 0) {
+    if (_incentiveRatio != 0) {
       address baseRewardPool = getBaseRewardPool();
       uint256 earned = IConvexBaseRewardPool(baseRewardPool).earned(address(this));
       return earned.percentMul(_incentiveRatio);

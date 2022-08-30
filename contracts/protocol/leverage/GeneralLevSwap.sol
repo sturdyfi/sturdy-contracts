@@ -139,7 +139,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 _ltv,
     address _stableAsset
   ) external {
-    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
 
@@ -152,7 +152,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 stableAssetDecimals = IERC20Detailed(_stableAsset).decimals();
     for (uint256 i; i < _iterations; ++i) {
       borrowAmount = _calcBorrowableAmount(suppliedAmount, _ltv, _stableAsset, stableAssetDecimals);
-      if (borrowAmount > 0) {
+      if (borrowAmount != 0) {
         // borrow stable coin
         _borrow(_stableAsset, borrowAmount, msg.sender);
         // swap stable coin to collateral
@@ -180,9 +180,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 _slippage,
     address _stableAsset
   ) external {
-    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(_leverage > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(_slippage > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_slippage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
 
@@ -232,7 +232,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address _stableAsset,
     address _sAsset
   ) external {
-    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
 
@@ -251,7 +251,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       .variableDebtTokenAddress;
 
     // reduce leverage to increase healthFactor
-    if (_iterations > 0) {
+    if (_iterations != 0) {
       _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, assetLiquidationThreshold, 0);
     } else {
       _reduceLeverageWithAmount(
@@ -286,7 +286,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       if (removeAmount == requiredAmount) break;
 
       uint256 debtAmount = _getDebtAmount(variableDebtTokenAddress, msg.sender);
-      if (debtAmount > 0) {
+      if (debtAmount != 0) {
         // swap collateral to stable coin
         // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
         uint256 stableAssetAmount = _swapFrom(_stableAsset);
@@ -323,9 +323,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address _stableAsset,
     address _sAsset
   ) external {
-    require(_principal > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(_slippage1 > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(_slippage2 > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_slippage1 != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_slippage2 != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
 
@@ -440,7 +440,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
         _assetLiquidationThreshold,
         WadRayMath.wad()
       );
-      uint256 removeAmount = _amount > 0
+      uint256 removeAmount = _amount != 0
         ? Math.min(availableAmount, requireAmount)
         : availableAmount;
       IERC20(_sAsset).safeTransferFrom(msg.sender, address(this), removeAmount);

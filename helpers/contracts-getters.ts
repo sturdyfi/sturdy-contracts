@@ -1082,3 +1082,18 @@ export const getSturdyAPRDataProvider = async (address?: tEthereumAddress) =>
       ).address,
     await getFirstSigner()
   );
+
+export const getValidationLogic = async () => {
+  const db = await getDb().get(`${eContractid.ValidationLogic}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getGenericLogic = async () => {
+  const db = await getDb().get(`${eContractid.GenericLogic}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getReserveLogicLibrary = async () => {
+  const db = await getDb().get(`${eContractid.ReserveLogic}.${DRE.network.name}`).value();
+  return db?.address;
+};

@@ -56,6 +56,9 @@ import {
   getConvexIronBankVault,
   getLeverageSwapManager,
   getConvexFRAXUSDCVault,
+  getValidationLogic,
+  getGenericLogic,
+  getReserveLogicLibrary,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -220,15 +223,26 @@ export const deployLendingPoolConfigurator = async (verify?: boolean) => {
   );
 };
 
-export const deployReserveLogicLibrary = async (verify?: boolean) =>
-  withSaveAndVerify(
+export const deployReserveLogicLibrary = async (verify?: boolean) => {
+  const contractAddress = await getReserveLogicLibrary();
+  if (contractAddress) {
+    return await getContract(eContractid.ReserveLogic, contractAddress);
+  }
+
+  return withSaveAndVerify(
     await new ReserveLogicFactory(await getFirstSigner()).deploy(),
     eContractid.ReserveLogic,
     [],
     verify
   );
+};
 
 export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolean) => {
+  const contractAddress = await getGenericLogic();
+  if (contractAddress) {
+    return await getContract(eContractid.GenericLogic, contractAddress);
+  }
+
   const genericLogicArtifact = await readArtifact(eContractid.GenericLogic);
 
   const linkedGenericLogicByteCode = linkBytecode(genericLogicArtifact, {
@@ -251,6 +265,11 @@ export const deployValidationLogic = async (
   genericLogic: Contract,
   verify?: boolean
 ) => {
+  const contractAddress = await getValidationLogic();
+  if (contractAddress) {
+    return await getContract(eContractid.ValidationLogic, contractAddress);
+  }
+
   const validationLogicArtifact = await readArtifact(eContractid.ValidationLogic);
 
   const linkedValidationLogicByteCode = linkBytecode(validationLogicArtifact, {

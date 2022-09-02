@@ -16,6 +16,7 @@ import {
   strategyCVXHBTC_WBTC,
   strategyCVXIRON_BANK,
   strategyCVXFRAX_USDC,
+  strategyAURADAI_USDC_USDT,
 } from './reservesConfigs';
 
 // ----------------
@@ -41,6 +42,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxHBTC_WBTC: strategyCVXHBTC_WBTC,
     cvxIRON_BANK: strategyCVXIRON_BANK,
     cvxFRAX_USDC: strategyCVXFRAX_USDC,
+    auraDAI_USDC_USDT: strategyAURADAI_USDC_USDT,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -71,6 +73,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxHBTC_WBTC: '',
       cvxIRON_BANK: '0xABad46DcF632351Cc74f2087D9a359Ac3299804a',
       cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
+      auraDAI_USDC_USDT: '',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -87,6 +90,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       // cvxHBTC_WBTC: '',
       cvxIRON_BANK: '0xABad46DcF632351Cc74f2087D9a359Ac3299804a',
       cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
+      auraDAI_USDC_USDT: '',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',
@@ -142,6 +146,30 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.tenderly]: '0x4e3FBD56CD56c3e72c1403e103b45Db9da5B9D2B',
     [eEthereumNetwork.goerli]: '',
   },
+  BAL: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0xba100000625a3754423978a60c9317c58a424e3D',
+    [eEthereumNetwork.tenderly]: '0xba100000625a3754423978a60c9317c58a424e3D',
+    [eEthereumNetwork.goerli]: '',
+  },
+  AURA: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
+    [eEthereumNetwork.tenderly]: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
+    [eEthereumNetwork.goerli]: '',
+  },
   RETH_WSTETH_LP: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',
@@ -164,6 +192,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B',
     [eEthereumNetwork.tenderly]: '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B',
+    [eEthereumNetwork.goerli]: '',
+  },
+  BAL_DAI_USDC_USDT_LP: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x06Df3b2bbB68adc8B0e302443692037ED9f91b42',
+    [eEthereumNetwork.tenderly]: '0x06Df3b2bbB68adc8B0e302443692037ED9f91b42',
     [eEthereumNetwork.goerli]: '',
   },
   STECRV_LP: {

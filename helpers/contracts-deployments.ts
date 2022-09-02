@@ -59,6 +59,8 @@ import {
   getValidationLogic,
   getGenericLogic,
   getReserveLogicLibrary,
+  getAuraDAIUSDCUSDTVault,
+  getBalancerswapAdapterAddress,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -153,6 +155,8 @@ import {
   IRONBANKLevSwapFactory,
   FRAXUSDCLevSwapFactory,
   SturdyAPRDataProviderFactory,
+  AuraBalancerLPVaultFactory,
+  BALDAIUSDCUSDTOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -502,6 +506,14 @@ export const deployFRAXUSDCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new FRAXUSDCOracleFactory(await getFirstSigner()).deploy(),
     eContractid.FRAXUSDCOracle,
+    [],
+    verify
+  );
+
+export const deployBALDAIUSDCUSDTOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALDAIUSDCUSDTOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.BALDAIUSDCUSDTOracle,
     [],
     verify
   );
@@ -1357,6 +1369,31 @@ export const deployConvexFRAXUSDCVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexFRAXUSDCVault, proxyAddress);
 
   return await getConvexFRAXUSDCVault();
+};
+
+export const deployAuraDAIUSDCUSDTVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.AuraDAIUSDCUSDTVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_DAI_USDC_USDT_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_DAI_USDC_USDT_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraDAIUSDCUSDTVault, proxyAddress);
+
+  return await getAuraDAIUSDCUSDTVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>
@@ -2443,13 +2480,37 @@ export const deployCurveswapAdapterLibrary = async (verify?: boolean) => {
   return withSaveAndVerify(curveswapAdapter, eContractid.CurveswapAdapter, [], verify);
 };
 
+export const deployBalancerswapAdapterLibrary = async (verify?: boolean) => {
+  const contractAddress = await getBalancerswapAdapterAddress();
+  if (contractAddress) {
+    return await getContract(eContractid.BalancerswapAdapter, contractAddress);
+  }
+
+  const balancerswapAdapterArtifact = await readArtifact(eContractid.BalancerswapAdapter);
+
+  const linkedBalancerswapAdapterByteCode = linkBytecode(balancerswapAdapterArtifact, {});
+
+  const balancerswapAdapterFactory = await DRE.ethers.getContractFactory(
+    balancerswapAdapterArtifact.abi,
+    linkedBalancerswapAdapterByteCode
+  );
+
+  const balancerswapAdapter = await (
+    await balancerswapAdapterFactory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(balancerswapAdapter, eContractid.BalancerswapAdapter, [], verify);
+};
+
 export const deploySwapAdapterLibraries = async (
   verify?: boolean
 ): Promise<YieldManagerLibraryAddresses> => {
   const uniswapAdapter = await deployUniswapAdapterLibrary(verify);
   const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
+  const balancerswapAdapter = await deployBalancerswapAdapterLibrary(verify);
 
   return {
+    ['__$bcdc6d14c161e470cad87c28c9e4ece31f$__']: balancerswapAdapter.address,
     ['__$efebe91d5f5edc44768630199364d824de$__']: uniswapAdapter.address,
     ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
   };

@@ -71,6 +71,7 @@ import {
   BeefyMIM2CRVVaultFactory,
   LeverageSwapManagerFactory,
   SturdyAPRDataProviderFactory,
+  AuraBalancerLPVaultFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -581,6 +582,15 @@ export const getConvexFRAXUSDCVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getAuraDAIUSDCUSDTVault = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraDAIUSDCUSDTVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVaultFactory.connect(
     address ||
@@ -1062,6 +1072,11 @@ export const getUniswapAdapterAddress = async () => {
 
 export const getCurveswapAdapterAddress = async () => {
   const db = await getDb().get(`${eContractid.CurveswapAdapter}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getBalancerswapAdapterAddress = async () => {
+  const db = await getDb().get(`${eContractid.BalancerswapAdapter}.${DRE.network.name}`).value();
   return db?.address;
 };
 

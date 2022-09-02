@@ -214,4 +214,21 @@ interface IBalancerVault {
       uint256[] memory balances,
       uint256 lastChangeBlock
     );
+
+  struct BatchSwapStep {
+    bytes32 poolId;
+    uint256 assetInIndex;
+    uint256 assetOutIndex;
+    uint256 amount;
+    bytes userData;
+  }
+
+  function batchSwap(
+    SwapKind kind,
+    BatchSwapStep[] memory swaps,
+    address[] memory assets,
+    FundManagement memory funds,
+    int256[] memory limits,
+    uint256 deadline
+  ) external payable returns (int256[] memory);
 }

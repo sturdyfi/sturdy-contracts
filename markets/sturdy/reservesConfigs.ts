@@ -13,6 +13,7 @@ import {
   rateStrategyCVXHBTC_WBTC,
   rateStrategyCVXIRON_BANK,
   rateStrategyCVXFRAX_USDC,
+  rateStrategyAURADAI_USDC_USDT,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -210,3 +211,17 @@ export const strategyCVXFRAX_USDC: IReserveParams = {
   collateralEnabled: true,
   emissionPerSecond: '10',
   };
+
+  export const strategyAURADAI_USDC_USDT: IReserveParams = {
+    strategy: rateStrategyAURADAI_USDC_USDT,
+    baseLTVAsCollateral: '9000',
+    liquidationThreshold: '9300',
+    liquidationBonus: '10200',
+    borrowingEnabled: false,
+    stableBorrowRateEnabled: false,
+    reserveDecimals: '18',
+    aTokenImpl: eContractid.ATokenForCollateral,
+    reserveFactor: '0',
+    collateralEnabled: true,
+    emissionPerSecond: '10',
+    };

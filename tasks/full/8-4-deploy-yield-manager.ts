@@ -23,7 +23,7 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { CRV, CVX, WETH } = poolConfig as ISturdyConfiguration;
+    const { CRV, CVX, BAL, AURA, WETH } = poolConfig as ISturdyConfiguration;
 
     const yieldManager = await deployYieldManager(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
@@ -31,10 +31,12 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     // Set Exchange Token as USDC
     await yieldManager.setExchangeToken(getParamPerNetwork(poolConfig.ReserveAssets, network).USDC);
 
-    // Register reward asset(for now CRV & WETH)
-    await yieldManager.registerAsset(getParamPerNetwork(CRV, network));
-    await yieldManager.registerAsset(getParamPerNetwork(CVX, network));
-    await yieldManager.registerAsset(getParamPerNetwork(WETH, network));
+    // Register reward asset(for now CRV & CVX & BAL & WETH)
+    await yieldManager.registerAsset(getParamPerNetwork(CRV, network), 0);
+    await yieldManager.registerAsset(getParamPerNetwork(CVX, network), 0);
+    await yieldManager.registerAsset(getParamPerNetwork(WETH, network), 0);
+    await yieldManager.registerAsset(getParamPerNetwork(BAL, network), 1);
+    // await yieldManager.registerAsset(getParamPerNetwork(AURA, network));
 
     // Set curve pool for swapping USDC -> DAI via curve
     const curve3Pool = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7';
@@ -43,6 +45,7 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
       getParamPerNetwork(poolConfig.ReserveAssets, network).DAI,
       curve3Pool
     );
+    // Set curve pool for swapping USDC -> USDT via curve
     await yieldManager.setCurvePool(
       getParamPerNetwork(poolConfig.ReserveAssets, network).USDC,
       getParamPerNetwork(poolConfig.ReserveAssets, network).USDT,

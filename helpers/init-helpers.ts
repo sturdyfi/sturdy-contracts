@@ -331,6 +331,16 @@ export const initReservesByHelper = async (
     );
   }
 
+  if (tokenAddresses['auraDAI_USDC_USDT']) {
+    //BAL VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.auraDAI_USDC_USDT);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['auraDAI_USDC_USDT']
+    );
+  }
+
   return gasUsage; // Deprecated
 };
 

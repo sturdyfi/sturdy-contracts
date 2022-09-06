@@ -623,11 +623,11 @@
   },
   "FRAXUSDCLevSwap": {
     "main": {
-      "address": "0x8e078d68ff8C7ac8F6BD496452aE2163BC74eB6F",
+      "address": "0xb17eEB74242e061A37745d879d36FBa21C3a1b26",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x8e078d68ff8C7ac8F6BD496452aE2163BC74eB6F",
+      "address": "0xb17eEB74242e061A37745d879d36FBa21C3a1b26",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

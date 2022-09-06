@@ -73,6 +73,7 @@ export enum eContractid {
   IronBankOracle = 'IronBankOracle',
   FRAXUSDCOracle = 'FRAXUSDCOracle',
   BALDAIUSDCUSDTOracle = 'BALDAIUSDCUSDTOracle',
+  TUSDFRAXBPOracle = 'TUSDFRAXBPOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -131,6 +132,8 @@ export enum eContractid {
   ConvexFRAXUSDCVault = 'ConvexFRAXUSDCVault',
   AuraDAIUSDCUSDTVaultImpl = 'AuraDAIUSDCUSDTVaultImpl',
   AuraDAIUSDCUSDTVault = 'AuraDAIUSDCUSDTVault',
+  ConvexTUSDFRAXBPVaultImpl = 'ConvexTUSDFRAXBPVaultImpl',
+  ConvexTUSDFRAXBPVault = 'ConvexTUSDFRAXBPVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -189,6 +192,7 @@ export enum eContractid {
   MIM3CRVLevSwap = 'MIM3CRVLevSwap',
   FRAXUSDCLevSwap = 'FRAXUSDCLevSwap',
   IRONBANKLevSwap = 'IRONBANKLevSwap',
+  TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
 }
 
@@ -320,6 +324,7 @@ export interface iAssetBase<T> {
   cvxIRON_BANK: T;
   cvxFRAX_USDC: T;
   auraDAI_USDC_USDT: T;
+  cvxTUSD_FRAXBP: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -356,6 +361,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxIRON_BANK'
   | 'cvxFRAX_USDC'
   | 'auraDAI_USDC_USDT'
+  | 'cvxTUSD_FRAXBP'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -401,6 +407,7 @@ export enum TokenContractId {
   cvxIRON_BANK = 'cvxIRON_BANK',
   cvxFRAX_USDC = 'cvxFRAX_USDC',
   auraDAI_USDC_USDT = 'auraDAI_USDC_USDT',
+  cvxTUSD_FRAXBP = 'cvxTUSD_FRAXBP',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -568,6 +575,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   IRON_BANK_LP: iParamsPerNetwork<tEthereumAddress>;
   FRAX_USDC_LP: iParamsPerNetwork<tEthereumAddress>;
   BAL_DAI_USDC_USDT_LP: iParamsPerNetwork<tEthereumAddress>;
+  TUSD_FRAXBP_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   BAL: iParamsPerNetwork<tEthereumAddress>;

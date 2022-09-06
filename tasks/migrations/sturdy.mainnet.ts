@@ -75,6 +75,9 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6-11. Deploy Aura DAI USDC USDT vault');
     await DRE.run('full:deploy-aura-dai-usdc-usdt-vault', { pool: POOL_NAME, verify });
 
+    console.log('6-12. Deploy Convex TUSD FRAXBP vault');
+    await DRE.run('full:deploy-convex-tusd-fraxbp-vault', { pool: POOL_NAME, verify });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME, verify });
 

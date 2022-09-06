@@ -8,6 +8,7 @@ import {
   getConvexMIM3CRVVault,
   getConvexFRAXUSDCVault,
   getConvexIronBankVault,
+  getConvexTUSDFRAXBPVault,
 } from '../../helpers/contracts-getters';
 import {
   deployLeverageSwapManager,
@@ -16,6 +17,7 @@ import {
   deployMIM3CRVLevSwap,
   deployFRAXUSDCLevSwap,
   deployIRONBANKLevSwap,
+  deployTUSDFRAXBPLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -40,6 +42,7 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       FRAX_USDC_LP,
       IRON_BANK_LP,
       MIM_3CRV_LP,
+      TUSD_FRAXBP_LP,
       ReserveAssets,
       ChainlinkAggregator,
     } = poolConfig as ISturdyConfiguration;
@@ -143,6 +146,31 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       mim3crvLevSwap.address
     );
     console.log('MIM3CRVLevSwap: %s', mim3crvLevSwap.address);
+
+    // deploy & register TUSDFRAXBPLevSwap
+    const tusdfraxbpVault = await getConvexTUSDFRAXBPVault();
+    const tusdfraxbpLevSwap = await deployTUSDFRAXBPLevSwap(
+      [
+        getParamPerNetwork(TUSD_FRAXBP_LP, network),
+        tusdfraxbpVault.address,
+        addressProvider.address,
+      ],
+      verify
+    );
+    let TUSDFRAXBPOracleAddress = await sturdyOracle.getSourceOfAsset(
+      getParamPerNetwork(ReserveAssets, network).cvxTUSD_FRAXBP
+    );
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(TUSD_FRAXBP_LP, network)],
+        [TUSDFRAXBPOracleAddress]
+      )
+    );
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).cvxTUSD_FRAXBP,
+      tusdfraxbpLevSwap.address
+    );
+    console.log('TUSDFRAXBPLevSwap: %s', tusdfraxbpLevSwap.address);
 
     console.log(`${CONTRACT_NAME}.address`, leverageManager.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

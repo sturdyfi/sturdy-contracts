@@ -510,8 +510,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     ) = LENDING_POOL.getUserAccountData(_user);
 
-    uint256 withdrawalAmountETH = (totalCollateralETH.percentMul(currentLiquidationThreshold) -
-      totalDebtETH).percentDiv(assetLiquidationThreshold);
+    uint256 withdrawalAmountETH = (((totalCollateralETH * currentLiquidationThreshold) /
+      PercentageMath.PERCENTAGE_FACTOR -
+      totalDebtETH) * PercentageMath.PERCENTAGE_FACTOR) / assetLiquidationThreshold;
 
     uint256 withdrawalAmount = Math.min(
       IERC20(_sAsset).balanceOf(_user),

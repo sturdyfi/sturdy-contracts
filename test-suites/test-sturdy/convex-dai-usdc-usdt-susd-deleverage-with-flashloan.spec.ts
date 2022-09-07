@@ -168,9 +168,12 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      const repayAmount = await varDebtToken.balanceOf(borrower.address);
+
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount,
           principalAmount,
           slippage1,
           slippage2,
@@ -246,9 +249,12 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      const repayAmount = await varDebtToken.balanceOf(borrower.address);
+
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount,
           principalAmount,
           slippage1,
           slippage2,
@@ -324,9 +330,12 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      const repayAmount = await varDebtToken.balanceOf(borrower.address);
+
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount,
           principalAmount,
           slippage1,
           slippage2,
@@ -427,9 +436,11 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      const repayAmount = await varDebtToken.balanceOf(borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
           slippage1,
           slippage2,
@@ -462,7 +473,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
           slippage1,
           slippage2,
@@ -495,7 +507,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
           slippage1,
           slippage2,
@@ -528,7 +541,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
           slippage1,
           slippage2,
@@ -616,9 +630,11 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      const repayAmount = await varDebtToken.balanceOf(borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
           slippage1,
           slippage2,
@@ -651,7 +667,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
           slippage1,
           slippage2,
@@ -684,7 +701,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
           slippage1,
           slippage2,
@@ -717,7 +735,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
           slippage1,
           slippage2,
@@ -805,9 +824,11 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      const repayAmount = await varDebtToken.balanceOf(borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
           slippage1,
           slippage2,
@@ -840,7 +861,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
           slippage1,
           slippage2,
@@ -873,7 +895,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
           slippage1,
           slippage2,
@@ -906,7 +929,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
 
       await susdLevSwap
         .connect(borrower.signer)
-        .leavePositionWithFlashloan(
+        .withdrawWithFlashloan(
+          repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
           slippage1,
           slippage2,

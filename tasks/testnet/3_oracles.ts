@@ -83,6 +83,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           cvxHBTC_WBTC: reserveAssets.cvxHBTC_WBTC,
           cvxIRON_BANK: reserveAssets.cvxIRON_BANK,
           cvxFRAX_USDC: reserveAssets.cvxFRAX_USDC,
+          auraDAI_USDC_USDT: reserveAssets.auraDAI_USDC_USDT,
           USD: UsdAddress,
         },
         fallbackOracle

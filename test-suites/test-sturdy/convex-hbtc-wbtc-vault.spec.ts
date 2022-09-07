@@ -158,7 +158,7 @@ makeSuite('convexHBTCWBTCVault - Process Yield', (testEnv: TestEnv) => {
     await convexHBTCWBTCVault.processYield();
 
     const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
+    const afterBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });

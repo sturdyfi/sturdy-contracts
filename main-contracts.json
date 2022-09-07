@@ -51,10 +51,10 @@
   },
   "LendingPoolImpl": {
     "main": {
-      "address": "0xE5A9447d61084b36f46456D939DFB1a06DE31B3a"
+      "address": "0x9ac2aC2f86aCA7Ea5c764c214c730DC8B0F72262"
     },
     "localhost": {
-      "address": "0xE5A9447d61084b36f46456D939DFB1a06DE31B3a"
+      "address": "0x9ac2aC2f86aCA7Ea5c764c214c730DC8B0F72262"
     }
   },
   "LendingPool": {
@@ -653,11 +653,11 @@
   },
   "SturdyAPRDataProvider": {
     "main": {
-      "address": "0x8F5273205c687508347eb89f81e9b99DA3f01383",
+      "address": "0xAC2EfC7Ec1e06883b181aA167BF2e1feb07615A3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x8F5273205c687508347eb89f81e9b99DA3f01383",
+      "address": "0xAC2EfC7Ec1e06883b181aA167BF2e1feb07615A3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

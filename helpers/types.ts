@@ -72,6 +72,7 @@ export enum eContractid {
   HBTCWBTCOracle = 'HBTCWBTCOracle',
   IronBankOracle = 'IronBankOracle',
   FRAXUSDCOracle = 'FRAXUSDCOracle',
+  BALDAIUSDCUSDTOracle = 'BALDAIUSDCUSDTOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -128,6 +129,8 @@ export enum eContractid {
   ConvexIronBankVault = 'ConvexIronBankVault',
   ConvexFRAXUSDCVaultImpl = 'ConvexFRAXUSDCVaultImpl',
   ConvexFRAXUSDCVault = 'ConvexFRAXUSDCVault',
+  AuraDAIUSDCUSDTVaultImpl = 'AuraDAIUSDCUSDTVaultImpl',
+  AuraDAIUSDCUSDTVault = 'AuraDAIUSDCUSDTVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -178,6 +181,7 @@ export enum eContractid {
   YieldManager = 'YieldManager',
   UniswapAdapter = 'UniswapAdapter',
   CurveswapAdapter = 'CurveswapAdapter',
+  BalancerswapAdapter = 'BalancerswapAdapter',
   LeverageSwapManagerImpl = 'LeverageSwapManagerImpl',
   LeverageSwapManager = 'LeverageSwapManager',
   FRAX3CRVLevSwap = 'FRAX3CRVLevSwap',
@@ -315,6 +319,7 @@ export interface iAssetBase<T> {
   cvxHBTC_WBTC: T;
   cvxIRON_BANK: T;
   cvxFRAX_USDC: T;
+  auraDAI_USDC_USDT: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -350,6 +355,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxHBTC_WBTC'
   | 'cvxIRON_BANK'
   | 'cvxFRAX_USDC'
+  | 'auraDAI_USDC_USDT'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -394,6 +400,7 @@ export enum TokenContractId {
   cvxHBTC_WBTC = 'cvxHBTC_WBTC',
   cvxIRON_BANK = 'cvxIRON_BANK',
   cvxFRAX_USDC = 'cvxFRAX_USDC',
+  auraDAI_USDC_USDT = 'auraDAI_USDC_USDT',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -560,8 +567,11 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   HBTC_WBTC_LP: iParamsPerNetwork<tEthereumAddress>;
   IRON_BANK_LP: iParamsPerNetwork<tEthereumAddress>;
   FRAX_USDC_LP: iParamsPerNetwork<tEthereumAddress>;
+  BAL_DAI_USDC_USDT_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
+  BAL: iParamsPerNetwork<tEthereumAddress>;
+  AURA: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

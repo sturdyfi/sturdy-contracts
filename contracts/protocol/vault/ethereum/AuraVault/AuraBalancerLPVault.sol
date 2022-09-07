@@ -19,42 +19,42 @@ interface IRewards {
 }
 
 /**
- * @title ConvexCurveLPVault
- * @notice Curve LP Token Vault by using Convex on Ethereum
+ * @title AuraBalancerLPVault
+ * @notice Balancer LP Token Vault by using Aura on Ethereum
  * @author Sturdy
  **/
-contract ConvexCurveLPVault is IncentiveVault {
+contract AuraBalancerLPVault is IncentiveVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  IConvexBooster internal constant CONVEX_BOOSTER =
-    IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
-  address internal curveLPToken;
+  IConvexBooster internal constant AURA_BOOSTER =
+    IConvexBooster(0x7818A1DA7BD1E64c199029E86Ba244a9798eEE10);
+  address internal balancerLPToken;
   address internal internalAssetToken;
-  uint256 internal convexPoolId;
+  uint256 internal auraPoolId;
 
   uint256 internal _incentiveRatio;
 
   /**
    * @dev Emitted on setConfiguration()
-   * @param _curveLpToken The address of Curve LP Token
-   * @param _convexPoolId The convex pool Id
+   * @param _balancerLpToken The address of Balancer LP Token
+   * @param _auraPoolId The aura pool Id
    * @param _internalToken The address of internal asset
    */
-  event SetParameters(address _curveLpToken, uint256 _convexPoolId, address _internalToken);
+  event SetParameters(address _balancerLpToken, uint256 _auraPoolId, address _internalToken);
 
   /**
-   * @dev The function to set parameters related to convex/curve
+   * @dev The function to set parameters related to aura/balancer
    * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
-   * @param _lpToken The address of Curve LP Token which will be used in vault
-   * @param _poolId  The convex pool Id for Curve LP Token
+   * @param _lpToken The address of Balancer LP Token which will be used in vault
+   * @param _poolId  The aura pool Id for Balancer LP Token
    */
   function setConfiguration(address _lpToken, uint256 _poolId) external payable onlyAdmin {
     require(_lpToken != address(0), Errors.VT_INVALID_CONFIGURATION);
     require(internalAssetToken == address(0), Errors.VT_INVALID_CONFIGURATION);
 
-    curveLPToken = _lpToken;
-    convexPoolId = _poolId;
+    balancerLPToken = _lpToken;
+    auraPoolId = _poolId;
     SturdyInternalAsset _interalToken = new SturdyInternalAsset(
       string(abi.encodePacked('Sturdy ', IERC20Detailed(_lpToken).symbol())),
       string(abi.encodePacked('c', IERC20Detailed(_lpToken).symbol())),
@@ -78,7 +78,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The address of rewards token
    */
   function getBaseRewardPool() internal view returns (address) {
-    IConvexBooster.PoolInfo memory poolInfo = CONVEX_BOOSTER.poolInfo(convexPoolId);
+    IConvexBooster.PoolInfo memory poolInfo = AURA_BOOSTER.poolInfo(auraPoolId);
     return poolInfo.crvRewards;
   }
 
@@ -127,15 +127,15 @@ contract ConvexCurveLPVault is IncentiveVault {
    * - Caller is anyone
    */
   function processYield() external override {
-    // Claim Rewards(CRV, CVX, Extra incentive tokens)
+    // Claim Rewards(BAL, AURA, Extra incentive tokens)
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).getReward();
 
-    // Transfer CRV to YieldManager
+    // Transfer BAL to YieldManager
     _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
 
-    // Transfer CVX to YieldManager
-    _transferYield(CONVEX_BOOSTER.minter());
+    // Transfer AURA to YieldManager
+    _transferYield(AURA_BOOSTER.minter());
   }
 
   /**
@@ -186,15 +186,15 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (address, uint256)
   {
-    // receive Curve LP Token from user
-    address token = curveLPToken;
+    // receive Balancer LP Token from user
+    address token = balancerLPToken;
     require(_asset == token, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
-    // deposit Curve LP Token to Convex
-    IERC20(token).safeApprove(address(CONVEX_BOOSTER), 0);
-    IERC20(token).safeApprove(address(CONVEX_BOOSTER), _amount);
-    CONVEX_BOOSTER.deposit(convexPoolId, _amount, true);
+    // deposit Balancer LP Token to Aura
+    IERC20(token).safeApprove(address(AURA_BOOSTER), 0);
+    IERC20(token).safeApprove(address(AURA_BOOSTER), _amount);
+    AURA_BOOSTER.deposit(auraPoolId, _amount, true);
 
     // mint
     address internalAsset = internalAssetToken;
@@ -219,7 +219,7 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (address, uint256)
   {
-    require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    require(_asset == balancerLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     // In this vault, return same amount of asset.
     return (internalAssetToken, _amount);
@@ -231,12 +231,12 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The amount of collateral external asset
    */
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
-    // Withdraw from Convex
+    // Withdraw from Aura
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false);
 
-    // Deliver Curve LP Token
-    IERC20(curveLPToken).safeTransfer(_to, _amount);
+    // Deliver Balancer LP Token
+    IERC20(balancerLPToken).safeTransfer(_to, _amount);
 
     // Burn
     SturdyInternalAsset(internalAssetToken).burn(address(this), _amount);
@@ -256,7 +256,7 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (uint256)
   {
-    require(_asset == curveLPToken, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(_asset == balancerLPToken, Errors.LP_LIQUIDATION_CALL_FAILED);
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     return _withdraw(_amount, msg.sender);

@@ -591,6 +591,15 @@ export const getAuraDAIUSDCUSDTVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getConvexTUSDFRAXBPVault = async (address?: tEthereumAddress) =>
+  await ConvexCurveLPVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ConvexTUSDFRAXBPVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVaultFactory.connect(
     address ||

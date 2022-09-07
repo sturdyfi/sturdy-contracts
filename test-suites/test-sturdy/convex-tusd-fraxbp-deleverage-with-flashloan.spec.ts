@@ -23,7 +23,7 @@ const mint = async (
   user: SignerWithAddress,
   testEnv: TestEnv
 ) => {
-  const { usdc, dai, usdt, IRON_BANK_LP } = testEnv;
+  const { usdc, dai, usdt, TUSD_FRAXBP_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   let ownerAddress;
   let token;
@@ -37,9 +37,9 @@ const mint = async (
   } else if (reserveSymbol == 'USDT') {
     ownerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
     token = usdt;
-  } else if (reserveSymbol == 'IRON_BANK_LP') {
-    ownerAddress = '0xd4dfbde97c93e56d1e41325bb428c18299db203f';
-    token = IRON_BANK_LP;
+  } else if (reserveSymbol == 'TUSD_FRAXBP_LP') {
+    ownerAddress = '0x5180db0237291A6449DdA9ed33aD90a38787621c';
+    token = TUSD_FRAXBP_LP;
   }
 
   await impersonateAccountsHardhat([ownerAddress]);
@@ -86,33 +86,35 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
-makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
+makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
-  const LPAmount = '200';
+  const LPAmount = '1000';
   const slippage2 = '100';
   const slippage1 = '100';
   const iterations = 3;
-  let ironbankLevSwap = {} as GeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxiron_bank } = testEnv;
-    ironbankLevSwap = await getCollateralLevSwapper(testEnv, cvxiron_bank.address);
-    ltv = (await helpersContract.getReserveConfigurationData(cvxiron_bank.address)).ltv.toString();
+    const { helpersContract, cvxtusd_fraxbp } = testEnv;
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
   });
   describe('leavePosition - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, aCVXIRON_BANK, IRON_BANK_LP, pool, helpersContract } = testEnv;
+      const { users, usdt, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          IRON_BANK_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -125,8 +127,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
+        principalAmount
+      );
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
@@ -134,14 +139,14 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
@@ -154,16 +159,16 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      const balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.toString(),
@@ -171,25 +176,25 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdt.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
-      const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
+      const { users, usdc, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          IRON_BANK_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -201,8 +206,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
+        principalAmount
+      );
 
       // approve delegate borrow
       const usdcDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
@@ -210,14 +218,14 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
@@ -230,16 +238,16 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      const balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.toString(),
@@ -247,25 +255,25 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdc.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
-      const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
+      const { users, dai, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          IRON_BANK_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -277,8 +285,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
+        principalAmount
+      );
 
       // approve delegate borrow
       const daiDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
@@ -286,14 +297,14 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
@@ -306,16 +317,16 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      const balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.toString(),
@@ -323,10 +334,10 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           dai.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
-      const afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -334,33 +345,35 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
   });
 });
 
-makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
+makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
-  const LPAmount = '200';
+  const LPAmount = '1000';
   const slippage2 = '100';
   const slippage1 = '100';
   const iterations = 3;
-  let ironbankLevSwap = {} as GeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxiron_bank } = testEnv;
-    ironbankLevSwap = await getCollateralLevSwapper(testEnv, cvxiron_bank.address);
-    ltv = (await helpersContract.getReserveConfigurationData(cvxiron_bank.address)).ltv.toString();
+    const { helpersContract, cvxtusd_fraxbp } = testEnv;
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
   });
   describe('leavePosition - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, aCVXIRON_BANK, IRON_BANK_LP, pool, helpersContract } = testEnv;
+      const { users, usdt, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          IRON_BANK_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -373,8 +386,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
+        principalAmount
+      );
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
@@ -382,14 +398,14 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
@@ -404,17 +420,17 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
 
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
@@ -422,11 +438,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdt.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -443,12 +459,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
@@ -456,11 +472,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdt.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -477,12 +493,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
@@ -490,11 +506,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdt.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -511,12 +527,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
@@ -524,11 +540,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdt.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -542,16 +558,16 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
+      const { users, usdc, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          IRON_BANK_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -563,8 +579,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
+        principalAmount
+      );
 
       // approve delegate borrow
       const usdcDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
@@ -572,14 +591,14 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
@@ -594,17 +613,17 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
 
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
@@ -612,11 +631,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdc.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -633,12 +652,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
@@ -646,11 +665,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdc.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -667,12 +686,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
@@ -680,11 +699,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdc.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -701,12 +720,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
@@ -714,11 +733,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           usdc.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -732,16 +751,16 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, IRON_BANK_LP, aCVXIRON_BANK, pool, helpersContract } = testEnv;
+      const { users, dai, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(IRON_BANK_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          IRON_BANK_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -753,8 +772,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('IRON_BANK_LP', principalAmount, borrower, testEnv);
-      await IRON_BANK_LP.connect(borrower.signer).approve(ironbankLevSwap.address, principalAmount);
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
+        principalAmount
+      );
 
       // approve delegate borrow
       const daiDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
@@ -762,14 +784,14 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(ironbankLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
@@ -784,17 +806,17 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
 
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
@@ -802,11 +824,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           dai.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -823,12 +845,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
@@ -836,11 +858,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           dai.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -857,12 +879,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
@@ -870,11 +892,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           dai.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -891,12 +913,12 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aCVXIRON_BANK.balanceOf(borrower.address);
-      await aCVXIRON_BANK
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(ironbankLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await ironbankLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
@@ -904,11 +926,11 @@ makeSuite('IRONBANK Deleverage with Flashloan', (testEnv) => {
           slippage1,
           slippage2,
           dai.address,
-          aCVXIRON_BANK.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await IRON_BANK_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );

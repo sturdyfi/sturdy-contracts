@@ -23,7 +23,7 @@ const mint = async (
   user: SignerWithAddress,
   testEnv: TestEnv
 ) => {
-  const { usdc, dai, usdt, DAI_USDC_USDT_SUSD_LP } = testEnv;
+  const { usdc, dai, usdt, TUSD_FRAXBP_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   let ownerAddress;
   let token;
@@ -37,9 +37,9 @@ const mint = async (
   } else if (reserveSymbol == 'USDT') {
     ownerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
     token = usdt;
-  } else if (reserveSymbol == 'DAI_USDC_USDT_SUSD_LP') {
-    ownerAddress = '0x1f9bB27d0C66fEB932f3F8B02620A128d072f3d8';
-    token = DAI_USDC_USDT_SUSD_LP;
+  } else if (reserveSymbol == 'TUSD_FRAXBP_LP') {
+    ownerAddress = '0x5180db0237291A6449DdA9ed33aD90a38787621c';
+    token = TUSD_FRAXBP_LP;
   }
 
   await impersonateAccountsHardhat([ownerAddress]);
@@ -102,45 +102,45 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
-makeSuite('SUSD Deleverage', (testEnv) => {
+makeSuite('TUSD_FRAXBP Deleverage without Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
-  const LPAmount = '1000';
   const slippage = '100';
+  const LPAmount = '1000';
   const iterations = 3;
-  let susdLevSwap = {} as GeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
-    susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
+    const { helpersContract, cvxtusd_fraxbp } = testEnv;
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
     ltv = (
-      await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
     ).ltv.toString();
   });
   describe('leavePosition(): Prerequisite checker', () => {
     it('should be reverted if try to use zero amount', async () => {
-      const { dai, aCVXDAI_USDC_USDT_SUSD } = testEnv;
+      const { dai, aCVXTUSD_FRAXBP } = testEnv;
       const principalAmount = 0;
       await expect(
-        susdLevSwap.leavePosition(
+        tusdfraxbpLevSwap.leavePosition(
           principalAmount,
           slippage,
           iterations,
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         )
       ).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
-      const { aDai, aCVXDAI_USDC_USDT_SUSD } = testEnv;
+      const { aDai, aCVXTUSD_FRAXBP } = testEnv;
       const principalAmount = 10;
       await expect(
-        susdLevSwap.leavePosition(
+        tusdfraxbpLevSwap.leavePosition(
           principalAmount,
           slippage,
           iterations,
           aDai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         )
       ).to.be.revertedWith('114');
     });
@@ -148,31 +148,29 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const { dai } = testEnv;
       const principalAmount = 10;
       await expect(
-        susdLevSwap.leavePosition(principalAmount, slippage, iterations, dai.address, ZERO_ADDRESS)
+        tusdfraxbpLevSwap.leavePosition(
+          principalAmount,
+          slippage,
+          iterations,
+          dai.address,
+          ZERO_ADDRESS
+        )
       ).to.be.revertedWith('112');
     });
   });
   describe('leavePosition() - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
-      const {
-        users,
-        usdt,
-        aUsdt,
-        aCVXDAI_USDC_USDT_SUSD,
-        DAI_USDC_USDT_SUSD_LP,
-        pool,
-        helpersContract,
-      } = testEnv;
+      const { users, usdt, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -185,9 +183,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -197,14 +195,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
@@ -217,49 +215,48 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      const balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', usdt.address, aCVXDAI_USDC_USDT_SUSD.address);
+        .leavePosition(principalAmount, '100', '10', usdt.address, aCVXTUSD_FRAXBP.address);
 
-      const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, DAI_USDC_USDT_SUSD_LP, aCVXDAI_USDC_USDT_SUSD, pool, helpersContract } =
-        testEnv;
+      const { users, usdc, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
           usdc.address
         )
       ).toString();
-      // Depositor deposits USDT to Lending Pool
+      // Depositor deposits USDC to Lending Pool
       await mint('USDC', amountToDelegate, depositor, testEnv);
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -269,14 +266,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
@@ -289,35 +286,34 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      const balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', usdc.address, aCVXDAI_USDC_USDT_SUSD.address);
+        .leavePosition(principalAmount, '100', '10', usdc.address, aCVXTUSD_FRAXBP.address);
 
-      const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, DAI_USDC_USDT_SUSD_LP, aCVXDAI_USDC_USDT_SUSD, pool, helpersContract } =
-        testEnv;
+      const { users, dai, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -329,9 +325,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -341,14 +337,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
@@ -361,19 +357,19 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      const balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .leavePosition(principalAmount, '100', '10', dai.address, aCVXDAI_USDC_USDT_SUSD.address);
+        .leavePosition(principalAmount, '100', '10', dai.address, aCVXTUSD_FRAXBP.address);
 
-      const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -381,43 +377,35 @@ makeSuite('SUSD Deleverage', (testEnv) => {
   });
 });
 
-makeSuite('SUSD Deleverage', (testEnv) => {
+makeSuite('TUSD_FRAXBP Deleverage without Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage = '100';
   const iterations = 3;
-  let susdLevSwap = {} as GeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
-    susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
+    const { helpersContract, cvxtusd_fraxbp } = testEnv;
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
     ltv = (
-      await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
     ).ltv.toString();
   });
-
   describe('leavePosition() - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {
-      const {
-        users,
-        usdt,
-        aUsdt,
-        aCVXDAI_USDC_USDT_SUSD,
-        DAI_USDC_USDT_SUSD_LP,
-        pool,
-        helpersContract,
-      } = testEnv;
+      const { users, usdt, aUsdt, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } =
+        testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -430,9 +418,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -442,14 +430,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
@@ -461,30 +449,29 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         oneEther.toFixed(0),
         INVALID_HF
       );
-
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           (Number(principalAmount) / 10).toFixed(),
           '100',
           '10',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -501,23 +488,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 2).toFixed(),
           '100',
           '10',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -534,23 +521,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 3).toFixed(),
           '100',
           '10',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -567,23 +554,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 4).toFixed(),
           '100',
           '10',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -597,18 +584,17 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, aCVXDAI_USDC_USDT_SUSD, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } =
-        testEnv;
+      const { users, usdc, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -621,9 +607,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -633,14 +619,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
@@ -652,30 +638,29 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         oneEther.toFixed(0),
         INVALID_HF
       );
-
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           (Number(principalAmount) / 10).toFixed(),
           '100',
           '10',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -692,23 +677,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 2).toFixed(),
           '100',
           '10',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -725,23 +710,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 3).toFixed(),
           '100',
           '10',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -758,23 +743,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 4).toFixed(),
           '100',
           '10',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -788,18 +773,17 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, aCVXDAI_USDC_USDT_SUSD, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } =
-        testEnv;
+      const { users, dai, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -812,9 +796,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -824,14 +808,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
@@ -843,30 +827,29 @@ makeSuite('SUSD Deleverage', (testEnv) => {
         oneEther.toFixed(0),
         INVALID_HF
       );
-
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           (Number(principalAmount) / 10).toFixed(),
           '100',
           '10',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -883,23 +866,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 2).toFixed(),
           '100',
           '10',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -916,23 +899,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 3).toFixed(),
           '100',
           '10',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -949,23 +932,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(principalAmount) / 10) * 4).toFixed(),
           '100',
           '10',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '99'
       );
@@ -981,35 +964,35 @@ makeSuite('SUSD Deleverage', (testEnv) => {
   });
 });
 
-makeSuite('SUSD Deleverage', (testEnv) => {
+makeSuite('TUSD_FRAXBP Deleverage without Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage = '100';
   const iterations = 3;
-  let susdLevSwap = {} as GeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
-    susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
+    const { helpersContract, cvxtusd_fraxbp } = testEnv;
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
     ltv = (
-      await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
     ).ltv.toString();
   });
   describe('leavePosition() - increase healthFactor:', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, aCVXDAI_USDC_USDT_SUSD, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } =
+      const { users, usdt, aUsdt, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } =
         testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -1022,9 +1005,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -1034,14 +1017,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdt.address);
 
@@ -1058,31 +1041,31 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const collateralAmountFromDebt = (
         await calcCollateralAmountFromEth(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           userGlobalDataAfterEnter.totalDebtETH
         )
       ).toString();
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% debt amount
-      let balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           (Number(collateralAmountFromDebt) / 10).toFixed(),
           '100',
           '0',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1094,23 +1077,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 20% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 2).toFixed(),
           '100',
           '0',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1122,23 +1105,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 30% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 3).toFixed(),
           '100',
           '0',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1150,23 +1133,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 40% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 4).toFixed(),
           '100',
           '0',
           usdt.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1178,18 +1161,17 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, aCVXDAI_USDC_USDT_SUSD, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } =
-        testEnv;
+      const { users, usdc, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -1202,9 +1184,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -1214,14 +1196,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, usdc.address);
 
@@ -1238,31 +1220,31 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const collateralAmountFromDebt = (
         await calcCollateralAmountFromEth(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           userGlobalDataAfterEnter.totalDebtETH
         )
       ).toString();
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% debt amount
-      let balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           (Number(collateralAmountFromDebt) / 10).toFixed(),
           '100',
           '0',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1274,23 +1256,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 20% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 2).toFixed(),
           '100',
           '0',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1302,23 +1284,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 30% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 3).toFixed(),
           '100',
           '0',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1330,23 +1312,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 40% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 4).toFixed(),
           '100',
           '0',
           usdc.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1358,18 +1340,17 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, aCVXDAI_USDC_USDT_SUSD, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } =
-        testEnv;
+      const { users, dai, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
           iterations,
@@ -1382,9 +1363,9 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
-      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
-        susdLevSwap.address,
+      await mint('TUSD_FRAXBP_LP', principalAmount, borrower, testEnv);
+      await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+        tusdfraxbpLevSwap.address,
         principalAmount
       );
 
@@ -1394,14 +1375,14 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(susdLevSwap.address, amountToDelegate);
+        .approveDelegation(tusdfraxbpLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPosition(principalAmount, iterations, ltv, dai.address);
 
@@ -1418,31 +1399,31 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       const collateralAmountFromDebt = (
         await calcCollateralAmountFromEth(
           testEnv,
-          DAI_USDC_USDT_SUSD_LP.address,
+          TUSD_FRAXBP_LP.address,
           userGlobalDataAfterEnter.totalDebtETH
         )
       ).toString();
-      const beforeBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% debt amount
-      let balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      let balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           (Number(collateralAmountFromDebt) / 10).toFixed(),
           '100',
           '0',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1454,23 +1435,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 20% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 2).toFixed(),
           '100',
           '0',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1482,23 +1463,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 30% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 3).toFixed(),
           '100',
           '0',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -1510,23 +1491,23 @@ makeSuite('SUSD Deleverage', (testEnv) => {
       );
 
       //de-leverage 40% debt amount
-      balanceInSturdy = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
-      await aCVXDAI_USDC_USDT_SUSD
+      balanceInSturdy = await aCVXTUSD_FRAXBP.balanceOf(borrower.address);
+      await aCVXTUSD_FRAXBP
         .connect(borrower.signer)
-        .approve(susdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-      await susdLevSwap
+      await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .leavePosition(
           ((Number(collateralAmountFromDebt) / 10) * 4).toFixed(),
           '100',
           '0',
           dai.address,
-          aCVXDAI_USDC_USDT_SUSD.address
+          aCVXTUSD_FRAXBP.address
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),

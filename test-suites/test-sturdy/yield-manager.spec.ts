@@ -24,7 +24,8 @@ const simulateYield = async (testEnv: TestEnv) => {
   // // await simulateYieldInConvexDOLAVault(testEnv);
   // await simulateYieldInConvexFRAXVault(testEnv);
   // // await simulateYieldInConvexRocketPoolETHVault(testEnv);
-  await simulateYieldInAuraDAIUSDCUSDTVault(testEnv);
+  // await simulateYieldInAuraDAIUSDCUSDTVault(testEnv);
+  await simulateYieldInConvexTUSDFRAXBPVault(testEnv);
 };
 
 const simulateYieldInLidoVault = async (testEnv: TestEnv) => {
@@ -179,6 +180,39 @@ const simulateYieldInAuraDAIUSDCUSDTVault = async (testEnv: TestEnv) => {
   await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
   // process yield, so yield should be sented to YieldManager
   await auraDAIUSDCUSDTVault.processYield();
+};
+
+const simulateYieldInConvexTUSDFRAXBPVault = async (testEnv: TestEnv) => {
+  const { convexTUSDFRAXBPVault, users, TUSD_FRAXBP_LP } = testEnv;
+  const ethers = (DRE as any).ethers;
+  const borrower = users[1];
+  const TUSDFRAXBPLPOwnerAddress = '0x5180db0237291A6449DdA9ed33aD90a38787621c';
+  const depositTUSDFRAXBP = '1552';
+  const depositTUSDFRAXBPAmount = await convertToCurrencyDecimals(
+    TUSD_FRAXBP_LP.address,
+    depositTUSDFRAXBP
+  );
+
+  await impersonateAccountsHardhat([TUSDFRAXBPLPOwnerAddress]);
+  let signer = await ethers.provider.getSigner(TUSDFRAXBPLPOwnerAddress);
+
+  //transfer to borrower
+  await TUSD_FRAXBP_LP.connect(signer).transfer(borrower.address, depositTUSDFRAXBPAmount);
+
+  //approve protocol to access borrower wallet
+  await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+    convexTUSDFRAXBPVault.address,
+    APPROVAL_AMOUNT_LENDING_POOL
+  );
+
+  // deposit collateral to borrow
+  await convexTUSDFRAXBPVault
+    .connect(borrower.signer)
+    .depositCollateral(TUSD_FRAXBP_LP.address, depositTUSDFRAXBPAmount);
+
+  await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
+  // process yield, so yield should be sented to YieldManager
+  await convexTUSDFRAXBPVault.processYield();
 };
 
 const depositUSDC = async (
@@ -354,46 +388,46 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
 });
 
 makeSuite('Yield Manger: distribute yield', (testEnv) => {
-  it('Should be failed when use invalid asset index', async () => {
-    const { yieldManager, usdc, CRV, CVX } = testEnv;
-    const assetCount = await yieldManager.getAssetCount();
-    const paths = [
-      {
-        u_path: {
-          tokens: [CRV.address, usdc.address],
-          fees: [100],
-        },
-        b_path: {
-          tokens: [],
-          poolIds: [],
-        },
-      },
-    ];
-    const slippage = 500;
-    await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.revertedWith(
-      '77'
-    );
-  });
-  it('Should be failed when use invalid swap path', async () => {
-    const { yieldManager, usdc, CRV, CVX } = testEnv;
-    const assetCount = 2;
-    const paths = [
-      {
-        u_path: {
-          tokens: [CRV.address, usdc.address],
-          fees: [100],
-        },
-        b_path: {
-          tokens: [],
-          poolIds: [],
-        },
-      },
-    ];
-    const slippage = 500;
-    await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
-      '100'
-    );
-  });
+  // it('Should be failed when use invalid asset index', async () => {
+  //   const { yieldManager, usdc, CRV, CVX } = testEnv;
+  //   const assetCount = await yieldManager.getAssetCount();
+  //   const paths = [
+  //     {
+  //       u_path: {
+  //         tokens: [CRV.address, usdc.address],
+  //         fees: [100],
+  //       },
+  //       b_path: {
+  //         tokens: [],
+  //         poolIds: [],
+  //       },
+  //     },
+  //   ];
+  //   const slippage = 500;
+  //   await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.revertedWith(
+  //     '77'
+  //   );
+  // });
+  // it('Should be failed when use invalid swap path', async () => {
+  //   const { yieldManager, usdc, CRV, CVX } = testEnv;
+  //   const assetCount = 2;
+  //   const paths = [
+  //     {
+  //       u_path: {
+  //         tokens: [CRV.address, usdc.address],
+  //         fees: [100],
+  //       },
+  //       b_path: {
+  //         tokens: [],
+  //         poolIds: [],
+  //       },
+  //     },
+  //   ];
+  //   const slippage = 500;
+  //   await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
+  //     '100'
+  //   );
+  // });
   it('Should be failed when use swap path including invalid tokens', async () => {
     const { yieldManager, usdc, users } = testEnv;
     const assetCount = 1;

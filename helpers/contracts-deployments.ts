@@ -61,6 +61,7 @@ import {
   getReserveLogicLibrary,
   getAuraDAIUSDCUSDTVault,
   getBalancerswapAdapterAddress,
+  getConvexTUSDFRAXBPVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -157,6 +158,8 @@ import {
   SturdyAPRDataProviderFactory,
   AuraBalancerLPVaultFactory,
   BALDAIUSDCUSDTOracleFactory,
+  TUSDFRAXBPOracleFactory,
+  TUSDFRAXBPLevSwapFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -514,6 +517,14 @@ export const deployBALDAIUSDCUSDTOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BALDAIUSDCUSDTOracleFactory(await getFirstSigner()).deploy(),
     eContractid.BALDAIUSDCUSDTOracle,
+    [],
+    verify
+  );
+
+export const deployTUSDFRAXBPCOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new TUSDFRAXBPOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.TUSDFRAXBPOracle,
     [],
     verify
   );
@@ -1394,6 +1405,31 @@ export const deployAuraDAIUSDCUSDTVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.AuraDAIUSDCUSDTVault, proxyAddress);
 
   return await getAuraDAIUSDCUSDTVault();
+};
+
+export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexTUSDFRAXBPVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('CONVEX_TUSD_FRAXBP_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('CONVEX_TUSD_FRAXBP_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.ConvexTUSDFRAXBPVault, proxyAddress);
+
+  return await getConvexTUSDFRAXBPVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>
@@ -2642,6 +2678,22 @@ export const deployFRAXUSDCLevSwap = async (
   const levSwap = await withSaveAndVerify(
     await new FRAXUSDCLevSwapFactory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.FRAXUSDCLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployTUSDFRAXBPLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new TUSDFRAXBPLevSwapFactory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.TUSDFRAXBPLevSwap,
     args,
     verify
   );

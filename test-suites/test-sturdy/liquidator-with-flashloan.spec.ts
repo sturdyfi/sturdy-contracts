@@ -39,7 +39,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, parseEther('10'), { value: parseEther('10') });
 
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -126,7 +126,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(FRAX_3CRV_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -216,7 +216,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(MIM_3CRV_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -320,7 +320,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(DAI_USDC_USDT_SUSD_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -415,7 +415,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(IRON_BANK_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -506,7 +506,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(FRAX_USDC_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x47ac0Fb4F2D84898e4D9E7b4DaB3C24507a6D503';
+    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);

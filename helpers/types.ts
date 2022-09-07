@@ -579,6 +579,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   BAL: iParamsPerNetwork<tEthereumAddress>;
+  TUSD: iParamsPerNetwork<tEthereumAddress>;
   AURA: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;

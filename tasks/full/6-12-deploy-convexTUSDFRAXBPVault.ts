@@ -24,8 +24,13 @@ task(`full:deploy-convex-tusd-fraxbp-vault`, `Deploys the ${CONTRACT_NAME} contr
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, TUSD_FRAXBP_LP } =
-      poolConfig as ISturdyConfiguration;
+    const {
+      ReserveAssets,
+      ReserveFactorTreasuryAddress,
+      ChainlinkAggregator,
+      TUSD_FRAXBP_LP,
+      TUSD,
+    } = poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexTUSDFRAXBPVault(verify);
@@ -50,8 +55,16 @@ task(`full:deploy-convex-tusd-fraxbp-vault`, `Deploys the ${CONTRACT_NAME} contr
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(TUSD_FRAXBP_LP, network)],
-        [TUSDFRAXBPOracleAddress, TUSDFRAXBPOracleAddress]
+        [
+          internalAssetAddress,
+          getParamPerNetwork(TUSD_FRAXBP_LP, network),
+          getParamPerNetwork(TUSD, network),
+        ],
+        [
+          TUSDFRAXBPOracleAddress,
+          TUSDFRAXBPOracleAddress,
+          getParamPerNetwork(ChainlinkAggregator, network).TUSD,
+        ]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

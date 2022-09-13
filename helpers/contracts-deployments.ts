@@ -1407,6 +1407,14 @@ export const deployAuraDAIUSDCUSDTVault = async (verify?: boolean) => {
   return await getAuraDAIUSDCUSDTVault();
 };
 
+export const deployConvexTUSDFRAXBPVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.ConvexTUSDFRAXBPVaultImpl,
+    [],
+    verify
+  );
+
 export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
     await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),

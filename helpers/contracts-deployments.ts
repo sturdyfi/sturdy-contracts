@@ -772,8 +772,8 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
       [
         tokenSymbol,
         tokenSymbol,
-        configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>].reserveDecimals ||
-          defaultDecimals.toString(),
+        (configData[tokenSymbol as keyof iMultiPoolsAssets<IReserveParams>] as IReserveParams)
+          .reserveDecimals || defaultDecimals.toString(),
       ],
       verify
     );

@@ -9,6 +9,7 @@ import {
 import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
 import SturdyConfig from '../markets/sturdy';
 import FantomConfig from '../markets/ftm';
+import EthConfig from '../markets/eth';
 import { CommonsConfig } from '../markets/sturdy/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
@@ -21,6 +22,7 @@ export enum ConfigNames {
   Commons = 'Commons',
   Sturdy = 'Sturdy',
   Fantom = 'Fantom',
+  Eth = 'Eth',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
@@ -29,6 +31,8 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
       return SturdyConfig;
     case ConfigNames.Fantom:
       return FantomConfig;
+    case ConfigNames.Eth:
+      return EthConfig;
     case ConfigNames.Commons:
       return CommonsConfig;
     default:
@@ -48,6 +52,9 @@ export const getReservesConfigByPool = (pool: SturdyPools): iMultiPoolsAssets<IR
       },
       [SturdyPools.fantom]: {
         ...FantomConfig.ReservesConfig,
+      },
+      [SturdyPools.eth]: {
+        ...EthConfig.ReservesConfig,
       },
     },
     pool

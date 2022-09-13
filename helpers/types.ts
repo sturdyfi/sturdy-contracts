@@ -35,6 +35,7 @@ export enum EthereumNetworkNames {
 export enum SturdyPools {
   proto = 'proto',
   fantom = 'fantom',
+  eth = 'eth',
 }
 
 export enum eContractid {
@@ -384,9 +385,13 @@ export type iFantomPoolAssets<T> = Pick<
   | 'mooMIM_2CRV'
 >;
 
-export type iMultiPoolsAssets<T> = iAssetCommon<T> | iSturdyPoolAssets<T>;
+export type iEthPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'WETH'>;
 
-export type iSturdyPoolTokens<T> = Omit<iSturdyPoolAssets<T>, 'ETH'>;
+export type iMultiPoolsAssets<T> =
+  | iAssetCommon<T>
+  | iSturdyPoolAssets<T>
+  | iFantomPoolAssets<T>
+  | iEthPoolAssets<T>;
 
 export type iAssetAggregatorBase<T> = iAssetsWithoutETH<T>;
 
@@ -457,7 +462,10 @@ export interface IMarketRates {
   borrowRate: string;
 }
 
-export type iParamsPerNetwork<T> = iEthereumParamsPerNetwork<T> | iFantomParamsPerNetwork<T>;
+export type iParamsPerNetwork<T> =
+  | iEthereumParamsPerNetwork<T>
+  | iFantomParamsPerNetwork<T>
+  | iEthParamsPerNetwork<T>;
 
 export interface iParamsPerNetworkAll<T> extends iEthereumParamsPerNetwork<T> {}
 
@@ -480,9 +488,16 @@ export interface iFantomParamsPerNetwork<T> {
   [eFantomNetwork.tenderlyFTM]: T;
 }
 
+export interface iEthParamsPerNetwork<T> {
+  [eEthereumNetwork.main]: T;
+  [eEthereumNetwork.tenderly]: T;
+  [eEthereumNetwork.goerli]: T;
+}
+
 export interface iParamsPerPool<T> {
   [SturdyPools.proto]: T;
   [SturdyPools.fantom]: T;
+  [SturdyPools.eth]: T;
 }
 
 export interface iBasicDistributionParams {
@@ -621,8 +636,16 @@ export interface IFantomConfiguration extends ICommonConfiguration {
   AavePool: iParamsPerNetwork<tEthereumAddress>;
 }
 
+export interface IEthConfiguration extends ICommonConfiguration {
+  ReservesConfig: iEthPoolAssets<IReserveParams>;
+}
+
 export interface ITokenAddress {
   [token: string]: tEthereumAddress;
 }
 
-export type PoolConfiguration = ICommonConfiguration | ISturdyConfiguration | IFantomConfiguration;
+export type PoolConfiguration =
+  | ICommonConfiguration
+  | ISturdyConfiguration
+  | IFantomConfiguration
+  | IEthConfiguration;

@@ -19,12 +19,12 @@ const { expect } = require('chai');
 
 makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
   let strategyInstance: DefaultReserveInterestRateStrategy;
-  let dai: MintableERC20;
-  let aDai: AToken;
+  let weth: MintableERC20;
+  let aWeth: AToken;
 
   before(async () => {
-    dai = testEnv.dai;
-    aDai = testEnv.aDai;
+    weth = testEnv.weth;
+    aWeth = testEnv.aWeth;
 
     const { addressesProvider } = testEnv;
 
@@ -51,7 +51,7 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
       2: currentVariableBorrowRate,
     } = await strategyInstance[
       'calculateInterestRates(address,address,uint256,uint256,uint256,uint256,uint256,uint256)'
-    ](dai.address, aDai.address, 0, 0, 0, 0, 0, strategyDAI.reserveFactor);
+    ](weth.address, aWeth.address, 0, 0, 0, 0, 0, strategyDAI.reserveFactor);
 
     expect(currentLiquidityRate.toString()).to.be.equal('0', 'Invalid liquidity rate');
     expect(currentStableBorrowRate.toString()).to.be.equal('0', 'Invalid stable rate');
@@ -69,8 +69,8 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
     } = await strategyInstance[
       'calculateInterestRates(address,address,uint256,uint256,uint256,uint256,uint256,uint256)'
     ](
-      dai.address,
-      aDai.address,
+      weth.address,
+      aWeth.address,
       '200000000000000000',
       '0',
       '0',
@@ -107,8 +107,8 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
     } = await strategyInstance[
       'calculateInterestRates(address,address,uint256,uint256,uint256,uint256,uint256,uint256)'
     ](
-      dai.address,
-      aDai.address,
+      weth.address,
+      aWeth.address,
       '0',
       '0',
       '0',
@@ -144,8 +144,8 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
     } = await strategyInstance[
       'calculateInterestRates(address,address,uint256,uint256,uint256,uint256,uint256,uint256)'
     ](
-      dai.address,
-      aDai.address,
+      weth.address,
+      aWeth.address,
       '0',
       '0',
       '400000000000000000',

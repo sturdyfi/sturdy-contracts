@@ -10,8 +10,8 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
 
     const providers = await registry.getAddressesProvidersList();
 
-    expect(providers.length).to.be.equal(1, 'Invalid length of the addresses providers list');
-    expect(providers[0].toString()).to.be.equal(
+    expect(providers.length).to.be.equal(2, 'Invalid length of the addresses providers list');
+    expect(providers[1].toString()).to.be.equal(
       addressesProvider.address,
       ' Invalid addresses provider added to the list'
     );
@@ -34,8 +34,8 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
 
     const providers = await registry.getAddressesProvidersList();
 
-    expect(providers.length).to.be.equal(2, 'Invalid length of the addresses providers list');
-    expect(providers[1].toString()).to.be.equal(
+    expect(providers.length).to.be.equal(3, 'Invalid length of the addresses providers list');
+    expect(providers[2].toString()).to.be.equal(
       users[1].address,
       ' Invalid addresses provider added to the list'
     );
@@ -52,12 +52,12 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
 
     const providers = await registry.getAddressesProvidersList();
 
-    expect(providers.length).to.be.equal(2, 'Invalid length of the addresses providers list');
-    expect(providers[0].toString()).to.be.equal(
+    expect(providers.length).to.be.equal(3, 'Invalid length of the addresses providers list');
+    expect(providers[1].toString()).to.be.equal(
       addressesProvider.address,
       ' Invalid addresses provider added to the list'
     );
-    expect(providers[1].toString()).to.be.equal(ZERO_ADDRESS, ' Invalid addresses');
+    expect(providers[2].toString()).to.be.equal(ZERO_ADDRESS, ' Invalid addresses');
   });
 
   it('Tries to remove a unregistered addressesProvider', async () => {
@@ -91,12 +91,12 @@ makeSuite('AddressesProviderRegistry', (testEnv: TestEnv) => {
 
     const id = await registry.getAddressesProviderIdByAddress(addressesProvider.address);
 
-    expect(providers.length).to.be.equal(2, 'Invalid length of the addresses providers list');
+    expect(providers.length).to.be.equal(3, 'Invalid length of the addresses providers list');
 
-    expect(providers[0].toString()).to.be.equal(
+    expect(providers[1].toString()).to.be.equal(
       addressesProvider.address,
       ' Invalid addresses provider added to the list'
     );
-    expect(providers[1].toString()).to.be.equal(ZERO_ADDRESS, ' Invalid addresses');
+    expect(providers[2].toString()).to.be.equal(ZERO_ADDRESS, ' Invalid addresses');
   });
 });

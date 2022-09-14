@@ -17,6 +17,7 @@ import {
   getFirstSigner,
   getYieldManager,
   getVariableYieldDistribution,
+  getMintableERC20,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -35,7 +36,6 @@ import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPool
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
-import { SturdyConfig } from '../../../markets/sturdy';
 import {
   StakedTokenIncentivesController,
   YieldManager,
@@ -46,6 +46,7 @@ import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { parseEther } from '@ethersproject/units';
 import { ILiquidator } from '../../../types/ILiquidator';
+import EthConfig from '../../../markets/eth';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -173,7 +174,7 @@ export async function initializeMakeSuite() {
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
-      getParamPerNetwork(SturdyConfig.ProviderRegistry, process.env.FORK as eNetwork)
+      getParamPerNetwork(EthConfig.ProviderRegistry, process.env.FORK as eNetwork)
     );
     const providerRegistryOwner = getParamPerNetwork(
       poolConfig.ProviderRegistryOwner,
@@ -207,6 +208,7 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aWeth = await getAToken(aWethAddress);
+  testEnv.weth = await getMintableERC20(wethAddress);
 }
 
 const setSnapshot = async () => {

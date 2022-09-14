@@ -9,47 +9,47 @@ import { printUserAccountData, printDivider } from './helpers/utils/helpers';
 const chai = require('chai');
 const { expect } = chai;
 
-makeSuite('Withdraw USDC ', (testEnv) => {
-  it('User1 deposits USDC and then withdraw USDC', async () => {
-    const { usdc, users, pool, lidoVault, oracle } = testEnv;
+makeSuite('Withdraw WETH ', (testEnv) => {
+  it('User1 deposits WETH and then withdraw WETH', async () => {
+    const { weth, users, pool, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const wethOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
     const depositor = users[0];
     printDivider();
-    const depositUSDC = '7000';
-    //Make some test USDC for depositor
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    const signer = await ethers.provider.getSigner(usdcOwnerAddress);
-    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+    const depositWETH = '2';
+    //Make some test WETH for depositor
+    await impersonateAccountsHardhat([wethOwnerAddress]);
+    const signer = await ethers.provider.getSigner(wethOwnerAddress);
+    const amountWETHtoDeposit = await convertToCurrencyDecimals(weth.address, depositWETH);
+    await weth.connect(signer).transfer(depositor.address, amountWETHtoDeposit);
 
     //approve protocol to access depositor wallet
-    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+    await weth.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //Supplier  deposits 7000 USDC
+    //Supplier  deposits 2 WETH
     await pool
       .connect(depositor.signer)
-      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+      .deposit(weth.address, amountWETHtoDeposit, depositor.address, '0');
 
     const supplierGlobalData = await pool.getUserAccountData(depositor.address);
     printUserAccountData({
       user: `Supplier ${depositor.address}`,
       action: 'deposited',
-      amount: depositUSDC,
-      coin: 'USDC',
+      amount: depositWETH,
+      coin: 'WETH',
       ...supplierGlobalData,
     });
 
     await pool
       .connect(depositor.signer)
-      .withdraw(usdc.address, amountUSDCtoDeposit, depositor.address);
+      .withdraw(weth.address, amountWETHtoDeposit, depositor.address);
 
     const userGlobalDataAfter = await pool.getUserAccountData(depositor.address);
     printUserAccountData({
       user: `Supplier ${depositor.address}`,
       action: 'withdraw',
-      amount: amountUSDCtoDeposit,
-      coin: 'USDC',
+      amount: amountWETHtoDeposit,
+      coin: 'WETH',
       ...userGlobalDataAfter,
     });
   });

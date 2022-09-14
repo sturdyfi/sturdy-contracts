@@ -56,13 +56,13 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.main]: '0x88f8CCC064bA2D39cF08D57B6e7504a7B6bE8E4e',
+    [eEthereumNetwork.tenderly]: '0x88f8CCC064bA2D39cF08D57B6e7504a7B6bE8E4e',
     [eEthereumNetwork.goerli]: '',
   },
   ProviderRegistryOwner: {
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderly]: '',
+    [eEthereumNetwork.main]: '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc',
+    [eEthereumNetwork.tenderly]: '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc',
     [eEthereumNetwork.goerli]: '',
   },
   LendingRateOracle: {
@@ -102,13 +102,13 @@ export const CommonsConfig: ICommonConfiguration = {
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.main]: {
-      WETH: '',
+      USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
     },
     [eEthereumNetwork.tenderly]: {
-      WETH: '',
+      USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
     },
     [eEthereumNetwork.goerli]: {
-      WETH: '',
+      USD: '',
     },
   },
   ReserveAssets: {

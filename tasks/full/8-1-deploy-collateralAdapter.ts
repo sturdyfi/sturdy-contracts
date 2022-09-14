@@ -106,7 +106,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               network
             ),
           }
-        : {
+        : pool == ConfigNames.Fantom
+        ? {
             yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
             yvWETH: getParamPerNetwork(poolConfig.WETH, network),
             yvWBTC: getParamPerNetwork(poolConfig.WBTC, network),
@@ -132,7 +133,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             // ),
             yvCRV: getParamPerNetwork((poolConfig as IFantomConfiguration).CRV, network),
             yvSPELL: getParamPerNetwork((poolConfig as IFantomConfiguration).SPELL, network),
-          };
+          }
+        : {};
 
     const acceptableVaults =
       pool == ConfigNames.Sturdy
@@ -151,7 +153,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
             cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
           }
-        : {
+        : pool == ConfigNames.Fantom
+        ? {
             yvWFTM: (await getYearnVault()).address,
             yvWETH: (await getYearnWETHVault()).address,
             yvWBTC: (await getYearnWBTCVault()).address,
@@ -165,7 +168,8 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             // mooMIM_2CRV: (await getBeefyMIM2CRVVault()).address,
             yvCRV: (await getYearnCRVVault()).address,
             yvSPELL: (await getYearnSPELLVault()).address,
-          };
+          }
+        : {};
 
     const reserves = Object.entries(ReservesConfig).filter(
       ([_, { aTokenImpl }]) => aTokenImpl === eContractid.ATokenForCollateral

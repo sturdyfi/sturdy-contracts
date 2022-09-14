@@ -22,32 +22,32 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
   let newVariableTokenAddress: string;
 
   before('deploying instances', async () => {
-    const { dai, pool } = testEnv;
+    const { weth, pool } = testEnv;
     const aTokenInstance = await deployMockAToken([
       pool.address,
-      dai.address,
+      weth.address,
       ZERO_ADDRESS,
       ZERO_ADDRESS,
-      'Sturdy Interest bearing DAI updated',
-      'aDAI',
+      'Sturdy Interest bearing WETH updated',
+      'aWETH',
       '0x10',
     ]);
 
     const stableDebtTokenInstance = await deployMockStableDebtToken([
       pool.address,
-      dai.address,
+      weth.address,
       ZERO_ADDRESS,
-      'Sturdy stable debt bearing DAI updated',
-      'stableDebtDAI',
+      'Sturdy stable debt bearing WETH updated',
+      'stableDebtWETH',
       '0x10',
     ]);
 
     const variableDebtTokenInstance = await deployMockVariableDebtToken([
       pool.address,
-      dai.address,
+      weth.address,
       ZERO_ADDRESS,
-      'Sturdy variable debt bearing DAI updated',
-      'variableDebtDAI',
+      'Sturdy variable debt bearing WETH updated',
+      'variableDebtWETH',
       '0x10',
     ]);
 
@@ -56,8 +56,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     newStableTokenAddress = stableDebtTokenInstance.address;
   });
 
-  it('Tries to update the DAI Atoken implementation with a different address than the lendingPoolManager', async () => {
-    const { dai, configurator, users } = testEnv;
+  it('Tries to update the WETH Atoken implementation with a different address than the lendingPoolManager', async () => {
+    const { weth, configurator, users } = testEnv;
 
     const name = await (await getAToken(newATokenAddress)).name();
     const symbol = await (await getAToken(newATokenAddress)).symbol();
@@ -71,7 +71,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       implementation: string;
       params: string;
     } = {
-      asset: dai.address,
+      asset: weth.address,
       treasury: ZERO_ADDRESS,
       incentivesController: ZERO_ADDRESS,
       name: name,
@@ -84,8 +84,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
-  it('Upgrades the DAI Atoken implementation ', async () => {
-    const { dai, configurator, aDai } = testEnv;
+  it('Upgrades the WETH Atoken implementation ', async () => {
+    const { weth, configurator, aWeth } = testEnv;
 
     const name = await (await getAToken(newATokenAddress)).name();
     const symbol = await (await getAToken(newATokenAddress)).symbol();
@@ -99,7 +99,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       implementation: string;
       params: string;
     } = {
-      asset: dai.address,
+      asset: weth.address,
       treasury: ZERO_ADDRESS,
       incentivesController: ZERO_ADDRESS,
       name: name,
@@ -109,13 +109,13 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     };
     await configurator.updateAToken(updateATokenInputParams);
 
-    const tokenName = await aDai.name();
+    const tokenName = await aWeth.name();
 
-    expect(tokenName).to.be.eq('Sturdy Interest bearing DAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Sturdy Interest bearing WETH updated', 'Invalid token name');
   });
 
-  it('Tries to update the DAI Stable debt token implementation with a different address than the lendingPoolManager', async () => {
-    const { dai, configurator, users } = testEnv;
+  it('Tries to update the WETH Stable debt token implementation with a different address than the lendingPoolManager', async () => {
+    const { weth, configurator, users } = testEnv;
 
     const name = await (await getStableDebtToken(newStableTokenAddress)).name();
     const symbol = await (await getStableDebtToken(newStableTokenAddress)).symbol();
@@ -128,7 +128,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       implementation: string;
       params: string;
     } = {
-      asset: dai.address,
+      asset: weth.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
@@ -141,8 +141,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
-  it('Upgrades the DAI stable debt token implementation ', async () => {
-    const { dai, configurator, pool, helpersContract } = testEnv;
+  it('Upgrades the WETH stable debt token implementation ', async () => {
+    const { weth, configurator, pool, helpersContract } = testEnv;
 
     const name = await (await getStableDebtToken(newStableTokenAddress)).name();
     const symbol = await (await getStableDebtToken(newStableTokenAddress)).symbol();
@@ -155,7 +155,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       implementation: string;
       params: string;
     } = {
-      asset: dai.address,
+      asset: weth.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
@@ -165,17 +165,17 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
 
     await configurator.updateStableDebtToken(updateDebtTokenInput);
 
-    const { stableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(dai.address);
+    const { stableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(weth.address);
 
     const debtToken = await getMockStableDebtToken(stableDebtTokenAddress);
 
     const tokenName = await debtToken.name();
 
-    expect(tokenName).to.be.eq('Sturdy stable debt bearing DAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Sturdy stable debt bearing WETH updated', 'Invalid token name');
   });
 
-  it('Tries to update the DAI variable debt token implementation with a different address than the lendingPoolManager', async () => {
-    const { dai, configurator, users } = testEnv;
+  it('Tries to update the WETH variable debt token implementation with a different address than the lendingPoolManager', async () => {
+    const { weth, configurator, users } = testEnv;
 
     const name = await (await getVariableDebtToken(newVariableTokenAddress)).name();
     const symbol = await (await getVariableDebtToken(newVariableTokenAddress)).symbol();
@@ -188,7 +188,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       implementation: string;
       params: string;
     } = {
-      asset: dai.address,
+      asset: weth.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
@@ -201,8 +201,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     ).to.be.revertedWith(CALLER_NOT_POOL_ADMIN);
   });
 
-  it('Upgrades the DAI variable debt token implementation ', async () => {
-    const { dai, configurator, pool, helpersContract } = testEnv;
+  it('Upgrades the WETH variable debt token implementation ', async () => {
+    const { weth, configurator, pool, helpersContract } = testEnv;
 
     const name = await (await getVariableDebtToken(newVariableTokenAddress)).name();
     const symbol = await (await getVariableDebtToken(newVariableTokenAddress)).symbol();
@@ -215,7 +215,7 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       implementation: string;
       params: string;
     } = {
-      asset: dai.address,
+      asset: weth.address,
       incentivesController: ZERO_ADDRESS,
       name: name,
       symbol: symbol,
@@ -227,13 +227,13 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     await configurator.updateVariableDebtToken(updateDebtTokenInput);
 
     const { variableDebtTokenAddress } = await helpersContract.getReserveTokensAddresses(
-      dai.address
+      weth.address
     );
 
     const debtToken = await getMockVariableDebtToken(variableDebtTokenAddress);
 
     const tokenName = await debtToken.name();
 
-    expect(tokenName).to.be.eq('Sturdy variable debt bearing DAI updated', 'Invalid token name');
+    expect(tokenName).to.be.eq('Sturdy variable debt bearing WETH updated', 'Invalid token name');
   });
 });

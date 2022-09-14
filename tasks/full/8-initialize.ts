@@ -92,7 +92,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
               cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
             }
-          : {
+          : pool == ConfigNames.Fantom
+          ? {
               yvWFTM: (await getYearnVault()).address,
               yvWETH: (await getYearnWETHVault()).address,
               yvWBTC: (await getYearnWBTCVault()).address,
@@ -106,7 +107,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvLINK: (await getYearnLINKVault()).address,
               yvCRV: (await getYearnCRVVault()).address,
               yvSPELL: (await getYearnSPELLVault()).address,
-            };
+            }
+          : {};
 
       const yieldDistributor =
         pool == ConfigNames.Sturdy

@@ -46,110 +46,90 @@ export const CommonsConfig: ICommonConfiguration = {
   PoolAdmin: {
     [eEthereumNetwork.main]: undefined,
     [eEthereumNetwork.tenderly]: undefined,
-    [eEthereumNetwork.goerli]: undefined,
   },
   PoolAdminIndex: 0,
   EmergencyAdmin: {
     [eEthereumNetwork.main]: undefined,
     [eEthereumNetwork.tenderly]: undefined,
-    [eEthereumNetwork.goerli]: undefined,
   },
   EmergencyAdminIndex: 1,
   ProviderRegistry: {
     [eEthereumNetwork.main]: '0x88f8CCC064bA2D39cF08D57B6e7504a7B6bE8E4e',
     [eEthereumNetwork.tenderly]: '0x88f8CCC064bA2D39cF08D57B6e7504a7B6bE8E4e',
-    [eEthereumNetwork.goerli]: '',
   },
   ProviderRegistryOwner: {
     [eEthereumNetwork.main]: '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc',
     [eEthereumNetwork.tenderly]: '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc',
-    [eEthereumNetwork.goerli]: '',
   },
   LendingRateOracle: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   LendingPoolCollateralManager: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   LendingPoolConfigurator: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   LendingPool: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   TokenDistributor: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   SturdyOracle: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   FallbackOracle: {
     [eEthereumNetwork.main]: ZERO_ADDRESS,
     [eEthereumNetwork.tenderly]: ZERO_ADDRESS,
-    [eEthereumNetwork.goerli]: ZERO_ADDRESS,
   },
   ChainlinkAggregator: {
     [eEthereumNetwork.main]: {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
+      cvxETH_STETH: '',
     },
     [eEthereumNetwork.tenderly]: {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
-    },
-    [eEthereumNetwork.goerli]: {
-      USD: '',
+      cvxETH_STETH: '',
     },
   },
   ReserveAssets: {
     [eEthereumNetwork.main]: {},
     [eEthereumNetwork.tenderly]: {},
-    [eEthereumNetwork.goerli]: {},
   },
   ReservesConfig: {},
   ATokenDomainSeparator: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   WFTM: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   WETH: {
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.goerli]: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
   },
   WBTC: {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
-    [eEthereumNetwork.goerli]: '',
   },
   WrappedNativeToken: {
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    [eEthereumNetwork.goerli]: '0x0Bb7509324cE409F7bbC4b701f932eAca9736AB7',
   },
   ReserveFactorTreasuryAddress: {
     [eEthereumNetwork.main]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
     [eEthereumNetwork.tenderly]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
-    [eEthereumNetwork.goerli]: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
   },
   IncentivesController: {
     [eEthereumNetwork.main]: ZERO_ADDRESS,
     [eEthereumNetwork.tenderly]: ZERO_ADDRESS,
-    [eEthereumNetwork.goerli]: ZERO_ADDRESS,
   },
 };

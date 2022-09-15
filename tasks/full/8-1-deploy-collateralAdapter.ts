@@ -28,6 +28,7 @@ import {
   getConvexFRAXUSDCVault,
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
+  getConvexETHSTETHVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -35,6 +36,7 @@ import {
   eContractid,
   eNetwork,
   ICommonConfiguration,
+  IEthConfiguration,
   IFantomConfiguration,
   IReserveParams,
   ISturdyConfiguration,
@@ -134,7 +136,12 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvCRV: getParamPerNetwork((poolConfig as IFantomConfiguration).CRV, network),
             yvSPELL: getParamPerNetwork((poolConfig as IFantomConfiguration).SPELL, network),
           }
-        : {};
+        : {
+            cvxETH_STETH: getParamPerNetwork(
+              (poolConfig as IEthConfiguration).ETH_STETH_LP,
+              network
+            ),
+          };
 
     const acceptableVaults =
       pool == ConfigNames.Sturdy
@@ -169,7 +176,9 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvCRV: (await getYearnCRVVault()).address,
             yvSPELL: (await getYearnSPELLVault()).address,
           }
-        : {};
+        : {
+            cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+          };
 
     const reserves = Object.entries(ReservesConfig).filter(
       ([_, { aTokenImpl }]) => aTokenImpl === eContractid.ATokenForCollateral

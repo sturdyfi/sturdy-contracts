@@ -75,6 +75,7 @@ export enum eContractid {
   FRAXUSDCOracle = 'FRAXUSDCOracle',
   BALDAIUSDCUSDTOracle = 'BALDAIUSDCUSDTOracle',
   TUSDFRAXBPOracle = 'TUSDFRAXBPOracle',
+  ETHSTETHOracle = 'ETHSTETHOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -135,6 +136,8 @@ export enum eContractid {
   AuraDAIUSDCUSDTVault = 'AuraDAIUSDCUSDTVault',
   ConvexTUSDFRAXBPVaultImpl = 'ConvexTUSDFRAXBPVaultImpl',
   ConvexTUSDFRAXBPVault = 'ConvexTUSDFRAXBPVault',
+  ConvexETHSTETHVaultImpl = 'ConvexETHSTETHVaultImpl',
+  ConvexETHSTETHVault = 'ConvexETHSTETHVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -194,6 +197,7 @@ export enum eContractid {
   FRAXUSDCLevSwap = 'FRAXUSDCLevSwap',
   IRONBANKLevSwap = 'IRONBANKLevSwap',
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
+  ETHSTETHLevSwap = 'ETHSTETHLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
 }
 
@@ -314,6 +318,7 @@ export interface iAssetBase<T> {
   fUSDT: T;
   USD: T;
   stETH: T;
+  // mainnet
   yvRETH_WSTETH: T;
   cvxRETH_WSTETH: T;
   cvxFRAX_3CRV: T;
@@ -326,6 +331,11 @@ export interface iAssetBase<T> {
   cvxFRAX_USDC: T;
   auraDAI_USDC_USDT: T;
   cvxTUSD_FRAXBP: T;
+
+  // mainnet-eth
+  cvxETH_STETH: T;
+
+  // fantom
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -385,7 +395,7 @@ export type iFantomPoolAssets<T> = Pick<
   | 'mooMIM_2CRV'
 >;
 
-export type iEthPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'WETH'>;
+export type iEthPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'WETH' | 'cvxETH_STETH'>;
 
 export type iMultiPoolsAssets<T> =
   | iAssetCommon<T>
@@ -401,6 +411,8 @@ export enum TokenContractId {
   USDC = 'USDC',
   USDT = 'USDT',
   stETH = 'stETH',
+
+  // mainnet
   yvRETH_WSTETH = 'yvRETH_WSTETH',
   cvxRETH_WSTETH = 'cvxRETH_WSTETH',
   cvxFRAX_3CRV = 'cvxFRAX_3CRV',
@@ -413,6 +425,11 @@ export enum TokenContractId {
   cvxFRAX_USDC = 'cvxFRAX_USDC',
   auraDAI_USDC_USDT = 'auraDAI_USDC_USDT',
   cvxTUSD_FRAXBP = 'cvxTUSD_FRAXBP',
+
+  // mainnet-eth
+  cvxETH_STETH = 'cvxETH_STETH',
+
+  // fantom
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -491,7 +508,6 @@ export interface iFantomParamsPerNetwork<T> {
 export interface iEthParamsPerNetwork<T> {
   [eEthereumNetwork.main]: T;
   [eEthereumNetwork.tenderly]: T;
-  [eEthereumNetwork.goerli]: T;
 }
 
 export interface iParamsPerPool<T> {
@@ -638,6 +654,9 @@ export interface IFantomConfiguration extends ICommonConfiguration {
 
 export interface IEthConfiguration extends ICommonConfiguration {
   ReservesConfig: iEthPoolAssets<IReserveParams>;
+  CRV: iParamsPerNetwork<tEthereumAddress>;
+  CVX: iParamsPerNetwork<tEthereumAddress>;
+  ETH_STETH_LP: iParamsPerNetwork<tEthereumAddress>;
 }
 
 export interface ITokenAddress {

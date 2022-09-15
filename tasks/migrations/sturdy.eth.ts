@@ -39,6 +39,9 @@ task('sturdy:eth', 'Deploy development enviroment')
     console.log('5-2. Deploy Variable Yield Distributor');
     await DRE.run('full:deploy-variable-yield-distributor', { pool: POOL_NAME, verify });
 
+    console.log('6. Deploy Convex ETH STETH vault');
+    await DRE.run('full:eth:deploy-convex-eth-steth-vault', { pool: POOL_NAME, verify });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME, verify });
 
@@ -52,13 +55,13 @@ task('sturdy:eth', 'Deploy development enviroment')
     // await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME, verify });
 
     console.log('8-4. Deploy Yield Manager');
-    await DRE.run('full:deploy-yield-manager', { pool: POOL_NAME, verify });
+    await DRE.run('full:eth:deploy-yield-manager', { pool: POOL_NAME, verify });
 
-    // console.log('8-5. Deploy Leverage Swap Manager');
-    // await DRE.run('full:deploy-leverage-swap-manager', { pool: POOL_NAME, verify });
+    console.log('8-5. Deploy Leverage Swap Manager');
+    await DRE.run('full:eth:deploy-leverage-swap-manager', { pool: POOL_NAME, verify });
 
-    // console.log('8-6. Deploy APR Data Provider');
-    // await DRE.run('full:deploy-sturdy-apr-data-provider', { pool: POOL_NAME, verify });
+    console.log('8-6. Deploy APR Data Provider');
+    await DRE.run('full:eth:deploy-sturdy-apr-data-provider', { pool: POOL_NAME, verify });
 
     // if (verify) {
     //   printContracts();

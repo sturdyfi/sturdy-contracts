@@ -351,6 +351,16 @@ export const initReservesByHelper = async (
     );
   }
 
+  if (tokenAddresses['cvxETH_STETH']) {
+    //CRV VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.cvxETH_STETH);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['cvxETH_STETH']
+    );
+  }
+
   return gasUsage; // Deprecated
 };
 

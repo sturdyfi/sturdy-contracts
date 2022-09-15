@@ -41,6 +41,7 @@ import {
   getConvexFRAXUSDCVault,
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
+  getConvexETHSTETHVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -108,7 +109,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvCRV: (await getYearnCRVVault()).address,
               yvSPELL: (await getYearnSPELLVault()).address,
             }
-          : {};
+          : {
+              cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+            };
 
       const yieldDistributor =
         pool == ConfigNames.Sturdy
@@ -122,7 +125,9 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               auraDAI_USDC_USDT: (await getVariableYieldDistribution()).address,
               cvxTUSD_FRAXBP: (await getVariableYieldDistribution()).address,
             }
-          : {};
+          : {
+              cvxETH_STETH: (await getVariableYieldDistribution()).address,
+            };
 
       await initReservesByHelper(
         ReservesConfig,

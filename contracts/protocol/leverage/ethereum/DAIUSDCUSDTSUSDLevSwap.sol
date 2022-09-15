@@ -32,9 +32,9 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     address _vault,
     address _provider
   ) GeneralLevSwap(_asset, _vault, _provider) {
-    ENABLED_STABLE_COINS[DAI] = true;
-    ENABLED_STABLE_COINS[USDC] = true;
-    ENABLED_STABLE_COINS[USDT] = true;
+    ENABLED_BORROWING_ASSET[DAI] = true;
+    ENABLED_BORROWING_ASSET[USDC] = true;
+    ENABLED_BORROWING_ASSET[USDT] = true;
   }
 
   function getAvailableStableCoins() external pure override returns (address[] memory assets) {

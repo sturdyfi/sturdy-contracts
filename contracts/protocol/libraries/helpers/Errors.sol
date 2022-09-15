@@ -136,7 +136,7 @@ library Errors {
   string internal constant YD_VR_CALLER_NOT_VAULT = '111'; // The caller must be same with configured vault address
   string internal constant LS_INVALID_CONFIGURATION = '112'; // Invalid Leverage Swapper configuration
   string internal constant LS_SWAP_AMOUNT_NOT_GT_0 = '113'; // Collateral amount needs to be greater than zero
-  string internal constant LS_STABLE_COIN_NOT_SUPPORTED = '114'; // Doesn't support swap for the stable coin
+  string internal constant LS_BORROWING_ASSET_NOT_SUPPORTED = '114'; // Doesn't support swap for the borrowing asset
   string internal constant LS_SUPPLY_NOT_ALLOWED = '115'; // no sufficient funds
   string internal constant LS_SUPPLY_FAILED = '116'; // Deposit fails when leverage works
   string internal constant LS_REMOVE_ITERATION_OVER = '117'; // Withdraw iteration limit over

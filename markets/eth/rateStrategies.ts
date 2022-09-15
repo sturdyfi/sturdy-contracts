@@ -13,3 +13,15 @@ export const rateStrategyWETH: IInterestRateStrategyParams = {
   stableRateSlope2: '0' /* new BigNumber(0.75).multipliedBy(oneRay).toFixed() */,
   capacity: '0',
 }
+
+// cvxETH_STETH
+export const rateStrategyCVXETH_STETH: IInterestRateStrategyParams = {
+  name: "rateStrategyCVXETH_STETH",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}

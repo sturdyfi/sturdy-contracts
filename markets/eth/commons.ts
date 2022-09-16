@@ -93,10 +93,14 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.main]: {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       cvxETH_STETH: '',
+      CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
+      CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
     },
     [eEthereumNetwork.tenderly]: {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       cvxETH_STETH: '',
+      CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
+      CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
     },
   },
   ReserveAssets: {

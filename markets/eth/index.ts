@@ -39,7 +39,11 @@ export const EthConfig: IEthConfiguration = {
   ETH_STETH_LP: {
     [eEthereumNetwork.main]: '0x06325440D014e39736583c165C2963BA99fAf14E',
     [eEthereumNetwork.tenderly]: '0x06325440D014e39736583c165C2963BA99fAf14E',
-  }
+  },
+  UniswapRouter: {
+    [eEthereumNetwork.main]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
+    [eEthereumNetwork.tenderly]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
+  },
 };
 
 export default EthConfig;

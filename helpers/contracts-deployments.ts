@@ -13,6 +13,7 @@ import {
   eEthereumNetwork,
   eNetwork,
   IFantomConfiguration,
+  IEthConfiguration,
 } from './types';
 import { MintableERC20 } from '../types/MintableERC20';
 import { MockContract } from 'ethereum-waffle';
@@ -1459,12 +1460,22 @@ export const deployConvexETHSTETHVault = async (verify?: boolean) => {
     verify
   );
 
+  const config: IEthConfiguration = loadPoolConfig(ConfigNames.Eth) as IEthConfiguration;
+  const network = <eNetwork>DRE.network.name;
+
   const addressesProvider = await getLendingPoolAddressesProvider();
   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
       DRE.ethers.utils.formatBytes32String('CONVEX_ETH_STETH_VAULT'),
       vaultImpl.address
+    )
+  );
+
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('uniswapRouter'),
+      getParamPerNetwork(config.UniswapRouter, network)
     )
   );
 

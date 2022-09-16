@@ -24,8 +24,14 @@ task(`full:eth:deploy-convex-eth-steth-vault`, `Deploys the ${CONTRACT_NAME} con
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, ETH_STETH_LP } =
-      poolConfig as IEthConfiguration;
+    const {
+      ReserveAssets,
+      ReserveFactorTreasuryAddress,
+      ChainlinkAggregator,
+      ETH_STETH_LP,
+      CRV,
+      CVX,
+    } = poolConfig as IEthConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
     const vault = await deployConvexETHSTETHVault(verify);
@@ -50,8 +56,18 @@ task(`full:eth:deploy-convex-eth-steth-vault`, `Deploys the ${CONTRACT_NAME} con
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(ETH_STETH_LP, network)],
-        [ETHSTETHOracleAddress, ETHSTETHOracleAddress]
+        [
+          internalAssetAddress,
+          getParamPerNetwork(ETH_STETH_LP, network),
+          getParamPerNetwork(CRV, network),
+          getParamPerNetwork(CVX, network),
+        ],
+        [
+          ETHSTETHOracleAddress,
+          ETHSTETHOracleAddress,
+          getParamPerNetwork(ChainlinkAggregator, network).CRV,
+          getParamPerNetwork(ChainlinkAggregator, network).CVX,
+        ]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

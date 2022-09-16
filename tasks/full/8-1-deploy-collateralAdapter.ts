@@ -184,7 +184,6 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
       ([_, { aTokenImpl }]) => aTokenImpl === eContractid.ATokenForCollateral
     ) as [string, IReserveParams][];
 
-    console.log(reserveAssets);
     for (let [symbol, params] of reserves) {
       if (!reserveAssets[symbol]) {
         console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);

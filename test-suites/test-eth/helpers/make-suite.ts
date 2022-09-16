@@ -19,6 +19,8 @@ import {
   getVariableYieldDistribution,
   getMintableERC20,
   getConvexETHSTETHVault,
+  getSturdyAPRDataProvider,
+  getLeverageSwapManager,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -54,6 +56,7 @@ import { parseEther } from '@ethersproject/units';
 import { ILiquidator } from '../../../types/ILiquidator';
 import EthConfig from '../../../markets/eth';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
+import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -126,6 +129,8 @@ export async function initializeMakeSuite() {
   const poolConfig = loadPoolConfig(ConfigNames.Eth) as IEthConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const EthStEthLPAddress = getParamPerNetwork(poolConfig.ETH_STETH_LP, network);
+  const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
+  const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -169,13 +174,12 @@ export async function initializeMakeSuite() {
   const cvxethstethAddress = await testEnv.convexETHSTETHVault.getInternalAsset();
 
   testEnv.yieldManager = await getYieldManager();
-  
+  testEnv.levSwapManager = await getLeverageSwapManager();
   testEnv.variableYieldDistributor = await getVariableYieldDistribution();
-
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
-
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
   testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
+  testEnv.aprProvider = await getSturdyAPRDataProvider();
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
@@ -222,6 +226,8 @@ export async function initializeMakeSuite() {
   testEnv.weth = await getMintableERC20(wethAddress);
   testEnv.ETH_STETH_LP = await getMintableERC20(EthStEthLPAddress);
 
+  testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
+  testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
   testEnv.cvxeth_steth = SturdyInternalAssetFactory.connect(cvxethstethAddress, deployer.signer);
 }
 

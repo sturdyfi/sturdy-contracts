@@ -194,6 +194,7 @@ export enum eContractid {
   IRONBANKLevSwap = 'IRONBANKLevSwap',
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
+  VaultWhitelist = 'VaultWhitelist',
 }
 
 /*

@@ -140,6 +140,7 @@ library Errors {
   string internal constant LS_SUPPLY_NOT_ALLOWED = '115'; // no sufficient funds
   string internal constant LS_SUPPLY_FAILED = '116'; // Deposit fails when leverage works
   string internal constant LS_REMOVE_ITERATION_OVER = '117'; // Withdraw iteration limit over
+  string internal constant CALLER_NOT_WHITELIST_USER = '118'; // 'The caller must be whitelist user'
 
   enum CollateralManagerErrors {
     NO_ERROR,

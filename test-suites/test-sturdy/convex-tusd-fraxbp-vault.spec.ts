@@ -109,7 +109,7 @@ makeSuite('ConvexTUSDFRAXBPVault - Deposit & Withdraw', (testEnv: TestEnv) => {
 
   it('withdraw from collateral', async () => {
     const { deployer, cvxtusd_fraxbp, convexTUSDFRAXBPVault, TUSD_FRAXBP_LP } = testEnv;
-    const dola3crvBalanceOfPool = await cvxtusd_fraxbp.balanceOf(convexTUSDFRAXBPVault.address);
+    const tusdfraxbpBalanceOfPool = await cvxtusd_fraxbp.balanceOf(convexTUSDFRAXBPVault.address);
     const beforeBalanceOfUser = await TUSD_FRAXBP_LP.balanceOf(deployer.address);
     // withdraw
     const amountAssetToWithdraw = await convertToCurrencyDecimals(
@@ -122,7 +122,7 @@ makeSuite('ConvexTUSDFRAXBPVault - Deposit & Withdraw', (testEnv: TestEnv) => {
 
     const afterBalanceOfUser = await TUSD_FRAXBP_LP.balanceOf(deployer.address);
 
-    expect(dola3crvBalanceOfPool).to.be.equal(0);
+    expect(tusdfraxbpBalanceOfPool).to.be.equal(0);
     expect(afterBalanceOfUser.sub(beforeBalanceOfUser)).to.be.gte(
       await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, WITHDRAW_AMOUNT)
     );
@@ -164,3 +164,71 @@ makeSuite('ConvexTUSDFRAXBPVault - Process Yield', (testEnv: TestEnv) => {
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });
 });
+
+// makeSuite('ConvexTUSDFRAXBPVault - Whitelist feature', (testEnv: TestEnv) => {
+//   it('Only allow whitelist user to deposit', async () => {
+//     const { convexTUSDFRAXBPVault, deployer, cvxtusd_fraxbp, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, vaultWhitelist, users } =
+//       testEnv;
+
+//     // Prepare some TUSD_FRAXBP_LP for depositor
+//     const assetAmountToDeposit = await convertToCurrencyDecimals(
+//       TUSD_FRAXBP_LP.address,
+//       DEPOSIT_AMOUNT
+//     );
+//     await prepareCollateralForUser(testEnv, deployer, assetAmountToDeposit);
+
+//     // allow token transfer to this vault
+//     await TUSD_FRAXBP_LP.connect(deployer.signer).approve(
+//       convexTUSDFRAXBPVault.address,
+//       assetAmountToDeposit
+//     );
+
+//     await vaultWhitelist.connect(deployer.signer).addAddressesToWhitelist(convexTUSDFRAXBPVault.address, [deployer.address]);
+//     await expect(
+//       convexTUSDFRAXBPVault
+//         .connect(users[1].signer)
+//         .depositCollateral(TUSD_FRAXBP_LP.address, assetAmountToDeposit)
+//     ).to.be.revertedWith('118');
+
+//     await convexTUSDFRAXBPVault
+//       .connect(deployer.signer)
+//       .depositCollateral(TUSD_FRAXBP_LP.address, assetAmountToDeposit);
+
+//     expect(await TUSD_FRAXBP_LP.balanceOf(deployer.address)).to.be.equal(0);
+//     expect(await cvxtusd_fraxbp.balanceOf(convexTUSDFRAXBPVault.address)).to.be.equal(0);
+//     expect(await aCVXTUSD_FRAXBP.balanceOf(convexTUSDFRAXBPVault.address)).to.be.equal(0);
+//     expect(await aCVXTUSD_FRAXBP.balanceOf(deployer.address)).to.be.gte(assetAmountToDeposit);
+//   });
+
+//   it('Only allow whitelist user to withdraw', async () => {
+//     const { deployer, cvxtusd_fraxbp, convexTUSDFRAXBPVault, TUSD_FRAXBP_LP, vaultWhitelist, users } = testEnv;
+//     const tusdfraxbpBalanceOfPool = await cvxtusd_fraxbp.balanceOf(convexTUSDFRAXBPVault.address);
+//     const beforeBalanceOfUser = await TUSD_FRAXBP_LP.balanceOf(deployer.address);
+//     // withdraw
+//     const amountAssetToWithdraw = await convertToCurrencyDecimals(
+//       TUSD_FRAXBP_LP.address,
+//       WITHDRAW_AMOUNT
+//     );
+
+//     await expect(
+//       convexTUSDFRAXBPVault
+//         .connect(users[1].signer)
+//         .withdrawCollateral(TUSD_FRAXBP_LP.address, amountAssetToWithdraw, 9900, deployer.address)
+//     ).to.be.revertedWith('118');
+
+//     await convexTUSDFRAXBPVault
+//       .connect(deployer.signer)
+//       .withdrawCollateral(TUSD_FRAXBP_LP.address, amountAssetToWithdraw, 5900, deployer.address);
+
+//     await vaultWhitelist.connect(deployer.signer).removeAddressesFromWhitelist(convexTUSDFRAXBPVault.address, [deployer.address]);
+//     expect(await vaultWhitelist.whitelistCount(convexTUSDFRAXBPVault.address)).to.be.equal(0);
+
+//     const afterBalanceOfUser = await TUSD_FRAXBP_LP.balanceOf(deployer.address);
+
+//     expect(tusdfraxbpBalanceOfPool).to.be.equal(0);
+//     expect(afterBalanceOfUser.sub(beforeBalanceOfUser)).to.be.gte(
+//       await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, WITHDRAW_AMOUNT)
+//     );
+//     expect(await TUSD_FRAXBP_LP.balanceOf(convexTUSDFRAXBPVault.address)).to.be.equal(0);
+//   });
+// });

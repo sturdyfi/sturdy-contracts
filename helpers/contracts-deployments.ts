@@ -160,6 +160,7 @@ import {
   BALDAIUSDCUSDTOracleFactory,
   TUSDFRAXBPOracleFactory,
   TUSDFRAXBPLevSwapFactory,
+  VaultWhitelistFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -2714,5 +2715,13 @@ export const deploySturdyAPRDataProvider = async (args: [tEthereumAddress], veri
     await new SturdyAPRDataProviderFactory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyAPRDataProvider,
     args,
+    verify
+  );
+
+export const deployVaultWhitelist = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new VaultWhitelistFactory(await getFirstSigner()).deploy(),
+    eContractid.VaultWhitelist,
+    [],
     verify
   );

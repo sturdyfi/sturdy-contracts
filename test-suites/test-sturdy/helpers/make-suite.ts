@@ -317,15 +317,15 @@ export async function initializeMakeSuite() {
   }
 
   if (network == 'main') {
-    // const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
-    // const ethers = (DRE as any).ethers;
-    // await impersonateAccountsHardhat([deployerAddress]);
-    // let signer = await ethers.provider.getSigner(deployerAddress);
-    // deployer = {
-    //   address: deployerAddress,
-    //   signer: signer,
-    // };
-    // await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+    const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
+    const ethers = (DRE as any).ethers;
+    await impersonateAccountsHardhat([deployerAddress]);
+    let signer = await ethers.provider.getSigner(deployerAddress);
+    deployer = {
+      address: deployerAddress,
+      signer: signer,
+    };
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
   }
 
   for (const signer of restSigners) {

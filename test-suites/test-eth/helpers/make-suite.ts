@@ -21,6 +21,7 @@ import {
   getConvexETHSTETHVault,
   getSturdyAPRDataProvider,
   getLeverageSwapManager,
+  getAuraWSTETHWETHVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -48,6 +49,7 @@ import {
   LeverageSwapManager,
   SturdyAPRDataProvider,
   SturdyInternalAssetFactory,
+  AuraBalancerLPVault,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -72,6 +74,7 @@ export interface TestEnv {
   users: SignerWithAddress[];
   pool: LendingPool;
   convexETHSTETHVault: ConvexCurveLPVault;
+  auraWSTETHWETHVault: AuraBalancerLPVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -79,8 +82,11 @@ export interface TestEnv {
   weth: MintableERC20;
   aWeth: AToken;
   aCVXETH_STETH: AToken;
+  aAURAWSTETH_WETH: AToken;
   ETH_STETH_LP: MintableERC20;
+  BAL_WSTETH_WETH_LP: MintableERC20;
   cvxeth_steth: SturdyInternalAsset;
+  aurawsteth_weth: SturdyInternalAsset;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
@@ -89,6 +95,8 @@ export interface TestEnv {
   variableYieldDistributor: VariableYieldDistribution;
   CRV: IERC20Detailed;
   CVX: IERC20Detailed;
+  BAL: IERC20Detailed;
+  AURA: IERC20Detailed;
   levSwapManager: LeverageSwapManager;
   aprProvider: SturdyAPRDataProvider;
 }
@@ -104,6 +112,7 @@ const testEnv: TestEnv = {
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
   convexETHSTETHVault: {} as ConvexCurveLPVault,
+  auraWSTETHWETHVault: {} as AuraBalancerLPVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -111,8 +120,11 @@ const testEnv: TestEnv = {
   weth: {} as MintableERC20,
   aWeth: {} as AToken,
   aCVXETH_STETH: {} as AToken,
+  aAURAWSTETH_WETH: {} as AToken,
   ETH_STETH_LP: {} as MintableERC20,
+  BAL_WSTETH_WETH_LP: {} as MintableERC20,
   cvxeth_steth: {} as SturdyInternalAsset,
+  aurawsteth_weth: {} as SturdyInternalAsset,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
   liquidator: {} as ILiquidator,
@@ -120,6 +132,8 @@ const testEnv: TestEnv = {
   variableYieldDistributor: {} as VariableYieldDistribution,
   CRV: {} as IERC20Detailed,
   CVX: {} as IERC20Detailed,
+  BAL: {} as IERC20Detailed,
+  AURA: {} as IERC20Detailed,
   levSwapManager: {} as LeverageSwapManager,
   aprProvider: {} as SturdyAPRDataProvider,
 } as TestEnv;
@@ -129,8 +143,11 @@ export async function initializeMakeSuite() {
   const poolConfig = loadPoolConfig(ConfigNames.Eth) as IEthConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const EthStEthLPAddress = getParamPerNetwork(poolConfig.ETH_STETH_LP, network);
+  const BalWstethWethLPAddress = getParamPerNetwork(poolConfig.BAL_WSTETH_WETH_LP, network);
   const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
   const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
+  const balAddress = getParamPerNetwork(poolConfig.BAL, network);
+  const auraAddress = getParamPerNetwork(poolConfig.AURA, network);
 
   const [_deployer, ...restSigners] = await getEthersSigners();
   let deployer: SignerWithAddress = {
@@ -167,11 +184,13 @@ export async function initializeMakeSuite() {
   testEnv.pool = await getLendingPool();
 
   testEnv.convexETHSTETHVault = await getConvexETHSTETHVault();
+  testEnv.auraWSTETHWETHVault = await getAuraWSTETHWETHVault();
   
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getETHLiquidator();
 
   const cvxethstethAddress = await testEnv.convexETHSTETHVault.getInternalAsset();
+  const aurawstethwethAddress = await testEnv.auraWSTETHWETHVault.getInternalAsset();
 
   testEnv.yieldManager = await getYieldManager();
   testEnv.levSwapManager = await getLeverageSwapManager();
@@ -205,6 +224,9 @@ export async function initializeMakeSuite() {
   const aCVXETH_STETHAddress = allTokens.find(
     (aToken) => aToken.symbol === 'scvxETH_STETH'
   )?.tokenAddress;
+  const aAURAWSTETH_WETHAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'sauraWSTETH_WETH'
+  )?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
@@ -212,7 +234,8 @@ export async function initializeMakeSuite() {
 
   if (
     !aWethAddress ||
-    !aCVXETH_STETHAddress
+    !aCVXETH_STETHAddress ||
+    !aAURAWSTETH_WETHAddress
   ) {
     process.exit(1);
   }
@@ -222,13 +245,18 @@ export async function initializeMakeSuite() {
 
   testEnv.aWeth = await getAToken(aWethAddress);
   testEnv.aCVXETH_STETH = await getAToken(aCVXETH_STETHAddress);
+  testEnv.aAURAWSTETH_WETH = await getAToken(aAURAWSTETH_WETHAddress);
 
   testEnv.weth = await getMintableERC20(wethAddress);
   testEnv.ETH_STETH_LP = await getMintableERC20(EthStEthLPAddress);
+  testEnv.BAL_WSTETH_WETH_LP = await getMintableERC20(BalWstethWethLPAddress);
 
   testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
   testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
+  testEnv.BAL = IERC20DetailedFactory.connect(balAddress, deployer.signer);
+  testEnv.AURA = IERC20DetailedFactory.connect(auraAddress, deployer.signer);
   testEnv.cvxeth_steth = SturdyInternalAssetFactory.connect(cvxethstethAddress, deployer.signer);
+  testEnv.aurawsteth_weth = SturdyInternalAssetFactory.connect(aurawstethwethAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

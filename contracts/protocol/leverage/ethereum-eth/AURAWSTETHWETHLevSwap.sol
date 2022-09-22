@@ -6,8 +6,10 @@ import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IBalancerVault} from '../../../interfaces/IBalancerVault.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
+  using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
   IBalancerVault public constant WSTETHWETH =
@@ -34,10 +36,11 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
   /// borrowing asset -> WSTETHWETH
   function _swapTo(address _borrowingAsset, uint256 _amount) internal override returns (uint256) {
     uint256[] memory initBalances = new uint256[](2);
-    initBalances[0] = _amount;
+    initBalances[1] = _amount;
 
     address[] memory assets = new address[](2);
     assets[0] = WSTETH;
+    assets[1] = WETH;
 
     uint256 joinKind = uint256(IBalancerVault.JoinKind.EXACT_TOKENS_IN_FOR_BPT_OUT);
     bytes memory userDataEncoded = abi.encode(joinKind, initBalances);
@@ -48,6 +51,10 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
       userData: userDataEncoded,
       fromInternalBalance: false
     });
+
+    // approve
+    IERC20(WETH).safeApprove(address(WSTETHWETH), 0);
+    IERC20(WETH).safeApprove(address(WSTETHWETH), _amount);
 
     // join pool
     WSTETHWETH.joinPool(POOLID, address(this), address(this), request);

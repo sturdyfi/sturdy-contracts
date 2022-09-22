@@ -38,6 +38,7 @@ contract SturdyAPRDataProvider is Ownable {
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+  address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   uint256 private constant STURDY_FEE = 10_00;
   uint256 private constant CVX_CLIFF_SIZE = 1e23; // new cliff every 100,000 tokens
   uint256 private constant CVX_CLIFF_COUNT = 1000; //1,000 cliffs
@@ -71,6 +72,7 @@ contract SturdyAPRDataProvider is Ownable {
     prevBlock[DAI] = block.number;
     prevBlock[USDC] = block.number;
     prevBlock[USDT] = block.number;
+    prevBlock[WETH] = block.number;
   }
 
   function registerConvexReserve(

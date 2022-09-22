@@ -26,7 +26,7 @@ task(`full:eth:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} cont
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ETH_STETH_LP, ReserveAssets } = poolConfig as IEthConfiguration;
+    const { ETH_STETH_LP, BAL_WSTETH_WETH_LP, ReserveAssets } = poolConfig as IEthConfiguration;
 
     const addressProvider = await getLendingPoolAddressesProvider();
 
@@ -49,7 +49,7 @@ task(`full:eth:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} cont
     const aurawstethwethVault = await getAuraWSTETHWETHVault();
     const aurawstethwethLevSwap = await deployAURAWSTETHWETHLevSwap(
       [
-        getParamPerNetwork(ETH_STETH_LP, network),
+        getParamPerNetwork(BAL_WSTETH_WETH_LP, network),
         aurawstethwethVault.address,
         addressProvider.address,
       ],

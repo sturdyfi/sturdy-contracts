@@ -21,6 +21,7 @@ const CONVEX_YIELD_PERIOD = 100000;
 
 const simulateYield = async (testEnv: TestEnv) => {
   await simulateYieldInConvexETHSTETHVault(testEnv);
+  await simulateYieldInAURAWSTETHWETHVault(testEnv);
 };
 
 const simulateYieldInConvexETHSTETHVault = async (testEnv: TestEnv) => {
@@ -56,6 +57,39 @@ const simulateYieldInConvexETHSTETHVault = async (testEnv: TestEnv) => {
   await convexETHSTETHVault.processYield();
 };
 
+const simulateYieldInAURAWSTETHWETHVault = async (testEnv: TestEnv) => {
+  const { auraWSTETHWETHVault, users, BAL_WSTETH_WETH_LP } = testEnv;
+  const ethers = (DRE as any).ethers;
+  const borrower = users[1];
+  const WSTETHWETHLPOwnerAddress = '0x8627425d8b3c16d16683a1e1e17ff00a2596e05f';
+  const depositWSTETHWETH = '15';
+  const depositWSTETHWETHAmount = await convertToCurrencyDecimals(
+    BAL_WSTETH_WETH_LP.address,
+    depositWSTETHWETH
+  );
+
+  await impersonateAccountsHardhat([WSTETHWETHLPOwnerAddress]);
+  let signer = await ethers.provider.getSigner(WSTETHWETHLPOwnerAddress);
+
+  //transfer to borrower
+  await BAL_WSTETH_WETH_LP.connect(signer).transfer(borrower.address, depositWSTETHWETHAmount);
+
+  //approve protocol to access borrower wallet
+  await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(
+    auraWSTETHWETHVault.address,
+    APPROVAL_AMOUNT_LENDING_POOL
+  );
+
+  // deposit collateral to borrow
+  await auraWSTETHWETHVault
+    .connect(borrower.signer)
+    .depositCollateral(BAL_WSTETH_WETH_LP.address, depositWSTETHWETHAmount);
+
+  await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
+  // process yield, so yield should be sented to YieldManager
+  await auraWSTETHWETHVault.processYield();
+};
+
 const depositWETH = async (
   testEnv: TestEnv,
   depositor: SignerWithAddress,
@@ -79,7 +113,7 @@ const depositWETH = async (
 makeSuite('Yield Manger: configuration', (testEnv) => {
   it('Registered reward asset count should be 2', async () => {
     const { yieldManager } = testEnv;
-    const availableAssetCount = 2;
+    const availableAssetCount = 3;
     const assetCount = await yieldManager.getAssetCount();
     expect(assetCount).to.be.eq(availableAssetCount);
   });
@@ -111,6 +145,20 @@ makeSuite('Yield Manger: configuration', (testEnv) => {
     }
     expect(registered).to.be.equal(true);
   });
+  it('BAL should be a reward asset.', async () => {
+    const { yieldManager, BAL } = testEnv;
+    const assetCount = await yieldManager.getAssetCount();
+    let registered = false;
+    let index = 0;
+    while (assetCount.gt(index)) {
+      const assetAddress = await yieldManager.getAssetInfo(index++);
+      if (assetAddress.toLowerCase() == BAL.address.toLowerCase()) {
+        registered = true;
+        break;
+      }
+    }
+    expect(registered).to.be.equal(true);
+  });
   it('Should be WETH as an exchange token', async () => {
     const { yieldManager, weth } = testEnv;
     const asset = await yieldManager._exchangeToken();
@@ -132,6 +180,16 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
     const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
+  });
+  it('Aura WSTETHWETH vault', async () => {
+    const { BAL, AURA, yieldManager } = testEnv;
+    const beforeBalanceOfBAL = await BAL.balanceOf(yieldManager.address);
+    const beforeBalanceOfAURA = await AURA.balanceOf(yieldManager.address);
+    await simulateYieldInAURAWSTETHWETHVault(testEnv);
+    const afterBalanceOfBAL = await BAL.balanceOf(yieldManager.address);
+    const afterBalanceOfAURA = await AURA.balanceOf(yieldManager.address);
+    expect(afterBalanceOfBAL).to.be.gt(beforeBalanceOfBAL);
+    expect(afterBalanceOfAURA).to.be.gt(beforeBalanceOfAURA);
   });
 });
 
@@ -165,7 +223,7 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
       '101'
     );
   });
-  it('Distribute yield', async () => {
+  it('Distribute yield CRV,CVX', async () => {
     const {
       yieldManager,
       weth,
@@ -186,7 +244,6 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     await simulateYield(testEnv);
 
     // Distribute yields
-    const assetCount = await yieldManager.getAssetCount();
     const paths = [
       {
         u_path: {
@@ -210,7 +267,48 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
       },
     ];
     const slippage = 500;
-    await yieldManager.distributeYield(0, assetCount, slippage, paths);
+    await yieldManager.distributeYield(0, 2, slippage, paths);
+
+    expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
+    expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(weth.address, true)) / 1e18) * 100);
+  });
+  it('Distribute yield BAL', async () => {
+    const {
+      yieldManager,
+      weth,
+      aWeth,
+      users,
+      BAL,
+      aprProvider,
+    } = testEnv;
+
+    // suppliers deposit asset to pool
+    const depositor1 = users[5];
+    const depositWETHAmount = await convertToCurrencyDecimals(weth.address, '7');
+    await depositWETH(testEnv, depositor1, depositWETHAmount);
+    expect((await aWeth.balanceOf(depositor1.address)).eq(depositWETHAmount)).to.be.equal(true);
+
+    // Simulate Yield
+    await simulateYield(testEnv);
+
+    // Distribute yields
+    const paths = [
+      {
+        u_path: {
+          tokens: [],
+          fees: [],
+        },
+        b_path: {
+          tokens: [BAL.address, weth.address],
+          poolIds: [
+            '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014',
+          ],
+        },
+      },
+    ];
+    const slippage = 500;
+    await yieldManager.distributeYield(2, 1, slippage, paths);
 
     expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
     expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);

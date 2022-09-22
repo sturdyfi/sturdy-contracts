@@ -23,7 +23,7 @@ task(`full:eth:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { CRV, CVX } = poolConfig as IEthConfiguration;
+    const { CRV, CVX, BAL } = poolConfig as IEthConfiguration;
 
     const yieldManager = await deployYieldManager(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
@@ -32,9 +32,10 @@ task(`full:eth:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     // Set Exchange Token as WETH
     await yieldManager.setExchangeToken(getParamPerNetwork(poolConfig.ReserveAssets, network).WETH);
 
-    // Register reward asset(for now CRV & CVX)
+    // Register reward asset(for now CRV & CVX & BAL)
     await yieldManager.registerAsset(getParamPerNetwork(CRV, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(CVX, network), 0);
+    await yieldManager.registerAsset(getParamPerNetwork(BAL, network), 1);
 
     const addressProvider = await getLendingPoolAddressesProvider();
     const signer = await getFirstSigner();

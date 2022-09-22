@@ -86,6 +86,7 @@ task('testnet:deploy-oracles', 'Deploy oracles for dev enviroment')
           auraDAI_USDC_USDT: reserveAssets.auraDAI_USDC_USDT,
           cvxTUSD_FRAXBP: reserveAssets.cvxTUSD_FRAXBP,
           cvxETH_STETH: reserveAssets.cvxETH_STETH,
+          auraWSTETH_WETH: reserveAssets.auraWSTETH_WETH,
           USD: UsdAddress,
         },
         fallbackOracle

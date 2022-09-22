@@ -64,6 +64,7 @@ import {
   getBalancerswapAdapterAddress,
   getConvexTUSDFRAXBPVault,
   getConvexETHSTETHVault,
+  getAuraWSTETHWETHVault,
 } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 import {
@@ -164,6 +165,8 @@ import {
   TUSDFRAXBPLevSwapFactory,
   ETHSTETHOracleFactory,
   ETHSTETHLevSwapFactory,
+  BALWSTETHWETHOracleFactory,
+  AURAWSTETHWETHLevSwapFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -537,6 +540,14 @@ export const deployETHSTETHOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new ETHSTETHOracleFactory(await getFirstSigner()).deploy(),
     eContractid.ETHSTETHOracle,
+    [],
+    verify
+  );
+
+export const deployBALWSTETHWETHOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALWSTETHWETHOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.BALWSTETHWETHOracle,
     [],
     verify
   );
@@ -1485,6 +1496,31 @@ export const deployConvexETHSTETHVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexETHSTETHVault, proxyAddress);
 
   return await getConvexETHSTETHVault();
+};
+
+export const deployAuraWSTETHWETHVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVaultFactory(await getFirstSigner()).deploy(),
+    eContractid.AuraWSTETHWETHVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_WSTETH_WETH_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_WSTETH_WETH_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraWSTETHWETHVault, proxyAddress);
+
+  return await getAuraWSTETHWETHVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>
@@ -2763,6 +2799,17 @@ export const deployETHSTETHLevSwap = async (
   withSaveAndVerify(
     await new ETHSTETHLevSwapFactory(await getFirstSigner()).deploy(...args),
     eContractid.ETHSTETHLevSwap,
+    args,
+    verify
+  );
+
+export const deployAURAWSTETHWETHLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new AURAWSTETHWETHLevSwapFactory(await getFirstSigner()).deploy(...args),
+    eContractid.AURAWSTETHWETHLevSwap,
     args,
     verify
   );

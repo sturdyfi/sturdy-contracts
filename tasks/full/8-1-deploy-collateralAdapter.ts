@@ -29,6 +29,7 @@ import {
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
   getConvexETHSTETHVault,
+  getAuraWSTETHWETHVault,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
@@ -141,6 +142,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
               (poolConfig as IEthConfiguration).ETH_STETH_LP,
               network
             ),
+            auraWSTETH_WETH: getParamPerNetwork(
+              (poolConfig as IEthConfiguration).BAL_WSTETH_WETH_LP,
+              network
+            ),
           };
 
     const acceptableVaults =
@@ -178,6 +183,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
           }
         : {
             cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+            auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
           };
 
     const reserves = Object.entries(ReservesConfig).filter(

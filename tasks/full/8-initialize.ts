@@ -42,6 +42,7 @@ import {
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
   getConvexETHSTETHVault,
+  getAuraWSTETHWETHVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -111,6 +112,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
             }
           : {
               cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+              auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
             };
 
       const yieldDistributor =
@@ -127,6 +129,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
             }
           : {
               cvxETH_STETH: (await getVariableYieldDistribution()).address,
+              auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
             };
 
       await initReservesByHelper(

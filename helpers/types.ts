@@ -76,6 +76,7 @@ export enum eContractid {
   BALDAIUSDCUSDTOracle = 'BALDAIUSDCUSDTOracle',
   TUSDFRAXBPOracle = 'TUSDFRAXBPOracle',
   ETHSTETHOracle = 'ETHSTETHOracle',
+  BALWSTETHWETHOracle = 'BALWSTETHWETHOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -138,6 +139,8 @@ export enum eContractid {
   ConvexTUSDFRAXBPVault = 'ConvexTUSDFRAXBPVault',
   ConvexETHSTETHVaultImpl = 'ConvexETHSTETHVaultImpl',
   ConvexETHSTETHVault = 'ConvexETHSTETHVault',
+  AuraWSTETHWETHVaultImpl = 'AuraWSTETHWETHVaultImpl',
+  AuraWSTETHWETHVault = 'AuraWSTETHWETHVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -198,6 +201,7 @@ export enum eContractid {
   IRONBANKLevSwap = 'IRONBANKLevSwap',
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
   ETHSTETHLevSwap = 'ETHSTETHLevSwap',
+  AURAWSTETHWETHLevSwap = 'AURAWSTETHWETHLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
 }
 
@@ -334,6 +338,7 @@ export interface iAssetBase<T> {
 
   // mainnet-eth
   cvxETH_STETH: T;
+  auraWSTETH_WETH: T;
 
   // fantom
   yvWFTM: T;
@@ -395,7 +400,10 @@ export type iFantomPoolAssets<T> = Pick<
   | 'mooMIM_2CRV'
 >;
 
-export type iEthPoolAssets<T> = Pick<iAssetsWithoutUSD<T>, 'WETH' | 'cvxETH_STETH'>;
+export type iEthPoolAssets<T> = Pick<
+  iAssetsWithoutUSD<T>,
+  'WETH' | 'cvxETH_STETH' | 'auraWSTETH_WETH'
+>;
 
 export type iMultiPoolsAssets<T> =
   | iAssetCommon<T>
@@ -428,6 +436,7 @@ export enum TokenContractId {
 
   // mainnet-eth
   cvxETH_STETH = 'cvxETH_STETH',
+  auraWSTETH_WETH = 'auraWSTETH_WETH',
 
   // fantom
   yvWFTM = 'yvWFTM',
@@ -656,7 +665,9 @@ export interface IEthConfiguration extends ICommonConfiguration {
   ReservesConfig: iEthPoolAssets<IReserveParams>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
+  BAL: iParamsPerNetwork<tEthereumAddress>;
   ETH_STETH_LP: iParamsPerNetwork<tEthereumAddress>;
+  BAL_WSTETH_WETH_LP: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
 }
 

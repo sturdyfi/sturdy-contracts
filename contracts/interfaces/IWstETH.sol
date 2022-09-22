@@ -3,4 +3,6 @@ pragma solidity ^0.8.0;
 
 interface IWstETH {
   function unwrap(uint256 _wstETHAmount) external returns (uint256);
+
+  function stEthPerToken() external view returns (uint256);
 }

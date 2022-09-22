@@ -42,6 +42,9 @@ task('sturdy:eth', 'Deploy development enviroment')
     console.log('6. Deploy Convex ETH STETH vault');
     await DRE.run('full:eth:deploy-convex-eth-steth-vault', { pool: POOL_NAME, verify });
 
+    console.log('6-1. Deploy Aura WSTETH WETH vault');
+    await DRE.run('full:eth:deploy-aura-wsteth-weth-vault', { pool: POOL_NAME, verify });
+
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME, verify });
 

@@ -719,11 +719,11 @@
   },
   "TUSDFRAXBPLevSwap": {
     "main": {
-      "address": "0x73D2fD3b9187028f93E9c1625DC37e94a4B1D829",
+      "address": "0x72352d5Db60027a902a0AE6CF6815A11eB639Edb",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x73D2fD3b9187028f93E9c1625DC37e94a4B1D829",
+      "address": "0x72352d5Db60027a902a0AE6CF6815A11eB639Edb",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

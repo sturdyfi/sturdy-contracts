@@ -12,6 +12,7 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {IVaultWhitelist} from '../../interfaces/IVaultWhitelist.sol';
 import {IAaveFlashLoan} from '../../interfaces/IAaveFlashLoan.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
@@ -30,6 +31,9 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   uint256 private constant USE_VARIABLE_DEBT = 2;
 
   address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
+
+  IVaultWhitelist internal constant VAULT_WHITELIST =
+    IVaultWhitelist(0xD90334f62277Ce72026428FdF46dC8Af70090954);
 
   address public immutable COLLATERAL; // The addrss of external asset
 
@@ -282,7 +286,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       uint256 requiredAmount = _principal - IERC20(COLLATERAL).balanceOf(address(this));
       uint256 removeAmount = Math.min(availableAmount, requiredAmount);
       IERC20(_sAsset).safeTransferFrom(msg.sender, address(this), removeAmount);
-      _remove(removeAmount, _slippage);
+      _remove(removeAmount, _slippage, msg.sender);
 
       if (removeAmount == requiredAmount) break;
 
@@ -431,7 +435,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     require(withdrawalAmount > _requiredAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
 
     IERC20(_sAsset).safeTransferFrom(_user, address(this), withdrawalAmount);
-    _remove(withdrawalAmount, _slippage);
+    _remove(withdrawalAmount, _slippage, _user);
 
     // collateral -> stable
     _swapFrom(_stableAsset);
@@ -464,7 +468,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
         ? Math.min(availableAmount, requireAmount)
         : availableAmount;
       IERC20(_sAsset).safeTransferFrom(msg.sender, address(this), removeAmount);
-      _remove(removeAmount, _slippage);
+      _remove(removeAmount, _slippage, msg.sender);
 
       // swap collateral to stable coin
       // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
@@ -492,10 +496,24 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   }
 
   function _supply(uint256 _amount, address _user) internal {
+    // whitelist checking
+    if (VAULT_WHITELIST.whitelistCount(address(this)) > 0) {
+      require(VAULT_WHITELIST.whitelist(address(this), _user), Errors.CALLER_NOT_WHITELIST_USER);
+    }
+
     IGeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, _user);
   }
 
-  function _remove(uint256 _amount, uint256 _slippage) internal {
+  function _remove(
+    uint256 _amount,
+    uint256 _slippage,
+    address _user
+  ) internal {
+    // whitelist checking
+    if (VAULT_WHITELIST.whitelistCount(address(this)) > 0) {
+      require(VAULT_WHITELIST.whitelist(address(this), _user), Errors.CALLER_NOT_WHITELIST_USER);
+    }
+
     IGeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
   }
 

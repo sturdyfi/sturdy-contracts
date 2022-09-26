@@ -671,11 +671,11 @@
   },
   "ConvexTUSDFRAXBPVaultImpl": {
     "main": {
-      "address": "0x6162452E94F024016c5301BFaC1c7365d615574e",
+      "address": "0x702e85f0e100e312bE0D02170F4dDC151361a47b",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x6162452E94F024016c5301BFaC1c7365d615574e",
+      "address": "0x702e85f0e100e312bE0D02170F4dDC151361a47b",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -694,6 +694,16 @@
     },
     "localhost": {
       "address": "0xa5A96C4E5873dBae8e41058f891A05Ad9aE3C71e",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "VaultWhitelist": {
+    "main": {
+      "address": "0xD90334f62277Ce72026428FdF46dC8Af70090954",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xD90334f62277Ce72026428FdF46dC8Af70090954",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

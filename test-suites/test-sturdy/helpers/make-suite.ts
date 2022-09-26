@@ -35,6 +35,7 @@ import {
   getSturdyAPRDataProvider,
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
+  getVaultWhitelist,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -66,6 +67,7 @@ import {
   LeverageSwapManager,
   SturdyAPRDataProvider,
   AuraBalancerLPVault,
+  VaultWhitelist,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -166,6 +168,7 @@ export interface TestEnv {
   variableYieldDistributor: VariableYieldDistribution;
   levSwapManager: LeverageSwapManager;
   aprProvider: SturdyAPRDataProvider;
+  vaultWhitelist: VaultWhitelist;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -252,6 +255,7 @@ const testEnv: TestEnv = {
   variableYieldDistributor: {} as VariableYieldDistribution,
   levSwapManager: {} as LeverageSwapManager,
   aprProvider: {} as SturdyAPRDataProvider,
+  vaultWhitelist: {} as VaultWhitelist,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
@@ -321,7 +325,6 @@ export async function initializeMakeSuite() {
       address: deployerAddress,
       signer: signer,
     };
-
     await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
   }
 
@@ -369,6 +372,7 @@ export async function initializeMakeSuite() {
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
   testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
   testEnv.aprProvider = await getSturdyAPRDataProvider();
+  testEnv.vaultWhitelist = await getVaultWhitelist();
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(

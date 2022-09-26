@@ -72,6 +72,7 @@ import {
   LeverageSwapManagerFactory,
   SturdyAPRDataProviderFactory,
   AuraBalancerLPVaultFactory,
+  VaultWhitelistFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -1121,3 +1122,12 @@ export const getReserveLogicLibrary = async () => {
   const db = await getDb().get(`${eContractid.ReserveLogic}.${DRE.network.name}`).value();
   return db?.address;
 };
+
+export const getVaultWhitelist = async (address?: tEthereumAddress) =>
+  await VaultWhitelistFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.VaultWhitelist}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );

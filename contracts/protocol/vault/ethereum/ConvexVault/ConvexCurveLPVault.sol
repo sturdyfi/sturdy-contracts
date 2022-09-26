@@ -31,7 +31,7 @@ contract ConvexCurveLPVault is IncentiveVault {
   IConvexBooster internal constant CONVEX_BOOSTER =
     IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
   IVaultWhitelist internal constant VAULT_WHITELIST =
-    IVaultWhitelist(0xfb0038384a368c568e45Ce1bBD35028e39Cadf4A);
+    IVaultWhitelist(0xD90334f62277Ce72026428FdF46dC8Af70090954);
   address internal curveLPToken;
   address internal internalAssetToken;
   uint256 internal convexPoolId;

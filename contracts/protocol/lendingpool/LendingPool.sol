@@ -331,6 +331,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 amountToWithdraw = amount;
     address aToken = reserve.aTokenAddress;
     uint256 userBalance = IAToken(aToken).balanceOf(from);
+    DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
 
     if (amount == type(uint256).max) {
       amountToWithdraw = userBalance;
@@ -342,7 +343,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       amountToWithdraw,
       userBalance,
       _reserves,
-      _usersConfig[from],
+      fromConfig,
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -353,8 +354,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
     }
 
-    if (amountToWithdraw == userBalance) {
-      _usersConfig[from].setUsingAsCollateral(reserve.id, false);
+    uint8 id = reserve.id;
+    if (amountToWithdraw == userBalance && fromConfig.isUsingAsCollateral(id)) {
+      fromConfig.setUsingAsCollateral(id, false);
       emit ReserveUsedAsCollateralDisabled(asset, from);
     }
 
@@ -756,25 +758,27 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
 
+    DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
+
     ValidationLogic.validateTransfer(
       from,
       _reserves,
-      _usersConfig[from],
+      fromConfig,
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
     );
 
     uint256 reserveId = _reserves[asset].id;
+    (, , , , bool isCollateral) = _reserves[asset].configuration.getFlags();
 
     if (from != to) {
-      if (balanceFromBefore - amount == 0) {
-        DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
+      if (balanceFromBefore - amount == 0 && fromConfig.isUsingAsCollateral(reserveId)) {
         fromConfig.setUsingAsCollateral(reserveId, false);
         emit ReserveUsedAsCollateralDisabled(asset, from);
       }
 
-      if (balanceToBefore == 0 && amount != 0) {
+      if (balanceToBefore == 0 && amount != 0 && isCollateral) {
         DataTypes.UserConfigurationMap storage toConfig = _usersConfig[to];
         toConfig.setUsingAsCollateral(reserveId, true);
         emit ReserveUsedAsCollateralEnabled(asset, to);

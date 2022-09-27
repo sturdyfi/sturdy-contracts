@@ -380,6 +380,10 @@ library ValidationLogic {
 
     require(underlyingBalance != 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
+    if (useAsCollateral) {
+      require(reserve.configuration.getCollateralEnabled(), Errors.LPC_INVALID_CONFIGURATION);
+    }
+
     require(
       useAsCollateral ||
         GenericLogic.balanceDecreaseAllowed(

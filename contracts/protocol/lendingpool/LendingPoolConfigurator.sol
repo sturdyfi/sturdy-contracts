@@ -245,6 +245,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+    (, , , , bool isCollateral) = cachedPool.getConfiguration(input.asset).getFlagsMemory();
+    require(!isCollateral, Errors.LPC_INVALID_CONFIGURATION);
 
     bytes memory encodedCall = abi.encodeWithSelector(
       IInitializableDebtToken.initialize.selector,
@@ -356,6 +358,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     uint256 liquidationBonus
   ) external payable onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    (, , , , bool isCollateral) = currentConfig.getFlagsMemory();
 
     //validation of the parameters: the LTV can
     //only be lower or equal than the liquidation threshold
@@ -363,6 +366,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     require(ltv <= liquidationThreshold, Errors.LPC_INVALID_CONFIGURATION);
 
     if (liquidationThreshold != 0) {
+      require(isCollateral, Errors.LPC_INVALID_CONFIGURATION);
+
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
       //collateral than needed to cover the debt
       require(
@@ -378,6 +383,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       );
     } else {
       require(liquidationBonus == 0, Errors.LPC_INVALID_CONFIGURATION);
+      require(ltv == 0, Errors.LPC_INVALID_CONFIGURATION);
+
       //if the liquidation threshold is being set to 0,
       // the reserve is being disabled as collateral. To do so,
       //we need to ensure no liquidity is deposited

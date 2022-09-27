@@ -129,11 +129,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    address yieldAddress = reserve.yieldAddress;
     bool isFirstDeposit = false;
 
-    if (isCollateral) {
-      require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-    }
+    _validateVault(isCollateral, asset, yieldAddress, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
 
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
@@ -145,7 +144,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
 
-    if (isCollateral && reserve.yieldAddress != address(0)) {
+    if (isCollateral && yieldAddress != address(0)) {
       isFirstDeposit = IAToken(aToken).mint(
         onBehalfOf,
         amount,
@@ -172,18 +171,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param amount The amount to be deposited
    **/
   function depositYield(address asset, uint256 amount) external override whenNotPaused {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
-
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    address aToken = reserve.aTokenAddress;
+
+    require(!isCollateral, Errors.VT_PROCESS_YIELD_INVALID);
+    require(_availableVaults[msg.sender] == true, Errors.VT_PROCESS_YIELD_INVALID);
 
     reserve.updateState();
 
     // update liquidityIndex based on yield amount
-    reserve.cumulateToLiquidityIndex(IERC20(reserve.aTokenAddress).totalSupply(), amount);
+    reserve.cumulateToLiquidityIndex(IERC20(aToken).totalSupply(), amount);
 
-    reserve.updateInterestRates(asset, reserve.aTokenAddress, amount, 0);
+    reserve.updateInterestRates(asset, aToken, amount, 0);
 
-    IERC20(asset).safeTransferFrom(msg.sender, reserve.aTokenAddress, amount);
+    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
   }
 
   /**
@@ -193,9 +195,11 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param amount The yield amount
    **/
   function getYield(address asset, uint256 amount) external override whenNotPaused {
-    require(_availableVaults[msg.sender] == true, Errors.VT_PROCESS_YIELD_INVALID);
-
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+
+    require(isCollateral, Errors.VT_PROCESS_YIELD_INVALID);
+    _validateVault(isCollateral, asset, reserve.yieldAddress, Errors.VT_PROCESS_YIELD_INVALID);
     IAToken(reserve.aTokenAddress).transferUnderlyingTo(msg.sender, amount);
   }
 
@@ -211,14 +215,16 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    address aToken = reserve.aTokenAddress;
+
     // collateral assetBalance should increase overtime based on vault strategy
-    uint256 assetBalance = IERC20(asset).balanceOf(reserve.aTokenAddress);
+    uint256 assetBalance = IERC20(asset).balanceOf(aToken);
     // aTokenBalance should not increase overtime because of no borrower.
-    uint256 aTokenBalance = IAToken(reserve.aTokenAddress).totalSupply();
+    uint256 aTokenBalance = IAToken(aToken).totalSupply();
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
       aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
-      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+      uint256 decimal = IERC20Detailed(aToken).decimals();
       if (decimal < 18) aTokenBalance = aTokenBalance / 10**(18 - decimal);
     }
 
@@ -300,7 +306,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address from,
     address to
   ) external override whenNotPaused returns (uint256) {
-    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     return _withdraw(asset, amount, from, to);
   }
 
@@ -323,10 +328,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address to
   ) internal returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    (, , , , bool isCollateral) = reserve.configuration.getFlags();
-    uint256 userBalance = IAToken(reserve.aTokenAddress).balanceOf(from);
-
     uint256 amountToWithdraw = amount;
+    address aToken = reserve.aTokenAddress;
+    uint256 userBalance = IAToken(aToken).balanceOf(from);
 
     if (amount == type(uint256).max) {
       amountToWithdraw = userBalance;
@@ -346,7 +350,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
       reserve.updateState();
-      reserve.updateInterestRates(asset, reserve.aTokenAddress, 0, amountToWithdraw);
+      reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
     }
 
     if (amountToWithdraw == userBalance) {
@@ -354,18 +358,19 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       emit ReserveUsedAsCollateralDisabled(asset, from);
     }
 
-    if (isCollateral && reserve.yieldAddress != address(0)) {
-      IAToken(reserve.aTokenAddress).burn(
-        from,
-        to,
-        amountToWithdraw,
-        reserve.getIndexFromPricePerShare()
-      );
-      amountToWithdraw = amountToWithdraw.rayDiv(reserve.getIndexFromPricePerShare());
-      uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
+    (, , , , bool isCollateral) = reserve.configuration.getFlags();
+    address yieldAddress = reserve.yieldAddress;
+
+    _validateVault(isCollateral, asset, yieldAddress, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+
+    if (isCollateral && yieldAddress != address(0)) {
+      uint256 aTokenIndex = reserve.getIndexFromPricePerShare();
+      IAToken(aToken).burn(from, to, amountToWithdraw, aTokenIndex);
+      amountToWithdraw = amountToWithdraw.rayDiv(aTokenIndex);
+      uint256 decimal = IERC20Detailed(aToken).decimals();
       if (decimal < 18) amountToWithdraw = amountToWithdraw / 10**(18 - decimal);
     } else {
-      IAToken(reserve.aTokenAddress).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
+      IAToken(aToken).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
     }
 
     emit Withdraw(asset, from, to, amountToWithdraw);
@@ -454,7 +459,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       paybackAmount = amount;
     }
 
-    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+    address interestRateStrategyAddress = reserve.interestRateStrategyAddress;
+    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
       reserve.updateState();
     }
 
@@ -469,7 +475,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
-    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
       reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
     }
 
@@ -886,7 +892,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       oracle
     );
 
-    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+    address interestRateStrategyAddress = reserve.interestRateStrategyAddress;
+    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
       reserve.updateState();
     }
 
@@ -915,7 +922,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       userConfig.setBorrowing(reserve.id, true);
     }
 
-    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
       reserve.updateInterestRates(
         vars.asset,
         vars.aTokenAddress,
@@ -974,5 +981,32 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope1() == 0 &&
       IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope2() == 0 &&
       IReserveInterestRateStrategy(interestRateStrategyAddress).baseVariableBorrowRate() == 0;
+  }
+
+  /**
+   * @dev Validate the request from vault in case of deposit, getYield, withdrawFrom, depositYield
+   * @param isCollateral if asset is collateral then true otherwise false
+   * @param asset The underlying asset address
+   * @param yieldAddress The underlying asset's vault address, if zero, it means lidoVault
+   * @param errCode The error string code
+   **/
+  function _validateVault(
+    bool isCollateral,
+    address asset,
+    address yieldAddress,
+    string memory errCode
+  ) internal {
+    if (!isCollateral) return;
+
+    // sender is only vault
+    require(_availableVaults[msg.sender] == true, errCode);
+
+    if (yieldAddress != address(0)) {
+      // sender is only reserve related vault
+      require(yieldAddress == msg.sender, errCode);
+    } else {
+      // sender is only lidoVault
+      require(asset == _addressesProvider.getAddress('LIDO'), errCode);
+    }
   }
 }

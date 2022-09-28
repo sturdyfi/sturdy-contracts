@@ -235,11 +235,11 @@ contract ConvexCurveLPVault is IncentiveVault {
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false);
 
-    // Deliver Curve LP Token
-    IERC20(curveLPToken).safeTransfer(_to, _amount);
-
     // Burn
     SturdyInternalAsset(internalAssetToken).burn(address(this), _amount);
+
+    // Deliver Curve LP Token
+    IERC20(curveLPToken).safeTransfer(_to, _amount);
 
     return _amount;
   }

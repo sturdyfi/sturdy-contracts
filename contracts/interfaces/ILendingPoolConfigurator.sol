@@ -193,5 +193,7 @@ interface ILendingPoolConfigurator {
 
   function registerVault(address _vaultAddress) external payable;
 
+  function unregisterVault(address _vaultAddress) external payable;
+
   function batchInitReserve(InitReserveInput[] calldata input) external payable;
 }

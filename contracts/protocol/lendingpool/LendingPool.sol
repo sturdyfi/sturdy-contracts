@@ -109,6 +109,21 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
+   * @dev Unregister the vault address
+   * - To check if the caller is vault for some functions
+   * - Caller is only LendingPoolConfigurator
+   * @param _vaultAddress The address of the Vault
+   **/
+  function unregisterVault(address _vaultAddress)
+    external
+    payable
+    override
+    onlyLendingPoolConfigurator
+  {
+    _availableVaults[_vaultAddress] = false;
+  }
+
+  /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
    * - Caller is anyone.

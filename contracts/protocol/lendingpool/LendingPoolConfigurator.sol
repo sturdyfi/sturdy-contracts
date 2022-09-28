@@ -71,6 +71,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   /**
+   * @dev unregister vault from pool
+   * - Caller is only poolAdmin
+   * @param _vaultAddress The address of vault
+   **/
+  function unregisterVault(address _vaultAddress) external payable override onlyPoolAdmin {
+    pool.unregisterVault(_vaultAddress);
+  }
+
+  /**
    * @dev Initializes reserves in batch
    * - Caller is only poolAdmin
    * @param input The init data of reserve

@@ -162,6 +162,9 @@ contract LendingPoolCollateralManager is
       vars.actualDebtToLiquidate = vars.debtAmountNeeded;
     }
 
+    // Transfers the debt asset to this
+    IERC20(debtAsset).safeTransferFrom(msg.sender, address(this), vars.actualDebtToLiquidate);
+
     // If the liquidator reclaims the underlying asset, we make sure there is enough available liquidity in the
     // collateral reserve
     if (!receiveAToken) {
@@ -246,11 +249,7 @@ contract LendingPoolCollateralManager is
     }
 
     // Transfers the debt asset being repaid to the aToken, where the liquidity is kept
-    IERC20(debtAsset).safeTransferFrom(
-      msg.sender,
-      debtReserve.aTokenAddress,
-      vars.actualDebtToLiquidate
-    );
+    IERC20(debtAsset).safeTransfer(debtReserve.aTokenAddress, vars.actualDebtToLiquidate);
 
     emit LiquidationCall(
       internalAsset,

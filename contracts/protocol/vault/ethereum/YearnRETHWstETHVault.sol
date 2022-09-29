@@ -33,7 +33,7 @@ contract YearnRETHWstETHVault is GeneralVault {
    *  And convert to stable asset, transfer to yield manager contract
    * - Caller is anyone
    */
-  function processYield() external override {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
     uint256 yieldYVRETH_WSTETH = _getYield(YVRETH_WSTETH);

@@ -42,7 +42,7 @@ contract LidoVault is GeneralVault {
    *  And convert collateral internal asset -> stable asset and deposit stable asset to pool
    * - Caller is anyone
    */
-  function processYield() external override {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address LIDO = provider.getAddress('LIDO');

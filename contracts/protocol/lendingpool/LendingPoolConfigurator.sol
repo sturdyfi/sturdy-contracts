@@ -98,6 +98,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   function _initReserve(ILendingPool _pool, InitReserveInput calldata input) internal {
+    require(input.underlyingAssetDecimals <= 18, Errors.LPC_INVALID_CONFIGURATION);
+
     address aTokenProxyAddress = _initTokenWithProxy(
       input.aTokenImpl,
       abi.encodeWithSelector(

@@ -293,6 +293,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyPoolAdmin
   {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    (, , , , bool isCollateral) = currentConfig.getFlagsMemory();
+    require(!isCollateral, Errors.LPC_INVALID_CONFIGURATION);
 
     currentConfig.setBorrowingEnabled(true);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
@@ -328,6 +330,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyPoolAdmin
   {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    (, , bool isBorrowing, , ) = currentConfig.getFlagsMemory();
+    require(!isBorrowing, Errors.LPC_INVALID_CONFIGURATION);
 
     currentConfig.setCollateralEnabled(true);
 

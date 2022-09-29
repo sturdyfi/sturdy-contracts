@@ -2,7 +2,7 @@ import { TestEnv, makeSuite } from '../helpers/make-suite';
 import { APPROVAL_AMOUNT_LENDING_POOL, RAY } from '../../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../../helpers/contracts-helpers';
 import { ProtocolErrors } from '../../../helpers/types';
-import { strategySTETH } from '../../../markets/sturdy/reservesConfigs';
+import { strategySTETH, strategyUSDC } from '../../../markets/sturdy/reservesConfigs';
 import { DRE, impersonateAccountsHardhat } from '../../../helpers/misc-utils';
 
 const { expect } = require('chai');
@@ -155,10 +155,10 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategySTETH.reserveFactor);
   });
 
-  it('Activates the ETH reserve for borrowing', async () => {
-    const { configurator, lido, helpersContract, deployer } = testEnv;
-    await configurator.connect(deployer.signer).enableBorrowingOnReserve(lido.address, true);
-    const { variableBorrowIndex } = await helpersContract.getReserveData(lido.address);
+  it('Activates the USDC reserve for borrowing', async () => {
+    const { configurator, usdc, helpersContract, deployer } = testEnv;
+    await configurator.connect(deployer.signer).enableBorrowingOnReserve(usdc.address, true);
+    const { variableBorrowIndex } = await helpersContract.getReserveData(usdc.address);
 
     const {
       decimals,
@@ -170,17 +170,17 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       borrowingEnabled,
       isActive,
       isFrozen,
-    } = await helpersContract.getReserveConfigurationData(lido.address);
+    } = await helpersContract.getReserveConfigurationData(usdc.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
-    expect(decimals).to.be.equal(strategySTETH.reserveDecimals);
-    expect(ltv).to.be.equal(strategySTETH.baseLTVAsCollateral);
-    expect(liquidationThreshold).to.be.equal(strategySTETH.liquidationThreshold);
-    expect(liquidationBonus).to.be.equal(strategySTETH.liquidationBonus);
+    expect(decimals).to.be.equal(strategyUSDC.reserveDecimals);
+    expect(ltv).to.be.equal(strategyUSDC.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyUSDC.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyUSDC.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(strategySTETH.reserveFactor);
+    expect(reserveFactor).to.be.equal(strategyUSDC.reserveFactor);
 
     expect(variableBorrowIndex.toString()).to.be.equal(RAY);
   });
@@ -217,14 +217,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(lido.address);
 
-    expect(borrowingEnabled).to.be.equal(true);
+    expect(borrowingEnabled).to.be.equal(false);
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
     expect(decimals).to.be.equal(18);
     expect(ltv).to.be.equal(0);
     expect(liquidationThreshold).to.be.equal(0);
     expect(liquidationBonus).to.be.equal(0);
-    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(stableBorrowRateEnabled).to.be.equal(false);
     expect(reserveFactor).to.be.equal(strategySTETH.reserveFactor);
   });
 
@@ -246,14 +246,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(lido.address);
 
-    expect(borrowingEnabled).to.be.equal(true);
+    expect(borrowingEnabled).to.be.equal(false);
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
     expect(decimals).to.be.equal(strategySTETH.reserveDecimals);
     expect(ltv).to.be.equal(strategySTETH.baseLTVAsCollateral);
     expect(liquidationThreshold).to.be.equal(strategySTETH.liquidationThreshold);
     expect(liquidationBonus).to.be.equal(strategySTETH.liquidationBonus);
-    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(stableBorrowRateEnabled).to.be.equal(false);
     expect(reserveFactor).to.be.equal(strategySTETH.reserveFactor);
   });
 
@@ -282,7 +282,7 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(lido.address);
 
-    expect(borrowingEnabled).to.be.equal(true);
+    expect(borrowingEnabled).to.be.equal(false);
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
     expect(decimals).to.be.equal(strategySTETH.reserveDecimals);
@@ -293,9 +293,9 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
     expect(reserveFactor).to.be.equal(strategySTETH.reserveFactor);
   });
 
-  it('Enables stable borrow rate on the ETH reserve', async () => {
-    const { configurator, helpersContract, lido, deployer } = testEnv;
-    await configurator.connect(deployer.signer).enableReserveStableRate(lido.address);
+  it('Enables stable borrow rate on the USDC reserve', async () => {
+    const { configurator, helpersContract, usdc, deployer } = testEnv;
+    await configurator.connect(deployer.signer).enableReserveStableRate(usdc.address);
     const {
       decimals,
       ltv,
@@ -306,17 +306,17 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       borrowingEnabled,
       isActive,
       isFrozen,
-    } = await helpersContract.getReserveConfigurationData(lido.address);
+    } = await helpersContract.getReserveConfigurationData(usdc.address);
 
     expect(borrowingEnabled).to.be.equal(true);
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
-    expect(decimals).to.be.equal(strategySTETH.reserveDecimals);
-    expect(ltv).to.be.equal(strategySTETH.baseLTVAsCollateral);
-    expect(liquidationThreshold).to.be.equal(strategySTETH.liquidationThreshold);
-    expect(liquidationBonus).to.be.equal(strategySTETH.liquidationBonus);
+    expect(decimals).to.be.equal(strategyUSDC.reserveDecimals);
+    expect(ltv).to.be.equal(strategyUSDC.baseLTVAsCollateral);
+    expect(liquidationThreshold).to.be.equal(strategyUSDC.liquidationThreshold);
+    expect(liquidationBonus).to.be.equal(strategyUSDC.liquidationBonus);
     expect(stableBorrowRateEnabled).to.be.equal(true);
-    expect(reserveFactor).to.be.equal(strategySTETH.reserveFactor);
+    expect(reserveFactor).to.be.equal(strategyUSDC.reserveFactor);
   });
 
   it('Check the onlySturdyAdmin on disableReserveStableRate', async () => {
@@ -350,14 +350,14 @@ makeSuite('LendingPoolConfigurator', (testEnv: TestEnv) => {
       isFrozen,
     } = await helpersContract.getReserveConfigurationData(lido.address);
 
-    expect(borrowingEnabled).to.be.equal(true);
+    expect(borrowingEnabled).to.be.equal(false);
     expect(isActive).to.be.equal(true);
     expect(isFrozen).to.be.equal(false);
     expect(decimals).to.be.equal(strategySTETH.reserveDecimals);
     expect(ltv).to.be.equal(strategySTETH.baseLTVAsCollateral);
     expect(liquidationThreshold).to.be.equal(strategySTETH.liquidationThreshold);
     expect(liquidationBonus).to.be.equal(strategySTETH.liquidationBonus);
-    expect(stableBorrowRateEnabled).to.be.equal(true);
+    expect(stableBorrowRateEnabled).to.be.equal(false);
     expect(reserveFactor).to.be.equal(1000);
   });
 

@@ -119,12 +119,13 @@ contract YearnVault is GeneralVault {
     path[0] = address(WFTM);
     path[1] = _tokenOut;
 
+    uint256 prevTokenOutBalance = IERC20(_tokenOut).balanceOf(address(this));
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactETHForTokens{
       value: _ftmAmount
     }(minAmountFromPrice, path, address(this), block.timestamp);
     require(receivedAmounts[1] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
-      IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[1],
+      IERC20(_tokenOut).balanceOf(address(this)) - prevTokenOutBalance >= receivedAmounts[1],
       Errors.VT_PROCESS_YIELD_INVALID
     );
 

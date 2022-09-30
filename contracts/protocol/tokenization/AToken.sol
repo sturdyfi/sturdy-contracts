@@ -72,6 +72,12 @@ contract AToken is
     string calldata aTokenSymbol,
     bytes calldata params
   ) external override initializer {
+    require(address(pool) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(treasury != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(underlyingAsset != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(address(incentivesController) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(aTokenDecimals != 0, Errors.LPC_INVALID_CONFIGURATION);
+
     uint256 chainId;
 
     //solium-disable-next-line

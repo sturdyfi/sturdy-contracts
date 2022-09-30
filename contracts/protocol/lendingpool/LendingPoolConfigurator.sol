@@ -57,6 +57,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param provider The address of the LendingPoolAddressesProvider
    **/
   function initialize(ILendingPoolAddressesProvider provider) external initializer {
+    require(address(provider) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+
     addressesProvider = provider;
     pool = ILendingPool(addressesProvider.getLendingPool());
   }

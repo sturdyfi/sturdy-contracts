@@ -87,6 +87,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param provider The address of the LendingPoolAddressesProvider
    **/
   function initialize(ILendingPoolAddressesProvider provider) external initializer {
+    require(address(provider) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+
     _addressesProvider = provider;
     _maxStableRateBorrowSizePercent = 2500;
     // _flashLoanPremiumTotal = 9;      ToDo: Currently don't support flashloan

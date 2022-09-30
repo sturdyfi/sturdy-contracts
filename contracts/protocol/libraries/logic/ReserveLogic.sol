@@ -168,6 +168,9 @@ library ReserveLogic {
     address interestRateStrategyAddress
   ) external {
     require(reserve.aTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
+    require(stableDebtTokenAddress != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(variableDebtTokenAddress != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(interestRateStrategyAddress != address(0), Errors.LPC_INVALID_CONFIGURATION);
 
     reserve.liquidityIndex = uint128(WadRayMath.ray());
     reserve.variableBorrowIndex = uint128(WadRayMath.ray());

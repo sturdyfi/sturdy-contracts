@@ -82,6 +82,8 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _provider The address of the provider
    **/
   function initialize(ILendingPoolAddressesProvider _provider) external initializer {
+    require(address(_provider) != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     _addressesProvider = _provider;
   }
 

@@ -158,11 +158,12 @@ contract ConvexCurveLPVault is IncentiveVault {
   }
 
   /**
-   * @dev Get yield amount based on strategy
-   * @return yield amount of collateral internal asset
+   * @dev Get CRV yield amount based on strategy
+   * @return CRV yield amount of collateral internal asset
    */
   function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(internalAssetToken);
+    address baseRewardPool = getBaseRewardPool();
+    return IConvexBaseRewardPool(baseRewardPool).earned(address(this));
   }
 
   /**

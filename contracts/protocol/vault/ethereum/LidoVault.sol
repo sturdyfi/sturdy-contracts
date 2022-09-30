@@ -197,4 +197,19 @@ contract LidoVault is GeneralVault {
     }
     return _amount;
   }
+
+  /**
+   * @dev collateral internal and external asset is same, so no need to implement
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return revert
+   */
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    override
+    returns (uint256)
+  {
+    revert('NOT_SUPPORTED');
+  }
 }

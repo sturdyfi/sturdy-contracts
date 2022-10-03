@@ -66,7 +66,7 @@ contract LendingPoolCollateralManager is
   }
 
   /**
-   * @dev As thIS contract extends the VersionedInitializable contract to match the state
+   * @dev As this contract extends the VersionedInitializable contract to match the state
    * of the LendingPool contract, the getRevision() function is needed, but the value is not
    * important, as the initialize() function will never be called here
    */
@@ -188,6 +188,7 @@ contract LendingPoolCollateralManager is
         debtReserve.variableBorrowIndex
       );
     } else {
+      revert('NOT_SUPPORTED');
       // If the user doesn't have variable debt, no need to try to burn variable debt tokens
       if (vars.userVariableDebt != 0) {
         IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
@@ -306,16 +307,16 @@ contract LendingPoolCollateralManager is
     );
     uint256 decimal = IERC20Detailed(collateralReserve.aTokenAddress).decimals();
     if (decimal < 18) amountCollateral = amountCollateral / 10**(18 - decimal);
-    amountCollateral = IGeneralVault(vault).withdrawOnLiquidation(
+    uint256 amountCollateralExternal = IGeneralVault(vault).withdrawOnLiquidation(
       collateralAsset,
       amountCollateral
     );
     require(
-      amountCollateral >= vars.maxCollateralToLiquidate.percentMul(99_00),
+      amountCollateralExternal >= vars.maxCollateralToLiquidate.percentMul(99_00),
       Errors.VT_WITHDRAW_AMOUNT_MISMATCH
     );
 
-    IERC20(collateralAsset).safeTransfer(msg.sender, amountCollateral);
+    IERC20(collateralAsset).safeTransfer(msg.sender, amountCollateralExternal);
   }
 
   /**

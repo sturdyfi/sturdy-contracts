@@ -8,8 +8,8 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 import {VariableYieldDistribution} from '../../incentives/VariableYieldDistribution.sol';
 
 /**
- * @title GeneralVault
- * @notice Basic feature of vault
+ * @title IncentiveVault
+ * @notice Basic incentive feature of vault
  * @author Sturdy
  **/
 

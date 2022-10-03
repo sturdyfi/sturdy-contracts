@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -27,7 +27,6 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {LendingPoolStorage} from './LendingPoolStorage.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 /**
  * @title LendingPool contract
@@ -90,8 +89,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     require(address(provider) != address(0), Errors.LPC_INVALID_CONFIGURATION);
 
     _addressesProvider = provider;
-    _maxStableRateBorrowSizePercent = 2500;
-    // _flashLoanPremiumTotal = 9;      ToDo: Currently don't support flashloan
+    // _maxStableRateBorrowSizePercent = 2500;    ToDo: Currently don't support stable debt
+    // _flashLoanPremiumTotal = 9;                ToDo: Currently don't support flashloan
     _maxNumberOfReserves = 128;
   }
 
@@ -154,7 +153,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     ValidationLogic.validateDeposit(reserve, amount);
     address aToken = reserve.aTokenAddress;
 
-    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+    if (!_isInterestRateNotAvailable(reserve.interestRateStrategyAddress)) {
       reserve.updateState();
       reserve.updateInterestRates(asset, aToken, amount, 0);
     }
@@ -223,6 +222,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Get underlying asset and aToken's total balance
    * @param asset The address of the underlying asset
+   * @return The underlying asset balance and aToken's total balance
    **/
   function getTotalBalanceOfAssetPair(address asset)
     external
@@ -236,21 +236,25 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     // collateral assetBalance should increase overtime based on vault strategy
     uint256 assetBalance = IERC20(asset).balanceOf(aToken);
-    // aTokenBalance should not increase overtime because of no borrower.
-    uint256 aTokenBalance = IAToken(aToken).totalSupply();
+    // assetBalanceAcknowledgedByAToken should not increase overtime because of no borrower.
+    uint256 assetBalanceAcknowledgedByAToken = IAToken(aToken).totalSupply();
 
     if (isCollateral && reserve.yieldAddress != address(0)) {
-      aTokenBalance = aTokenBalance.rayDiv(reserve.getIndexFromPricePerShare());
+      assetBalanceAcknowledgedByAToken = assetBalanceAcknowledgedByAToken.rayDiv(
+        reserve.getIndexFromPricePerShare()
+      );
       uint256 decimal = IERC20Detailed(aToken).decimals();
-      if (decimal < 18) aTokenBalance = aTokenBalance / 10**(18 - decimal);
+      if (decimal < 18)
+        assetBalanceAcknowledgedByAToken = assetBalanceAcknowledgedByAToken / 10**(18 - decimal);
     }
 
-    return (assetBalance, aTokenBalance);
+    return (assetBalance, assetBalanceAcknowledgedByAToken);
   }
 
   /**
    * @dev Get total underlying asset which is borrowable
    *  and also list of underlying asset
+   * @return The total borrowable underlying asset balance and list of borrowable underlying assets
    **/
   function getBorrowingAssetAndVolumes()
     external
@@ -307,7 +311,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * - E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
-   * - Caller is anyone
+   * - Caller is only vault
    * @param asset The address of the underlying asset to withdraw
    * @param amount The underlying amount to be withdrawn
    *   - Send the value type(uint256).max in order to withdraw the whole aToken balance
@@ -366,7 +370,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       _addressesProvider.getPriceOracle()
     );
 
-    if (!_isInterestRateAvailable(reserve.interestRateStrategyAddress)) {
+    if (!_isInterestRateNotAvailable(reserve.interestRateStrategyAddress)) {
       reserve.updateState();
       reserve.updateInterestRates(asset, aToken, 0, amountToWithdraw);
     }
@@ -479,7 +483,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address interestRateStrategyAddress = reserve.interestRateStrategyAddress;
-    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
+    if (!_isInterestRateNotAvailable(interestRateStrategyAddress)) {
       reserve.updateState();
     }
 
@@ -494,7 +498,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     }
 
     address aToken = reserve.aTokenAddress;
-    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
+    if (!_isInterestRateNotAvailable(interestRateStrategyAddress)) {
       reserve.updateInterestRates(asset, aToken, paybackAmount, 0);
     }
 
@@ -731,22 +735,6 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   /**
-   * @dev Returns the percentage of available liquidity that can be borrowed at once at stable rate
-   * @return The percentage value of available liquidity that can be borrwed at once at stable rate
-   */
-  function MAX_STABLE_RATE_BORROW_SIZE_PERCENT() public view returns (uint256) {
-    return _maxStableRateBorrowSizePercent;
-  }
-
-  /**
-   * @dev Returns the fee on flash loans
-   * @return The fee value of flash loan
-   */
-  function FLASHLOAN_PREMIUM_TOTAL() public view returns (uint256) {
-    return _flashLoanPremiumTotal;
-  }
-
-  /**
    * @dev Returns the maximum number of reserves supported to be listed in this LendingPool
    * @return The max number of reserves count
    */
@@ -774,6 +762,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 balanceToBefore
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
+    require(from != to, Errors.LPC_INVALID_CONFIGURATION);
 
     DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
 
@@ -914,7 +903,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     );
 
     address interestRateStrategyAddress = reserve.interestRateStrategyAddress;
-    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
+    if (!_isInterestRateNotAvailable(interestRateStrategyAddress)) {
       reserve.updateState();
     }
 
@@ -943,7 +932,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       userConfig.setBorrowing(reserve.id, true);
     }
 
-    if (!_isInterestRateAvailable(interestRateStrategyAddress)) {
+    if (!_isInterestRateNotAvailable(interestRateStrategyAddress)) {
       reserve.updateInterestRates(
         vars.asset,
         vars.aTokenAddress,
@@ -993,7 +982,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param interestRateStrategyAddress The address of interest rate strategy contract
    * @return The availability of interest rate
    **/
-  function _isInterestRateAvailable(address interestRateStrategyAddress)
+  function _isInterestRateNotAvailable(address interestRateStrategyAddress)
     internal
     view
     returns (bool)
@@ -1016,7 +1005,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     address yieldAddress,
     string memory errCode
-  ) internal {
+  ) internal view {
     if (!isCollateral) return;
 
     // sender is only vault

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -133,7 +133,7 @@ contract LidoVault is GeneralVault {
       IERC20(LIDO).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
-    // Make lendingPool to transfer required amount
+    // Approves the allowance for the lending pool to perform the transfer
     IERC20(LIDO).safeApprove(address(provider.getLendingPool()), 0);
     IERC20(LIDO).safeApprove(address(provider.getLendingPool()), assetAmount);
 
@@ -207,6 +207,7 @@ contract LidoVault is GeneralVault {
    */
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
+    pure
     override
     returns (uint256)
   {

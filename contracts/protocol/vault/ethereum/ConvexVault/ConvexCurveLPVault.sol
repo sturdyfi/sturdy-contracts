@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {IncentiveVault} from '../../IncentiveVault.sol';
 import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -29,9 +29,9 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   IConvexBooster internal constant CONVEX_BOOSTER =
     IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
-  address internal curveLPToken;
-  address internal internalAssetToken;
-  uint256 internal convexPoolId;
+  address internal _curveLPToken;
+  address internal _internalAssetToken;
+  uint256 internal _convexPoolId;
 
   uint256 internal _incentiveRatio;
 
@@ -51,18 +51,18 @@ contract ConvexCurveLPVault is IncentiveVault {
    */
   function setConfiguration(address _lpToken, uint256 _poolId) external payable onlyAdmin {
     require(_lpToken != address(0), Errors.VT_INVALID_CONFIGURATION);
-    require(internalAssetToken == address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(_internalAssetToken == address(0), Errors.VT_INVALID_CONFIGURATION);
 
-    curveLPToken = _lpToken;
-    convexPoolId = _poolId;
-    SturdyInternalAsset _interalToken = new SturdyInternalAsset(
+    _curveLPToken = _lpToken;
+    _convexPoolId = _poolId;
+    SturdyInternalAsset _internalToken = new SturdyInternalAsset(
       string(abi.encodePacked('Sturdy ', IERC20Detailed(_lpToken).symbol())),
       string(abi.encodePacked('c', IERC20Detailed(_lpToken).symbol())),
       IERC20Detailed(_lpToken).decimals()
     );
-    internalAssetToken = address(_interalToken);
+    _internalAssetToken = address(_internalToken);
 
-    emit SetParameters(_lpToken, _poolId, internalAssetToken);
+    emit SetParameters(_lpToken, _poolId, _internalAssetToken);
   }
 
   /**
@@ -70,7 +70,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The address of collateral internal asset
    */
   function getInternalAsset() external view returns (address) {
-    return internalAssetToken;
+    return _internalAssetToken;
   }
 
   /**
@@ -78,7 +78,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The address of rewards token
    */
   function getBaseRewardPool() internal view returns (address) {
-    IConvexBooster.PoolInfo memory poolInfo = CONVEX_BOOSTER.poolInfo(convexPoolId);
+    IConvexBooster.PoolInfo memory poolInfo = CONVEX_BOOSTER.poolInfo(_convexPoolId);
     return poolInfo.crvRewards;
   }
 
@@ -171,7 +171,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
-    uint256 decimals = IERC20Detailed(internalAssetToken).decimals();
+    uint256 decimals = IERC20Detailed(_internalAssetToken).decimals();
     return 10**decimals;
   }
 
@@ -188,17 +188,17 @@ contract ConvexCurveLPVault is IncentiveVault {
     returns (address, uint256)
   {
     // receive Curve LP Token from user
-    address token = curveLPToken;
+    address token = _curveLPToken;
     require(_asset == token, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
     IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
     IERC20(token).safeApprove(address(CONVEX_BOOSTER), 0);
     IERC20(token).safeApprove(address(CONVEX_BOOSTER), _amount);
-    CONVEX_BOOSTER.deposit(convexPoolId, _amount, true);
+    CONVEX_BOOSTER.deposit(_convexPoolId, _amount, true);
 
     // mint
-    address internalAsset = internalAssetToken;
+    address internalAsset = _internalAssetToken;
     address lendingPoolAddress = _addressesProvider.getLendingPool();
     SturdyInternalAsset(internalAsset).mint(address(this), _amount);
     IERC20(internalAsset).safeApprove(lendingPoolAddress, 0);
@@ -220,10 +220,10 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (address, uint256)
   {
-    require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
+    require(_asset == _curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     // In this vault, return same amount of asset.
-    return (internalAssetToken, _amount);
+    return (_internalAssetToken, _amount);
   }
 
   /**
@@ -237,10 +237,10 @@ contract ConvexCurveLPVault is IncentiveVault {
     IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false);
 
     // Burn
-    SturdyInternalAsset(internalAssetToken).burn(address(this), _amount);
+    SturdyInternalAsset(_internalAssetToken).burn(address(this), _amount);
 
     // Deliver Curve LP Token
-    IERC20(curveLPToken).safeTransfer(_to, _amount);
+    IERC20(_curveLPToken).safeTransfer(_to, _amount);
 
     return _amount;
   }
@@ -257,7 +257,7 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (uint256)
   {
-    require(_asset == curveLPToken, Errors.LP_LIQUIDATION_CALL_FAILED);
+    require(_asset == _curveLPToken, Errors.LP_LIQUIDATION_CALL_FAILED);
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     return _withdraw(_amount, msg.sender);
@@ -331,7 +331,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The AToken address for the vault
    */
   function _getAToken() internal view override returns (address) {
-    address internalAsset = internalAssetToken;
+    address internalAsset = _internalAssetToken;
     DataTypes.ReserveData memory reserveData = ILendingPool(_addressesProvider.getLendingPool())
       .getReserveData(internalAsset);
     return reserveData.aTokenAddress;

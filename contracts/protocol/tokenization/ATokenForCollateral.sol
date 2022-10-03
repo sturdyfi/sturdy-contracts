@@ -403,7 +403,7 @@ contract ATokenForCollateral is
    * @dev get the domain_separator value
    * @return the domain_separator
    **/
-  function _domain_separator() internal returns (bytes32) {
+  function _domain_separator() internal view returns (bytes32) {
     uint256 chainId;
 
     //solium-disable-next-line

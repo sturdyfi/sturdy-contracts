@@ -189,7 +189,7 @@ contract AToken is
   }
 
   /**
-   * @dev Transfers aTokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
+   * @dev Only possible for collateral aToken, so no need to implement
    * - Caller is only LendingPool
    * @param from The address getting liquidated, current owner of the aTokens
    * @param to The recipient
@@ -200,11 +200,7 @@ contract AToken is
     address to,
     uint256 value
   ) external payable override onlyLendingPool {
-    // Being a normal transfer, the Transfer() and BalanceTransfer() are emitted
-    // so no need to emit a specific event here
-    _transfer(from, to, value, false);
-
-    emit Transfer(from, to, value);
+    revert('NOT_SUPPORTED');
   }
 
   /**
@@ -423,7 +419,7 @@ contract AToken is
    * @dev get the domain_separator value
    * @return the domain_separator
    **/
-  function _domain_separator() internal returns (bytes32) {
+  function _domain_separator() internal view returns (bytes32) {
     uint256 chainId;
 
     //solium-disable-next-line

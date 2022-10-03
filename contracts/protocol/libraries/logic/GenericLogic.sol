@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
@@ -142,6 +142,7 @@ library GenericLogic {
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
    * @param reserves The list of the available reserves
+   * @param reservesCount The count of the available reserves
    * @param oracle The price oracle address
    * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold and the HF
    **/

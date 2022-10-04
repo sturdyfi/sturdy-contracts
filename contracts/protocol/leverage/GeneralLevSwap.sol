@@ -33,7 +33,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
 
   IVaultWhitelist internal constant VAULT_WHITELIST =
-    IVaultWhitelist(0xD90334f62277Ce72026428FdF46dC8Af70090954);
+    IVaultWhitelist(0x1644A83C16B1fD694909A7C86Fb26fc6a1F00ed0);
 
   address public immutable COLLATERAL; // The addrss of external asset
 
@@ -101,9 +101,12 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
-    address,
+    address initiator,
     bytes calldata params
   ) external override returns (bool) {
+    require(initiator == address(this), Errors.LS_INVALID_CONFIGURATION);
+    require(msg.sender == AAVE_LENDING_POOL_ADDRESS, Errors.LS_INVALID_CONFIGURATION);
+
     _executeOperation(assets[0], amounts[0], premiums[0], params);
 
     // approve the Aave LendingPool contract allowance to *pull* the owed amount
@@ -497,8 +500,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
   function _supply(uint256 _amount, address _user) internal {
     // whitelist checking
-    if (VAULT_WHITELIST.whitelistCount(address(this)) > 0) {
-      require(VAULT_WHITELIST.whitelist(address(this), _user), Errors.CALLER_NOT_WHITELIST_USER);
+    if (VAULT_WHITELIST.whitelistUserCount(VAULT) > 0) {
+      require(VAULT_WHITELIST.whitelistUser(VAULT, _user), Errors.CALLER_NOT_WHITELIST_USER);
     }
 
     IGeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, _user);
@@ -510,8 +513,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address _user
   ) internal {
     // whitelist checking
-    if (VAULT_WHITELIST.whitelistCount(address(this)) > 0) {
-      require(VAULT_WHITELIST.whitelist(address(this), _user), Errors.CALLER_NOT_WHITELIST_USER);
+    if (VAULT_WHITELIST.whitelistUserCount(VAULT) > 0) {
+      require(VAULT_WHITELIST.whitelistUser(VAULT, _user), Errors.CALLER_NOT_WHITELIST_USER);
     }
 
     IGeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));

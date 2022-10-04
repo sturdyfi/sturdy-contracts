@@ -14,18 +14,20 @@ import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
 
 contract VaultWhitelist is Ownable {
   // vault -> user -> enabled?
-  mapping(address => mapping(address => bool)) public whitelist;
+  mapping(address => mapping(address => bool)) public whitelistUser;
   // vault -> enabled count
-  mapping(address => uint256) public whitelistCount;
+  mapping(address => uint256) public whitelistUserCount;
+  // vault -> contract address -> enabled?
+  mapping(address => mapping(address => bool)) public whitelistContract;
 
   /**
    * @dev add an user to the whitelist
    * @param user address
    */
-  function addAddressToWhitelist(address vault, address user) external payable onlyOwner {
-    if (!whitelist[vault][user]) {
-      whitelist[vault][user] = true;
-      whitelistCount[vault]++;
+  function addAddressToWhitelistUser(address vault, address user) external payable onlyOwner {
+    if (!whitelistUser[vault][user]) {
+      whitelistUser[vault][user] = true;
+      whitelistUserCount[vault]++;
     }
   }
 
@@ -33,7 +35,7 @@ contract VaultWhitelist is Ownable {
    * @dev add users to the whitelist
    * @param users addresses
    */
-  function addAddressesToWhitelist(address vault, address[] calldata users)
+  function addAddressesToWhitelistUser(address vault, address[] calldata users)
     external
     payable
     onlyOwner
@@ -44,23 +46,23 @@ contract VaultWhitelist is Ownable {
     for (uint256 i; i < length; ++i) {
       address user = users[i];
 
-      if (!whitelist[vault][user]) {
-        whitelist[vault][user] = true;
+      if (!whitelistUser[vault][user]) {
+        whitelistUser[vault][user] = true;
         count++;
       }
     }
 
-    whitelistCount[vault] = whitelistCount[vault] + count;
+    whitelistUserCount[vault] = whitelistUserCount[vault] + count;
   }
 
   /**
    * @dev remove an user from the whitelist
    * @param user address
    */
-  function removeAddressFromWhitelist(address vault, address user) external payable onlyOwner {
-    if (whitelist[vault][user]) {
-      whitelist[vault][user] = false;
-      whitelistCount[vault]--;
+  function removeAddressFromWhitelistUser(address vault, address user) external payable onlyOwner {
+    if (whitelistUser[vault][user]) {
+      whitelistUser[vault][user] = false;
+      whitelistUserCount[vault]--;
     }
   }
 
@@ -68,7 +70,7 @@ contract VaultWhitelist is Ownable {
    * @dev remove users from the whitelist
    * @param users addresses
    */
-  function removeAddressesFromWhitelist(address vault, address[] calldata users)
+  function removeAddressesFromWhitelistUser(address vault, address[] calldata users)
     external
     payable
     onlyOwner
@@ -79,12 +81,36 @@ contract VaultWhitelist is Ownable {
     for (uint256 i; i < length; ++i) {
       address user = users[i];
 
-      if (whitelist[vault][user]) {
-        whitelist[vault][user] = false;
+      if (whitelistUser[vault][user]) {
+        whitelistUser[vault][user] = false;
         count++;
       }
     }
 
-    whitelistCount[vault] = whitelistCount[vault] - count;
+    whitelistUserCount[vault] = whitelistUserCount[vault] - count;
+  }
+
+  /**
+   * @dev add a contract to the whitelist
+   * @param sender address
+   */
+  function addAddressToWhitelistContract(address vault, address sender) external payable onlyOwner {
+    if (!whitelistContract[vault][sender]) {
+      whitelistContract[vault][sender] = true;
+    }
+  }
+
+  /**
+   * @dev remove a contract from the whitelist
+   * @param sender address
+   */
+  function removeAddressFromWhitelistContract(address vault, address sender)
+    external
+    payable
+    onlyOwner
+  {
+    if (whitelistContract[vault][sender]) {
+      whitelistContract[vault][sender] = false;
+    }
   }
 }

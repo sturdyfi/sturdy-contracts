@@ -13,7 +13,6 @@ import {SturdyInternalAsset} from '../../../tokenization/SturdyInternalAsset.sol
 import {PercentageMath} from '../../../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../../../libraries/types/DataTypes.sol';
 import {ILendingPool} from '../../../../interfaces/ILendingPool.sol';
-import {IVaultWhitelist} from '../../../../interfaces/IVaultWhitelist.sol';
 
 interface IRewards {
   function rewardToken() external view returns (address);
@@ -30,8 +29,6 @@ contract ConvexCurveLPVault is IncentiveVault {
 
   IConvexBooster internal constant CONVEX_BOOSTER =
     IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
-  IVaultWhitelist internal constant VAULT_WHITELIST =
-    IVaultWhitelist(0xD90334f62277Ce72026428FdF46dC8Af70090954);
   address internal curveLPToken;
   address internal internalAssetToken;
   uint256 internal convexPoolId;
@@ -189,14 +186,6 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (address, uint256)
   {
-    // whitelist checking
-    if (VAULT_WHITELIST.whitelistCount(address(this)) > 0) {
-      require(
-        VAULT_WHITELIST.whitelist(address(this), msg.sender),
-        Errors.CALLER_NOT_WHITELIST_USER
-      );
-    }
-
     // receive Curve LP Token from user
     address token = curveLPToken;
     require(_asset == token, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -230,14 +219,6 @@ contract ConvexCurveLPVault is IncentiveVault {
     override
     returns (address, uint256)
   {
-    // whitelist checking
-    if (VAULT_WHITELIST.whitelistCount(address(this)) > 0) {
-      require(
-        VAULT_WHITELIST.whitelist(address(this), msg.sender),
-        Errors.CALLER_NOT_WHITELIST_USER
-      );
-    }
-
     require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     // In this vault, return same amount of asset.

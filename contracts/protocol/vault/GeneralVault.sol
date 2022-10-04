@@ -9,6 +9,8 @@ import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeabi
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IVaultWhitelist} from '../../interfaces/IVaultWhitelist.sol';
+import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title GeneralVault
@@ -75,6 +77,8 @@ abstract contract GeneralVault is VersionedInitializable {
 
   uint256 private constant VAULT_REVISION = 0x1;
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
+  IVaultWhitelist internal constant VAULT_WHITELIST =
+    IVaultWhitelist(0x1644A83C16B1fD694909A7C86Fb26fc6a1F00ed0);
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
@@ -133,6 +137,19 @@ abstract contract GeneralVault is VersionedInitializable {
     uint256 _slippage,
     address _to
   ) external virtual {
+    // whitelist checking
+    if (Address.isContract(msg.sender)) {
+      require(
+        VAULT_WHITELIST.whitelistContract(address(this), msg.sender),
+        Errors.CALLER_NOT_WHITELIST_USER
+      );
+    } else if (VAULT_WHITELIST.whitelistUserCount(address(this)) > 0) {
+      require(
+        VAULT_WHITELIST.whitelistUser(address(this), msg.sender),
+        Errors.CALLER_NOT_WHITELIST_USER
+      );
+    }
+
     // Before withdraw from lending pool, get the stAsset address and withdrawal amount
     // Ex: In Lido vault, it will return stETH address and same amount
     (address _stAsset, uint256 _stAssetAmount) = _getWithdrawalAmount(_asset, _amount);
@@ -229,6 +246,19 @@ abstract contract GeneralVault is VersionedInitializable {
     uint256 _amount,
     address _user
   ) internal {
+    // whitelist checking
+    if (Address.isContract(msg.sender)) {
+      require(
+        VAULT_WHITELIST.whitelistContract(address(this), msg.sender),
+        Errors.CALLER_NOT_WHITELIST_USER
+      );
+    } else if (VAULT_WHITELIST.whitelistUserCount(address(this)) > 0) {
+      require(
+        VAULT_WHITELIST.whitelistUser(address(this), _user),
+        Errors.CALLER_NOT_WHITELIST_USER
+      );
+    }
+
     if (_asset != address(0)) {
       // asset = ERC20
       require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);

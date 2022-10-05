@@ -5,7 +5,6 @@ import {
   WAD,
   MAX_UINT_AMOUNT,
   PERCENTAGE_FACTOR,
-  PERCENTAGE_WAD_RATIO,
 } from '../../../../helpers/constants';
 import {
   eNetwork,
@@ -1452,44 +1451,4 @@ const calcExpectedTotalVariableDebt = (
   expectedVariableDebtIndex: BigNumber
 ) => {
   return reserveData.scaledVariableDebt.rayMul(expectedVariableDebtIndex);
-};
-
-export const calcExpectedMaxWithdrawalAmount = (
-  userTotalCollateral: string,
-  userTotalDebt: string,
-  currentHealthFactor: string,
-  currentLiquidationThreshold: string,
-  collateralBalanceInSturdy: string,
-  collateralLiquidationThreshold: string,
-  repayAssetDebt: string
-) => {
-  const maxAvailableRepayAmount = new BigNumber(collateralBalanceInSturdy)
-    .multipliedBy(collateralLiquidationThreshold)
-    .dividedBy(PERCENTAGE_FACTOR);
-  const removedDebt = BigNumber.min(maxAvailableRepayAmount, new BigNumber(repayAssetDebt));
-  if (new BigNumber(userTotalDebt).eq(removedDebt)) {
-    // Rmax = Math.min(C * Ta / T, Wmax) - D
-    const withdrawalAmount = BigNumber.min(
-      new BigNumber(userTotalCollateral)
-        .multipliedBy(currentLiquidationThreshold)
-        .dividedBy(collateralLiquidationThreshold),
-      collateralBalanceInSturdy
-    );
-    return BigNumber.max(0, withdrawalAmount.minus(removedDebt));
-  }
-  // Rmax = Math.min([C * Ta - H * (D - Db)] / T, Wmax) - D
-
-  const withdrawalAmount = new BigNumber(userTotalCollateral)
-    .multipliedBy(currentLiquidationThreshold)
-    .minus(
-      new BigNumber(currentHealthFactor)
-        .dividedBy(PERCENTAGE_WAD_RATIO)
-        .multipliedBy(new BigNumber(userTotalDebt).minus(removedDebt))
-    )
-    .dividedBy(collateralLiquidationThreshold);
-
-  return BigNumber.max(
-    0,
-    BigNumber.min(withdrawalAmount, collateralBalanceInSturdy).minus(removedDebt)
-  );
 };

@@ -72,11 +72,17 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
+    const { helpersContract, cvxdai_usdc_usdt_susd, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
+      testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
+
+    await vaultWhitelist.addAddressToWhitelistContract(
+      convexDAIUSDCUSDTSUSDVault.address,
+      susdLevSwap.address
+    );
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
@@ -154,11 +160,17 @@ makeSuite('SUSD Zap Leverage', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
+    const { helpersContract, cvxdai_usdc_usdt_susd, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
+      testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
+
+    await vaultWhitelist.addAddressToWhitelistContract(
+      convexDAIUSDCUSDTSUSDVault.address,
+      susdLevSwap.address
+    );
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
@@ -267,11 +279,17 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd } = testEnv;
+    const { helpersContract, cvxdai_usdc_usdt_susd, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
+      testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
+
+    await vaultWhitelist.addAddressToWhitelistContract(
+      convexDAIUSDCUSDTSUSDVault.address,
+      susdLevSwap.address
+    );
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {

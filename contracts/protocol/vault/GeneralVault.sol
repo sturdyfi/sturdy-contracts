@@ -78,7 +78,7 @@ abstract contract GeneralVault is VersionedInitializable {
   uint256 private constant VAULT_REVISION = 0x1;
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
   IVaultWhitelist internal constant VAULT_WHITELIST =
-    IVaultWhitelist(0x1644A83C16B1fD694909A7C86Fb26fc6a1F00ed0);
+    IVaultWhitelist(0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E);
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.

@@ -623,11 +623,11 @@
   },
   "FRAXUSDCLevSwap": {
     "main": {
-      "address": "0xb17eEB74242e061A37745d879d36FBa21C3a1b26",
+      "address": "0xbB2F467cf58BEE175cC1C7A53AA267840624e526",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xb17eEB74242e061A37745d879d36FBa21C3a1b26",
+      "address": "0xbB2F467cf58BEE175cC1C7A53AA267840624e526",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -699,11 +699,11 @@
   },
   "VaultWhitelist": {
     "main": {
-      "address": "0xD90334f62277Ce72026428FdF46dC8Af70090954",
+      "address": "0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xD90334f62277Ce72026428FdF46dC8Af70090954",
+      "address": "0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -719,11 +719,11 @@
   },
   "TUSDFRAXBPLevSwap": {
     "main": {
-      "address": "0x72352d5Db60027a902a0AE6CF6815A11eB639Edb",
+      "address": "0xFf27B25B4532e6ABDE581726311B63A24A5C08D1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x72352d5Db60027a902a0AE6CF6815A11eB639Edb",
+      "address": "0xFf27B25B4532e6ABDE581726311B63A24A5C08D1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

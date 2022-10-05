@@ -33,7 +33,7 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
 
   IVaultWhitelist internal constant VAULT_WHITELIST =
-    IVaultWhitelist(0x1644A83C16B1fD694909A7C86Fb26fc6a1F00ed0);
+    IVaultWhitelist(0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E);
 
   address public immutable COLLATERAL; // The addrss of external asset
 

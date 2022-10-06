@@ -68,6 +68,7 @@ import {
   SturdyAPRDataProvider,
   AuraBalancerLPVault,
   VaultWhitelist,
+  ConvexCurveLPVault2,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -105,7 +106,7 @@ export interface TestEnv {
   convexIronBankVault: ConvexCurveLPVault;
   convexFRAXUSDCVault: ConvexCurveLPVault;
   auraDAIUSDCUSDTVault: AuraBalancerLPVault;
-  convexTUSDFRAXBPVault: ConvexCurveLPVault;
+  convexTUSDFRAXBPVault: ConvexCurveLPVault2;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: PriceOracle;
@@ -193,7 +194,7 @@ const testEnv: TestEnv = {
   convexIronBankVault: {} as ConvexCurveLPVault,
   convexFRAXUSDCVault: {} as ConvexCurveLPVault,
   auraDAIUSDCUSDTVault: {} as AuraBalancerLPVault,
-  convexTUSDFRAXBPVault: {} as ConvexCurveLPVault,
+  convexTUSDFRAXBPVault: {} as ConvexCurveLPVault2,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,

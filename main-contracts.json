@@ -547,11 +547,11 @@
   },
   "ConvexFRAXUSDCVaultImpl": {
     "main": {
-      "address": "0x48b158f5a46e693f1c4046b3d9bAcD03A870699b",
+      "address": "0x46f58f3c032064fCaec8484a008e82e27b821f06",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x48b158f5a46e693f1c4046b3d9bAcD03A870699b",
+      "address": "0x46f58f3c032064fCaec8484a008e82e27b821f06",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

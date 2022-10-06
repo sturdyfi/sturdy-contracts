@@ -27,8 +27,7 @@ contract ConvexCurveLPVault is IncentiveVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  IConvexBooster internal constant CONVEX_BOOSTER =
-    IConvexBooster(0xF403C135812408BFbE8713b5A23a04b3D48AAE31);
+  address public convexBooster;
   address internal curveLPToken;
   address internal internalAssetToken;
   uint256 internal convexPoolId;
@@ -53,6 +52,7 @@ contract ConvexCurveLPVault is IncentiveVault {
     require(_lpToken != address(0), Errors.VT_INVALID_CONFIGURATION);
     require(internalAssetToken == address(0), Errors.VT_INVALID_CONFIGURATION);
 
+    convexBooster = 0xF403C135812408BFbE8713b5A23a04b3D48AAE31;
     curveLPToken = _lpToken;
     convexPoolId = _poolId;
     SturdyInternalAsset _interalToken = new SturdyInternalAsset(
@@ -78,7 +78,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @return The address of rewards token
    */
   function getBaseRewardPool() internal view returns (address) {
-    IConvexBooster.PoolInfo memory poolInfo = CONVEX_BOOSTER.poolInfo(convexPoolId);
+    IConvexBooster.PoolInfo memory poolInfo = IConvexBooster(convexBooster).poolInfo(convexPoolId);
     return poolInfo.crvRewards;
   }
 
@@ -135,7 +135,7 @@ contract ConvexCurveLPVault is IncentiveVault {
     _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
 
     // Transfer CVX to YieldManager
-    _transferYield(CONVEX_BOOSTER.minter());
+    _transferYield(IConvexBooster(convexBooster).minter());
   }
 
   /**
@@ -192,9 +192,10 @@ contract ConvexCurveLPVault is IncentiveVault {
     IERC20(token).safeTransferFrom(msg.sender, address(this), _amount);
 
     // deposit Curve LP Token to Convex
-    IERC20(token).safeApprove(address(CONVEX_BOOSTER), 0);
-    IERC20(token).safeApprove(address(CONVEX_BOOSTER), _amount);
-    CONVEX_BOOSTER.deposit(convexPoolId, _amount, true);
+    address convexVault = convexBooster;
+    IERC20(token).safeApprove(convexVault, 0);
+    IERC20(token).safeApprove(convexVault, _amount);
+    IConvexBooster(convexVault).deposit(convexPoolId, _amount, true);
 
     // mint
     address internalAsset = internalAssetToken;

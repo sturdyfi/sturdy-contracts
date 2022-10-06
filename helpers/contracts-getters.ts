@@ -73,6 +73,7 @@ import {
   SturdyAPRDataProviderFactory,
   AuraBalancerLPVaultFactory,
   VaultWhitelistFactory,
+  ConvexCurveLPVault2Factory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -593,7 +594,7 @@ export const getAuraDAIUSDCUSDTVault = async (address?: tEthereumAddress) =>
   );
 
 export const getConvexTUSDFRAXBPVault = async (address?: tEthereumAddress) =>
-  await ConvexCurveLPVaultFactory.connect(
+  await ConvexCurveLPVault2Factory.connect(
     address ||
       (
         await getDb().get(`${eContractid.ConvexTUSDFRAXBPVault}.${DRE.network.name}`).value()

@@ -161,6 +161,7 @@ import {
   TUSDFRAXBPOracleFactory,
   TUSDFRAXBPLevSwapFactory,
   VaultWhitelistFactory,
+  ConvexCurveLPVault2Factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1410,7 +1411,7 @@ export const deployAuraDAIUSDCUSDTVault = async (verify?: boolean) => {
 
 export const deployConvexTUSDFRAXBPVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault2Factory(await getFirstSigner()).deploy(),
     eContractid.ConvexTUSDFRAXBPVaultImpl,
     [],
     verify
@@ -1418,7 +1419,7 @@ export const deployConvexTUSDFRAXBPVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault2Factory(await getFirstSigner()).deploy(),
     eContractid.ConvexTUSDFRAXBPVaultImpl,
     [],
     verify

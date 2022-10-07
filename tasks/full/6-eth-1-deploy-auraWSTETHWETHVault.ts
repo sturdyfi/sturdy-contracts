@@ -1,6 +1,7 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
+  deployAURAOracle,
   deployAuraWSTETHWETHVault,
   deployBALWSTETHWETHOracle,
 } from '../../helpers/contracts-deployments';
@@ -30,6 +31,7 @@ task(`full:eth:deploy-aura-wsteth-weth-vault`, `Deploys the ${CONTRACT_NAME} con
       ChainlinkAggregator,
       BAL_WSTETH_WETH_LP,
       BAL,
+      AURA,
     } = poolConfig as IEthConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -48,10 +50,17 @@ task(`full:eth:deploy-aura-wsteth-weth-vault`, `Deploys the ${CONTRACT_NAME} con
     let BALWSTETHWETHOracleAddress = getParamPerNetwork(
       ChainlinkAggregator,
       network
-    ).auraDAI_USDC_USDT;
+    ).auraWSTETH_WETH;
     if (!BALWSTETHWETHOracleAddress) {
       const BALWSTETHWETHOracle = await deployBALWSTETHWETHOracle(verify);
       BALWSTETHWETHOracleAddress = BALWSTETHWETHOracle.address;
+    }
+
+    // Deploy AURAOracle oracle
+    let AURAOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).AURA;
+    if (!AURAOracleAddress) {
+      const AURAOracle = await deployAURAOracle(verify);
+      AURAOracleAddress = AURAOracle.address;
     }
 
     // Register
@@ -62,15 +71,18 @@ task(`full:eth:deploy-aura-wsteth-weth-vault`, `Deploys the ${CONTRACT_NAME} con
           internalAssetAddress,
           getParamPerNetwork(BAL_WSTETH_WETH_LP, network),
           getParamPerNetwork(BAL, network),
+          getParamPerNetwork(AURA, network),
         ],
         [
           BALWSTETHWETHOracleAddress,
           BALWSTETHWETHOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).BAL,
+          AURAOracleAddress,
         ]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
+    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(AURA, network))).toString());
 
     console.log(`${CONTRACT_NAME}.address`, vault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

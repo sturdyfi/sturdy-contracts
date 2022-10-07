@@ -167,6 +167,7 @@ import {
   ETHSTETHLevSwapFactory,
   BALWSTETHWETHOracleFactory,
   AURAWSTETHWETHLevSwapFactory,
+  AURAOracleFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -548,6 +549,14 @@ export const deployBALWSTETHWETHOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BALWSTETHWETHOracleFactory(await getFirstSigner()).deploy(),
     eContractid.BALWSTETHWETHOracle,
+    [],
+    verify
+  );
+
+export const deployAURAOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new AURAOracleFactory(await getFirstSigner()).deploy(),
+    eContractid.AURAOracle,
     [],
     verify
   );

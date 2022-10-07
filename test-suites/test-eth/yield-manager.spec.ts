@@ -111,9 +111,9 @@ const depositWETH = async (
 };
 
 makeSuite('Yield Manger: configuration', (testEnv) => {
-  it('Registered reward asset count should be 2', async () => {
+  it('Registered reward asset count should be 4', async () => {
     const { yieldManager } = testEnv;
-    const availableAssetCount = 3;
+    const availableAssetCount = 4;
     const assetCount = await yieldManager.getAssetCount();
     expect(assetCount).to.be.eq(availableAssetCount);
   });
@@ -153,6 +153,20 @@ makeSuite('Yield Manger: configuration', (testEnv) => {
     while (assetCount.gt(index)) {
       const assetAddress = await yieldManager.getAssetInfo(index++);
       if (assetAddress.toLowerCase() == BAL.address.toLowerCase()) {
+        registered = true;
+        break;
+      }
+    }
+    expect(registered).to.be.equal(true);
+  });
+  it('AURA should be a reward asset.', async () => {
+    const { yieldManager, AURA } = testEnv;
+    const assetCount = await yieldManager.getAssetCount();
+    let registered = false;
+    let index = 0;
+    while (assetCount.gt(index)) {
+      const assetAddress = await yieldManager.getAssetInfo(index++);
+      if (assetAddress.toLowerCase() == AURA.address.toLowerCase()) {
         registered = true;
         break;
       }
@@ -309,6 +323,47 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     ];
     const slippage = 500;
     await yieldManager.distributeYield(2, 1, slippage, paths);
+
+    expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
+    expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(weth.address, true)) / 1e18) * 100);
+  });
+  it('Distribute yield AURA', async () => {
+    const {
+      yieldManager,
+      weth,
+      aWeth,
+      users,
+      AURA,
+      aprProvider,
+    } = testEnv;
+
+    // suppliers deposit asset to pool
+    const depositor1 = users[6];
+    const depositWETHAmount = await convertToCurrencyDecimals(weth.address, '7');
+    await depositWETH(testEnv, depositor1, depositWETHAmount);
+    expect((await aWeth.balanceOf(depositor1.address)).eq(depositWETHAmount)).to.be.equal(true);
+
+    // Simulate Yield
+    await simulateYield(testEnv);
+
+    // Distribute yields
+    const paths = [
+      {
+        u_path: {
+          tokens: [],
+          fees: [],
+        },
+        b_path: {
+          tokens: [AURA.address, weth.address],
+          poolIds: [
+            '0xc29562b045d80fd77c69bec09541f5c16fe20d9d000200000000000000000251',
+          ],
+        },
+      },
+    ];
+    const slippage = 500;
+    await yieldManager.distributeYield(3, 1, slippage, paths);
 
     expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
     expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);

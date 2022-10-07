@@ -77,6 +77,7 @@ export enum eContractid {
   TUSDFRAXBPOracle = 'TUSDFRAXBPOracle',
   ETHSTETHOracle = 'ETHSTETHOracle',
   BALWSTETHWETHOracle = 'BALWSTETHWETHOracle',
+  AURAOracle = 'AURAOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',

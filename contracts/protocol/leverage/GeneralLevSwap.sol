@@ -97,9 +97,12 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     address[] calldata assets,
     uint256[] calldata amounts,
     uint256[] calldata premiums,
-    address,
+    address initiator,
     bytes calldata params
   ) external override returns (bool) {
+    require(initiator == address(this), Errors.LS_INVALID_CONFIGURATION);
+    require(msg.sender == AAVE_LENDING_POOL_ADDRESS, Errors.LS_INVALID_CONFIGURATION);
+
     _executeOperation(assets[0], amounts[0], premiums[0], params);
 
     // approve the Aave LendingPool contract allowance to *pull* the owed amount

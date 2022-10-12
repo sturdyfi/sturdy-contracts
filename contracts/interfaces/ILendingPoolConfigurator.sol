@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 interface ILendingPoolConfigurator {
   struct InitReserveInput {
@@ -192,6 +192,8 @@ interface ILendingPoolConfigurator {
   );
 
   function registerVault(address _vaultAddress) external payable;
+
+  function unregisterVault(address _vaultAddress) external payable;
 
   function batchInitReserve(InitReserveInput[] calldata input) external payable;
 }

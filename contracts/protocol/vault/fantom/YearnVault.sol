@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
-import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
+import {IYearnFinanceVault} from '../../../interfaces/IYearnFinanceVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -47,7 +47,7 @@ contract YearnVault is GeneralVault {
     }
 
     // Withdraw from Yearn Vault and receive WFTM
-    uint256 yieldWFTM = IYearnVault(YVWFTM).withdraw(yieldYVWFTM, address(this), 1);
+    uint256 yieldWFTM = IYearnFinanceVault(YVWFTM).withdraw(yieldYVWFTM, address(this), 1);
 
     // WFTM -> FTM
     IWETH(provider.getAddress('WFTM')).withdraw(yieldWFTM);
@@ -83,7 +83,7 @@ contract YearnVault is GeneralVault {
     require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive WFTM
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVWFTM')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVWFTM')).withdraw(
       _amount,
       address(this),
       1
@@ -119,12 +119,13 @@ contract YearnVault is GeneralVault {
     path[0] = address(WFTM);
     path[1] = _tokenOut;
 
+    uint256 prevTokenOutBalance = IERC20(_tokenOut).balanceOf(address(this));
     uint256[] memory receivedAmounts = IUniswapV2Router02(uniswapRouter).swapExactETHForTokens{
       value: _ftmAmount
     }(minAmountFromPrice, path, address(this), block.timestamp);
     require(receivedAmounts[1] != 0, Errors.VT_PROCESS_YIELD_INVALID);
     require(
-      IERC20(_tokenOut).balanceOf(address(this)) >= receivedAmounts[1],
+      IERC20(_tokenOut).balanceOf(address(this)) - prevTokenOutBalance >= receivedAmounts[1],
       Errors.VT_PROCESS_YIELD_INVALID
     );
 
@@ -148,7 +149,7 @@ contract YearnVault is GeneralVault {
    * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
-    return IYearnVault(_addressesProvider.getAddress('YVWFTM')).pricePerShare();
+    return IYearnFinanceVault(_addressesProvider.getAddress('YVWFTM')).pricePerShare();
   }
 
   /**
@@ -179,13 +180,15 @@ contract YearnVault is GeneralVault {
     } else {
       // Case of WFTM deposit from user, receive WFTM from user
       require(_asset == WFTM, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+      require(msg.value == 0, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
+
       IERC20(WFTM).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
     // Deposit WFTM to Yearn Vault and receive yvWFTM
     IERC20(WFTM).safeApprove(YVWFTM, 0);
     IERC20(WFTM).safeApprove(YVWFTM, assetAmount);
-    assetAmount = IYearnVault(YVWFTM).deposit(assetAmount, address(this));
+    assetAmount = IYearnFinanceVault(YVWFTM).deposit(assetAmount, address(this));
 
     // Make lendingPool to transfer required amount
     IERC20(YVWFTM).safeApprove(lendingPoolAddress, 0);
@@ -233,7 +236,7 @@ contract YearnVault is GeneralVault {
     address WFTM = provider.getAddress('WFTM');
 
     // Withdraw from Yearn Vault and receive WFTM
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVWFTM')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVWFTM')).withdraw(
       _amount,
       address(this),
       1

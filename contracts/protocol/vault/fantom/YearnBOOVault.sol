@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
+import {IYearnFinanceVault} from '../../../interfaces/IYearnFinanceVault.sol';
 import {IUniswapV2Router02} from '../../../interfaces/IUniswapV2Router02.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -41,7 +41,7 @@ contract YearnBOOVault is GeneralVault {
     }
 
     // Withdraw from Yearn Vault and receive BOO
-    uint256 yieldBOO = IYearnVault(YVBOO).withdraw(yieldYVBOO, address(this), 1);
+    uint256 yieldBOO = IYearnFinanceVault(YVBOO).withdraw(yieldYVBOO, address(this), 1);
 
     AssetYield[] memory assetYields = _getAssetYields(yieldBOO);
     uint256 length = assetYields.length;
@@ -74,7 +74,7 @@ contract YearnBOOVault is GeneralVault {
     require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive BOO
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVBOO')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVBOO')).withdraw(
       _amount,
       address(this),
       1
@@ -146,7 +146,7 @@ contract YearnBOOVault is GeneralVault {
    * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
-    return IYearnVault(_addressesProvider.getAddress('YVBOO')).pricePerShare();
+    return IYearnFinanceVault(_addressesProvider.getAddress('YVBOO')).pricePerShare();
   }
 
   /**
@@ -173,7 +173,7 @@ contract YearnBOOVault is GeneralVault {
     // Deposit BOO to Yearn Vault and receive yvBOO
     IERC20(BOO).safeApprove(YVBOO, 0);
     IERC20(BOO).safeApprove(YVBOO, _amount);
-    uint256 assetAmount = IYearnVault(YVBOO).deposit(_amount, address(this));
+    uint256 assetAmount = IYearnFinanceVault(YVBOO).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
     IERC20(YVBOO).safeApprove(lendingPoolAddress, 0);
@@ -217,7 +217,7 @@ contract YearnBOOVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive BOO
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVBOO')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVBOO')).withdraw(
       _amount,
       address(this),
       1

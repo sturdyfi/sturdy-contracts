@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 
-interface IYearnVault {
+interface IYearnFinanceVault {
   function deposit(uint256 _amount, address recipient) external returns (uint256);
 
   function withdraw(

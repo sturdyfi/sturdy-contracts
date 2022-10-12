@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {VersionedInitializable} from '../libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {InitializableImmutableAdminUpgradeabilityProxy} from '../libraries/sturdy-upgradeability/InitializableImmutableAdminUpgradeabilityProxy.sol';
@@ -57,6 +57,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param provider The address of the LendingPoolAddressesProvider
    **/
   function initialize(ILendingPoolAddressesProvider provider) external initializer {
+    require(address(provider) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+
     addressesProvider = provider;
     pool = ILendingPool(addressesProvider.getLendingPool());
   }
@@ -68,6 +70,15 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    **/
   function registerVault(address _vaultAddress) external payable override onlyPoolAdmin {
     pool.registerVault(_vaultAddress);
+  }
+
+  /**
+   * @dev unregister vault from pool
+   * - Caller is only poolAdmin
+   * @param _vaultAddress The address of vault
+   **/
+  function unregisterVault(address _vaultAddress) external payable override onlyPoolAdmin {
+    pool.unregisterVault(_vaultAddress);
   }
 
   /**
@@ -89,6 +100,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
   }
 
   function _initReserve(ILendingPool _pool, InitReserveInput calldata input) internal {
+    require(input.underlyingAssetDecimals <= 18, Errors.LPC_INVALID_CONFIGURATION);
+
     address aTokenProxyAddress = _initTokenWithProxy(
       input.aTokenImpl,
       abi.encodeWithSelector(
@@ -245,6 +258,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
     (, , , uint256 decimals, ) = cachedPool.getConfiguration(input.asset).getParamsMemory();
+    (, , , , bool isCollateral) = cachedPool.getConfiguration(input.asset).getFlagsMemory();
+    require(!isCollateral, Errors.LPC_INVALID_CONFIGURATION);
 
     bytes memory encodedCall = abi.encodeWithSelector(
       IInitializableDebtToken.initialize.selector,
@@ -282,6 +297,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyPoolAdmin
   {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    (, , , , bool isCollateral) = currentConfig.getFlagsMemory();
+    require(!isCollateral, Errors.LPC_INVALID_CONFIGURATION);
 
     currentConfig.setBorrowingEnabled(true);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
@@ -317,6 +334,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     onlyPoolAdmin
   {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    (, , bool isBorrowing, , ) = currentConfig.getFlagsMemory();
+    require(!isBorrowing, Errors.LPC_INVALID_CONFIGURATION);
 
     currentConfig.setCollateralEnabled(true);
 
@@ -356,6 +375,7 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     uint256 liquidationBonus
   ) external payable onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
+    (, , , , bool isCollateral) = currentConfig.getFlagsMemory();
 
     //validation of the parameters: the LTV can
     //only be lower or equal than the liquidation threshold
@@ -363,6 +383,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
     require(ltv <= liquidationThreshold, Errors.LPC_INVALID_CONFIGURATION);
 
     if (liquidationThreshold != 0) {
+      require(isCollateral, Errors.LPC_INVALID_CONFIGURATION);
+
       //liquidation bonus must be bigger than 100.00%, otherwise the liquidator would receive less
       //collateral than needed to cover the debt
       require(
@@ -378,6 +400,8 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
       );
     } else {
       require(liquidationBonus == 0, Errors.LPC_INVALID_CONFIGURATION);
+      require(ltv == 0, Errors.LPC_INVALID_CONFIGURATION);
+
       //if the liquidation threshold is being set to 0,
       // the reserve is being disabled as collateral. To do so,
       //we need to ensure no liquidity is deposited

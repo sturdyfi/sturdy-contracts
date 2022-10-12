@@ -17,5 +17,5 @@ interface ICollateralAdapter {
     address _externalAsset,
     address _internalAsset,
     address _acceptVault
-  ) external;
+  ) external payable;
 }

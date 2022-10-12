@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
+import {IYearnFinanceVault} from '../../../interfaces/IYearnFinanceVault.sol';
 import {IBalancerVault} from '../../../interfaces/IBalancerVault.sol';
 import {IBalancerWeightedPool} from '../../../interfaces/IBalancerWeightedPool.sol';
 import {IFBeetsToken} from '../../../interfaces/IFBeetsToken.sol';
@@ -87,7 +87,7 @@ contract YearnFBEETSVault is GeneralVault {
     }
 
     // Withdraw from Yearn Vault and receive fBEETS
-    uint256 yieldFBEETS = IYearnVault(YVFBEETS).withdraw(yieldYVFBEETS, address(this), 1);
+    uint256 yieldFBEETS = IYearnFinanceVault(YVFBEETS).withdraw(yieldYVFBEETS, address(this), 1);
 
     uint256 _balanceOfBEETS = IERC20(BEETS).balanceOf(address(this));
     uint256 _balanceOfWFTM = IERC20(WFTM).balanceOf(address(this));
@@ -135,7 +135,7 @@ contract YearnFBEETSVault is GeneralVault {
     require(msg.sender == provider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive fBEETS
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVFBEETS')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVFBEETS')).withdraw(
       _amount,
       address(this),
       1
@@ -311,7 +311,7 @@ contract YearnFBEETSVault is GeneralVault {
    * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
-    return IYearnVault(_addressesProvider.getAddress('YVFBEETS')).pricePerShare();
+    return IYearnFinanceVault(_addressesProvider.getAddress('YVFBEETS')).pricePerShare();
   }
 
   /**
@@ -338,7 +338,7 @@ contract YearnFBEETSVault is GeneralVault {
     // Deposit fBEETS to Yearn Vault and receive yvfBEETS
     IERC20(fBEETS).safeApprove(YVFBEETS, 0);
     IERC20(fBEETS).safeApprove(YVFBEETS, _amount);
-    uint256 assetAmount = IYearnVault(YVFBEETS).deposit(_amount, address(this));
+    uint256 assetAmount = IYearnFinanceVault(YVFBEETS).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
     IERC20(YVFBEETS).safeApprove(lendingPoolAddress, 0);
@@ -382,7 +382,7 @@ contract YearnFBEETSVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive fBEETS
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVFBEETS')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVFBEETS')).withdraw(
       _amount,
       address(this),
       1

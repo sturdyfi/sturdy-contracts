@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {ILendingPoolAddressesProvider} from './ILendingPoolAddressesProvider.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
@@ -214,6 +214,14 @@ interface ILendingPool {
    * @param _vaultAddress The address of the Vault
    **/
   function registerVault(address _vaultAddress) external payable;
+
+  /**
+   * @dev Unregister the vault address
+   * - To check if the caller is vault for some functions
+   * - Caller is only LendingPoolConfigurator
+   * @param _vaultAddress The address of the Vault
+   **/
+  function unregisterVault(address _vaultAddress) external payable;
 
   /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned

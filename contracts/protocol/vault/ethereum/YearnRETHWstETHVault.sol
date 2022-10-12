@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IYearnVault} from '../../../interfaces/IYearnVault.sol';
+import {IYearnFinanceVault} from '../../../interfaces/IYearnFinanceVault.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {IWstETH} from '../../../interfaces/IWstETH.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
@@ -33,7 +33,7 @@ contract YearnRETHWstETHVault is GeneralVault {
    *  And convert to stable asset, transfer to yield manager contract
    * - Caller is anyone
    */
-  function processYield() external override {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     address YVRETH_WSTETH = _addressesProvider.getAddress('YVRETH_WSTETH');
     uint256 yieldYVRETH_WSTETH = _getYield(YVRETH_WSTETH);
@@ -45,7 +45,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     }
 
     // Withdraw from Yearn Vault and receive rETHwstETH-f
-    uint256 yieldRETH_WSTETH = IYearnVault(YVRETH_WSTETH).withdraw(
+    uint256 yieldRETH_WSTETH = IYearnFinanceVault(YVRETH_WSTETH).withdraw(
       yieldYVRETH_WSTETH,
       address(this),
       1
@@ -99,11 +99,8 @@ contract YearnRETHWstETHVault is GeneralVault {
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 
     // Withdraw from Yearn Vault and receive RETH_WSTETH
-    uint256 assetAmount = IYearnVault(_addressesProvider.getAddress('YVRETH_WSTETH')).withdraw(
-      _amount,
-      address(this),
-      1
-    );
+    uint256 assetAmount = IYearnFinanceVault(_addressesProvider.getAddress('YVRETH_WSTETH'))
+      .withdraw(_amount, address(this), 1);
 
     // Deliver RETH_WSTETH to user
     IERC20(RETH_WSTETH).safeTransfer(msg.sender, assetAmount);
@@ -143,7 +140,7 @@ contract YearnRETHWstETHVault is GeneralVault {
    * @return The value of price per share
    */
   function pricePerShare() external view override returns (uint256) {
-    return IYearnVault(_addressesProvider.getAddress('YVRETH_WSTETH')).pricePerShare();
+    return IYearnFinanceVault(_addressesProvider.getAddress('YVRETH_WSTETH')).pricePerShare();
   }
 
   /**
@@ -169,7 +166,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     // Deposit RETH_WSTETH to Yearn Vault and receive YVRETH_WSTETH
     IERC20(RETH_WSTETH).safeApprove(YVRETH_WSTETH, 0);
     IERC20(RETH_WSTETH).safeApprove(YVRETH_WSTETH, _amount);
-    uint256 assetAmount = IYearnVault(YVRETH_WSTETH).deposit(_amount, address(this));
+    uint256 assetAmount = IYearnFinanceVault(YVRETH_WSTETH).deposit(_amount, address(this));
 
     // Make lendingPool to transfer required amount
     IERC20(YVRETH_WSTETH).safeApprove(lendingPoolAddress, 0);
@@ -213,7 +210,7 @@ contract YearnRETHWstETHVault is GeneralVault {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     // Withdraw from Yearn Vault and receive RETH_WSTETH
-    uint256 assetAmount = IYearnVault(provider.getAddress('YVRETH_WSTETH')).withdraw(
+    uint256 assetAmount = IYearnFinanceVault(provider.getAddress('YVRETH_WSTETH')).withdraw(
       _amount,
       address(this),
       1

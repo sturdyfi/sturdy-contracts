@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {GeneralVault} from '../GeneralVault.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -42,7 +42,7 @@ contract LidoVault is GeneralVault {
    *  And convert collateral internal asset -> stable asset and deposit stable asset to pool
    * - Caller is anyone
    */
-  function processYield() external override {
+  function processYield() external override onlyYieldProcessor {
     // Get yield from lendingPool
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address LIDO = provider.getAddress('LIDO');
@@ -133,7 +133,7 @@ contract LidoVault is GeneralVault {
       IERC20(LIDO).safeTransferFrom(msg.sender, address(this), _amount);
     }
 
-    // Make lendingPool to transfer required amount
+    // Approves the allowance for the lending pool to perform the transfer
     IERC20(LIDO).safeApprove(address(provider.getLendingPool()), 0);
     IERC20(LIDO).safeApprove(address(provider.getLendingPool()), assetAmount);
 
@@ -196,5 +196,21 @@ contract LidoVault is GeneralVault {
       IERC20(LIDO).safeTransfer(_to, _amount);
     }
     return _amount;
+  }
+
+  /**
+   * @dev collateral internal and external asset is same, so no need to implement
+   * - Caller is only LendingPool
+   * @param _asset The address of collateral external asset
+   * @param _amount The amount of collateral internal asset
+   * @return revert
+   */
+  function withdrawOnLiquidation(address _asset, uint256 _amount)
+    external
+    pure
+    override
+    returns (uint256)
+  {
+    revert('NOT_SUPPORTED');
   }
 }

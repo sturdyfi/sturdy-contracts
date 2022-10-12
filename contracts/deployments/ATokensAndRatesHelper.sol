@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {LendingPoolConfigurator} from '../protocol/lendingpool/LendingPoolConfigurator.sol';
 import {IATokensAndRatesHelper} from '../interfaces/IATokensAndRatesHelper.sol';
@@ -22,13 +22,6 @@ contract ATokensAndRatesHelper is Ownable {
     LendingPoolConfigurator configurator = LendingPoolConfigurator(poolConfigurator);
     uint256 length = inputParams.length;
     for (uint256 i; i < length; ++i) {
-      configurator.configureReserveAsCollateral(
-        inputParams[i].asset,
-        inputParams[i].baseLTV,
-        inputParams[i].liquidationThreshold,
-        inputParams[i].liquidationBonus
-      );
-
       if (inputParams[i].borrowingEnabled) {
         configurator.enableBorrowingOnReserve(
           inputParams[i].asset,
@@ -42,6 +35,14 @@ contract ATokensAndRatesHelper is Ownable {
           inputParams[i].collateralEnabled
         );
       }
+
+      configurator.configureReserveAsCollateral(
+        inputParams[i].asset,
+        inputParams[i].baseLTV,
+        inputParams[i].liquidationThreshold,
+        inputParams[i].liquidationBonus
+      );
+
       configurator.setReserveFactor(inputParams[i].asset, inputParams[i].reserveFactor);
     }
   }

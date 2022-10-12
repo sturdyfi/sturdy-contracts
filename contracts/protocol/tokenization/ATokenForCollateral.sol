@@ -72,6 +72,12 @@ contract ATokenForCollateral is
     string calldata aTokenSymbol,
     bytes calldata params
   ) external override initializer {
+    require(address(pool) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(treasury != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(underlyingAsset != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(address(incentivesController) != address(0), Errors.LPC_INVALID_CONFIGURATION);
+    require(aTokenDecimals != 0, Errors.LPC_INVALID_CONFIGURATION);
+
     uint256 chainId;
 
     //solium-disable-next-line
@@ -339,7 +345,7 @@ contract ATokenForCollateral is
     bytes32 digest = keccak256(
       abi.encodePacked(
         '\x19\x01',
-        DOMAIN_SEPARATOR,
+        _domain_separator(),
         keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
       )
     );
@@ -391,5 +397,29 @@ contract ATokenForCollateral is
     uint256 amount
   ) internal override {
     _transfer(from, to, amount, true);
+  }
+
+  /**
+   * @dev get the domain_separator value
+   * @return the domain_separator
+   **/
+  function _domain_separator() internal view returns (bytes32) {
+    uint256 chainId;
+
+    //solium-disable-next-line
+    assembly {
+      chainId := chainid()
+    }
+
+    return
+      keccak256(
+        abi.encode(
+          EIP712_DOMAIN,
+          keccak256(bytes(name())),
+          keccak256(EIP712_REVISION),
+          chainId,
+          address(this)
+        )
+      );
   }
 }

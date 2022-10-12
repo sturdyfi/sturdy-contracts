@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -86,6 +86,8 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _provider The address of the provider
    **/
   function initialize(ILendingPoolAddressesProvider _provider) external initializer {
+    require(address(_provider) != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     _addressesProvider = _provider;
   }
 
@@ -195,10 +197,7 @@ abstract contract GeneralVault is VersionedInitializable {
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     virtual
-    returns (uint256)
-  {
-    return _amount;
-  }
+    returns (uint256);
 
   /**
    * @dev Get yield based on strategy and re-deposit

@@ -156,7 +156,7 @@ makeSuite('convexMIM3CRVVault - Process Yield', (testEnv: TestEnv) => {
     await convexMIM3CRVVault.processYield();
 
     const afterBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
-    const afterBalanceOfCVX = await CRV.balanceOf(yieldManager.address);
+    const afterBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
   });

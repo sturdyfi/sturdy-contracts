@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { ConfigNames } from '../../helpers/configuration';
-import { deployVaultHelper } from '../../helpers/contracts-deployments';
+import { deployVaultHelper, deployVaultWhitelist } from '../../helpers/contracts-deployments';
 import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
 
 const CONTRACT_NAME = 'DeployVaultHelper';
@@ -17,6 +17,8 @@ task(`full:deploy-vault-helper`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const addressesProvider = await getLendingPoolAddressesProvider();
     const vaultHelper = await deployVaultHelper([addressesProvider.address], verify);
+
+    await deployVaultWhitelist();
 
     console.log(`${CONTRACT_NAME}.address`, vaultHelper.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

@@ -10,6 +10,7 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IVariableDebtToken} from '../../interfaces/IVariableDebtToken.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
+import {ISturdyAPRDataProvider} from '../../interfaces/ISturdyAPRDataProvider.sol';
 import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
@@ -197,9 +198,14 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     reserve.updateState();
 
     // update liquidityIndex based on yield amount
-    reserve.cumulateToLiquidityIndex(IERC20(aToken).totalSupply(), amount);
+    uint256 totalAmount = IERC20(aToken).totalSupply();
+    reserve.cumulateToLiquidityIndex(totalAmount, amount);
 
     reserve.updateInterestRates(asset, aToken, amount, 0);
+
+    // update APR
+    address aprDataProvider = _addressesProvider.getAddress('APR_PROVIDER');
+    ISturdyAPRDataProvider(aprDataProvider).updateAPR(asset, amount, totalAmount);
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
   }

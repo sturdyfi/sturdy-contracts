@@ -71,6 +71,9 @@ import {
   BeefyMIM2CRVVaultFactory,
   LeverageSwapManagerFactory,
   SturdyAPRDataProviderFactory,
+  AuraBalancerLPVaultFactory,
+  VaultWhitelistFactory,
+  ConvexCurveLPVault2Factory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -581,6 +584,24 @@ export const getConvexFRAXUSDCVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getAuraDAIUSDCUSDTVault = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVaultFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraDAIUSDCUSDTVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getConvexTUSDFRAXBPVault = async (address?: tEthereumAddress) =>
+  await ConvexCurveLPVault2Factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ConvexTUSDFRAXBPVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVaultFactory.connect(
     address ||
@@ -1065,6 +1086,11 @@ export const getCurveswapAdapterAddress = async () => {
   return db?.address;
 };
 
+export const getBalancerswapAdapterAddress = async () => {
+  const db = await getDb().get(`${eContractid.BalancerswapAdapter}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
 export const getLeverageSwapManager = async (address?: tEthereumAddress) =>
   await LeverageSwapManagerFactory.connect(
     address ||
@@ -1079,6 +1105,30 @@ export const getSturdyAPRDataProvider = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.SturdyAPRDataProvider}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getValidationLogic = async () => {
+  const db = await getDb().get(`${eContractid.ValidationLogic}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getGenericLogic = async () => {
+  const db = await getDb().get(`${eContractid.GenericLogic}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getReserveLogicLibrary = async () => {
+  const db = await getDb().get(`${eContractid.ReserveLogic}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getVaultWhitelist = async (address?: tEthereumAddress) =>
+  await VaultWhitelistFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.VaultWhitelist}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

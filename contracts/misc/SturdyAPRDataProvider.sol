@@ -19,6 +19,7 @@ import {PercentageMath} from '../protocol/libraries/math/PercentageMath.sol';
 import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
+import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
 contract SturdyAPRDataProvider is Ownable {
   using PercentageMath for uint256;
@@ -29,8 +30,6 @@ contract SturdyAPRDataProvider is Ownable {
     address poolAddress;
   }
 
-  IProtocolDataProvider private constant DATA_PROVIDER =
-    IProtocolDataProvider(0x960993Cb6bA0E8244007a57544A55bDdb52db97e);
   address private constant LIDO = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
   address private constant LIDO_ORACLE = 0x442af784A788A5bd6F42A01Ebe9F287a871243fb;
   address private constant CONVEX_BOOSTER = 0xF403C135812408BFbE8713b5A23a04b3D48AAE31;
@@ -39,11 +38,13 @@ contract SturdyAPRDataProvider is Ownable {
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-  uint256 private STURDY_FEE = 10_00;
+  uint256 private constant STURDY_FEE = 10_00;
   uint256 private constant CVX_CLIFF_SIZE = 1e23; // new cliff every 100,000 tokens
   uint256 private constant CVX_CLIFF_COUNT = 1000; //1,000 cliffs
   uint256 private constant CVX_MAX_SUPPLY = 1e26; //100 mil max supply
+  uint256 private constant YEAR_BLOCK_CNT = 2_102_400; // 4 * 60 * 24 * 365
 
+  IProtocolDataProvider private immutable DATA_PROVIDER;
   IPriceOracle private immutable ORACLE;
   ICollateralAdapter private immutable COLLATERAL_ADAPTER;
   ILendingPool private immutable LENDING_POOL;
@@ -51,12 +52,25 @@ contract SturdyAPRDataProvider is Ownable {
   // convex reserve's internal asset -> convex pool info
   mapping(address => ConvexPoolInfo) internal convexReserves;
 
-  constructor() public {
+  //borrow reserve's yield ratio with wad decimal(=18) and previous yield processing block number
+  mapping(address => uint256) public prevBlock;
+  mapping(address => uint256) public yieldRatio;
+
+  modifier onlyLendingPool() {
+    require(msg.sender == address(LENDING_POOL), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
+    _;
+  }
+
+  constructor(address _provider) public {
+    DATA_PROVIDER = IProtocolDataProvider(_provider);
     ORACLE = IPriceOracle(DATA_PROVIDER.ADDRESSES_PROVIDER().getPriceOracle());
     COLLATERAL_ADAPTER = ICollateralAdapter(
       DATA_PROVIDER.ADDRESSES_PROVIDER().getAddress('COLLATERAL_ADAPTER')
     );
     LENDING_POOL = ILendingPool(DATA_PROVIDER.ADDRESSES_PROVIDER().getLendingPool());
+    prevBlock[DAI] = block.number;
+    prevBlock[USDC] = block.number;
+    prevBlock[USDT] = block.number;
   }
 
   function registerConvexReserve(
@@ -68,9 +82,28 @@ contract SturdyAPRDataProvider is Ownable {
   }
 
   /**
+   * @dev Update reserve's APR based on yield
+   */
+  function updateAPR(
+    address _borrowReserve,
+    uint256 _yield,
+    uint256 _totalSupply
+  ) external onlyLendingPool {
+    uint256 ratioInWad = (1e18 * _yield) / _totalSupply;
+    yieldRatio[_borrowReserve] =
+      (ratioInWad * YEAR_BLOCK_CNT) /
+      (block.number - prevBlock[_borrowReserve]);
+    prevBlock[_borrowReserve] = block.number;
+  }
+
+  /**
    * @dev Get APR with wad decimal(=18)
    */
-  function APR(address _borrowReserve) external view returns (uint256) {
+  function APR(address _borrowReserve, bool _not_real) external view returns (uint256) {
+    if (_not_real) {
+      return _getAPRBasedonYield(_borrowReserve);
+    }
+
     address[] memory reserves = LENDING_POOL.getReservesList();
     uint256 reserveCount = reserves.length;
     uint256 totalYieldInPrice;
@@ -114,6 +147,13 @@ contract SturdyAPRDataProvider is Ownable {
     }
 
     return _convexVaultYieldInPrice(_reserve) / totalBorrowableLiquidityInPrice;
+  }
+
+  /**
+   * @dev Get APR with wad decimal(=18)
+   */
+  function _getAPRBasedonYield(address _borrowReserve) internal view returns (uint256) {
+    return yieldRatio[_borrowReserve];
   }
 
   /**

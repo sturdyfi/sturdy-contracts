@@ -39,6 +39,8 @@ import {
   getConvexHBTCWBTCVault,
   getConvexIronBankVault,
   getConvexFRAXUSDCVault,
+  getAuraDAIUSDCUSDTVault,
+  getConvexTUSDFRAXBPVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -87,6 +89,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               // cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
               cvxIRON_BANK: (await getConvexIronBankVault()).address,
               cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
+              auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
+              cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
             }
           : {
               yvWFTM: (await getYearnVault()).address,
@@ -113,6 +117,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               cvxFRAX_USDC: (await getVariableYieldDistribution()).address,
               cvxMIM_3CRV: (await getVariableYieldDistribution()).address,
               cvxDAI_USDC_USDT_SUSD: (await getVariableYieldDistribution()).address,
+              auraDAI_USDC_USDT: (await getVariableYieldDistribution()).address,
+              cvxTUSD_FRAXBP: (await getVariableYieldDistribution()).address,
             }
           : {};
 

@@ -1,5 +1,11 @@
 import BigNumber from 'bignumber.js';
-import { ONE_YEAR, RAY, MAX_UINT_AMOUNT, PERCENTAGE_FACTOR } from '../../../../helpers/constants';
+import {
+  ONE_YEAR,
+  RAY,
+  WAD,
+  MAX_UINT_AMOUNT,
+  PERCENTAGE_FACTOR,
+} from '../../../../helpers/constants';
 import {
   eNetwork,
   IReserveParams,

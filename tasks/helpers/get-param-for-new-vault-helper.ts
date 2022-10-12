@@ -28,6 +28,7 @@ import {
   deployConvexFRAXUSDCVaultImpl,
   deployConvexIronBankVaultImpl,
   deployConvexMIM3CRVVaultImpl,
+  deployConvexTUSDFRAXBPVaultImpl,
   deployDefaultReserveInterestRateStrategy,
   deployMIM3CRVPOracle,
   deployTombMiMaticBeefyVaultImpl,
@@ -398,6 +399,27 @@ WRONG RESERVE ASSET SETUP:
     //     vaultImpl.address, //implement address
     //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxFRAX_USDC, //internal asset
     //     getParamPerNetwork((poolConfig as ISturdyConfiguration).FRAX_USDC_LP, <eNetwork>network), //exterenal asset
+    //     //etc...
+    //   ]);
+    // }
+
+    // // cvxTUSD_FRAXBP reserve
+    // {
+    //   // Deploy vault impl
+    //   const vaultImpl = await deployConvexTUSDFRAXBPVaultImpl(verify);
+    //   const addressesProvider = await getLendingPoolAddressesProvider();
+    //   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+
+    //   console.log('_ids: ', [
+    //     localBRE.ethers.utils.formatBytes32String('CONVEX_TUSD_FRAXBP_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('CVXTUSD_FRAXBP').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('TUSD_FRAXBP_LP').toString(), //external asset id
+    //     //etc...
+    //   ]);
+    //   console.log('_addresses: ', [
+    //     vaultImpl.address, //implement address
+    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxTUSD_FRAXBP, //internal asset
+    //     getParamPerNetwork((poolConfig as ISturdyConfiguration).TUSD_FRAXBP_LP, <eNetwork>network), //exterenal asset
     //     //etc...
     //   ]);
     // }

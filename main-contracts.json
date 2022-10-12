@@ -51,10 +51,10 @@
   },
   "LendingPoolImpl": {
     "main": {
-      "address": "0xE5A9447d61084b36f46456D939DFB1a06DE31B3a"
+      "address": "0x9ac2aC2f86aCA7Ea5c764c214c730DC8B0F72262"
     },
     "localhost": {
-      "address": "0xE5A9447d61084b36f46456D939DFB1a06DE31B3a"
+      "address": "0x9ac2aC2f86aCA7Ea5c764c214c730DC8B0F72262"
     }
   },
   "LendingPool": {
@@ -281,11 +281,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0x2dEAf758bf27C8A2afbe24437e9d6fBFD8E6Ec73",
+      "address": "0x1c8727682dBe7eC36E00d4D8f39dF84fcA8E8912",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x2dEAf758bf27C8A2afbe24437e9d6fBFD8E6Ec73",
+      "address": "0x1c8727682dBe7eC36E00d4D8f39dF84fcA8E8912",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -547,11 +547,11 @@
   },
   "ConvexFRAXUSDCVaultImpl": {
     "main": {
-      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
+      "address": "0x46f58f3c032064fCaec8484a008e82e27b821f06",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xCD3c2aB95cF91665D590751CdD3d7959C41951f4",
+      "address": "0x46f58f3c032064fCaec8484a008e82e27b821f06",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -623,11 +623,11 @@
   },
   "FRAXUSDCLevSwap": {
     "main": {
-      "address": "0xdB6d91A3e5e25810315a5C981575Ea18Eb1b786f",
+      "address": "0xbB2F467cf58BEE175cC1C7A53AA267840624e526",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xdB6d91A3e5e25810315a5C981575Ea18Eb1b786f",
+      "address": "0xbB2F467cf58BEE175cC1C7A53AA267840624e526",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -653,11 +653,77 @@
   },
   "SturdyAPRDataProvider": {
     "main": {
-      "address": "0x8F5273205c687508347eb89f81e9b99DA3f01383",
+      "address": "0xAC2EfC7Ec1e06883b181aA167BF2e1feb07615A3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x8F5273205c687508347eb89f81e9b99DA3f01383",
+      "address": "0xAC2EfC7Ec1e06883b181aA167BF2e1feb07615A3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "rateStrategyCVXTUSD_FRAXBP": {
+    "main": {
+      "address": "0x1c8727682dBe7eC36E00d4D8f39dF84fcA8E8912"
+    },
+    "localhost": {
+      "address": "0x1c8727682dBe7eC36E00d4D8f39dF84fcA8E8912"
+    }
+  },
+  "ConvexTUSDFRAXBPVaultImpl": {
+    "main": {
+      "address": "0x7eD6f3f22Fb3F85E1071b5F6e616d5f0E0E32a49",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x7eD6f3f22Fb3F85E1071b5F6e616d5f0E0E32a49",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "ConvexTUSDFRAXBPVault": {
+    "main": {
+      "address": "0x994A8C1AD6C6A65E8D8c6b37A9c8F964A6C985A8"
+    },
+    "localhost": {
+      "address": "0x994A8C1AD6C6A65E8D8c6b37A9c8F964A6C985A8"
+    }
+  },
+  "TUSDFRAXBPOracle": {
+    "main": {
+      "address": "0xa5A96C4E5873dBae8e41058f891A05Ad9aE3C71e",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xa5A96C4E5873dBae8e41058f891A05Ad9aE3C71e",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "VaultWhitelist": {
+    "main": {
+      "address": "0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "BalancerswapAdapter": {
+    "main": {
+      "address": "0x0Eef4D49B71bad9C6390C7D5E5495b948E5DF280",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x0Eef4D49B71bad9C6390C7D5E5495b948E5DF280",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "TUSDFRAXBPLevSwap": {
+    "main": {
+      "address": "0xFf27B25B4532e6ABDE581726311B63A24A5C08D1",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xFf27B25B4532e6ABDE581726311B63A24A5C08D1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

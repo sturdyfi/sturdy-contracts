@@ -1,7 +1,12 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deploySturdyAPRDataProvider } from '../../helpers/contracts-deployments';
+import {
+  getLendingPoolAddressesProvider,
+  getSturdyProtocolDataProvider,
+} from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
+import { waitForTx } from '../../helpers/misc-utils';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 
 const CONTRACT_NAME = 'SturdyAPRDataProvider';
@@ -19,7 +24,15 @@ task(`full:deploy-sturdy-apr-data-provider`, `Deploys the ${CONTRACT_NAME} contr
     const poolConfig = loadPoolConfig(pool);
     const { ReserveAssets } = poolConfig as ISturdyConfiguration;
 
-    const aprProvider = await deploySturdyAPRDataProvider(verify);
+    const addressesProvider = await getLendingPoolAddressesProvider();
+    const dataProvider = await getSturdyProtocolDataProvider();
+    const aprProvider = await deploySturdyAPRDataProvider([dataProvider.address], verify);
+    await waitForTx(
+      await addressesProvider.setAddress(
+        localBRE.ethers.utils.formatBytes32String('APR_PROVIDER'),
+        aprProvider.address
+      )
+    );
 
     //FRAX_3CRV
     await aprProvider.registerConvexReserve(
@@ -51,11 +64,6 @@ task(`full:deploy-sturdy-apr-data-provider`, `Deploys the ${CONTRACT_NAME} contr
       100,
       '0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2' //convex LP pool address
     );
-
-    // console.log(
-    //   'USDC APR: ',
-    //   (await aprProvider.APR(getParamPerNetwork(ReserveAssets, network).USDC)).toString()
-    // );
 
     console.log(`${CONTRACT_NAME}.address`, aprProvider.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

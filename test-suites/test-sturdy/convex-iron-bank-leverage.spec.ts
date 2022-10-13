@@ -34,16 +34,16 @@ const mint = async (
   let token;
 
   if (reserveSymbol == 'USDC') {
-    ownerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdc;
   } else if (reserveSymbol == 'DAI') {
-    ownerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = dai;
   } else if (reserveSymbol == 'USDT') {
-    ownerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdt;
   } else if (reserveSymbol == 'IRON_BANK_LP') {
-    ownerAddress = '0xd4dfbde97c93e56d1e41325bb428c18299db203f';
+    ownerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
     token = IRON_BANK_LP;
   }
 

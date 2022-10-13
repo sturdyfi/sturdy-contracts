@@ -13,7 +13,7 @@ makeSuite('Withdraw USDC ', (testEnv) => {
   it('User1 deposits USDC and then withdraw USDC', async () => {
     const { usdc, users, pool, lidoVault, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositor = users[0];
     printDivider();
     const depositUSDC = '7000';

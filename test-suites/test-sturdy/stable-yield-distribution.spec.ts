@@ -27,7 +27,7 @@ makeSuite('Check FXS token growing ', (testEnv) => {
 
     // Prepare FRAX_3CRV_LP
     const assetAmountToDeposit = await convertToCurrencyDecimals(FRAX_3CRV_LP.address, '3000');
-    const LPOwnerAddress = '0xccf6c29d87eb2c0bafede74f5df35f84541f4549';
+    const LPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     await FRAX_3CRV_LP.connect(signer).transfer(depositor.address, assetAmountToDeposit);
@@ -35,7 +35,7 @@ makeSuite('Check FXS token growing ', (testEnv) => {
     // Deposit FXS to StableYieldDistributor
     const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
     const FXS = await getMintableERC20('0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0');
-    const FXSOwnerAddress = '0xF977814e90dA44bFA03b6295A0616a897441aceC';
+    const FXSOwnerAddress = '0x66df2139c24446f5B43dB80a680fb94D0c1c5D8E';
     await impersonateAccountsHardhat([FXSOwnerAddress]);
     signer = await ethers.provider.getSigner(FXSOwnerAddress);
     const amountFXStoDeposit = await convertToCurrencyDecimals(FXS.address, '10000');

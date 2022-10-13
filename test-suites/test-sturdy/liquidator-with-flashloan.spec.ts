@@ -39,7 +39,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(ZERO_ADDRESS, parseEther('10'), { value: parseEther('10') });
 
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -115,7 +115,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some FRAX_3CRV_LP token
-    const LPOwnerAddress = '0x605b5f6549538a94bd2653d1ee67612a47039da0';
+    const LPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(FRAX_3CRV_LP.address, '3000');
@@ -126,7 +126,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(FRAX_3CRV_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -205,7 +205,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some MIM_3CRV_LP token
-    const LPOwnerAddress = '0xca436e14855323927d6e6264470ded36455fc8bd';
+    const LPOwnerAddress = '0xe896e539e557BC751860a7763C8dD589aF1698Ce';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(MIM_3CRV_LP.address, '3000');
@@ -216,7 +216,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(MIM_3CRV_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -306,7 +306,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some DAI_USDC_USDT_SUSD_LP token
-    const LPOwnerAddress = '0xa2747b3135e7b3c7af80d5b76f4d15385ae33def';
+    const LPOwnerAddress = '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, '3000');
@@ -320,7 +320,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(DAI_USDC_USDT_SUSD_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -404,7 +404,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some IRON_BANK_LP token
-    const LPOwnerAddress = '0x9abbd49ff49fcb0fa5b59e53cc057e683434380b';
+    const LPOwnerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(IRON_BANK_LP.address, '3000');
@@ -415,7 +415,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(IRON_BANK_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -495,7 +495,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some FRAX_USDC_LP token
-    const LPOwnerAddress = '0xf28e1b06e00e8774c612e31ab3ac35d5a720085f';
+    const LPOwnerAddress = '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(FRAX_USDC_LP.address, '3000');
@@ -506,7 +506,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       .connect(borrower.signer)
       .depositCollateral(FRAX_USDC_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositUSDC = '50000';
     //Make some test USDC for depositor
     await impersonateAccountsHardhat([usdcOwnerAddress]);

@@ -29,7 +29,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const ethers = (DRE as any).ethers;
 
     //user 1 deposits 7000 DAI
-    const daiOwnerAddress = '0xC2c7D100d234D23cd7233066a5FEE97f56DB171C';
+    const daiOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 
     await impersonateAccountsHardhat([daiOwnerAddress]);
     let signer = await ethers.provider.getSigner(daiOwnerAddress);
@@ -43,7 +43,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
       .deposit(dai.address, amountDAItoDeposit, depositor.address, '0');
 
     const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const stETHOwnerAddress = '0x41318419CFa25396b47A94896FfA2C77c6434040';
     await impersonateAccountsHardhat([stETHOwnerAddress]);
     signer = await ethers.provider.getSigner(stETHOwnerAddress);
 
@@ -123,7 +123,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const ethers = (DRE as any).ethers;
 
     //approve protocol to access depositor wallet
-    const daiOwnerAddress = '0xC2c7D100d234D23cd7233066a5FEE97f56DB171C';
+    const daiOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 
     await impersonateAccountsHardhat([daiOwnerAddress]);
     const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '3500');
@@ -234,7 +234,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
     const borrower = users[4];
 
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     await impersonateAccountsHardhat([usdcOwnerAddress]);
     let signer = await ethers.provider.getSigner(usdcOwnerAddress);
     await usdc
@@ -253,7 +253,7 @@ makeSuite('LendingPool liquidation - liquidator receiving aToken', (testEnv) => 
 
     //user 4 deposits 1 ETH
     const amountETHtoDeposit = await convertToCurrencyDecimals(lido.address, '1');
-    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const stETHOwnerAddress = '0x41318419CFa25396b47A94896FfA2C77c6434040';
     await impersonateAccountsHardhat([stETHOwnerAddress]);
     signer = await ethers.provider.getSigner(stETHOwnerAddress);
     await lido.connect(signer).transfer(borrower.address, amountETHtoDeposit);

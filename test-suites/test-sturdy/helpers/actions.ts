@@ -131,13 +131,13 @@ export const mint = async (
   let token;
 
   if (reserveSymbol == 'USDC') {
-    ownerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdc;
   } else if (reserveSymbol == 'DAI') {
-    ownerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = dai;
   } else if (reserveSymbol == 'stETH') {
-    ownerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    ownerAddress = '0x41318419CFa25396b47A94896FfA2C77c6434040';
     token = lido;
   }
 

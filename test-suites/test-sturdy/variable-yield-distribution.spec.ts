@@ -80,7 +80,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '10000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -219,7 +219,7 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '2000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -259,7 +259,7 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '4000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -337,7 +337,7 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '4000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -402,7 +402,7 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user2 = users[2];
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '4000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -471,7 +471,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '1000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -503,7 +503,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '5000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -565,7 +565,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '1000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -634,7 +634,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
 
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '1000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -709,7 +709,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     expect(rewardsAmount).to.be.gt(0);
 
     // deposits again
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     const depositFRAX3CRV = '2000';
     const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
       FRAX_3CRV_LP.address,
@@ -734,7 +734,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
     const user2 = users[2];
-    const FRAX3CRVLPOwnerAddress = '0xc5d3d004a223299c4f95bb702534c14a32e8778c';
+    const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
@@ -808,7 +808,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
 
-    const IronBankLPOwnerAddress = '0x64ea5a109a6f8d5ca30f9565b0d7f72de781ce7d';
+    const IronBankLPOwnerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
     const depositIronBank = '1000';
     const depositIronBankAmount = await convertToCurrencyDecimals(
       IRON_BANK_LP.address,
@@ -883,7 +883,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     expect(rewardsAmount).to.be.gt(0);
 
     // deposits again
-    const IronBankLPOwnerAddress = '0x64ea5a109a6f8d5ca30f9565b0d7f72de781ce7d';
+    const IronBankLPOwnerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
     const depositIronBank = '2000';
     const depositIronBankAmount = await convertToCurrencyDecimals(
       IRON_BANK_LP.address,
@@ -908,7 +908,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
     const user2 = users[2];
-    const IronBankLPOwnerAddress = '0x64ea5a109a6f8d5ca30f9565b0d7f72de781ce7d';
+    const IronBankLPOwnerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 

@@ -29,16 +29,16 @@ const mint = async (
   let token;
 
   if (reserveSymbol == 'USDC') {
-    ownerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdc;
   } else if (reserveSymbol == 'DAI') {
-    ownerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = dai;
   } else if (reserveSymbol == 'USDT') {
-    ownerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
+    ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdt;
   } else if (reserveSymbol == 'FRAX_3CRV_LP') {
-    ownerAddress = '0x605b5f6549538a94bd2653d1ee67612a47039da0';
+    ownerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
     token = FRAX_3CRV_LP;
   }
 

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { makeSuite, TestEnv } from './helpers/make-suite';
 import { ProtocolErrors } from '../../helpers/types';
-import { ZERO_ADDRESS } from '../../helpers/constants';
+import { ONE_ADDRESS, ZERO_ADDRESS } from '../../helpers/constants';
 import {
   getAToken,
   getMockStableDebtToken,
@@ -26,8 +26,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
     const aTokenInstance = await deployMockAToken([
       pool.address,
       dai.address,
-      ZERO_ADDRESS,
-      ZERO_ADDRESS,
+      ONE_ADDRESS,
+      ONE_ADDRESS,
       'Sturdy Interest bearing DAI updated',
       'aDAI',
       '0x10',
@@ -72,8 +72,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       params: string;
     } = {
       asset: dai.address,
-      treasury: ZERO_ADDRESS,
-      incentivesController: ZERO_ADDRESS,
+      treasury: ONE_ADDRESS,
+      incentivesController: ONE_ADDRESS,
       name: name,
       symbol: symbol,
       implementation: newATokenAddress,
@@ -100,8 +100,8 @@ makeSuite('Upgradeability', (testEnv: TestEnv) => {
       params: string;
     } = {
       asset: dai.address,
-      treasury: ZERO_ADDRESS,
-      incentivesController: ZERO_ADDRESS,
+      treasury: ONE_ADDRESS,
+      incentivesController: ONE_ADDRESS,
       name: name,
       symbol: symbol,
       implementation: newATokenAddress,

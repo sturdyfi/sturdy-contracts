@@ -13,7 +13,7 @@ makeSuite('Deposit ETH as collateral and other as for pool liquidity supplier ',
   it('User1 deposits USDC, User deposits ETH as collateral and borrows USDC', async () => {
     const { usdc, users, pool, lidoVault, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
@@ -93,7 +93,7 @@ makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier 
   it('User1 deposits USDC, User deposits stETH as collateral and borrows USDC', async () => {
     const { usdc, users, pool, lidoVault, lido, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
@@ -122,7 +122,7 @@ makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier 
     });
 
     //user 2 deposits 1 stETH
-    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const stETHOwnerAddress = '0x41318419CFa25396b47A94896FfA2C77c6434040';
     const depositStETH = '1';
     const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, depositStETH);
     //Make some test stETH for borrower
@@ -180,7 +180,7 @@ makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier 
   it('User1 deposits USDT, User deposits stETH as collateral and borrows USDT', async () => {
     const { usdt, users, pool, lidoVault, lido, oracle } = testEnv;
     const ethers = (DRE as any).ethers;
-    const usdtOwnerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
+    const usdtOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
@@ -209,7 +209,7 @@ makeSuite('Deposit stETH as collateral and other as for pool liquidity supplier 
     });
 
     //user 2 deposits 1 stETH
-    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const stETHOwnerAddress = '0x41318419CFa25396b47A94896FfA2C77c6434040';
     const depositStETH = '1';
     const amountStETHtoDeposit = await convertToCurrencyDecimals(lido.address, depositStETH);
     //Make some test stETH for borrower
@@ -270,7 +270,7 @@ makeSuite('borrow stETH', (testEnv) => {
     const depositor = users[0];
     const borrower = users[1];
     printDivider();
-    const stETHOwnerAddress = '0x06920C9fC643De77B99cB7670A944AD31eaAA260';
+    const stETHOwnerAddress = '0x41318419CFa25396b47A94896FfA2C77c6434040';
     const depositStETH = '10';
     //Make some test stETH for depositor
     await impersonateAccountsHardhat([stETHOwnerAddress]);

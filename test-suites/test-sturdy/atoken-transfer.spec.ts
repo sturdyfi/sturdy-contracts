@@ -23,7 +23,7 @@ makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
     const { users, pool, dai, aDai } = testEnv;
 
-    const daiOwnerAddress = '0xC2c7D100d234D23cd7233066a5FEE97f56DB171C';
+    const daiOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const ethers = (DRE as any).ethers;
 
     await impersonateAccountsHardhat([daiOwnerAddress]);

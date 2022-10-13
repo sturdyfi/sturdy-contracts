@@ -124,7 +124,7 @@
 //     const depositor = users[0];
 //     const borrower = users[1];
 //     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+//     const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 //     const depositUSDC = '7000';
 //     //Make some test USDC for depositor
 //     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -210,7 +210,7 @@
 //     const other_depositor = users[1];
 //     const borrower = users[2];
 //     const ethers = (DRE as any).ethers;
-//     const usdcOwnerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
+//     const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 //     const depositUSDC = '7000';
 //     //Make some test USDC for depositor
 //     await impersonateAccountsHardhat([usdcOwnerAddress]);
@@ -226,7 +226,7 @@
 //       .connect(depositor.signer)
 //       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-//     const daiOwnerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
+//     const daiOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 //     const depositDAI = '3500';
 //     //Make some test DAI for depositor
 //     await impersonateAccountsHardhat([daiOwnerAddress]);

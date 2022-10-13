@@ -31,7 +31,7 @@ makeSuite('AToken: Permit', (testEnv: TestEnv) => {
 
   it('Get aDAI for tests', async () => {
     const { dai, pool, deployer } = testEnv;
-    const daiOwnerAddress = '0xC2c7D100d234D23cd7233066a5FEE97f56DB171C';
+    const daiOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     const ethers = (DRE as any).ethers;
 
     await impersonateAccountsHardhat([daiOwnerAddress]);

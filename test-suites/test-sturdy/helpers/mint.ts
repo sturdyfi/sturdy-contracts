@@ -42,17 +42,17 @@ const TOKEN_INFO: {
   {
     symbol: 'DAI_USDC_USDT_SUSD_LP',
     address: DAI_USDC_USDT_SUSD_LP,
-    owner: '0x1f9bB27d0C66fEB932f3F8B02620A128d072f3d8',
+    owner: '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42',
   },
   {
     symbol: 'FRAX_USDC_LP',
     address: FRAX_USDC_LP,
-    owner: '0xF28E1B06E00e8774C612e31aB3Ac35d5a720085f',
+    owner: '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9',
   },
   {
     symbol: 'IRON_BANK_LP',
     address: IRON_BANK_LP,
-    owner: '0xd4dfbde97c93e56d1e41325bb428c18299db203f',
+    owner: '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01',
   },
   {
     symbol: 'MIM_3CRV_LP',

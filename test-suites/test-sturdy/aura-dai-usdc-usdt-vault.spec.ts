@@ -30,7 +30,7 @@ const prepareCollateralForUser = async (
   const { BAL_DAI_USDC_USDT_LP } = testEnv;
   const ethers = (DRE as any).ethers;
 
-  const LPOwnerAddress = '0xf346592803Eb47cb8d8fa9F90b0ef17A82F877e0';
+  const LPOwnerAddress = '0x1229a70535ab7Cf4b102405eD36e23C9d69Ec0F9';
   await impersonateAccountsHardhat([LPOwnerAddress]);
   const signer = await ethers.provider.getSigner(LPOwnerAddress);
 

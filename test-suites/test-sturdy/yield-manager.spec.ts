@@ -46,7 +46,7 @@ const simulateYieldInConvexFRAXVault = async (testEnv: TestEnv) => {
   const { convexFRAX3CRVVault, users, cvxfrax_3crv, aCVXFRAX_3CRV, FRAX_3CRV_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const FRAX3CRVLPOwnerAddress = '0xba16e2070f7AD862D3fccD7af835B3Cb3A35FCfb';
+  const FRAX3CRVLPOwnerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
   const depositFRAX3CRV = '15520';
   const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
     FRAX_3CRV_LP.address,
@@ -150,7 +150,7 @@ const simulateYieldInAuraDAIUSDCUSDTVault = async (testEnv: TestEnv) => {
   } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const BALDAIUSDCUSDTLPOwnerAddress = '0xf346592803Eb47cb8d8fa9F90b0ef17A82F877e0';
+  const BALDAIUSDCUSDTLPOwnerAddress = '0x1229a70535ab7Cf4b102405eD36e23C9d69Ec0F9';
   const depositBALDAIUSDCUSDT = '15520';
   const depositBALDAIUSDCUSDTAmount = await convertToCurrencyDecimals(
     BAL_DAI_USDC_USDT_LP.address,
@@ -223,7 +223,7 @@ const depositUSDC = async (
   const { pool, usdc } = testEnv;
   const ethers = (DRE as any).ethers;
 
-  const usdcOwnerAddress = '0xF977814e90dA44bFA03b6295A0616a897441aceC';
+  const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
   await impersonateAccountsHardhat([usdcOwnerAddress]);
   let signer = await ethers.provider.getSigner(usdcOwnerAddress);
   await usdc.connect(signer).transfer(depositor.address, amount);
@@ -243,7 +243,7 @@ const depositUSDT = async (
   const { pool, usdt } = testEnv;
   const ethers = (DRE as any).ethers;
 
-  const usdtOwnerAddress = '0x5754284f345afc66a98fbB0a0Afe71e0F007B949';
+  const usdtOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
   await impersonateAccountsHardhat([usdtOwnerAddress]);
   let signer = await ethers.provider.getSigner(usdtOwnerAddress);
   await usdt.connect(signer).transfer(depositor.address, amount);
@@ -259,7 +259,7 @@ const depositDAI = async (testEnv: TestEnv, depositor: SignerWithAddress, amount
   const { pool, dai } = testEnv;
   const ethers = (DRE as any).ethers;
 
-  const daiOwnerAddress = '0x4967ec98748efb98490663a65b16698069a1eb35';
+  const daiOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
   await impersonateAccountsHardhat([daiOwnerAddress]);
   let signer = await ethers.provider.getSigner(daiOwnerAddress);
   await dai.connect(signer).transfer(depositor.address, amount);

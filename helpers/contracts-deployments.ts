@@ -220,13 +220,9 @@ export const deployLendingPoolConfigurator = async (verify?: boolean) => {
   const lendingPoolConfiguratorImpl = await new LendingPoolConfiguratorFactory(
     await getFirstSigner()
   ).deploy();
-  await insertContractAddressInDb(
-    eContractid.LendingPoolConfiguratorImpl,
-    lendingPoolConfiguratorImpl.address
-  );
   return withSaveAndVerify(
     lendingPoolConfiguratorImpl,
-    eContractid.LendingPoolConfigurator,
+    eContractid.LendingPoolConfiguratorImpl,
     [],
     verify
   );
@@ -333,7 +329,7 @@ export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deploySturdyLibraries(verify);
   const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
-  return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPool, [], verify);
+  return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPoolImpl, [], verify);
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>

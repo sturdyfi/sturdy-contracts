@@ -51,11 +51,11 @@
   },
   "LendingPoolImpl": {
     "main": {
-      "address": "0xeb26877Dd21C5B88E4e86DF6EE4101a8a328104b",
+      "address": "0xD3fB28B8C64993511E63898325420B1Ab1e57950",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xeb26877Dd21C5B88E4e86DF6EE4101a8a328104b"
+      "address": "0xD3fB28B8C64993511E63898325420B1Ab1e57950"
     }
   },
   "LendingPool": {

@@ -333,6 +333,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address from,
     address to
   ) external override whenNotPaused returns (uint256) {
+    require(_availableVaults[msg.sender] == true, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
     return _withdraw(asset, amount, from, to);
   }
 

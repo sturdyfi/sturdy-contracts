@@ -97,7 +97,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvWETH: (await getYearnWETHVault()).address,
               yvWBTC: (await getYearnWBTCVault()).address,
               yvBOO: (await getYearnBOOVault()).address,
-              mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
+              // mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
               mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
               mooBASED_MIMATIC: (await getBasedMiMaticBeefyVault()).address,
               yvfBEETS: (await getYearnFBEETSVault()).address,

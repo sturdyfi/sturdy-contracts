@@ -111,10 +111,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvWETH: getParamPerNetwork(poolConfig.WETH, network),
             yvWBTC: getParamPerNetwork(poolConfig.WBTC, network),
             yvBOO: getParamPerNetwork((poolConfig as IFantomConfiguration).BOO, network),
-            mooTOMB_FTM: getParamPerNetwork(
-              (poolConfig as IFantomConfiguration).TOMB_FTM_LP,
-              network
-            ),
+            // mooTOMB_FTM: getParamPerNetwork(
+            //   (poolConfig as IFantomConfiguration).TOMB_FTM_LP,
+            //   network
+            // ),
             mooTOMB_MIMATIC: getParamPerNetwork(
               (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
               network
@@ -156,7 +156,7 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             yvWETH: (await getYearnWETHVault()).address,
             yvWBTC: (await getYearnWBTCVault()).address,
             yvBOO: (await getYearnBOOVault()).address,
-            mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
+            // mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
             mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
             mooBASED_MIMATIC: (await getBasedMiMaticBeefyVault()).address,
             yvfBEETS: (await getYearnFBEETSVault()).address,

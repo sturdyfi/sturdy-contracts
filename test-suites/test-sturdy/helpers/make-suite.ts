@@ -36,6 +36,7 @@ import {
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
   getVaultWhitelist,
+  getStaticAToken,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -69,6 +70,7 @@ import {
   AuraBalancerLPVault,
   VaultWhitelist,
   ConvexCurveLPVault2,
+  StaticAToken,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
@@ -113,10 +115,13 @@ export interface TestEnv {
   helpersContract: SturdyProtocolDataProvider;
   dai: MintableERC20;
   aDai: AToken;
+  staticADai: StaticAToken;
   usdc: MintableERC20;
   aUsdc: AToken;
+  staticAUsdc: StaticAToken;
   usdt: MintableERC20;
   aUsdt: AToken;
+  staticAUsdt: StaticAToken;
   aave: MintableERC20;
   aStETH: AToken;
   aYVRETH_WSTETH: AToken;
@@ -201,10 +206,13 @@ const testEnv: TestEnv = {
   oracle: {} as PriceOracle,
   dai: {} as MintableERC20,
   aDai: {} as AToken,
+  staticADai: {} as StaticAToken,
   usdc: {} as MintableERC20,
   aUsdc: {} as AToken,
+  staticAUsdc: {} as StaticAToken,
   usdt: {} as MintableERC20,
   aUsdt: {} as AToken,
+  staticAUsdt: {} as StaticAToken,
   aave: {} as MintableERC20,
   aStETH: {} as AToken,
   aYVRETH_WSTETH: {} as AToken,
@@ -350,7 +358,7 @@ export async function initializeMakeSuite() {
   // testEnv.convexHBTCWBTCVault = await getConvexHBTCWBTCVault();
   testEnv.convexIronBankVault = await getConvexIronBankVault();
   testEnv.convexFRAXUSDCVault = await getConvexFRAXUSDCVault();
-  testEnv.auraDAIUSDCUSDTVault = await getAuraDAIUSDCUSDTVault();
+  // testEnv.auraDAIUSDCUSDTVault = await getAuraDAIUSDCUSDTVault();
   testEnv.convexTUSDFRAXBPVault = await getConvexTUSDFRAXBPVault();
   // const cvxrethwstethAddress = await testEnv.convexRocketPoolETHVault.getInternalAsset();
   const cvxfrax3crvAddress = await testEnv.convexFRAX3CRVVault.getInternalAsset();
@@ -361,7 +369,7 @@ export async function initializeMakeSuite() {
   // const cvxhbtcwbtcAddress = await testEnv.convexHBTCWBTCVault.getInternalAsset();
   const cvxironbankAddress = await testEnv.convexIronBankVault.getInternalAsset();
   const cvxfraxusdcAddress = await testEnv.convexFRAXUSDCVault.getInternalAsset();
-  const auradaiusdcusdtAddress = await testEnv.auraDAIUSDCUSDTVault.getInternalAsset();
+  // const auradaiusdcusdtAddress = await testEnv.auraDAIUSDCUSDTVault.getInternalAsset();
   const cvxtusdfraxbpAddress = await testEnv.convexTUSDFRAXBPVault.getInternalAsset();
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getETHLiquidator();
@@ -464,7 +472,7 @@ export async function initializeMakeSuite() {
     // !aCVXHBTC_WBTCAddress ||
     !aCVXIRON_BANKAddress ||
     !aCVXFRAX_USDCAddress ||
-    !aAURADAI_USDC_USDTAddress ||
+    // !aAURADAI_USDC_USDTAddress ||
     !aCVXTUSD_FRAXBPAddress
   ) {
     process.exit(1);
@@ -474,6 +482,7 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
+  testEnv.staticADai = await getStaticAToken('sDAI');
   testEnv.aStETH = await getAToken(aStETHAddress);
   // testEnv.aYVRETH_WSTETH = await getAToken(aYVRETH_WSTETHAddress);
   // testEnv.aCVXRETH_WSTETH = await getAToken(aCVXRETH_WSTETHAddress);
@@ -488,7 +497,9 @@ export async function initializeMakeSuite() {
   testEnv.aAURADAI_USDC_USDT = await getAToken(aAURADAI_USDC_USDTAddress);
   testEnv.aCVXTUSD_FRAXBP = await getAToken(aCVXTUSD_FRAXBPAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
+  testEnv.staticAUsdc = await getStaticAToken('sUSDC');
   testEnv.aUsdt = await getAToken(aUsdtAddress);
+  testEnv.staticAUsdt = await getStaticAToken('sUSDT');
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);
@@ -527,10 +538,10 @@ export async function initializeMakeSuite() {
   // testEnv.cvxhbtc_wbtc = SturdyInternalAssetFactory.connect(cvxhbtcwbtcAddress, deployer.signer);
   testEnv.cvxiron_bank = SturdyInternalAssetFactory.connect(cvxironbankAddress, deployer.signer);
   testEnv.cvxfrax_usdc = SturdyInternalAssetFactory.connect(cvxfraxusdcAddress, deployer.signer);
-  testEnv.auradai_usdc_usdt = SturdyInternalAssetFactory.connect(
-    auradaiusdcusdtAddress,
-    deployer.signer
-  );
+  // testEnv.auradai_usdc_usdt = SturdyInternalAssetFactory.connect(
+  //   auradaiusdcusdtAddress,
+  //   deployer.signer
+  // );
   testEnv.cvxtusd_fraxbp = SturdyInternalAssetFactory.connect(
     cvxtusdfraxbpAddress,
     deployer.signer

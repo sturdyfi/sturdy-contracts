@@ -74,6 +74,7 @@ import {
   AuraBalancerLPVaultFactory,
   VaultWhitelistFactory,
   ConvexCurveLPVault2Factory,
+  StaticATokenFactory,
 } from '../types';
 import { IERC20DetailedFactory } from '../types/IERC20DetailedFactory';
 import { IWETHFactory } from '../types/IWETHFactory';
@@ -107,6 +108,17 @@ export const getPriceOracle = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.PriceOracle}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getStaticAToken = async (symbol: string, address?: tEthereumAddress) =>
+  await StaticATokenFactory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${symbol + eContractid.StaticAToken}.${DRE.network.name}`)
+          .value()
       ).address,
     await getFirstSigner()
   );

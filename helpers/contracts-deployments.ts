@@ -162,6 +162,8 @@ import {
   TUSDFRAXBPLevSwapFactory,
   VaultWhitelistFactory,
   ConvexCurveLPVault2Factory,
+  StaticATokenFactory,
+  InitializableAdminUpgradeabilityProxyFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -2722,3 +2724,52 @@ export const deployVaultWhitelist = async (verify?: boolean) =>
     [],
     verify
   );
+
+export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new InitializableAdminUpgradeabilityProxyFactory(await getFirstSigner()).deploy(),
+    eContractid.InitializableAdminUpgradeabilityProxy,
+    [],
+    verify
+  );
+
+export const deployStaticAToken = async (
+  [pool, aTokenAddress, symbol, proxyAdmin]: [
+    tEthereumAddress,
+    tEthereumAddress,
+    string,
+    tEthereumAddress
+  ],
+  verify?: boolean
+) => {
+  const args: [string, string, string, string] = [pool, aTokenAddress, `Wrapped ${symbol}`, symbol];
+
+  const staticATokenImplementation = await withSaveAndVerify(
+    await new StaticATokenFactory(await getFirstSigner()).deploy(),
+    symbol + eContractid.StaticATokenImpl,
+    args,
+    verify
+  );
+
+  const proxy = await deployInitializableAdminUpgradeabilityProxy(verify);
+
+  await registerContractInJsonDb(symbol + eContractid.StaticAToken, proxy);
+  const encodedInitializedParams = staticATokenImplementation.interface.encodeFunctionData(
+    'initialize',
+    [...args]
+  );
+
+  // Initialize implementation to prevent others to do it
+  await waitForTx(await staticATokenImplementation.initialize(...args));
+
+  // Initialize proxy
+  await waitForTx(
+    await proxy['initialize(address,address,bytes)'](
+      staticATokenImplementation.address,
+      proxyAdmin,
+      encodedInitializedParams
+    )
+  );
+
+  return { proxy: proxy.address, implementation: staticATokenImplementation.address };
+};

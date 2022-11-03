@@ -728,5 +728,75 @@
       "address": "0xFf27B25B4532e6ABDE581726311B63A24A5C08D1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "sDAIStaticATokenImpl": {
+    "main": {
+      "address": "0x6cC542d4cD29Aa9528d1af83A196aBeCfEE61a8b",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x6cC542d4cD29Aa9528d1af83A196aBeCfEE61a8b",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "InitializableAdminUpgradeabilityProxy": {
+    "main": {
+      "address": "0x822802f970CCd9aEB13d0368A2409804d28E1253",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x822802f970CCd9aEB13d0368A2409804d28E1253",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "sDAIStaticAToken": {
+    "main": {
+      "address": "0x86A42b7A448c1568d21b00C90eaB53B8417eEaDc",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x86A42b7A448c1568d21b00C90eaB53B8417eEaDc",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "sUSDCStaticATokenImpl": {
+    "main": {
+      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x701A570C15903a2B09FB41a12DEf0265EBdc53be",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "sUSDCStaticAToken": {
+    "main": {
+      "address": "0xD7BC0dcb0B6ee14BDB204172ABA01458Abe91aC3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xD7BC0dcb0B6ee14BDB204172ABA01458Abe91aC3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "sUSDTStaticATokenImpl": {
+    "main": {
+      "address": "0x4FFa140fc6D5115C808AAF3afda2151F849fcdC3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x4FFa140fc6D5115C808AAF3afda2151F849fcdC3",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "sUSDTStaticAToken": {
+    "main": {
+      "address": "0x822802f970CCd9aEB13d0368A2409804d28E1253",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x822802f970CCd9aEB13d0368A2409804d28E1253",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

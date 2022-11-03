@@ -2747,7 +2747,7 @@ export const deployStaticAToken = async (
   const staticATokenImplementation = await withSaveAndVerify(
     await new StaticATokenFactory(await getFirstSigner()).deploy(),
     symbol + eContractid.StaticATokenImpl,
-    args,
+    [],
     verify
   );
 

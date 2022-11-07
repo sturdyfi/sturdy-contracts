@@ -205,7 +205,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
 
     // update APR
     address aprDataProvider = _addressesProvider.getAddress('APR_PROVIDER');
-    ISturdyAPRDataProvider(aprDataProvider).updateAPR(asset, amount, totalAmount);
+    if (aprDataProvider != address(0)) {
+      ISturdyAPRDataProvider(aprDataProvider).updateAPR(asset, amount, totalAmount);
+    }
 
     IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
   }

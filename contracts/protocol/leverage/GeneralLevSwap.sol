@@ -12,25 +12,34 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {IGeneralVault} from '../../interfaces/IGeneralVault.sol';
 import {IAToken} from '../../interfaces/IAToken.sol';
 import {IFlashLoanReceiver} from '../../flashloan/interfaces/IFlashLoanReceiver.sol';
+import {IFlashLoanRecipient} from '../../flashloan/interfaces/IFlashLoanRecipient.sol';
 import {IVaultWhitelist} from '../../interfaces/IVaultWhitelist.sol';
 import {IAaveFlashLoan} from '../../interfaces/IAaveFlashLoan.sol';
+import {IBalancerVault} from '../../interfaces/IBalancerVault.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {Math} from '../../dependencies/openzeppelin/contracts/Math.sol';
 import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
-contract GeneralLevSwap is IFlashLoanReceiver {
+contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using WadRayMath for uint256;
+
+  enum FlashLoanType {
+    AAVE,
+    BALANCER
+  }
 
   uint256 private constant SAFE_BUFFER = 5000;
 
   uint256 private constant USE_VARIABLE_DEBT = 2;
 
   address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
+
+  address private constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
 
   IVaultWhitelist internal constant VAULT_WHITELIST =
     IVaultWhitelist(0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E);
@@ -117,11 +126,29 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     return true;
   }
 
+  /**
+   * This function is called after your contract has received the flash loaned amount
+   * overriding receiveFlashLoan() in IFlashLoanRecipient
+   */
+  function receiveFlashLoan(
+    IERC20[] memory tokens,
+    uint256[] memory amounts,
+    uint256[] memory feeAmounts,
+    bytes memory userData
+  ) external override {
+    require(msg.sender == BALANCER_VAULT, Errors.LS_INVALID_CONFIGURATION);
+
+    _executeOperation(address(tokens[0]), amounts[0], feeAmounts[0], userData);
+
+    // send tokens to Balancer vault contract
+    IERC20(tokens[0]).safeTransfer(msg.sender, amounts[0] + feeAmounts[0]);
+  }
+
   function _executeOperation(
     address asset,
     uint256 borrowAmount,
     uint256 fee,
-    bytes calldata params
+    bytes memory params
   ) internal {
     // parse params
     (bool isEnterPosition, uint256 arg0, uint256 arg1, address arg2, address arg3) = abi.decode(
@@ -131,7 +158,6 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     if (isEnterPosition) {
       _enterPositionWithFlashloan(arg1, arg2, asset, borrowAmount, fee);
     } else {
-      // _leavePositionWithFlashloan(arg0, arg1, arg2, arg3, asset, borrowAmount);
       _withdrawWithFlashloan(arg0, arg1, arg2, arg3, asset, borrowAmount);
     }
   }
@@ -170,7 +196,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 _principal,
     uint256 _leverage,
     uint256 _slippage,
-    address _stableAsset
+    address _stableAsset,
+    FlashLoanType _flashLoanType
   ) external {
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
@@ -180,7 +207,14 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     IERC20(COLLATERAL).safeTransferFrom(msg.sender, address(this), _principal);
 
-    leverageWithFlashloan(msg.sender, _principal, _leverage, _slippage, _stableAsset);
+    _leverageWithFlashloan(
+      msg.sender,
+      _principal,
+      _leverage,
+      _slippage,
+      _stableAsset,
+      _flashLoanType
+    );
   }
 
   /**
@@ -276,30 +310,23 @@ contract GeneralLevSwap is IFlashLoanReceiver {
   /**
    * @param _repayAmount - The amount of repay
    * @param _requiredAmount - The amount of collateral
-   * @param _slippage1 - Slippage valule to borrow enough asset by flashloan,
-   *                    Must be greater than 0%.
-   * @param _slippage2 - The slippage of the every withdrawal amount. 1% = 100
+   * @param _slippage - The slippage of the every withdrawal amount. 1% = 100
    * @param _stableAsset - The borrowing stable coin address when leverage works
    * @param _sAsset - staked asset address of collateral internal asset
    */
   function withdrawWithFlashloan(
     uint256 _repayAmount,
     uint256 _requiredAmount,
-    uint256 _slippage1,
-    uint256 _slippage2,
+    uint256 _slippage,
     address _stableAsset,
-    address _sAsset
+    address _sAsset,
+    FlashLoanType _flashLoanType
   ) external {
     require(_repayAmount > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_requiredAmount > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(_slippage1 > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(_slippage2 > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_slippage > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
-
-    IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS);
-    address[] memory assets = new address[](1);
-    assets[0] = _stableAsset;
 
     uint256 debtAmount = _getDebtAmount(
       LENDING_POOL.getReserveData(_stableAsset).variableDebtTokenAddress,
@@ -315,13 +342,30 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     bytes memory params = abi.encode(
       false, /*leavePosition*/
-      _slippage2,
+      _slippage,
       _requiredAmount,
       msg.sender,
       _sAsset
     );
 
-    AAVE_LENDING_POOL.flashLoan(address(this), assets, amounts, modes, address(this), params, 0);
+    if (_flashLoanType == FlashLoanType.AAVE) {
+      address[] memory assets = new address[](1);
+      assets[0] = _stableAsset;
+      IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS).flashLoan(
+        address(this),
+        assets,
+        amounts,
+        modes,
+        address(this),
+        params,
+        0
+      );
+    } else {
+      IERC20[] memory assets = new IERC20[](1);
+      assets[0] = IERC20(_stableAsset);
+      IBalancerVault(BALANCER_VAULT).flashLoan(address(this), assets, amounts, params);
+    }
+
     // remained stable coin -> collateral
     _swapTo(_stableAsset, IERC20(_stableAsset).balanceOf(address(this)));
 
@@ -620,7 +664,8 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     uint256 _principal,
     uint256 _leverage,
     uint256 _slippage,
-    address _borrowAsset
+    address _borrowAsset,
+    FlashLoanType _flashLoanType
   ) external {
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
@@ -636,7 +681,14 @@ contract GeneralLevSwap is IFlashLoanReceiver {
 
     uint256 collateralAmount = _swapTo(_zappingAsset, _principal);
 
-    leverageWithFlashloan(msg.sender, collateralAmount, _leverage, _slippage, _borrowAsset);
+    _leverageWithFlashloan(
+      msg.sender,
+      collateralAmount,
+      _leverage,
+      _slippage,
+      _borrowAsset,
+      _flashLoanType
+    );
   }
 
   function leverage(
@@ -666,18 +718,15 @@ contract GeneralLevSwap is IFlashLoanReceiver {
     emit EnterPosition(_user, _principal, _iterations, _ltv, _borrowAsset);
   }
 
-  function leverageWithFlashloan(
+  function _leverageWithFlashloan(
     address _user,
     uint256 _principal,
     uint256 _leverage,
     uint256 _slippage,
-    address _borrowAsset
+    address _borrowAsset,
+    FlashLoanType _flashLoanType
   ) internal {
-    IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS);
     uint256 borrowAssetDecimals = IERC20Detailed(_borrowAsset).decimals();
-
-    address[] memory assets = new address[](1);
-    assets[0] = _borrowAsset;
 
     uint256[] memory amounts = new uint256[](1);
     amounts[0] = ((((_principal * _getAssetPrice(COLLATERAL)) / 10**DECIMALS) *
@@ -700,6 +749,22 @@ contract GeneralLevSwap is IFlashLoanReceiver {
       address(0)
     );
 
-    AAVE_LENDING_POOL.flashLoan(address(this), assets, amounts, modes, address(this), params, 0);
+    if (_flashLoanType == FlashLoanType.AAVE) {
+      address[] memory assets = new address[](1);
+      assets[0] = _borrowAsset;
+      IAaveFlashLoan(AAVE_LENDING_POOL_ADDRESS).flashLoan(
+        address(this),
+        assets,
+        amounts,
+        modes,
+        address(this),
+        params,
+        0
+      );
+    } else {
+      IERC20[] memory assets = new IERC20[](1);
+      assets[0] = IERC20(_borrowAsset);
+      IBalancerVault(BALANCER_VAULT).flashLoan(address(this), assets, amounts, params);
+    }
   }
 }

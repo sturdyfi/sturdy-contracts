@@ -231,4 +231,11 @@ interface IBalancerVault {
     int256[] memory limits,
     uint256 deadline
   ) external payable returns (int256[] memory);
+
+  function flashLoan(
+    address recipient,
+    IERC20[] memory tokens,
+    uint256[] memory amounts,
+    bytes memory userData
+  ) external;
 }

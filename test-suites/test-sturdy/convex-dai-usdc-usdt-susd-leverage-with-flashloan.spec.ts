@@ -137,7 +137,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       const principalAmount = 0;
       const stableCoin = dai.address;
       await expect(
-        susdLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+        susdLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
@@ -145,7 +145,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       const principalAmount = 10;
       const stableCoin = aDai.address;
       await expect(
-        susdLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+        susdLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('114');
     });
     it('should be reverted when collateral is not enough', async () => {
@@ -159,7 +159,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('115');
     });
   });
@@ -209,7 +209,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       // leverage
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(
@@ -281,7 +281,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       // leverage
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(
@@ -353,7 +353,227 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       // leverage
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);
+
+      const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+      const collateralETHAmount = await calcETHAmount(
+        testEnv,
+        DAI_USDC_USDT_SUSD_LP.address,
+        LPAmount
+      );
+
+      expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+      console.log('Expected Leverage: ', leverage / 10000 + 1);
+      console.log(
+        'Current Leverage: ',
+        new BigNumber(userGlobalDataAfter.totalCollateralETH.toString())
+          .div(collateralETHAmount)
+          .toString()
+      );
+      expect(
+        new BigNumber(userGlobalDataAfter.totalCollateralETH.toString())
+          .multipliedBy(10000)
+          .div(collateralETHAmount)
+          .toFixed()
+      ).to.be.bignumber.gt(leverage);
+      expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+        oneEther.toFixed(0),
+        INVALID_HF
+      );
+    });
+  });
+  describe('enterPosition() with Balancer:', async () => {
+    it('USDT as borrowing asset', async () => {
+      const { users, usdt, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } = testEnv;
+
+      const depositor = users[0];
+      const borrower = users[4];
+      const principalAmount = (
+        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+      ).toString();
+      const amountToDelegate = (
+        await calcTotalBorrowAmount(
+          testEnv,
+          DAI_USDC_USDT_SUSD_LP.address,
+          LPAmount,
+          ltv,
+          leverage,
+          usdt.address
+        )
+      ).toString();
+
+      // Deposit USDT to Lending Pool
+      await mint('USDT', amountToDelegate, depositor, testEnv);
+      await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
+
+      // Prepare Collateral
+      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
+      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
+        susdLevSwap.address,
+        principalAmount
+      );
+
+      // approve delegate borrow
+      const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
+        .variableDebtTokenAddress;
+      const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+      await varDebtToken
+        .connect(borrower.signer)
+        .approveDelegation(susdLevSwap.address, amountToDelegate);
+
+      const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+      expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+      expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+
+      // leverage
+      await susdLevSwap
+        .connect(borrower.signer)
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 1);
+
+      const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+      const collateralETHAmount = await calcETHAmount(
+        testEnv,
+        DAI_USDC_USDT_SUSD_LP.address,
+        LPAmount
+      );
+
+      expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+      console.log('Expected Leverage: ', leverage / 10000 + 1);
+      console.log(
+        'Current Leverage: ',
+        new BigNumber(userGlobalDataAfter.totalCollateralETH.toString())
+          .div(collateralETHAmount)
+          .toString()
+      );
+      expect(
+        new BigNumber(userGlobalDataAfter.totalCollateralETH.toString())
+          .multipliedBy(10000)
+          .div(collateralETHAmount)
+          .toFixed()
+      ).to.be.bignumber.gt(leverage);
+      expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+        oneEther.toFixed(0),
+        INVALID_HF
+      );
+    });
+    it('USDC as borrowing asset', async () => {
+      const { users, usdc, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } = testEnv;
+      const depositor = users[0];
+      const borrower = users[5];
+      const principalAmount = (
+        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+      ).toString();
+      const amountToDelegate = (
+        await calcTotalBorrowAmount(
+          testEnv,
+          DAI_USDC_USDT_SUSD_LP.address,
+          LPAmount,
+          ltv,
+          leverage,
+          usdc.address
+        )
+      ).toString();
+      // Depositor deposits USDT to Lending Pool
+      await mint('USDC', amountToDelegate, depositor, testEnv);
+      await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
+
+      // Prepare Collateral
+      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
+      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
+        susdLevSwap.address,
+        principalAmount
+      );
+
+      // approve delegate borrow
+      const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
+        .variableDebtTokenAddress;
+      const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+      await varDebtToken
+        .connect(borrower.signer)
+        .approveDelegation(susdLevSwap.address, amountToDelegate);
+
+      const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+      expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+      expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+
+      // leverage
+      await susdLevSwap
+        .connect(borrower.signer)
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 1);
+
+      const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
+      const collateralETHAmount = await calcETHAmount(
+        testEnv,
+        DAI_USDC_USDT_SUSD_LP.address,
+        LPAmount
+      );
+
+      expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
+      console.log('Expected Leverage: ', leverage / 10000 + 1);
+      console.log(
+        'Current Leverage: ',
+        new BigNumber(userGlobalDataAfter.totalCollateralETH.toString())
+          .div(collateralETHAmount)
+          .toString()
+      );
+      expect(
+        new BigNumber(userGlobalDataAfter.totalCollateralETH.toString())
+          .multipliedBy(10000)
+          .div(collateralETHAmount)
+          .toFixed()
+      ).to.be.bignumber.gt(leverage);
+      expect(userGlobalDataAfter.totalDebtETH.toString()).to.be.bignumber.gt('0');
+      expect(userGlobalDataAfter.healthFactor.toString()).to.be.bignumber.gt(
+        oneEther.toFixed(0),
+        INVALID_HF
+      );
+    });
+    it('DAI as borrowing asset', async () => {
+      const { users, dai, DAI_USDC_USDT_SUSD_LP, pool, helpersContract } = testEnv;
+      const depositor = users[0];
+      const borrower = users[6];
+      const principalAmount = (
+        await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, LPAmount)
+      ).toString();
+      const amountToDelegate = (
+        await calcTotalBorrowAmount(
+          testEnv,
+          DAI_USDC_USDT_SUSD_LP.address,
+          LPAmount,
+          ltv,
+          leverage,
+          dai.address
+        )
+      ).toString();
+
+      await mint('DAI', amountToDelegate, depositor, testEnv);
+      await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
+
+      // Prepare Collateral
+      await mint('DAI_USDC_USDT_SUSD_LP', principalAmount, borrower, testEnv);
+      await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
+        susdLevSwap.address,
+        principalAmount
+      );
+
+      // approve delegate borrow
+      const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
+        .variableDebtTokenAddress;
+      const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
+      await varDebtToken
+        .connect(borrower.signer)
+        .approveDelegation(susdLevSwap.address, amountToDelegate);
+
+      const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
+      expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
+      expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
+
+      // leverage
+      await susdLevSwap
+        .connect(borrower.signer)
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 1);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(

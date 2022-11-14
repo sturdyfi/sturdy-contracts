@@ -137,7 +137,13 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       const principalAmount = 0;
       const stableCoin = dai.address;
       await expect(
-        fraxusdcLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+        fraxusdcLevSwap.enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage,
+          stableCoin,
+          0
+        )
       ).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
@@ -145,7 +151,13 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       const principalAmount = 10;
       const stableCoin = aDai.address;
       await expect(
-        fraxusdcLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+        fraxusdcLevSwap.enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage,
+          stableCoin,
+          0
+        )
       ).to.be.revertedWith('114');
     });
     it('should be reverted when collateral is not enough', async () => {
@@ -156,7 +168,7 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       await expect(
         fraxusdcLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('115');
     });
   });
@@ -203,7 +215,7 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       // leverage
       await fraxusdcLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, FRAX_USDC_LP.address, LPAmount);
@@ -268,7 +280,7 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       // leverage
       await fraxusdcLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, FRAX_USDC_LP.address, LPAmount);
@@ -333,7 +345,7 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       // leverage
       await fraxusdcLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, FRAX_USDC_LP.address, LPAmount);

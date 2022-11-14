@@ -312,7 +312,8 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
           principalAmount,
           leverage,
           slippage,
-          stableCoin
+          stableCoin,
+          0
         )
       ).to.be.revertedWith('113');
     });
@@ -326,7 +327,8 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
           principalAmount,
           leverage,
           slippage,
-          dai.address
+          dai.address,
+          0
         )
       ).to.be.revertedWith('114');
       await expect(
@@ -335,7 +337,8 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
           principalAmount,
           leverage,
           slippage,
-          stableCoin
+          stableCoin,
+          0
         )
       ).to.be.revertedWith('114');
     });
@@ -347,7 +350,7 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .zapLeverageWithFlashloan(dai.address, principalAmount, leverage, slippage, stableCoin)
+          .zapLeverageWithFlashloan(dai.address, principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('115');
     });
   });
@@ -385,7 +388,14 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
       // leverage
       await susdLevSwap
         .connect(borrower.signer)
-        .zapLeverageWithFlashloan(usdt.address, principalAmount, leverage, slippage, usdt.address);
+        .zapLeverageWithFlashloan(
+          usdt.address,
+          principalAmount,
+          leverage,
+          slippage,
+          usdt.address,
+          0
+        );
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, usdt.address, LPAmount);

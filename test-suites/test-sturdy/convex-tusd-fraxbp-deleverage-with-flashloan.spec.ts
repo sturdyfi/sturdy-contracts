@@ -203,10 +203,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage1,
             slippage2,
             usdt.address,
-            aCVXTUSD_FRAXBP.address
+            aCVXTUSD_FRAXBP.address,
+            0
           )
       ).to.be.revertedWith('118');
       await vaultWhitelist.addAddressToWhitelistUser(
@@ -218,10 +218,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage1,
           slippage2,
           usdt.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
@@ -320,10 +320,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage1,
             slippage2,
             usdc.address,
-            aCVXTUSD_FRAXBP.address
+            aCVXTUSD_FRAXBP.address,
+            0
           )
       ).to.be.revertedWith('118');
       await vaultWhitelist.addAddressToWhitelistUser(
@@ -335,10 +335,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage1,
           slippage2,
           usdc.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
@@ -437,10 +437,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage1,
             slippage2,
             dai.address,
-            aCVXTUSD_FRAXBP.address
+            aCVXTUSD_FRAXBP.address,
+            0
           )
       ).to.be.revertedWith('118');
       await vaultWhitelist.addAddressToWhitelistUser(
@@ -452,10 +452,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage1,
           slippage2,
           dai.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
@@ -561,10 +561,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage1,
           slippage2,
           usdt.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -595,10 +595,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage1,
           slippage2,
           usdt.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -629,10 +629,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage1,
           slippage2,
           usdt.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -663,10 +663,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage1,
           slippage2,
           usdt.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -754,10 +754,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage1,
           slippage2,
           usdc.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -788,10 +788,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage1,
           slippage2,
           usdc.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -822,10 +822,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage1,
           slippage2,
           usdc.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -856,10 +856,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage1,
           slippage2,
           usdc.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -947,10 +947,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage1,
           slippage2,
           dai.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -981,10 +981,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage1,
           slippage2,
           dai.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1015,10 +1015,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage1,
           slippage2,
           dai.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1049,10 +1049,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage1,
           slippage2,
           dai.address,
-          aCVXTUSD_FRAXBP.address
+          aCVXTUSD_FRAXBP.address,
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);

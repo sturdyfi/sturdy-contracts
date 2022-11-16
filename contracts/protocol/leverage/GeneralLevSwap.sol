@@ -58,16 +58,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
 
   mapping(address => bool) ENABLED_STABLE_COINS;
 
-  event EnterPosition(
-    address indexed user,
-    uint256 amount,
-    uint256 iterations,
-    uint256 ltv,
-    address indexed borrowedCoin
-  );
-
-  event LeavePosition(uint256 amount, address indexed borrowedCoin);
-
   /**
    * @param _asset The external asset ex. wFTM
    * @param _vault The deployed vault address
@@ -164,27 +154,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
 
   /**
    * @param _principal - The amount of collateral
-   * @param _iterations - Loop count
-   * @param _ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 82_50
-   * @param _stableAsset - The borrowing stable coin address when leverage works
-   */
-  function enterPosition(
-    uint256 _principal,
-    uint256 _iterations,
-    uint256 _ltv,
-    address _stableAsset
-  ) external {
-    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
-    require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
-
-    IERC20(COLLATERAL).safeTransferFrom(msg.sender, address(this), _principal);
-
-    leverage(msg.sender, _principal, _iterations, _ltv, _stableAsset);
-  }
-
-  /**
-   * @param _principal - The amount of collateral
    * @param _leverage - Extra leverage value and must be greater than 0, ex. 300% = 300_00
    *                    _principal + _principal * _leverage should be used as collateral
    * @param _slippage - Slippage valule to borrow enough asset by flashloan,
@@ -215,96 +184,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
       _stableAsset,
       _flashLoanType
     );
-  }
-
-  /**
-   * @param _principal - The amount of collateral, uint256 max value should withdraw all collateral
-   * @param _slippage - The slippage of the every withdrawal amount. 1% = 100
-   * @param _iterations - Loop count
-   * @param _stableAsset - The borrowing stable coin address when leverage works
-   * @param _sAsset - staked asset address of collateral internal asset
-   */
-  function leavePosition(
-    uint256 _principal,
-    uint256 _slippage,
-    uint256 _iterations,
-    address _stableAsset,
-    address _sAsset
-  ) external {
-    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(ENABLED_STABLE_COINS[_stableAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
-    require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
-
-    DataTypes.ReserveConfigurationMap memory configuration = LENDING_POOL.getConfiguration(
-      IAToken(_sAsset).UNDERLYING_ASSET_ADDRESS()
-    );
-    (, uint256 assetLiquidationThreshold, , , ) = configuration.getParamsMemory();
-    require(assetLiquidationThreshold != 0, Errors.LS_INVALID_CONFIGURATION);
-
-    (, , , uint256 liquidationThreshold, uint256 ltv, ) = LENDING_POOL.getUserAccountData(
-      msg.sender
-    );
-    uint256 normalHealthFactor = (WadRayMath.wad() * liquidationThreshold) / ltv;
-    address variableDebtTokenAddress = LENDING_POOL
-      .getReserveData(_stableAsset)
-      .variableDebtTokenAddress;
-
-    // reduce leverage to increase healthFactor
-    if (_iterations != 0) {
-      _reduceLeverageWithAmount(_sAsset, _stableAsset, _slippage, assetLiquidationThreshold, 0);
-    } else {
-      _reduceLeverageWithAmount(
-        _sAsset,
-        _stableAsset,
-        _slippage,
-        assetLiquidationThreshold,
-        _principal
-      );
-      return;
-    }
-
-    uint256 count;
-    do {
-      // limit loop count
-      require(count < _iterations, Errors.LS_REMOVE_ITERATION_OVER);
-
-      // withdraw collateral keeping the normal healthFactor (T / LTV)
-      uint256 availableAmount = _getWithdrawalAmount(
-        _sAsset,
-        msg.sender,
-        assetLiquidationThreshold,
-        normalHealthFactor
-      );
-      if (availableAmount == 0) break;
-
-      uint256 requiredAmount = _principal - IERC20(COLLATERAL).balanceOf(address(this));
-      uint256 removeAmount = Math.min(availableAmount, requiredAmount);
-      IERC20(_sAsset).safeTransferFrom(msg.sender, address(this), removeAmount);
-      _remove(removeAmount, _slippage, msg.sender);
-
-      if (removeAmount == requiredAmount) break;
-
-      uint256 debtAmount = _getDebtAmount(variableDebtTokenAddress, msg.sender);
-      if (debtAmount != 0) {
-        // swap collateral to stable coin
-        // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
-        uint256 stableAssetAmount = _swapFrom(_stableAsset);
-        uint256 repayAmount = Math.min(debtAmount, stableAssetAmount);
-        // repay
-        _repay(_stableAsset, repayAmount, msg.sender);
-        if (stableAssetAmount > repayAmount) {
-          // swap stable coin to collateral in case of extra ramined stable coin after repay
-          _swapTo(_stableAsset, stableAssetAmount - repayAmount);
-        }
-      }
-
-      count++;
-    } while (true);
-
-    // finally deliver the collateral to user
-    IERC20(COLLATERAL).safeTransfer(msg.sender, IERC20(COLLATERAL).balanceOf(address(this)));
-
-    emit LeavePosition(_principal, _stableAsset);
   }
 
   /**
@@ -445,60 +324,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
     _swapFrom(_stableAsset);
   }
 
-  function _reduceLeverageWithAmount(
-    address _sAsset,
-    address _stableAsset,
-    uint256 _slippage,
-    uint256 _assetLiquidationThreshold,
-    uint256 _amount
-  ) internal {
-    // withdraw available collateral
-    uint256 requireAmount = _amount;
-    address variableDebtTokenAddress = LENDING_POOL
-      .getReserveData(_stableAsset)
-      .variableDebtTokenAddress;
-
-    do {
-      uint256 debtAmount = _getDebtAmount(variableDebtTokenAddress, msg.sender);
-      if (debtAmount == 0) break;
-
-      uint256 availableAmount = _getWithdrawalAmount(
-        _sAsset,
-        msg.sender,
-        _assetLiquidationThreshold,
-        WadRayMath.wad()
-      );
-      uint256 removeAmount = _amount != 0
-        ? Math.min(availableAmount, requireAmount)
-        : availableAmount;
-      IERC20(_sAsset).safeTransferFrom(msg.sender, address(this), removeAmount);
-      _remove(removeAmount, _slippage, msg.sender);
-
-      // swap collateral to stable coin
-      // in this case, some collateral asset maybe remained because of convex (ex: sUSD)
-      uint256 stableAssetAmount = _swapFrom(_stableAsset);
-      uint256 repayAmount = Math.min(debtAmount, stableAssetAmount);
-      // repay
-      _repay(_stableAsset, repayAmount, msg.sender);
-      if (stableAssetAmount > repayAmount) {
-        // swap stable coin to collateral in case of extra ramined stable coin after repay
-        uint256 collateralAmount = _swapTo(
-          _stableAsset,
-          IERC20(_stableAsset).balanceOf(address(this))
-        );
-        _supply(collateralAmount, msg.sender);
-        removeAmount -= collateralAmount;
-      }
-
-      // one time reduce leverage
-      if (_amount == 0) break;
-
-      requireAmount -= removeAmount;
-      // completed the required amount to reduce leverage
-      if (requireAmount == 0) break;
-    } while (true);
-  }
-
   function _supply(uint256 _amount, address _user) internal {
     // whitelist checking
     if (VAULT_WHITELIST.whitelistUserCount(VAULT) > 0) {
@@ -519,34 +344,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
     }
 
     IGeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
-  }
-
-  function _getWithdrawalAmount(
-    address _sAsset,
-    address _user,
-    uint256 assetLiquidationThreshold,
-    uint256 healthFactor
-  ) internal view returns (uint256) {
-    // get user info
-    (
-      uint256 totalCollateralETH,
-      uint256 totalDebtETH,
-      ,
-      uint256 currentLiquidationThreshold,
-      ,
-
-    ) = LENDING_POOL.getUserAccountData(_user);
-
-    uint256 withdrawalAmountETH = (((totalCollateralETH * currentLiquidationThreshold) /
-      PercentageMath.PERCENTAGE_FACTOR -
-      totalDebtETH.wadMul(healthFactor)) * PercentageMath.PERCENTAGE_FACTOR) /
-      assetLiquidationThreshold;
-
-    return
-      Math.min(
-        IERC20(_sAsset).balanceOf(_user),
-        (withdrawalAmountETH * (10**DECIMALS)) / _getAssetPrice(COLLATERAL)
-      );
   }
 
   function _getDebtAmount(address _variableDebtTokenAddress, address _user)
@@ -623,35 +420,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
   /**
    * @param _zappingAsset - The stable coin address which will zap into lp token
    * @param _principal - The amount of the stable coin
-   * @param _iterations - Loop count
-   * @param _ltv - The loan to value of the asset in 4 decimals ex. 82.5% == 8250
-   * @param _borrowAsset - The borrowing stable asset address when leverage works
-   */
-  function zapLeverage(
-    address _zappingAsset,
-    uint256 _principal,
-    uint256 _iterations,
-    uint256 _ltv,
-    address _borrowAsset
-  ) external {
-    require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
-    require(ENABLED_STABLE_COINS[_zappingAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
-    require(ENABLED_STABLE_COINS[_borrowAsset], Errors.LS_STABLE_COIN_NOT_SUPPORTED);
-    require(
-      IERC20(_zappingAsset).balanceOf(msg.sender) >= _principal,
-      Errors.LS_SUPPLY_NOT_ALLOWED
-    );
-
-    IERC20(_zappingAsset).safeTransferFrom(msg.sender, address(this), _principal);
-
-    uint256 amount = _swapTo(_zappingAsset, _principal);
-
-    leverage(msg.sender, amount, _iterations, _ltv, _borrowAsset);
-  }
-
-  /**
-   * @param _zappingAsset - The stable coin address which will zap into lp token
-   * @param _principal - The amount of the stable coin
    * @param _leverage - Extra leverage value and must be greater than 0, ex. 300% = 300_00
    *                    principal + principal * leverage should be used as collateral
    * @param _slippage - Slippage valule to borrow enough asset by flashloan,
@@ -689,33 +457,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
       _borrowAsset,
       _flashLoanType
     );
-  }
-
-  function leverage(
-    address _user,
-    uint256 _principal,
-    uint256 _iterations,
-    uint256 _ltv,
-    address _borrowAsset
-  ) internal {
-    _supply(_principal, _user);
-
-    uint256 suppliedAmount = _principal;
-    uint256 borrowAmount = 0;
-    uint256 borrowAssetDecimals = IERC20Detailed(_borrowAsset).decimals();
-    for (uint256 i; i < _iterations; ++i) {
-      borrowAmount = _calcBorrowableAmount(suppliedAmount, _ltv, _borrowAsset, borrowAssetDecimals);
-      if (borrowAmount != 0) {
-        // borrow stable coin
-        _borrow(_borrowAsset, borrowAmount, _user);
-        // swap stable coin to collateral
-        suppliedAmount = _swapTo(_borrowAsset, borrowAmount);
-        // supply to LP
-        _supply(suppliedAmount, _user);
-      }
-    }
-
-    emit EnterPosition(_user, _principal, _iterations, _ltv, _borrowAsset);
   }
 
   function _leverageWithFlashloan(

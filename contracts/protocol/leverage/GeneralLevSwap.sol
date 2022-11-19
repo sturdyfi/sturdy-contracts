@@ -58,6 +58,11 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
 
   mapping(address => bool) ENABLED_STABLE_COINS;
 
+  //1 == not inExec
+  //2 == inExec;
+  //setting default to 1 to save some gas.
+  uint256 private _balancerFlashLoanLock = 1;
+
   /**
    * @param _asset The external asset ex. wFTM
    * @param _vault The deployed vault address
@@ -127,6 +132,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
     bytes memory userData
   ) external override {
     require(msg.sender == BALANCER_VAULT, Errors.LS_INVALID_CONFIGURATION);
+    require(_balancerFlashLoanLock == 2, Errors.LS_INVALID_CONFIGURATION);
 
     _executeOperation(address(tokens[0]), amounts[0], feeAmounts[0], userData);
 
@@ -242,7 +248,9 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
     } else {
       IERC20[] memory assets = new IERC20[](1);
       assets[0] = IERC20(_stableAsset);
+      _balancerFlashLoanLock = 2;
       IBalancerVault(BALANCER_VAULT).flashLoan(address(this), assets, amounts, params);
+      _balancerFlashLoanLock = 1;
     }
 
     // remained stable coin -> collateral
@@ -505,7 +513,9 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient {
     } else {
       IERC20[] memory assets = new IERC20[](1);
       assets[0] = IERC20(_borrowAsset);
+      _balancerFlashLoanLock = 2;
       IBalancerVault(BALANCER_VAULT).flashLoan(address(this), assets, amounts, params);
+      _balancerFlashLoanLock = 1;
     }
   }
 }

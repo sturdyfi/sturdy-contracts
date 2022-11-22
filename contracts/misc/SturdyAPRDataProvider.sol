@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma experimental ABIEncoderV2;
+pragma abicoder v2;
 
 import {IPriceOracle} from '../interfaces/IPriceOracle.sol';
 import {ILidoOracle} from '../interfaces/ILidoOracle.sol';

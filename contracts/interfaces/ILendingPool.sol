@@ -216,6 +216,14 @@ interface ILendingPool {
   function registerVault(address _vaultAddress) external payable;
 
   /**
+   * @dev Unregister the vault address
+   * - To check if the caller is vault for some functions
+   * - Caller is only LendingPoolConfigurator
+   * @param _vaultAddress The address of the Vault
+   **/
+  function unregisterVault(address _vaultAddress) external payable;
+
+  /**
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent aTokens owned
    * - E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
    * - Caller is anyone

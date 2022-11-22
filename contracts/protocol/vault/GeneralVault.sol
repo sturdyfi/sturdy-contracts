@@ -9,6 +9,7 @@ import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeabi
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {Address} from '../../dependencies/openzeppelin/contracts/Address.sol';
 
 /**
  * @title GeneralVault
@@ -82,6 +83,8 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _provider The address of the provider
    **/
   function initialize(ILendingPoolAddressesProvider _provider) external initializer {
+    require(address(_provider) != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     _addressesProvider = _provider;
   }
 
@@ -178,10 +181,7 @@ abstract contract GeneralVault is VersionedInitializable {
   function withdrawOnLiquidation(address _asset, uint256 _amount)
     external
     virtual
-    returns (uint256)
-  {
-    return _amount;
-  }
+    returns (uint256);
 
   /**
    * @dev Get yield based on strategy and re-deposit

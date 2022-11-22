@@ -10,6 +10,7 @@ pragma solidity ^0.8.0;
  *  - MATH = Math libraries
  *  - CT = Common errors between tokens (AToken, VariableDebtToken and StableDebtToken)
  *  - AT = AToken
+ *  - SAT = StaticAToken
  *  - SDT = StableDebtToken
  *  - VDT = VariableDebtToken
  *  - LP = LendingPool
@@ -139,7 +140,12 @@ library Errors {
   string internal constant LS_BORROWING_ASSET_NOT_SUPPORTED = '114'; // Doesn't support swap for the borrowing asset
   string internal constant LS_SUPPLY_NOT_ALLOWED = '115'; // no sufficient funds
   string internal constant LS_SUPPLY_FAILED = '116'; // Deposit fails when leverage works
-  string internal constant LS_REMOVE_ITERATION_OVER = '117'; // Withdraw iteration limit over
+  string internal constant SAT_INVALID_OWNER = '117';
+  string internal constant SAT_INVALID_EXPIRATION = '118';
+  string internal constant SAT_INVALID_SIGNATURE = '119';
+  string internal constant SAT_INVALID_DEPOSITOR = '120';
+  string internal constant SAT_INVALID_RECIPIENT = '121';
+  string internal constant SAT_ONLY_ONE_AMOUNT_FORMAT_ALLOWED = '122';
 
   enum CollateralManagerErrors {
     NO_ERROR,

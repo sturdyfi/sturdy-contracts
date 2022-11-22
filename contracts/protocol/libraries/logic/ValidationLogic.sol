@@ -273,91 +273,6 @@ library ValidationLogic {
   }
 
   /**
-   * @dev Validates a swap of borrow rate mode.
-   * @param reserve The reserve state on which the user is swapping the rate
-   * @param userConfig The user reserves configuration
-   * @param stableDebt The stable debt of the user
-   * @param variableDebt The variable debt of the user
-   * @param currentRateMode The rate mode of the borrow
-   */
-  function validateSwapRateMode(
-    DataTypes.ReserveData storage reserve,
-    DataTypes.UserConfigurationMap storage userConfig,
-    uint256 stableDebt,
-    uint256 variableDebt,
-    DataTypes.InterestRateMode currentRateMode
-  ) external view {
-    (bool isActive, bool isFrozen, , bool stableRateEnabled, ) = reserve.configuration.getFlags();
-
-    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
-    require(!isFrozen, Errors.VL_RESERVE_FROZEN);
-
-    if (currentRateMode == DataTypes.InterestRateMode.STABLE) {
-      require(stableDebt != 0, Errors.VL_NO_STABLE_RATE_LOAN_IN_RESERVE);
-    } else if (currentRateMode == DataTypes.InterestRateMode.VARIABLE) {
-      require(variableDebt != 0, Errors.VL_NO_VARIABLE_RATE_LOAN_IN_RESERVE);
-      /**
-       * user wants to swap to stable, before swapping we need to ensure that
-       * 1. stable borrow rate is enabled on the reserve
-       * 2. user is not trying to abuse the reserve by depositing
-       * more collateral than he is borrowing, artificially lowering
-       * the interest rate, borrowing at variable, and switching to stable
-       **/
-      require(stableRateEnabled, Errors.VL_STABLE_BORROWING_NOT_ENABLED);
-
-      require(
-        !userConfig.isUsingAsCollateral(reserve.id) ||
-          reserve.configuration.getLtv() == 0 ||
-          stableDebt + variableDebt > IERC20(reserve.aTokenAddress).balanceOf(msg.sender),
-        Errors.VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY
-      );
-    } else {
-      revert(Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED);
-    }
-  }
-
-  /**
-   * @dev Validates a stable borrow rate rebalance action
-   * @param reserve The reserve state on which the user is getting rebalanced
-   * @param reserveAddress The address of the reserve
-   * @param stableDebtToken The stable debt token instance
-   * @param variableDebtToken The variable debt token instance
-   * @param aTokenAddress The address of the aToken contract
-   */
-  function validateRebalanceStableBorrowRate(
-    DataTypes.ReserveData storage reserve,
-    address reserveAddress,
-    IERC20 stableDebtToken,
-    IERC20 variableDebtToken,
-    address aTokenAddress
-  ) external view {
-    (bool isActive, , , , ) = reserve.configuration.getFlags();
-
-    require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
-
-    //if the usage ratio is below 95%, no rebalances are needed
-    uint256 totalDebt = (stableDebtToken.totalSupply() + variableDebtToken.totalSupply())
-      .wadToRay();
-    uint256 availableLiquidity = IERC20(reserveAddress).balanceOf(aTokenAddress).wadToRay();
-    uint256 usageRatio = totalDebt == 0 ? 0 : totalDebt.rayDiv(availableLiquidity + totalDebt);
-
-    //if the liquidity rate is below REBALANCE_UP_THRESHOLD of the max variable APR at 95% usage,
-    //then we allow rebalancing of the stable rate positions.
-
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
-    uint256 maxVariableBorrowRate = IReserveInterestRateStrategy(
-      reserve.interestRateStrategyAddress
-    ).getMaxVariableBorrowRate();
-
-    require(
-      usageRatio >= REBALANCE_UP_USAGE_RATIO_THRESHOLD &&
-        currentLiquidityRate <=
-        maxVariableBorrowRate.percentMul(REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD),
-      Errors.LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET
-    );
-  }
-
-  /**
    * @dev Validates the action of setting an asset as collateral
    * @param reserve The state of the reserve that the user is enabling or disabling as collateral
    * @param reserveAddress The address of the reserve
@@ -380,6 +295,10 @@ library ValidationLogic {
 
     require(underlyingBalance != 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
+    if (useAsCollateral) {
+      require(reserve.configuration.getCollateralEnabled(), Errors.LPC_INVALID_CONFIGURATION);
+    }
+
     require(
       useAsCollateral ||
         GenericLogic.balanceDecreaseAllowed(
@@ -394,15 +313,6 @@ library ValidationLogic {
         ),
       Errors.VL_DEPOSIT_ALREADY_IN_USE
     );
-  }
-
-  /**
-   * @dev Validates a flashloan action
-   * @param assets The assets being flashborrowed
-   * @param amounts The amounts for each asset being borrowed
-   **/
-  function validateFlashloan(address[] memory assets, uint256[] memory amounts) internal pure {
-    require(assets.length == amounts.length, Errors.VL_INCONSISTENT_FLASHLOAN_PARAMS);
   }
 
   /**

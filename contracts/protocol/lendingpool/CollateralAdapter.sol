@@ -4,6 +4,7 @@ pragma abicoder v2;
 
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {ICollateralAdapter} from '../../interfaces/ICollateralAdapter.sol';
 import {VersionedInitializable} from '../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 
@@ -13,7 +14,7 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
  * @author Sturdy
  **/
 
-contract CollateralAdapter is VersionedInitializable {
+contract CollateralAdapter is VersionedInitializable, ICollateralAdapter {
   modifier onlyAdmin() {
     require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
     _;

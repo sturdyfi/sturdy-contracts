@@ -6,7 +6,6 @@ import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 import {VersionedInitializable} from '../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {ISwapRouter} from '../interfaces/ISwapRouter.sol';
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';

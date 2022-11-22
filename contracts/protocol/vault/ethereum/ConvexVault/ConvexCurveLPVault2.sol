@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
+pragma experimental ABIEncoderV2;
 
 import {IncentiveVault} from '../../IncentiveVault.sol';
 import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -19,11 +19,11 @@ interface IRewards {
 }
 
 /**
- * @title ConvexCurveLPVault
+ * @title ConvexCurveLPVault2
  * @notice Curve LP Token Vault by using Convex on Ethereum
  * @author Sturdy
  **/
-contract ConvexCurveLPVault is IncentiveVault {
+contract ConvexCurveLPVault2 is IncentiveVault {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 

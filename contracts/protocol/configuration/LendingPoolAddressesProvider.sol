@@ -18,6 +18,7 @@ import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddres
  **/
 contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider {
   string private _marketId;
+  // id -> proxyAddress
   mapping(bytes32 => address) private _addresses;
 
   bytes32 private constant LENDING_POOL = 'LENDING_POOL';

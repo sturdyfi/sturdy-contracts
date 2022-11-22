@@ -46,7 +46,7 @@ const calcTotalBorrowAmount = async (
   collateral: tEthereumAddress,
   amount: BigNumberish,
   ltv: BigNumberish,
-  iterations: number,
+  leverage: BigNumberish,
   borrowingAsset: tEthereumAddress
 ) => {
   const { oracle } = testEnv;
@@ -56,10 +56,12 @@ const calcTotalBorrowAmount = async (
   const amountToBorrow = await convertToCurrencyDecimals(
     borrowingAsset,
     new BigNumber(amount.toString())
+      .multipliedBy(leverage.toString())
+      .div(10000)
+      .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
       .div(10000)
-      .multipliedBy(iterations)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
   );
@@ -83,9 +85,8 @@ const depositToLendingPool = async (
 makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage2 = '100';
-  const slippage1 = '100';
-  const iterations = 3;
+  const slippage = 200;
+  const leverage = 36000;
   let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
@@ -108,7 +109,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           BAL_WSTETH_WETH_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           weth.address
         )
       ).toString();
@@ -135,7 +136,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, weth.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -160,10 +161,10 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage1,
-          slippage2,
+          slippage,
           weth.address,
-          aAURAWSTETH_WETH.address
+          aAURAWSTETH_WETH.address,
+          1
         );
 
       const afterBalanceOfBorrower = await BAL_WSTETH_WETH_LP.balanceOf(borrower.address);
@@ -177,9 +178,8 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
 makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage2 = '100';
-  const slippage1 = '100';
-  const iterations = 3;
+  const slippage = 200;
+  const leverage = 36000;
   let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
@@ -202,7 +202,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           BAL_WSTETH_WETH_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           weth.address
         )
       ).toString();
@@ -229,7 +229,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, weth.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -257,10 +257,10 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage1,
-          slippage2,
+          slippage,
           weth.address,
-          aAURAWSTETH_WETH.address
+          aAURAWSTETH_WETH.address,
+          1
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -291,10 +291,10 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage1,
-          slippage2,
+          slippage,
           weth.address,
-          aAURAWSTETH_WETH.address
+          aAURAWSTETH_WETH.address,
+          1
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -325,10 +325,10 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage1,
-          slippage2,
+          slippage,
           weth.address,
-          aAURAWSTETH_WETH.address
+          aAURAWSTETH_WETH.address,
+          1
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -359,10 +359,10 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage1,
-          slippage2,
+          slippage,
           weth.address,
-          aAURAWSTETH_WETH.address
+          aAURAWSTETH_WETH.address,
+          1
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);

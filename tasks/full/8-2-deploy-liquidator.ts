@@ -1,6 +1,6 @@
 import { task } from 'hardhat/config';
 import { ConfigNames } from '../../helpers/configuration';
-import { deployFTMLiquidator, deployETHLiquidator } from '../../helpers/contracts-deployments';
+import { deployETHLiquidator } from '../../helpers/contracts-deployments';
 import { getLendingPoolAddressesProvider } from '../../helpers/contracts-getters';
 import { eNetwork } from '../../helpers/types';
 
@@ -18,10 +18,7 @@ task(`full:deploy-liquidator`, `Deploys the ${CONTRACT_NAME} contract`)
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const addressesProvider = await getLendingPoolAddressesProvider();
-    const liquidator =
-      network == 'ftm'
-        ? await deployFTMLiquidator([addressesProvider.address], verify)
-        : await deployETHLiquidator([addressesProvider.address], verify);
+    const liquidator = await deployETHLiquidator([addressesProvider.address], verify);
 
     console.log(`${CONTRACT_NAME}.address`, liquidator.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

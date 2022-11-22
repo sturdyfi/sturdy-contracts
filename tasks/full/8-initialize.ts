@@ -14,33 +14,7 @@ import { exit } from 'process';
 import {
   getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
-  getYearnVault,
-  getYearnWETHVault,
-  getYearnWBTCVault,
-  getYearnBOOVault,
-  getTombFtmBeefyVault,
-  getTombMiMaticBeefyVault,
-  getYearnFBEETSVault,
-  getYearnLINKVault,
-  getBeefyETHVault,
-  getBeefyMIM2CRVVault,
-  getYearnCRVVault,
-  getYearnSPELLVault,
-  getBasedMiMaticBeefyVault,
-  getYearnRETHWstETHVault,
-  getConvexRocketPoolETHVault,
-  getConvexFRAX3CRVVault,
-  getConvexSTETHVault,
-  getConvexDOLA3CRVVault,
-  getFXSStableYieldDistribution,
-  getConvexMIM3CRVVault,
-  getConvexDAIUSDCUSDTSUSDVault,
   getVariableYieldDistribution,
-  getConvexHBTCWBTCVault,
-  getConvexIronBankVault,
-  getConvexFRAXUSDCVault,
-  getAuraDAIUSDCUSDTVault,
-  getConvexTUSDFRAXBPVault,
   getConvexETHSTETHVault,
   getAuraWSTETHWETHVault,
 } from '../../helpers/contracts-getters';
@@ -78,59 +52,15 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       }
 
       const treasuryAddress = await getTreasuryAddress(poolConfig);
-      const yieldAddresses =
-        pool == ConfigNames.Sturdy
-          ? {
-              // yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
-              // cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
-              cvxFRAX_3CRV: (await getConvexFRAX3CRVVault()).address,
-              // cvxSTECRV: (await getConvexSTETHVault()).address,
-              // cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,
-              cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
-              cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
-              // cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
-              cvxIRON_BANK: (await getConvexIronBankVault()).address,
-              cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
-              auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
-              cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
-            }
-          : pool == ConfigNames.Fantom
-          ? {
-              yvWFTM: (await getYearnVault()).address,
-              yvWETH: (await getYearnWETHVault()).address,
-              yvWBTC: (await getYearnWBTCVault()).address,
-              yvBOO: (await getYearnBOOVault()).address,
-              mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
-              mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
-              mooBASED_MIMATIC: (await getBasedMiMaticBeefyVault()).address,
-              yvfBEETS: (await getYearnFBEETSVault()).address,
-              // mooWETH: (await getBeefyETHVault()).address,
-              // mooMIM_2CRV: (await getBeefyMIM2CRVVault()).address,
-              yvLINK: (await getYearnLINKVault()).address,
-              yvCRV: (await getYearnCRVVault()).address,
-              yvSPELL: (await getYearnSPELLVault()).address,
-            }
-          : {
-              cvxETH_STETH: (await getConvexETHSTETHVault()).address,
-              auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
-            };
+      const yieldAddresses = {
+        cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+        auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
+      };
 
-      const yieldDistributor =
-        pool == ConfigNames.Sturdy
-          ? {
-              // cvxFRAX_3CRV: (await getFXSStableYieldDistribution()).address,
-              cvxFRAX_3CRV: (await getVariableYieldDistribution()).address,
-              cvxIRON_BANK: (await getVariableYieldDistribution()).address,
-              cvxFRAX_USDC: (await getVariableYieldDistribution()).address,
-              cvxMIM_3CRV: (await getVariableYieldDistribution()).address,
-              cvxDAI_USDC_USDT_SUSD: (await getVariableYieldDistribution()).address,
-              auraDAI_USDC_USDT: (await getVariableYieldDistribution()).address,
-              cvxTUSD_FRAXBP: (await getVariableYieldDistribution()).address,
-            }
-          : {
-              cvxETH_STETH: (await getVariableYieldDistribution()).address,
-              auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
-            };
+      const yieldDistributor = {
+        cvxETH_STETH: (await getVariableYieldDistribution()).address,
+        auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
+      };
 
       await initReservesByHelper(
         ReservesConfig,

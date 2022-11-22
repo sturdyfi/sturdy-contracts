@@ -7,34 +7,20 @@ import {
   eNetwork,
 } from './types';
 import { getEthersSignersAddresses, getParamPerPool } from './contracts-helpers';
-import SturdyConfig from '../markets/sturdy';
-import FantomConfig from '../markets/ftm';
 import EthConfig from '../markets/eth';
-import { CommonsConfig } from '../markets/sturdy/commons';
 import { DRE, filterMapBy } from './misc-utils';
 import { tEthereumAddress } from './types';
 import { getParamPerNetwork } from './contracts-helpers';
-import { deployWETHMocked } from './contracts-deployments';
-import { getYearnVault } from './contracts-getters';
 import { ZERO_ADDRESS } from './constants';
 
 export enum ConfigNames {
-  Commons = 'Commons',
-  Sturdy = 'Sturdy',
-  Fantom = 'Fantom',
   Eth = 'Eth',
 }
 
 export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
   switch (configName) {
-    case ConfigNames.Sturdy:
-      return SturdyConfig;
-    case ConfigNames.Fantom:
-      return FantomConfig;
     case ConfigNames.Eth:
       return EthConfig;
-    case ConfigNames.Commons:
-      return CommonsConfig;
     default:
       throw new Error(`Unsupported pool configuration: ${Object.values(ConfigNames)}`);
   }
@@ -47,12 +33,6 @@ export const loadPoolConfig = (configName: ConfigNames): PoolConfiguration => {
 export const getReservesConfigByPool = (pool: SturdyPools): iMultiPoolsAssets<IReserveParams> =>
   getParamPerPool<iMultiPoolsAssets<IReserveParams>>(
     {
-      [SturdyPools.proto]: {
-        ...SturdyConfig.ReservesConfig,
-      },
-      [SturdyPools.fantom]: {
-        ...FantomConfig.ReservesConfig,
-      },
       [SturdyPools.eth]: {
         ...EthConfig.ReservesConfig,
       },
@@ -107,8 +87,8 @@ export const getWrappedNativeTokenAddress = async (config: ICommonConfiguration)
   if (currentNetwork.includes('main')) {
     throw new Error('WETH not set at mainnet configuration.');
   }
-  const weth = await deployWETHMocked();
-  return weth.address;
+
+  return ZERO_ADDRESS;
 };
 
 export const getLendingRateOracles = (poolConfig: ICommonConfiguration) => {

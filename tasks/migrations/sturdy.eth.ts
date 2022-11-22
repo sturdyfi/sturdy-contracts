@@ -66,15 +66,6 @@ task('sturdy:eth', 'Deploy development enviroment')
     console.log('8-6. Deploy APR Data Provider');
     await DRE.run('full:eth:deploy-sturdy-apr-data-provider', { pool: POOL_NAME, verify });
 
-    // if (verify) {
-    //   printContracts();
-    //   console.log('9. Veryfing contracts');
-    //   await DRE.run('verify:general', { all: true, pool: POOL_NAME });
-
-    //   console.log('10. Veryfing aTokens and debtTokens');
-    //   await DRE.run('verify:tokens', { pool: POOL_NAME });
-    // }
-
     if (usingTenderly()) {
       const postDeployHead = DRE.tenderlyNetwork.getHead();
       const postDeployFork = DRE.tenderlyNetwork.getFork();

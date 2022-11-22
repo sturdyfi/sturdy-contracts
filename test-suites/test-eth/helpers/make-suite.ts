@@ -11,7 +11,6 @@ import {
   getSturdyProtocolDataProvider,
   getAToken,
   getLendingPoolConfiguratorProxy,
-  getPriceOracle,
   getLendingPoolAddressesProviderRegistry,
   getSturdyIncentivesController,
   getFirstSigner,
@@ -22,6 +21,7 @@ import {
   getSturdyAPRDataProvider,
   getLeverageSwapManager,
   getAuraWSTETHWETHVault,
+  getSturdyOracle,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool } from '../../../types/LendingPool';
@@ -34,7 +34,6 @@ import chai from 'chai';
 // @ts-ignore
 import bignumberChai from 'chai-bignumber';
 import { almostEqual } from './almost-equal';
-import { PriceOracle } from '../../../types/PriceOracle';
 import { LendingPoolAddressesProvider } from '../../../types/LendingPoolAddressesProvider';
 import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPoolAddressesProviderRegistry';
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
@@ -44,18 +43,18 @@ import {
   StakedTokenIncentivesController,
   YieldManager,
   VariableYieldDistribution,
-  ConvexCurveLPVault,
   SturdyInternalAsset,
   LeverageSwapManager,
   SturdyAPRDataProvider,
   SturdyInternalAssetFactory,
   AuraBalancerLPVault,
+  ConvexCurveLPVault2,
+  SturdyOracle,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { parseEther } from '@ethersproject/units';
-import { ILiquidator } from '../../../types/ILiquidator';
 import EthConfig from '../../../markets/eth';
 import { IERC20Detailed } from '../../../types/IERC20Detailed';
 import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
@@ -73,11 +72,11 @@ export interface TestEnv {
   emergencyUser: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
-  convexETHSTETHVault: ConvexCurveLPVault;
+  convexETHSTETHVault: ConvexCurveLPVault2;
   auraWSTETHWETHVault: AuraBalancerLPVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
-  oracle: PriceOracle;
+  oracle: SturdyOracle;
   helpersContract: SturdyProtocolDataProvider;
   weth: MintableERC20;
   aWeth: AToken;
@@ -90,7 +89,6 @@ export interface TestEnv {
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
-  liquidator: ILiquidator;
   yieldManager: YieldManager;
   variableYieldDistributor: VariableYieldDistribution;
   CRV: IERC20Detailed;
@@ -111,12 +109,12 @@ const testEnv: TestEnv = {
   emergencyUser: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
-  convexETHSTETHVault: {} as ConvexCurveLPVault,
+  convexETHSTETHVault: {} as ConvexCurveLPVault2,
   auraWSTETHWETHVault: {} as AuraBalancerLPVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
-  oracle: {} as PriceOracle,
+  oracle: {} as SturdyOracle,
   weth: {} as MintableERC20,
   aWeth: {} as AToken,
   aCVXETH_STETH: {} as AToken,
@@ -127,7 +125,6 @@ const testEnv: TestEnv = {
   aurawsteth_weth: {} as SturdyInternalAsset,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
-  liquidator: {} as ILiquidator,
   yieldManager: {} as YieldManager,
   variableYieldDistributor: {} as VariableYieldDistribution,
   CRV: {} as IERC20Detailed,
@@ -197,7 +194,7 @@ export async function initializeMakeSuite() {
   testEnv.variableYieldDistributor = await getVariableYieldDistribution();
   testEnv.configurator = await getLendingPoolConfiguratorProxy();
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
-  testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
+  testEnv.oracle = await getSturdyOracle(await testEnv.addressesProvider.getPriceOracle());
   testEnv.aprProvider = await getSturdyAPRDataProvider();
 
   if (process.env.FORK) {

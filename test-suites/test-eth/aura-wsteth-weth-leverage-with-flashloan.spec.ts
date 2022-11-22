@@ -129,7 +129,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const principalAmount = 0;
       const stableCoin = weth.address;
       await expect(
-        wstethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+        wstethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 1)
       ).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
@@ -137,7 +137,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const principalAmount = 10;
       const stableCoin = aWeth.address;
       await expect(
-        wstethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+        wstethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 1)
       ).to.be.revertedWith('114');
     });
     it('should be reverted when collateral is not enough', async () => {
@@ -148,7 +148,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       await expect(
         wstethwethLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 1)
       ).to.be.revertedWith('115');
     });
   });
@@ -195,7 +195,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, BAL_WSTETH_WETH_LP.address, LPAmount);
@@ -260,7 +260,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, BAL_WSTETH_WETH_LP.address, LPAmount);
@@ -325,7 +325,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, BAL_WSTETH_WETH_LP.address, LPAmount);

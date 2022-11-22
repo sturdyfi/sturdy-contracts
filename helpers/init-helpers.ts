@@ -30,8 +30,7 @@ import {
   deployGenericVariableDebtToken,
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
-import * as sturdyReserveConfigs from '../markets/sturdy/reservesConfigs';
-import * as fantomReserveConfigs from '../markets/ftm/reservesConfigs';
+import * as ethReserveConfigs from '../markets/eth/reservesConfigs';
 import { ConfigNames, loadPoolConfig } from './configuration';
 
 export const chooseATokenDeployment = (id: eContractid) => {
@@ -47,10 +46,8 @@ export const chooseATokenDeployment = (id: eContractid) => {
 
 export const getReserveConfigs = (pool: string) => {
   switch (pool) {
-    case ConfigNames.Sturdy:
-      return sturdyReserveConfigs;
-    case ConfigNames.Fantom:
-      return fantomReserveConfigs;
+    case ConfigNames.Eth:
+      return ethReserveConfigs;
     default:
       throw Error(`Not exist reserveConfigs`);
   }
@@ -272,84 +269,6 @@ export const initReservesByHelper = async (
   }
 
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
-
-  if (tokenAddresses['cvxFRAX_3CRV']) {
-    //FXSStableYieldDistributor config
-    let response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
-    const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
-    await FXSStableYieldDistributor.configureAssets(
-      [response.aTokenAddress],
-      [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
-    );
-
-    //CRV VariableYieldDistributor config
-    response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxFRAX_3CRV']
-    );
-  }
-
-  if (tokenAddresses['cvxIRON_BANK']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxIRON_BANK);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxIRON_BANK']
-    );
-  }
-
-  if (tokenAddresses['cvxFRAX_USDC']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxFRAX_USDC);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxFRAX_USDC']
-    );
-  }
-
-  if (tokenAddresses['cvxMIM_3CRV']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxMIM_3CRV);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxMIM_3CRV']
-    );
-  }
-
-  if (tokenAddresses['cvxDAI_USDC_USDT_SUSD']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxDAI_USDC_USDT_SUSD);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxDAI_USDC_USDT_SUSD']
-    );
-  }
-
-  if (tokenAddresses['auraDAI_USDC_USDT']) {
-    //BAL VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.auraDAI_USDC_USDT);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['auraDAI_USDC_USDT']
-    );
-  }
-
-  if (tokenAddresses['cvxTUSD_FRAXBP']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxTUSD_FRAXBP);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxTUSD_FRAXBP']
-    );
-  }
 
   if (tokenAddresses['cvxETH_STETH']) {
     //CRV VariableYieldDistributor config

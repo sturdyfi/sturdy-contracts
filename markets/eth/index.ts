@@ -60,6 +60,10 @@ export const EthConfig: IEthConfiguration = {
     [eEthereumNetwork.main]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
     [eEthereumNetwork.tenderly]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',
   },
+  CurveswapAddressProvider: {
+    [eEthereumNetwork.main]: '0x0000000022D53366457F9d5E68Ec105046FC4383',
+    [eEthereumNetwork.tenderly]: '0x0000000022D53366457F9d5E68Ec105046FC4383',
+  }
 };
 
 export default EthConfig;

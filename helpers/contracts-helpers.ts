@@ -12,19 +12,14 @@ import {
   iParamsPerNetwork,
   iParamsPerPool,
   eNetwork,
-  iEthereumParamsPerNetwork,
-  iFantomParamsPerNetwork,
-  eFantomNetwork,
+  iEthParamsPerNetwork,
 } from './types';
-import { MintableERC20 } from '../types/MintableERC20';
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
-
-export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
   const currentNetwork = DRE.network.name;
@@ -138,56 +133,25 @@ export const linkBytecode = (artifact: BuidlerArtifact | Artifact, libraries: an
 };
 
 export const getParamPerNetwork = <T>(param: iParamsPerNetwork<T>, network: eNetwork) => {
-  const { main, ropsten, kovan, coverage, buidlerevm, tenderly, goerli } =
-    param as iEthereumParamsPerNetwork<T>;
-  const { ftm, ftm_test, tenderlyFTM } = param as iFantomParamsPerNetwork<T>;
+  const { main, tenderly } = param as iEthParamsPerNetwork<T>;
   if (process.env.FORK) {
     return param[process.env.FORK as eNetwork] as T;
   }
 
   switch (network) {
-    case eEthereumNetwork.coverage:
-      return coverage;
-    case eEthereumNetwork.buidlerevm:
-      return buidlerevm;
-    case eEthereumNetwork.hardhat:
-      return buidlerevm;
-    case eEthereumNetwork.geth:
-      return buidlerevm;
-    case eEthereumNetwork.localhost:
-      return buidlerevm;
-    case eEthereumNetwork.kovan:
-      return kovan;
-    case eEthereumNetwork.ropsten:
-      return ropsten;
     case eEthereumNetwork.main:
       return main;
     case eEthereumNetwork.tenderly:
       return tenderly;
-    case eEthereumNetwork.goerli:
-      return goerli;
-    case eFantomNetwork.ftm:
-      return ftm;
-    case eFantomNetwork.tenderlyFTM:
-      return tenderlyFTM;
-    case eFantomNetwork.ftm_test:
-      return ftm_test;
   }
 };
 
-export const getParamPerPool = <T>(
-  { proto, fantom, eth }: iParamsPerPool<T>,
-  pool: SturdyPools
-) => {
+export const getParamPerPool = <T>({ eth }: iParamsPerPool<T>, pool: SturdyPools) => {
   switch (pool) {
-    case SturdyPools.proto:
-      return proto;
-    case SturdyPools.fantom:
-      return fantom;
     case SturdyPools.eth:
       return eth;
     default:
-      return proto;
+      return eth;
   }
 };
 

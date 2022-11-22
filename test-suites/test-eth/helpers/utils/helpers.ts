@@ -3,10 +3,10 @@ import { ReserveData, UserReserveData } from './interfaces';
 import {
   getLendingRateOracle,
   getIErc20Detailed,
-  getMintableERC20,
   getAToken,
   getStableDebtToken,
   getVariableDebtToken,
+  getMintableERC20,
 } from '../../../../helpers/contracts-getters';
 import { eNetwork, tEthereumAddress } from '../../../../helpers/types';
 import BigNumber from 'bignumber.js';
@@ -106,21 +106,6 @@ export const getUserData = async (
     stableRateLastUpdated: new BigNumber(userData.stableRateLastUpdated.toString()),
     walletBalance,
   };
-};
-
-export const getReserveAddressFromSymbol = async (symbol: string) => {
-  const config = loadPoolConfig(ConfigNames.Sturdy);
-  const network = <eNetwork>DRE.network.name;
-  const reserveAssets = getParamPerNetwork(config.ReserveAssets, network);
-
-  const token = await getMintableERC20(
-    reserveAssets[symbol] || (await getDb().get(`${symbol}.${DRE.network.name}`).value()).address
-  );
-
-  if (!token) {
-    throw `Could not find instance for contract ${symbol}`;
-  }
-  return token.address;
 };
 
 const getATokenUserData = async (

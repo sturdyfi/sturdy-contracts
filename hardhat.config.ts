@@ -3,7 +3,7 @@ import fs from 'fs';
 import { HardhatNetworkForkingUserConfig, HardhatUserConfig } from 'hardhat/types';
 // @ts-ignore
 import { accounts } from './test-wallets.js';
-import { eEthereumNetwork, eFantomNetwork, eNetwork } from './helpers/types';
+import { eEthereumNetwork, eNetwork } from './helpers/types';
 import { BUIDLEREVM_CHAINID, COVERAGE_CHAINID } from './helpers/buidler-constants';
 import {
   NETWORKS_RPC_URL,
@@ -100,15 +100,8 @@ const buidlerConfig: HardhatUserConfig = {
       url: 'http://localhost:8555',
       chainId: COVERAGE_CHAINID,
     },
-    kovan: getCommonNetworkConfig(eEthereumNetwork.kovan, 42),
-    ropsten: getCommonNetworkConfig(eEthereumNetwork.ropsten, 3),
     main: getCommonNetworkConfig(eEthereumNetwork.main, 1),
     tenderly: getCommonNetworkConfig(eEthereumNetwork.tenderly, 1),   //Mainnet
-    // tenderly: getCommonNetworkConfig(eFantomNetwork.tenderlyFTM, 250),   // Fantom
-    geth: getCommonNetworkConfig(eEthereumNetwork.hardhat, 1337),
-    goerli: getCommonNetworkConfig(eEthereumNetwork.goerli, 5),
-    ftm: getCommonNetworkConfig(eFantomNetwork.ftm, 250),
-    ftm_test: getCommonNetworkConfig(eFantomNetwork.ftm_test, 4002),
     hardhat: {
       hardfork: 'london',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,

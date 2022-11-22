@@ -1,36 +1,7 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployCollateralAdapter } from '../../helpers/contracts-deployments';
-import {
-  getLidoVault,
-  getTombFtmBeefyVault,
-  getYearnBOOVault,
-  getYearnFBEETSVault,
-  getYearnVault,
-  getYearnWBTCVault,
-  getYearnWETHVault,
-  getYearnLINKVault,
-  getBeefyETHVault,
-  getBeefyMIM2CRVVault,
-  getYearnCRVVault,
-  getYearnSPELLVault,
-  getBasedMiMaticBeefyVault,
-  getTombMiMaticBeefyVault,
-  getYearnRETHWstETHVault,
-  getConvexRocketPoolETHVault,
-  getConvexFRAX3CRVVault,
-  getConvexSTETHVault,
-  getConvexDOLA3CRVVault,
-  getConvexMIM3CRVVault,
-  getConvexDAIUSDCUSDTSUSDVault,
-  getConvexHBTCWBTCVault,
-  getConvexIronBankVault,
-  getConvexFRAXUSDCVault,
-  getAuraDAIUSDCUSDTVault,
-  getConvexTUSDFRAXBPVault,
-  getConvexETHSTETHVault,
-  getAuraWSTETHWETHVault,
-} from '../../helpers/contracts-getters';
+import { getConvexETHSTETHVault, getAuraWSTETHWETHVault } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
 import {
@@ -38,9 +9,7 @@ import {
   eNetwork,
   ICommonConfiguration,
   IEthConfiguration,
-  IFantomConfiguration,
   IReserveParams,
-  ISturdyConfiguration,
 } from '../../helpers/types';
 
 const CONTRACT_NAME = 'CollateralAdapter';
@@ -59,132 +28,18 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
     const poolConfig = loadPoolConfig(pool);
     const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
     const reserveAssets = getParamPerNetwork(ReserveAssets, network);
-    const reserveExternalAssets =
-      pool == ConfigNames.Sturdy
-        ? {
-            stETH: getParamPerNetwork((poolConfig as ISturdyConfiguration).Lido, network),
-            // yvRETH_WSTETH: getParamPerNetwork(
-            //   (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
-            //   network
-            // ),
-            // cvxRETH_WSTETH: getParamPerNetwork(
-            //   (poolConfig as ISturdyConfiguration).RETH_WSTETH_LP,
-            //   network
-            // ),
-            cvxFRAX_3CRV: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).FRAX_3CRV_LP,
-              network
-            ),
-            // cvxSTECRV: getParamPerNetwork((poolConfig as ISturdyConfiguration).STECRV_LP, network),
-            // cvxDOLA_3CRV: getParamPerNetwork(
-            //   (poolConfig as ISturdyConfiguration).DOLA_3CRV_LP,
-            //   network
-            // ),
-            cvxMIM_3CRV: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).MIM_3CRV_LP,
-              network
-            ),
-            cvxDAI_USDC_USDT_SUSD: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).DAI_USDC_USDT_SUSD_LP,
-              network
-            ),
-            // cvxHBTC_WBTC: getParamPerNetwork(
-            //   (poolConfig as ISturdyConfiguration).HBTC_WBTC_LP,
-            //   network
-            // ),
-            cvxIRON_BANK: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).IRON_BANK_LP,
-              network
-            ),
-            cvxFRAX_USDC: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).FRAX_USDC_LP,
-              network
-            ),
-            auraDAI_USDC_USDT: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).BAL_DAI_USDC_USDT_LP,
-              network
-            ),
-            cvxTUSD_FRAXBP: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).TUSD_FRAXBP_LP,
-              network
-            ),
-          }
-        : pool == ConfigNames.Fantom
-        ? {
-            yvWFTM: getParamPerNetwork(poolConfig.WFTM, network),
-            yvWETH: getParamPerNetwork(poolConfig.WETH, network),
-            yvWBTC: getParamPerNetwork(poolConfig.WBTC, network),
-            yvBOO: getParamPerNetwork((poolConfig as IFantomConfiguration).BOO, network),
-            mooTOMB_FTM: getParamPerNetwork(
-              (poolConfig as IFantomConfiguration).TOMB_FTM_LP,
-              network
-            ),
-            mooTOMB_MIMATIC: getParamPerNetwork(
-              (poolConfig as IFantomConfiguration).TOMB_MIMATIC_LP,
-              network
-            ),
-            mooBASED_MIMATIC: getParamPerNetwork(
-              (poolConfig as IFantomConfiguration).BASED_MIMATIC_LP,
-              network
-            ),
-            yvfBEETS: getParamPerNetwork((poolConfig as IFantomConfiguration).fBEETS, network),
-            yvLINK: getParamPerNetwork((poolConfig as IFantomConfiguration).LINK, network),
-            // mooWETH: getParamPerNetwork((poolConfig as IFantomConfiguration).WETH, network),
-            // mooMIM_2CRV: getParamPerNetwork(
-            //   (poolConfig as IFantomConfiguration).MIM_2CRV_LP,
-            //   network
-            // ),
-            yvCRV: getParamPerNetwork((poolConfig as IFantomConfiguration).CRV, network),
-            yvSPELL: getParamPerNetwork((poolConfig as IFantomConfiguration).SPELL, network),
-          }
-        : {
-            cvxETH_STETH: getParamPerNetwork(
-              (poolConfig as IEthConfiguration).ETH_STETH_LP,
-              network
-            ),
-            auraWSTETH_WETH: getParamPerNetwork(
-              (poolConfig as IEthConfiguration).BAL_WSTETH_WETH_LP,
-              network
-            ),
-          };
+    const reserveExternalAssets = {
+      cvxETH_STETH: getParamPerNetwork((poolConfig as IEthConfiguration).ETH_STETH_LP, network),
+      auraWSTETH_WETH: getParamPerNetwork(
+        (poolConfig as IEthConfiguration).BAL_WSTETH_WETH_LP,
+        network
+      ),
+    };
 
-    const acceptableVaults =
-      pool == ConfigNames.Sturdy
-        ? {
-            stETH: (await getLidoVault()).address,
-            // yvRETH_WSTETH: (await getYearnRETHWstETHVault()).address,
-            // cvxRETH_WSTETH: (await getConvexRocketPoolETHVault()).address,
-            cvxFRAX_3CRV: (await getConvexFRAX3CRVVault()).address,
-            // cvxSTECRV: (await getConvexSTETHVault()).address,
-            // cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,
-            cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
-            cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
-            // cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
-            cvxIRON_BANK: (await getConvexIronBankVault()).address,
-            cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
-            auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
-            cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
-          }
-        : pool == ConfigNames.Fantom
-        ? {
-            yvWFTM: (await getYearnVault()).address,
-            yvWETH: (await getYearnWETHVault()).address,
-            yvWBTC: (await getYearnWBTCVault()).address,
-            yvBOO: (await getYearnBOOVault()).address,
-            mooTOMB_FTM: (await getTombFtmBeefyVault()).address,
-            mooTOMB_MIMATIC: (await getTombMiMaticBeefyVault()).address,
-            mooBASED_MIMATIC: (await getBasedMiMaticBeefyVault()).address,
-            yvfBEETS: (await getYearnFBEETSVault()).address,
-            yvLINK: (await getYearnLINKVault()).address,
-            // mooWETH: (await getBeefyETHVault()).address,
-            // mooMIM_2CRV: (await getBeefyMIM2CRVVault()).address,
-            yvCRV: (await getYearnCRVVault()).address,
-            yvSPELL: (await getYearnSPELLVault()).address,
-          }
-        : {
-            cvxETH_STETH: (await getConvexETHSTETHVault()).address,
-            auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
-          };
+    const acceptableVaults = {
+      cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+      auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
+    };
 
     const reserves = Object.entries(ReservesConfig).filter(
       ([_, { aTokenImpl }]) => aTokenImpl === eContractid.ATokenForCollateral

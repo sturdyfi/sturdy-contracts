@@ -118,17 +118,9 @@ export const CommonsConfig: ICommonConfiguration = {
     [eEthereumNetwork.main]: '',
     [eEthereumNetwork.tenderly]: '',
   },
-  WFTM: {
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderly]: '',
-  },
   WETH: {
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     [eEthereumNetwork.tenderly]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-  },
-  WBTC: {
-    [eEthereumNetwork.main]: '',
-    [eEthereumNetwork.tenderly]: '',
   },
   WrappedNativeToken: {
     [eEthereumNetwork.main]: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',

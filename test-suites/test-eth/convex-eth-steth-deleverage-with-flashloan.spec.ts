@@ -7,6 +7,7 @@ import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
 import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
+import { mint } from './helpers/mint';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -15,30 +16,6 @@ const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAd
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
   return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
-};
-
-const mint = async (
-  reserveSymbol: string,
-  amount: string,
-  user: SignerWithAddress,
-  testEnv: TestEnv
-) => {
-  const { weth, ETH_STETH_LP } = testEnv;
-  const ethers = (DRE as any).ethers;
-  let ownerAddress;
-  let token;
-
-  if (reserveSymbol == 'WETH') {
-    ownerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
-    token = weth;
-  } else if (reserveSymbol == 'ETH_STETH_LP') {
-    ownerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
-    token = ETH_STETH_LP;
-  }
-
-  await impersonateAccountsHardhat([ownerAddress]);
-  const signer = await ethers.provider.getSigner(ownerAddress);
-  await waitForTx(await token.connect(signer).transfer(user.address, amount));
 };
 
 const calcTotalBorrowAmount = async (
@@ -114,11 +91,11 @@ makeSuite('ETHSTETH Deleverage with Flashloan', (testEnv) => {
         )
       ).toString();
       // Depositor deposits WETH to Lending Pool
-      await mint('WETH', amountToDelegate, depositor, testEnv);
+      await mint('WETH', amountToDelegate, depositor);
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('ETH_STETH_LP', principalAmount, borrower, testEnv);
+      await mint('ETH_STETH_LP', principalAmount, borrower);
       await ETH_STETH_LP.connect(borrower.signer).approve(ethstethLevSwap.address, principalAmount);
 
       // approve delegate borrow
@@ -207,11 +184,11 @@ makeSuite('ETHSTETH Deleverage with Flashloan', (testEnv) => {
         )
       ).toString();
       // Depositor deposits WETH to Lending Pool
-      await mint('WETH', amountToDelegate, depositor, testEnv);
+      await mint('WETH', amountToDelegate, depositor);
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('ETH_STETH_LP', principalAmount, borrower, testEnv);
+      await mint('ETH_STETH_LP', principalAmount, borrower);
       await ETH_STETH_LP.connect(borrower.signer).approve(ethstethLevSwap.address, principalAmount);
 
       // approve delegate borrow

@@ -10,10 +10,8 @@ import {
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
-  getPriceOracle,
   getStableDebtToken,
   getSturdyIncentivesController,
-  getSturdyOracle,
   getVariableDebtToken,
 } from './../../helpers/contracts-getters';
 import { deployDefaultReserveInterestRateStrategy } from './../../helpers/contracts-deployments';

@@ -8,10 +8,8 @@ import { expect } from 'chai';
 import { ethers } from 'ethers';
 import { RateMode, ProtocolErrors } from '../../helpers/types';
 import { makeSuite, TestEnv } from './helpers/make-suite';
-import { CommonsConfig } from '../../markets/sturdy/commons';
 import { DRE, impersonateAccountsHardhat } from '../../helpers/misc-utils';
 
-const STURDY_REFERRAL = CommonsConfig.ProtocolGlobalParams.SturdyReferral;
 
 makeSuite('AToken: Transfer', (testEnv: TestEnv) => {
   const {

@@ -7,6 +7,7 @@ import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
 import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
+import { mint } from './helpers/mint';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -15,30 +16,6 @@ const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAd
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
   return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
-};
-
-const mint = async (
-  reserveSymbol: string,
-  amount: string,
-  user: SignerWithAddress,
-  testEnv: TestEnv
-) => {
-  const { weth, BAL_WSTETH_WETH_LP } = testEnv;
-  const ethers = (DRE as any).ethers;
-  let ownerAddress;
-  let token;
-
-  if (reserveSymbol == 'WETH') {
-    ownerAddress = '0x8EB8a3b98659Cce290402893d0123abb75E3ab28';
-    token = weth;
-  } else if (reserveSymbol == 'BAL_WSTETH_WETH_LP') {
-    ownerAddress = '0x8627425d8b3c16d16683a1e1e17ff00a2596e05f';
-    token = BAL_WSTETH_WETH_LP;
-  }
-
-  await impersonateAccountsHardhat([ownerAddress]);
-  const signer = await ethers.provider.getSigner(ownerAddress);
-  await waitForTx(await token.connect(signer).transfer(user.address, amount));
 };
 
 const calcTotalBorrowAmount = async (
@@ -114,11 +91,11 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         )
       ).toString();
       // Depositor deposits WETH to Lending Pool
-      await mint('WETH', amountToDelegate, depositor, testEnv);
+      await mint('WETH', amountToDelegate, depositor);
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower, testEnv);
+      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower);
       await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(wstethwethLevSwap.address, principalAmount);
 
       // approve delegate borrow
@@ -136,7 +113,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -164,7 +141,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           slippage,
           weth.address,
           aAURAWSTETH_WETH.address,
-          1
+          0
         );
 
       const afterBalanceOfBorrower = await BAL_WSTETH_WETH_LP.balanceOf(borrower.address);
@@ -207,11 +184,11 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
         )
       ).toString();
       // Depositor deposits WETH to Lending Pool
-      await mint('WETH', amountToDelegate, depositor, testEnv);
+      await mint('WETH', amountToDelegate, depositor);
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower, testEnv);
+      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower);
       await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(wstethwethLevSwap.address, principalAmount);
 
       // approve delegate borrow
@@ -229,7 +206,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
       // leverage
       await wstethwethLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 1);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 0);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -260,7 +237,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           slippage,
           weth.address,
           aAURAWSTETH_WETH.address,
-          1
+          0
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -294,7 +271,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           slippage,
           weth.address,
           aAURAWSTETH_WETH.address,
-          1
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -328,7 +305,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           slippage,
           weth.address,
           aAURAWSTETH_WETH.address,
-          1
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -362,13 +339,13 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
           slippage,
           weth.address,
           aAURAWSTETH_WETH.address,
-          1
+          0
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
       afterBalanceOfBorrower = await BAL_WSTETH_WETH_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),

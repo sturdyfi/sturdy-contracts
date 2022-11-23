@@ -8,9 +8,9 @@ import {
   ZERO_ADDRESS,
 } from '../../helpers/constants';
 
-import { rateStrategyStableTwo } from '../../markets/sturdy/rateStrategies';
+import { rateStrategyWETH } from '../../markets/eth/rateStrategies';
 
-import { strategyDAI } from '../../markets/sturdy/reservesConfigs';
+import { strategyWETH } from '../../markets/eth/reservesConfigs';
 import { AToken, DefaultReserveInterestRateStrategy, MintableERC20 } from '../../types';
 import BigNumber from 'bignumber.js';
 import './helpers/utils/math';
@@ -31,13 +31,13 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
     strategyInstance = await deployDefaultReserveInterestRateStrategy(
       [
         addressesProvider.address,
-        rateStrategyStableTwo.optimalUtilizationRate,
-        rateStrategyStableTwo.baseVariableBorrowRate,
-        rateStrategyStableTwo.variableRateSlope1,
-        rateStrategyStableTwo.variableRateSlope2,
-        rateStrategyStableTwo.stableRateSlope1,
-        rateStrategyStableTwo.stableRateSlope2,
-        rateStrategyStableTwo.capacity,
+        rateStrategyWETH.optimalUtilizationRate,
+        rateStrategyWETH.baseVariableBorrowRate,
+        rateStrategyWETH.variableRateSlope1,
+        rateStrategyWETH.variableRateSlope2,
+        rateStrategyWETH.stableRateSlope1,
+        rateStrategyWETH.stableRateSlope2,
+        rateStrategyWETH.capacity,
         ZERO_ADDRESS,
       ],
       false
@@ -51,12 +51,12 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
       2: currentVariableBorrowRate,
     } = await strategyInstance[
       'calculateInterestRates(address,address,uint256,uint256,uint256,uint256,uint256,uint256)'
-    ](weth.address, aWeth.address, 0, 0, 0, 0, 0, strategyDAI.reserveFactor);
+    ](weth.address, aWeth.address, 0, 0, 0, 0, 0, strategyWETH.reserveFactor);
 
     expect(currentLiquidityRate.toString()).to.be.equal('0', 'Invalid liquidity rate');
     expect(currentStableBorrowRate.toString()).to.be.equal('0', 'Invalid stable rate');
     expect(currentVariableBorrowRate.toString()).to.be.equal(
-      rateStrategyStableTwo.baseVariableBorrowRate,
+      rateStrategyWETH.baseVariableBorrowRate,
       'Invalid variable rate'
     );
   });
@@ -76,17 +76,17 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
       '0',
       '800000000000000000',
       '0',
-      strategyDAI.reserveFactor
+      strategyWETH.reserveFactor
     );
 
-    const expectedVariableRate = new BigNumber(rateStrategyStableTwo.baseVariableBorrowRate).plus(
-      rateStrategyStableTwo.variableRateSlope1
+    const expectedVariableRate = new BigNumber(rateStrategyWETH.baseVariableBorrowRate).plus(
+      rateStrategyWETH.variableRateSlope1
     );
 
     expect(currentLiquidityRate.toString()).to.be.equal(
       expectedVariableRate
         .times(0.8)
-        .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
+        .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyWETH.reserveFactor))
         .toFixed(0),
       'Invalid liquidity rate'
     );
@@ -114,16 +114,16 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
       '0',
       '800000000000000000',
       '0',
-      strategyDAI.reserveFactor
+      strategyWETH.reserveFactor
     );
 
-    const expectedVariableRate = new BigNumber(rateStrategyStableTwo.baseVariableBorrowRate)
-      .plus(rateStrategyStableTwo.variableRateSlope1)
-      .plus(rateStrategyStableTwo.variableRateSlope2);
+    const expectedVariableRate = new BigNumber(rateStrategyWETH.baseVariableBorrowRate)
+      .plus(rateStrategyWETH.variableRateSlope1)
+      .plus(rateStrategyWETH.variableRateSlope2);
 
     expect(currentLiquidityRate.toString()).to.be.equal(
       expectedVariableRate
-        .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
+        .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyWETH.reserveFactor))
         .toFixed(0),
       'Invalid liquidity rate'
     );
@@ -151,17 +151,17 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
       '400000000000000000',
       '400000000000000000',
       '100000000000000000000000000',
-      strategyDAI.reserveFactor
+      strategyWETH.reserveFactor
     );
 
-    const expectedVariableRate = new BigNumber(rateStrategyStableTwo.baseVariableBorrowRate)
-      .plus(rateStrategyStableTwo.variableRateSlope1)
-      .plus(rateStrategyStableTwo.variableRateSlope2);
+    const expectedVariableRate = new BigNumber(rateStrategyWETH.baseVariableBorrowRate)
+      .plus(rateStrategyWETH.variableRateSlope1)
+      .plus(rateStrategyWETH.variableRateSlope2);
 
     const expectedLiquidityRate = new BigNumber(
       currentVariableBorrowRate.add('100000000000000000000000000').div(2).toString()
     )
-      .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyDAI.reserveFactor))
+      .percentMul(new BigNumber(PERCENTAGE_FACTOR).minus(strategyWETH.reserveFactor))
       .toFixed(0);
 
     expect(currentLiquidityRate.toString()).to.be.equal(

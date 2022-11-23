@@ -284,8 +284,8 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     await yieldManager.distributeYield(0, 2, slippage, paths);
 
     expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
-    expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);
-    console.log('APR: ', (Number(await aprProvider.APR(weth.address, true)) / 1e18) * 100);
+    expect((await aprProvider.APR(weth.address)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(weth.address)) / 1e18) * 100);
   });
   it('Distribute yield BAL', async () => {
     const {
@@ -325,8 +325,8 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     await yieldManager.distributeYield(2, 1, slippage, paths);
 
     expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
-    expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);
-    console.log('APR: ', (Number(await aprProvider.APR(weth.address, true)) / 1e18) * 100);
+    expect((await aprProvider.APR(weth.address)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(weth.address)) / 1e18) * 100);
   });
   it('Distribute yield AURA', async () => {
     const {
@@ -366,7 +366,7 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     await yieldManager.distributeYield(3, 1, slippage, paths);
 
     expect((await aWeth.balanceOf(depositor1.address)).gt(depositWETHAmount)).to.be.equal(true);
-    expect((await aprProvider.APR(weth.address, true)).gt(0)).to.be.equal(true);
-    console.log('APR: ', (Number(await aprProvider.APR(weth.address, true)) / 1e18) * 100);
+    expect((await aprProvider.APR(weth.address)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(weth.address)) / 1e18) * 100);
   });
 });

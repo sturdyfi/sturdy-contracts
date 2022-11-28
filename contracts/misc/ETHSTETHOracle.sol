@@ -4,12 +4,13 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import './interfaces/IOracle.sol';
+import './interfaces/IOracleValidate.sol';
 import '../interfaces/ICurvePool.sol';
 
 /**
  * @dev Oracle contract for ETHSTETH LP Token
  */
-contract ETHSTETHOracle is IOracle {
+contract ETHSTETHOracle is IOracle, IOracleValidate {
   ICurvePool private constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
 
   /**
@@ -35,5 +36,12 @@ contract ETHSTETHOracle is IOracle {
   /// @inheritdoc IOracle
   function latestAnswer() external view override returns (int256 rate) {
     return int256(_get());
+  }
+
+  // Check the oracle (re-entrancy)
+  /// @inheritdoc IOracleValidate
+  function check() external payable {
+    uint256[2] memory amounts;
+    ETHSTETH.remove_liquidity(0, amounts);
   }
 }

@@ -78,7 +78,8 @@ task(`full:eth:deploy-aura-wsteth-weth-vault`, `Deploys the ${CONTRACT_NAME} con
           BALWSTETHWETHOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).BAL,
           AURAOracleAddress,
-        ]
+        ],
+        [false, false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

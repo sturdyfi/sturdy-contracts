@@ -27,6 +27,10 @@ interface ICurvePool {
     uint256 _min_received
   ) external;
 
+  function remove_liquidity(uint256 _amount, uint256[2] memory _min_amounts)
+    external
+    returns (uint256);
+
   /**
    * @dev Index values can be found via the `coins` public getter method
    * @param i Index value for the coin to send

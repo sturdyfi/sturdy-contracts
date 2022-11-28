@@ -238,7 +238,14 @@ export const deployLendingRateOracle = async (verify?: boolean) =>
   );
 
 export const deploySturdyOracle = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
+  args: [
+    tEthereumAddress[],
+    tEthereumAddress[],
+    boolean[],
+    tEthereumAddress,
+    tEthereumAddress,
+    string
+  ],
   verify?: boolean
 ) =>
   withSaveAndVerify(

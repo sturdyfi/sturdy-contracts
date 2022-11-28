@@ -93,7 +93,7 @@ export const deployContract = async <ContractType extends Contract>(
 export const withSaveAndVerify = async <ContractType extends Contract>(
   instance: ContractType,
   id: string,
-  args: (string | string[])[],
+  args: (string | string[] | boolean[])[],
   verify?: boolean
 ): Promise<ContractType> => {
   await waitForTx(instance.deployTransaction);
@@ -324,7 +324,7 @@ export const buildParaSwapLiquiditySwapParams = (
 export const verifyContract = async (
   id: string,
   instance: Contract,
-  args: (string | string[])[]
+  args: (string | string[] | boolean[])[]
 ) => {
   if (usingTenderly()) {
     await verifyAtTenderly(id, instance);

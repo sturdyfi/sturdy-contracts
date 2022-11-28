@@ -12,7 +12,7 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  IBalancerVault public constant WSTETHWETH =
+  IBalancerVault public constant BALANCER_VAULT =
     IBalancerVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
   address internal constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
@@ -53,11 +53,11 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     });
 
     // approve
-    IERC20(WETH).safeApprove(address(WSTETHWETH), 0);
-    IERC20(WETH).safeApprove(address(WSTETHWETH), _amount);
+    IERC20(WETH).safeApprove(address(BALANCER_VAULT), 0);
+    IERC20(WETH).safeApprove(address(BALANCER_VAULT), _amount);
 
     // join pool
-    WSTETHWETH.joinPool(POOLID, address(this), address(this), request);
+    BALANCER_VAULT.joinPool(POOLID, address(this), address(this), request);
 
     return IERC20(COLLATERAL).balanceOf(address(this));
   }
@@ -83,7 +83,7 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     });
 
     // exit pool
-    WSTETHWETH.exitPool(POOLID, address(this), payable(address(this)), request);
+    BALANCER_VAULT.exitPool(POOLID, address(this), payable(address(this)), request);
 
     return IERC20(WETH).balanceOf(address(this));
   }

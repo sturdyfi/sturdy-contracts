@@ -13,7 +13,7 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
  */
 contract BALWSTETHWETHOracle is IOracle {
   IBalancerStablePool private constant BALWSTETHWETH =
-    IBalancerStablePool(0x06Df3b2bbB68adc8B0e302443692037ED9f91b42);
+    IBalancerStablePool(0x32296969Ef14EB0c6d29669C550D4a0449130230);
 
   IWstETH private constant WSTETH = IWstETH(0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
 

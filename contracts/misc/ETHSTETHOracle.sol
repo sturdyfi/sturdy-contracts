@@ -13,6 +13,10 @@ import '../interfaces/ICurvePool.sol';
 contract ETHSTETHOracle is IOracle, IOracleValidate {
   ICurvePool private constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
 
+  receive() external payable {
+    require(msg.value == 0);
+  }
+
   /**
    * @dev Get LP Token Price
    */

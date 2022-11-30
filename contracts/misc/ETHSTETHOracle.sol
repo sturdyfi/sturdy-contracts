@@ -6,16 +6,15 @@ pragma abicoder v2;
 import './interfaces/IOracle.sol';
 import './interfaces/IOracleValidate.sol';
 import '../interfaces/ICurvePool.sol';
+import '../interfaces/ICurvePoolAdmin.sol';
 
 /**
  * @dev Oracle contract for ETHSTETH LP Token
  */
 contract ETHSTETHOracle is IOracle, IOracleValidate {
   ICurvePool private constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
-
-  receive() external payable {
-    require(msg.value == 0);
-  }
+  ICurvePoolAdmin private constant ADMIN =
+    ICurvePoolAdmin(0xeCb456EA5365865EbAb8a2661B0c503410e9B347);
 
   /**
    * @dev Get LP Token Price
@@ -44,8 +43,7 @@ contract ETHSTETHOracle is IOracle, IOracleValidate {
 
   // Check the oracle (re-entrancy)
   /// @inheritdoc IOracleValidate
-  function check() external payable {
-    uint256[2] memory amounts;
-    ETHSTETH.remove_liquidity(0, amounts);
+  function check() external {
+    ADMIN.withdraw_admin_fees(address(ETHSTETH));
   }
 }

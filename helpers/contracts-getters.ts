@@ -415,6 +415,15 @@ export const getVariableYieldDistribution = async (address?: tEthereumAddress) =
     await getFirstSigner()
   );
 
+export const getCollateralAdapterImpl = async (address?: tEthereumAddress) =>
+  await CollateralAdapterFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.CollateralAdapterImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getCollateralAdapter = async (address?: tEthereumAddress) =>
   await CollateralAdapterFactory.connect(
     address ||
@@ -457,6 +466,15 @@ export const getDeployVaultHelper = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getYieldManagerImpl = async (address?: tEthereumAddress) =>
+  await YieldManagerFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YieldManagerImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYieldManager = async (address?: tEthereumAddress) =>
   await YieldManagerFactory.connect(
     address ||
@@ -480,6 +498,15 @@ export const getBalancerswapAdapterAddress = async () => {
   const db = await getDb().get(`${eContractid.BalancerswapAdapter}.${DRE.network.name}`).value();
   return db?.address;
 };
+
+export const getLeverageSwapManagerImpl = async (address?: tEthereumAddress) =>
+  await LeverageSwapManagerFactory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.LeverageSwapManagerImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
 
 export const getLeverageSwapManager = async (address?: tEthereumAddress) =>
   await LeverageSwapManagerFactory.connect(

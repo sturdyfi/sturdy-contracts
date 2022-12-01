@@ -33,9 +33,6 @@ task('sturdy:eth', 'Deploy development enviroment')
     console.log('5. Deploy Incentives impl');
     await DRE.run('full:deploy-incentives-impl', { pool: POOL_NAME, verify });
 
-    // console.log('5-1. Deploy FXS Stable Yield Distributor');
-    // await DRE.run('full:deploy-FXS-stable-yield-distributor', { pool: POOL_NAME, verify });
-
     console.log('5-2. Deploy Variable Yield Distributor');
     await DRE.run('full:deploy-variable-yield-distributor', { pool: POOL_NAME, verify });
 

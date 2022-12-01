@@ -24,11 +24,11 @@ task('full:deploy-incentives-impl', 'Incentives controller implementation deploy
       // const sturdyToken = await deploySturdyToken(verify);
       // console.log(`- Incentives sturdy token proxy address ${sturdyToken.address}`);
 
-      const stableYieldDistributorImpl = await deployStableYieldDistributionImpl(
-        [EMISSION_EXECUTOR],
-        verify
-      );
-      console.log(`- Stable Yield Distributor Impl address ${stableYieldDistributorImpl.address}`);
+      // const stableYieldDistributorImpl = await deployStableYieldDistributionImpl(
+      //   [EMISSION_EXECUTOR],
+      //   verify
+      // );
+      // console.log(`- Stable Yield Distributor Impl address ${stableYieldDistributorImpl.address}`);
       const variableYieldDistributorImpl = await deployVariableYieldDistributionImpl(
         [EMISSION_EXECUTOR],
         verify

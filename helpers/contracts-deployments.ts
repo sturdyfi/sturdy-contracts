@@ -629,9 +629,7 @@ export const deploySturdyToken = async (verify?: boolean) => {
   );
 
   const addressesProvider = await getLendingPoolAddressesProvider();
-  // await waitForTx(
-  //   await incentiveTokenImpl.initialize(addressesProvider.address)
-  // )
+  await waitForTx(await incentiveTokenImpl.initialize(addressesProvider.address));
   await waitForTx(await addressesProvider.setIncentiveTokenImpl(incentiveTokenImpl.address));
   const incentiveTokenProxyAddress = await addressesProvider.getIncentiveToken();
   await insertContractAddressInDb(eContractid.SturdyToken, incentiveTokenProxyAddress);

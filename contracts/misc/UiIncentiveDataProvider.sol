@@ -69,6 +69,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             uint256 aEmissionPerSecond,
             uint256 aIncentivesLastUpdateTimestamp
           ) {
+            uint8 decimal;
+            if (aRewardToken != address(0)) decimal = IERC20Detailed(aRewardToken).decimals();
             reserveIncentiveData.aIncentiveData = IncentiveData(
               aEmissionPerSecond,
               aIncentivesLastUpdateTimestamp,
@@ -77,7 +79,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
               baseData.aTokenAddress,
               aRewardToken,
               address(aTokenIncentiveController),
-              IERC20Detailed(aRewardToken).decimals(),
+              decimal,
               aTokenIncentiveController.PRECISION()
             );
           } catch (
@@ -100,6 +102,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             uint256 sEmissionPerSecond,
             uint256 sIncentivesLastUpdateTimestamp
           ) {
+            uint8 decimal;
+            if (sRewardToken != address(0)) decimal = IERC20Detailed(sRewardToken).decimals();
             reserveIncentiveData.sIncentiveData = IncentiveData(
               sEmissionPerSecond,
               sIncentivesLastUpdateTimestamp,
@@ -108,7 +112,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
               baseData.stableDebtTokenAddress,
               sRewardToken,
               address(sTokenIncentiveController),
-              IERC20Detailed(sRewardToken).decimals(),
+              decimal,
               sTokenIncentiveController.PRECISION()
             );
           } catch (
@@ -132,6 +136,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             uint256 vEmissionPerSecond,
             uint256 vIncentivesLastUpdateTimestamp
           ) {
+            uint8 decimal;
+            if (vRewardToken != address(0)) decimal = IERC20Detailed(vRewardToken).decimals();
             reserveIncentiveData.vIncentiveData = IncentiveData(
               vEmissionPerSecond,
               vIncentivesLastUpdateTimestamp,
@@ -140,7 +146,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
               baseData.variableDebtTokenAddress,
               vRewardToken,
               address(vTokenIncentiveController),
-              IERC20Detailed(vRewardToken).decimals(),
+              decimal,
               vTokenIncentiveController.PRECISION()
             );
           } catch (
@@ -264,7 +270,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           aUserIncentiveData.tokenAddress = baseData.aTokenAddress;
           aUserIncentiveData.rewardTokenAddress = aRewardToken;
           aUserIncentiveData.incentiveControllerAddress = address(aTokenIncentiveController);
-          aUserIncentiveData.rewardTokenDecimals = IERC20Detailed(aRewardToken).decimals();
+          if (aRewardToken != address(0))
+            aUserIncentiveData.rewardTokenDecimals = IERC20Detailed(aRewardToken).decimals();
         }
       } catch (
         bytes memory /*lowLevelData*/
@@ -288,7 +295,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           vUserIncentiveData.tokenAddress = baseData.variableDebtTokenAddress;
           vUserIncentiveData.rewardTokenAddress = vRewardToken;
           vUserIncentiveData.incentiveControllerAddress = address(vTokenIncentiveController);
-          vUserIncentiveData.rewardTokenDecimals = IERC20Detailed(vRewardToken).decimals();
+          if (vRewardToken != address(0))
+            vUserIncentiveData.rewardTokenDecimals = IERC20Detailed(vRewardToken).decimals();
         }
       } catch (
         bytes memory /*lowLevelData*/
@@ -312,7 +320,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           sUserIncentiveData.tokenAddress = baseData.stableDebtTokenAddress;
           sUserIncentiveData.rewardTokenAddress = sRewardToken;
           sUserIncentiveData.incentiveControllerAddress = address(sTokenIncentiveController);
-          sUserIncentiveData.rewardTokenDecimals = IERC20Detailed(sRewardToken).decimals();
+          if (sRewardToken != address(0))
+            sUserIncentiveData.rewardTokenDecimals = IERC20Detailed(sRewardToken).decimals();
         }
       } catch (
         bytes memory /*lowLevelData*/

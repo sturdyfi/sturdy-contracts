@@ -19,10 +19,10 @@ FORK=main yarn hardhat node
 
 - Next run the following task to deploy all smart contracts
 ```
-yarn sturdy:evm:fork:mainnet:migration
+yarn sturdy_eth:evm:fork:mainnet:migration
 ```
 
 - For test, run the following task to have a test of sample contract on the localhost.
 ```
-yarn test
+yarn test:eth
 ```

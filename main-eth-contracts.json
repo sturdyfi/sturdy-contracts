@@ -291,11 +291,11 @@
   },
   "BALWSTETHWETHOracle": {
     "main": {
-      "address": "0x65e16810CBD33B6b187e7E77f0Ae662233b5181e",
+      "address": "0x89a6EB70763cd22ace8Fdb18719d481DDCeEDa06",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x65e16810CBD33B6b187e7E77f0Ae662233b5181e",
+      "address": "0x89a6EB70763cd22ace8Fdb18719d481DDCeEDa06",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

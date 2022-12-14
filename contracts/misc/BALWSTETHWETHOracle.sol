@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import './interfaces/IOracle.sol';
-import '../interfaces/IWstETH.sol';
+import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/IBalancerStablePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 
@@ -14,14 +14,15 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 contract BALWSTETHWETHOracle is IOracle {
   IBalancerStablePool private constant BALWSTETHWETH =
     IBalancerStablePool(0x32296969Ef14EB0c6d29669C550D4a0449130230);
-
-  IWstETH private constant WSTETH = IWstETH(0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
+  IChainlinkAggregator private constant WSTETH =
+    IChainlinkAggregator(0x86392dC19c0b719886221c78AB11eb8Cf5c52812);
 
   /**
    * @dev Get LP Token Price
    */
   function _get() internal view returns (uint256) {
-    uint256 minValue = Math.min(WSTETH.stEthPerToken(), 1e18);
+    (, int256 wstETHPrice, , , ) = WSTETH.latestRoundData();
+    uint256 minValue = Math.min(uint256(wstETHPrice), 1e18);
 
     return (BALWSTETHWETH.getRate() * minValue) / 1e18;
   }

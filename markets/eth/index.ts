@@ -23,13 +23,13 @@ export const EthConfig: IEthConfiguration = {
   ReserveAssets: {
     [eEthereumNetwork.main]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-      cvxETH_STETH: '',
-      auraWSTETH_WETH: '',
+      cvxETH_STETH: '0x901247D08BEbFD449526Da92941B35D756873Bcd',
+      auraWSTETH_WETH: '0x10aA9eea35A3102Cc47d4d93Bc0BA9aE45557746',
     },
     [eEthereumNetwork.tenderly]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-      cvxETH_STETH: '',
-      auraWSTETH_WETH: '',
+      cvxETH_STETH: '0x901247D08BEbFD449526Da92941B35D756873Bcd',
+      auraWSTETH_WETH: '0x10aA9eea35A3102Cc47d4d93Bc0BA9aE45557746',
     },
   },
   CRV: {

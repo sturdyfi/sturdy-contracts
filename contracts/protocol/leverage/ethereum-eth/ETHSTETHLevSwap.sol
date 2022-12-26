@@ -6,6 +6,8 @@ import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {IWETH} from '../../../misc/interfaces/IWETH.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 interface ICurvePool {
   function coins(uint256) external view returns (address);
@@ -23,6 +25,7 @@ interface ICurvePool {
 
 contract ETHSTETHLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
+  using PercentageMath for uint256;
 
   ICurvePool public constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
 
@@ -47,25 +50,56 @@ contract ETHSTETHLevSwap is GeneralLevSwap {
   }
 
   /// borrowing asset -> ETHSTETH
-  function _swapTo(address _borrowingAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(
+    address _borrowingAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     // WETH -> ETH
     IWETH(WETH).withdraw(_amount);
 
     uint256[2] memory amountsAdded;
     amountsAdded[0] = _amount;
     ETHSTETH.add_liquidity{value: _amount}(amountsAdded, 0);
-    return IERC20(COLLATERAL).balanceOf(address(this));
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    require(
+      collateralAmount >= _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
+    return collateralAmount;
   }
 
   /// ETHSTETH -> borrowing asset
-  function _swapFrom(address _borrowingAsset) internal override returns (uint256) {
+  function _swapFrom(address _borrowingAsset, uint256 _slippage)
+    internal
+    override
+    returns (uint256)
+  {
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     uint256 minAmount = ETHSTETH.calc_withdraw_one_coin(collateralAmount, 0);
+    require(
+      minAmount >= _getMinAmount(collateralAmount, _slippage, _getAssetPrice(COLLATERAL), 1e18),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
     uint256 ethAmount = ETHSTETH.remove_liquidity_one_coin(collateralAmount, 0, minAmount);
 
     // ETH -> WETH
     IWETH(WETH).deposit{value: ethAmount}();
 
     return ethAmount;
+  }
+
+  function _getMinAmount(
+    uint256 _amountToSwap,
+    uint256 _slippage,
+    uint256 _fromAssetPrice,
+    uint256 _toAssetPrice
+  ) internal view returns (uint256) {
+    return
+      ((_amountToSwap * _fromAssetPrice) / _toAssetPrice).percentMul(
+        PercentageMath.PERCENTAGE_FACTOR - _slippage
+      );
   }
 }

@@ -150,7 +150,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
       (bool, uint256, uint256, address, address)
     );
     if (isEnterPosition) {
-      _enterPositionWithFlashloan(arg1, arg2, asset, borrowAmount, fee);
+      _enterPositionWithFlashloan(arg0, arg1, arg2, asset, borrowAmount, fee);
     } else {
       _withdrawWithFlashloan(arg0, arg1, arg2, arg3, asset, borrowAmount);
     }
@@ -257,7 +257,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     }
 
     // remained stable coin -> collateral
-    _swapTo(_borrowingAsset, IERC20(_borrowingAsset).balanceOf(address(this)));
+    _swapTo(_borrowingAsset, IERC20(_borrowingAsset).balanceOf(address(this)), _slippage);
 
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     if (collateralAmount > _requiredAmount) {
@@ -270,6 +270,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
   }
 
   function _enterPositionWithFlashloan(
+    uint256 _slippage,
     uint256 _minAmount,
     address _user,
     address _borrowingAsset,
@@ -277,7 +278,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     uint256 _fee
   ) internal {
     //swap borrowing asset to collateral
-    uint256 collateralAmount = _swapTo(_borrowingAsset, _borrowedAmount);
+    uint256 collateralAmount = _swapTo(_borrowingAsset, _borrowedAmount, _slippage);
     require(collateralAmount >= _minAmount, Errors.LS_SUPPLY_FAILED);
 
     //deposit collateral
@@ -332,7 +333,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     _remove(withdrawalAmount, _slippage, _user);
 
     // collateral -> borrowing asset
-    _swapFrom(_borrowingAsset);
+    _swapFrom(_borrowingAsset, _slippage);
   }
 
   function _supply(uint256 _amount, address _user) internal {
@@ -391,19 +392,28 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     return availableBorrowsAsset;
   }
 
-  function _swapTo(address, uint256) internal virtual returns (uint256) {
+  function _swapTo(
+    address,
+    uint256,
+    uint256
+  ) internal virtual returns (uint256) {
     return 0;
   }
 
-  function _swapFrom(address) internal virtual returns (uint256) {
+  function _swapFrom(address, uint256) internal virtual returns (uint256) {
     return 0;
   }
 
   /**
    * @param _zappingAsset - The stable coin address which will zap into lp token
    * @param _principal - The amount of collateral
+   * @param _slippage - Slippage value to zap deposit, Must be greater than 0%.
    */
-  function zapDeposit(address _zappingAsset, uint256 _principal) external nonReentrant {
+  function zapDeposit(
+    address _zappingAsset,
+    uint256 _principal,
+    uint256 _slippage
+  ) external nonReentrant {
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(ENABLED_BORROWING_ASSET[_zappingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(
@@ -413,7 +423,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
 
     IERC20(_zappingAsset).safeTransferFrom(msg.sender, address(this), _principal);
 
-    uint256 suppliedAmount = _swapTo(_zappingAsset, _principal);
+    uint256 suppliedAmount = _swapTo(_zappingAsset, _principal, _slippage);
     // supply to LP
     _supply(suppliedAmount, msg.sender);
   }
@@ -423,7 +433,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
    * @param _principal - The amount of the stable coin
    * @param _leverage - Extra leverage value and must be greater than 0, ex. 300% = 300_00
    *                    principal + principal * leverage should be used as collateral
-   * @param _slippage - Slippage valule to borrow enough asset by flashloan,
+   * @param _slippage - Slippage value to borrow enough asset by flashloan,
    *                    Must be greater than 0%.
    *                    Borrowing amount = principal * leverage * slippage
    * @param _borrowAsset - The borrowing stable coin address when leverage works
@@ -448,7 +458,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
 
     IERC20(_zappingAsset).safeTransferFrom(msg.sender, address(this), _principal);
 
-    uint256 collateralAmount = _swapTo(_zappingAsset, _principal);
+    uint256 collateralAmount = _swapTo(_zappingAsset, _principal, _slippage);
 
     _leverageWithFlashloan(
       msg.sender,
@@ -485,7 +495,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     );
     bytes memory params = abi.encode(
       true, /*enterPosition*/
-      0,
+      _slippage,
       minCollateralAmount,
       _user,
       address(0)

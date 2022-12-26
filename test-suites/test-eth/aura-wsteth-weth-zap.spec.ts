@@ -68,6 +68,7 @@ const calcETHAmount = async (testEnv: TestEnv, asset: tEthereumAddress, amount: 
 
 makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
   const LPAmount = '2';
+  const slippage = 100;
   let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
@@ -90,13 +91,13 @@ makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
       const { weth } = testEnv;
       const principalAmount = 0;
       const stableCoin = weth.address;
-      await expect(wstethwethLevSwap.zapDeposit(stableCoin, principalAmount)).to.be.revertedWith('113');
+      await expect(wstethwethLevSwap.zapDeposit(stableCoin, principalAmount, slippage)).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
       const { aWeth } = testEnv;
       const principalAmount = 10;
       const stableCoin = aWeth.address;
-      await expect(wstethwethLevSwap.zapDeposit(stableCoin, principalAmount)).to.be.revertedWith('114');
+      await expect(wstethwethLevSwap.zapDeposit(stableCoin, principalAmount, slippage)).to.be.revertedWith('114');
     });
     it('should be reverted when collateral is not enough', async () => {
       const { users, weth } = testEnv;
@@ -104,7 +105,7 @@ makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
       const principalAmount = await convertToCurrencyDecimals(weth.address, '1000');
       const stableCoin = weth.address;
       await expect(
-        wstethwethLevSwap.connect(borrower.signer).zapDeposit(stableCoin, principalAmount)
+        wstethwethLevSwap.connect(borrower.signer).zapDeposit(stableCoin, principalAmount, slippage)
       ).to.be.revertedWith('115');
     });
   });
@@ -126,7 +127,7 @@ makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
       await weth.connect(borrower.signer).approve(wstethwethLevSwap.address, principalAmount);
 
       // zap deposit
-      await wstethwethLevSwap.connect(borrower.signer).zapDeposit(weth.address, principalAmount);
+      await wstethwethLevSwap.connect(borrower.signer).zapDeposit(weth.address, principalAmount, slippage);
 
       expect(await weth.balanceOf(borrower.address)).to.be.equal(0);
       expect(await aurawsteth_weth.balanceOf(auraWSTETHWETHVault.address)).to.be.equal(
@@ -146,7 +147,7 @@ makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
 makeSuite('WSTETHWETH Zap Leverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)

@@ -7,6 +7,7 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IBalancerVault} from '../../../interfaces/IBalancerVault.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
@@ -34,7 +35,11 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
   }
 
   /// borrowing asset -> WSTETHWETH
-  function _swapTo(address _borrowingAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(
+    address _borrowingAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     uint256[] memory initBalances = new uint256[](2);
     initBalances[1] = _amount;
 
@@ -58,19 +63,28 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
 
     // join pool
     BALANCER_VAULT.joinPool(POOLID, address(this), address(this), request);
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    require(
+      collateralAmount >= _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
 
-    return IERC20(COLLATERAL).balanceOf(address(this));
+    return collateralAmount;
   }
 
   /// WSTETHWETH -> borrowing asset
-  function _swapFrom(address _borrowingAsset) internal override returns (uint256) {
+  function _swapFrom(address _borrowingAsset, uint256 _slippage)
+    internal
+    override
+    returns (uint256)
+  {
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     address[] memory assets = new address[](2);
     assets[0] = WSTETH;
     assets[1] = WETH;
 
     uint256[] memory initBalances = new uint256[](2);
-    initBalances[1] = _getMinAmount(collateralAmount);
+    initBalances[1] = _getMinAmount(collateralAmount, _slippage, _getAssetPrice(COLLATERAL), 1e18);
 
     uint256 exitKind = uint256(IBalancerVault.ExitKind.EXACT_BPT_IN_FOR_ONE_TOKEN_OUT);
     bytes memory userDataEncoded = abi.encode(exitKind, collateralAmount, 1);
@@ -88,10 +102,15 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     return IERC20(WETH).balanceOf(address(this));
   }
 
-  function _getMinAmount(uint256 _amountToSwap) internal view returns (uint256) {
-    uint256 fromAssetPrice = _getAssetPrice(COLLATERAL);
-    uint256 minAmountOut = ((_amountToSwap * fromAssetPrice) / 1e18).percentMul(9000); //10% slippage
-
-    return minAmountOut;
+  function _getMinAmount(
+    uint256 _amountToSwap,
+    uint256 _slippage,
+    uint256 _fromAssetPrice,
+    uint256 _toAssetPrice
+  ) internal view returns (uint256) {
+    return
+      ((_amountToSwap * _fromAssetPrice) / _toAssetPrice).percentMul(
+        PercentageMath.PERCENTAGE_FACTOR - _slippage
+      );
   }
 }

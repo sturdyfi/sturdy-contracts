@@ -55,6 +55,8 @@ contract ETHSTETHLevSwap is GeneralLevSwap {
     uint256 _amount,
     uint256 _slippage
   ) internal override returns (uint256) {
+    require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
+
     // WETH -> ETH
     IWETH(WETH).withdraw(_amount);
 
@@ -76,6 +78,8 @@ contract ETHSTETHLevSwap is GeneralLevSwap {
     override
     returns (uint256)
   {
+    require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
+
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     uint256 minAmount = ETHSTETH.calc_withdraw_one_coin(collateralAmount, 0);
     require(

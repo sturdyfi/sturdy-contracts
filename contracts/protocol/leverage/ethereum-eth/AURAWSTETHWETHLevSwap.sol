@@ -40,6 +40,8 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     uint256 _amount,
     uint256 _slippage
   ) internal override returns (uint256) {
+    require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
+
     uint256[] memory initBalances = new uint256[](2);
     initBalances[1] = _amount;
 
@@ -78,6 +80,8 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     override
     returns (uint256)
   {
+    require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
+
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     address[] memory assets = new address[](2);
     assets[0] = WSTETH;

@@ -107,6 +107,10 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
   ) external override returns (bool) {
     require(initiator == address(this), Errors.LS_INVALID_CONFIGURATION);
     require(msg.sender == AAVE_LENDING_POOL_ADDRESS, Errors.LS_INVALID_CONFIGURATION);
+    require(assets.length == amounts.length, Errors.LS_INVALID_CONFIGURATION);
+    require(assets.length == premiums.length, Errors.LS_INVALID_CONFIGURATION);
+    require(amounts[0] > 0, Errors.LS_INVALID_CONFIGURATION);
+    require(assets[0] != address(0), Errors.LS_INVALID_CONFIGURATION);
 
     _executeOperation(assets[0], amounts[0], premiums[0], params);
 
@@ -129,6 +133,10 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
   ) external override {
     require(msg.sender == BALANCER_VAULT, Errors.LS_INVALID_CONFIGURATION);
     require(_balancerFlashLoanLock == 2, Errors.LS_INVALID_CONFIGURATION);
+    require(tokens.length == amounts.length, Errors.LS_INVALID_CONFIGURATION);
+    require(tokens.length == feeAmounts.length, Errors.LS_INVALID_CONFIGURATION);
+    require(amounts[0] > 0, Errors.LS_INVALID_CONFIGURATION);
+    require(address(tokens[0]) != address(0), Errors.LS_INVALID_CONFIGURATION);
     _balancerFlashLoanLock = 1;
 
     _executeOperation(address(tokens[0]), amounts[0], feeAmounts[0], userData);
@@ -148,9 +156,13 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
       params,
       (bool, uint256, uint256, address, address)
     );
+    require(arg0 > 0, Errors.LS_INVALID_CONFIGURATION);
+    require(arg1 > 0, Errors.LS_INVALID_CONFIGURATION);
+    require(arg2 != address(0), Errors.LS_INVALID_CONFIGURATION);
     if (isEnterPosition) {
       _enterPositionWithFlashloan(arg0, arg1, arg2, asset, borrowAmount, fee);
     } else {
+      require(arg3 != address(0), Errors.LS_INVALID_CONFIGURATION);
       _withdrawWithFlashloan(arg0, arg1, arg2, arg3, asset, borrowAmount);
     }
   }
@@ -174,6 +186,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_slippage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_borrowingAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(ENABLED_BORROWING_ASSET[_borrowingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
 
@@ -207,6 +220,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     require(_repayAmount > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_requiredAmount > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_slippage > 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_borrowingAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(ENABLED_BORROWING_ASSET[_borrowingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(_sAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(
@@ -415,6 +429,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     uint256 _slippage
   ) external nonReentrant {
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_zappingAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(ENABLED_BORROWING_ASSET[_zappingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(
       IERC20(_zappingAsset).balanceOf(msg.sender) >= _principal,
@@ -449,6 +464,8 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_slippage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_borrowAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
+    require(_zappingAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(ENABLED_BORROWING_ASSET[_zappingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(ENABLED_BORROWING_ASSET[_borrowAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(

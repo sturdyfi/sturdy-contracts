@@ -23,6 +23,8 @@ contract LeverageSwapManager is VersionedInitializable {
    * @param _provider The address of the provider
    **/
   function initialize(ILendingPoolAddressesProvider _provider) external initializer {
+    require(address(_provider) != address(0), Errors.LS_INVALID_CONFIGURATION);
+
     _addressesProvider = _provider;
   }
 
@@ -31,6 +33,8 @@ contract LeverageSwapManager is VersionedInitializable {
   }
 
   function registerLevSwapper(address collateral, address swapper) public onlyAdmin {
+    require(collateral != address(0), Errors.LS_INVALID_CONFIGURATION);
+
     _levSwappers[collateral] = swapper;
     emit RegisterLevSwapper(collateral, swapper);
   }

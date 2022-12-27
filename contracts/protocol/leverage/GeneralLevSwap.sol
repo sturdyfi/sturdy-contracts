@@ -81,7 +81,6 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     PROVIDER = ILendingPoolAddressesProvider(_provider);
     ORACLE = IPriceOracleGetter(PROVIDER.getPriceOracle());
     LENDING_POOL = ILendingPool(PROVIDER.getLendingPool());
-    IERC20(COLLATERAL).approve(_vault, type(uint256).max);
   }
 
   /**
@@ -337,6 +336,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
   }
 
   function _supply(uint256 _amount, address _user) internal {
+    IERC20(COLLATERAL).safeApprove(VAULT, _amount);
     IGeneralVault(VAULT).depositCollateralFrom(COLLATERAL, _amount, _user);
   }
 

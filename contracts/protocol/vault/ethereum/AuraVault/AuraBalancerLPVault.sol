@@ -312,7 +312,7 @@ contract AuraBalancerLPVault is IncentiveVault {
    * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    */
   function setIncentiveRatio(uint256 _ratio) external override onlyAdmin {
-    require(_vaultFee + _ratio <= PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
+    require(_vaultFee + _ratio < PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
 
     // Get all available rewards & Send it to YieldDistributor,
     // so that the changing ratio does not affect asset's cumulative index
@@ -323,6 +323,18 @@ contract AuraBalancerLPVault is IncentiveVault {
     _incentiveRatio = _ratio;
 
     emit SetIncentiveRatio(_ratio);
+  }
+
+  /**
+   * @dev Set treasury address and vault fee
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _treasury The treasury address
+   * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
+   */
+  function setTreasuryInfo(address _treasury, uint256 _fee) public payable override onlyAdmin {
+    require(_fee + _incentiveRatio < PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
+
+    super.setTreasuryInfo(_treasury, _fee);
   }
 
   /**

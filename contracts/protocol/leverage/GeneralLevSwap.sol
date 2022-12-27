@@ -327,7 +327,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
       (withdrawalAmountETH * (10**DECIMALS)) / _getAssetPrice(COLLATERAL)
     );
 
-    require(withdrawalAmount > _requiredAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
+    require(withdrawalAmount >= _requiredAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
 
     IERC20(_sAsset).safeTransferFrom(_user, address(this), withdrawalAmount);
     _remove(withdrawalAmount, _slippage, _user);

@@ -386,7 +386,13 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     IERC20(_borrowingAsset).safeApprove(address(LENDING_POOL), 0);
     IERC20(_borrowingAsset).safeApprove(address(LENDING_POOL), _amount);
 
-    LENDING_POOL.repay(_borrowingAsset, _amount, USE_VARIABLE_DEBT, borrower);
+    uint256 paybackAmount = LENDING_POOL.repay(
+      _borrowingAsset,
+      _amount,
+      USE_VARIABLE_DEBT,
+      borrower
+    );
+    require(paybackAmount > 0, Errors.LS_REPAY_FAILED);
   }
 
   function _calcBorrowableAmount(

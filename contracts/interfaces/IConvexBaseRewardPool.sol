@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 interface IConvexBaseRewardPool {
   function earned(address account) external view returns (uint256);
 
-  function withdrawAndUnwrap(uint256 amount, bool claim) external;
+  function withdrawAndUnwrap(uint256 amount, bool claim) external returns (bool);
 
   function getReward(address _account, bool _claimExtras) external;
 

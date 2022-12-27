@@ -194,12 +194,18 @@ contract AuraBalancerLPVault is IncentiveVault {
     // deposit Balancer LP Token to Aura
     IERC20(token).safeApprove(address(AURA_BOOSTER), 0);
     IERC20(token).safeApprove(address(AURA_BOOSTER), _amount);
-    AURA_BOOSTER.deposit(auraPoolId, _amount, true);
+    require(
+      AURA_BOOSTER.deposit(auraPoolId, _amount, true) == true,
+      Errors.VT_COLLATERAL_DEPOSIT_INVALID
+    );
 
     // mint
     address internalAsset = internalAssetToken;
     address lendingPoolAddress = _addressesProvider.getLendingPool();
-    SturdyInternalAsset(internalAsset).mint(address(this), _amount);
+    require(
+      SturdyInternalAsset(internalAsset).mint(address(this), _amount) == true,
+      Errors.VT_COLLATERAL_DEPOSIT_INVALID
+    );
     IERC20(internalAsset).safeApprove(lendingPoolAddress, 0);
     IERC20(internalAsset).safeApprove(lendingPoolAddress, _amount);
 
@@ -233,7 +239,10 @@ contract AuraBalancerLPVault is IncentiveVault {
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
     // Withdraw from Aura
     address baseRewardPool = getBaseRewardPool();
-    IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false);
+    require(
+      IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false) == true,
+      Errors.VT_COLLATERAL_WITHDRAW_INVALID
+    );
 
     // Deliver Balancer LP Token
     IERC20(balancerLPToken).safeTransfer(_to, _amount);

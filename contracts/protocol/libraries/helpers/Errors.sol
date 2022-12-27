@@ -139,7 +139,8 @@ library Errors {
   string internal constant LS_BORROWING_ASSET_NOT_SUPPORTED = '114'; // Doesn't support swap for the borrowing asset
   string internal constant LS_SUPPLY_NOT_ALLOWED = '115'; // no sufficient funds
   string internal constant LS_SUPPLY_FAILED = '116'; // Deposit fails when leverage works
-  string internal constant O_WRONG_PRICE = '117'; // not correct price oracle
+  string internal constant LS_REPAY_FAILED = '117'; // Repay fails when leverage works
+  string internal constant O_WRONG_PRICE = '118'; // not correct price oracle
 
   enum CollateralManagerErrors {
     NO_ERROR,

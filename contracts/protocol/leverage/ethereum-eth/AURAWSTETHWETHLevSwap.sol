@@ -29,7 +29,7 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     ENABLED_BORROWING_ASSET[WETH] = true;
   }
 
-  function getAvailableStableCoins() external pure override returns (address[] memory assets) {
+  function getAvailableBorrowingAssets() external pure override returns (address[] memory assets) {
     assets = new address[](1);
     assets[0] = WETH;
   }

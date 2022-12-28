@@ -86,7 +86,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
   /**
    * Get stable coins available to borrow
    */
-  function getAvailableStableCoins() external pure virtual returns (address[] memory) {
+  function getAvailableBorrowingAssets() external pure virtual returns (address[] memory) {
     return new address[](0);
   }
 

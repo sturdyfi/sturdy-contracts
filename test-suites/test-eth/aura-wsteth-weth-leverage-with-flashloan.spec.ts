@@ -93,7 +93,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   describe('configuration', () => {
     it('WETH should be available for borrowing.', async () => {
       const { weth } = testEnv;
-      const coins = (await wstethwethLevSwap.getAvailableStableCoins()).map((coin) =>
+      const coins = (await wstethwethLevSwap.getAvailableBorrowingAssets()).map((coin) =>
         coin.toUpperCase()
       );
       expect(coins.length).to.be.equal(1);

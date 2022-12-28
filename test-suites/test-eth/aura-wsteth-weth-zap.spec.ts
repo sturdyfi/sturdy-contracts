@@ -81,7 +81,7 @@ makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
   describe('configuration', () => {
     it('WETH should be available for borrowing.', async () => {
       const { weth } = testEnv;
-      const coins = (await wstethwethLevSwap.getAvailableStableCoins()).map((coin) => coin.toUpperCase());
+      const coins = (await wstethwethLevSwap.getAvailableBorrowingAssets()).map((coin) => coin.toUpperCase());
       expect(coins.length).to.be.equal(1);
       expect(coins.includes(weth.address.toUpperCase())).to.be.equal(true);
     });

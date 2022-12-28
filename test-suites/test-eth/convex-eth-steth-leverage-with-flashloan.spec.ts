@@ -93,7 +93,7 @@ makeSuite('ETHSTETH Leverage Swap', (testEnv) => {
   describe('configuration', () => {
     it('WETH should be available for borrowing.', async () => {
       const { weth } = testEnv;
-      const coins = (await ethstethLevSwap.getAvailableStableCoins()).map((coin) =>
+      const coins = (await ethstethLevSwap.getAvailableBorrowingAssets()).map((coin) =>
         coin.toUpperCase()
       );
       expect(coins.length).to.be.equal(1);

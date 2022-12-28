@@ -239,37 +239,6 @@ abstract contract GeneralVault is VersionedInitializable {
   }
 
   /**
-   * @dev Get yield based on strategy and re-deposit
-   * @param _stAsset The address of collateral internal asset
-   * @return yield amount of collateral internal asset
-   */
-  function _getYield(address _stAsset) internal returns (uint256) {
-    uint256 yieldStAsset = _getYieldAmount(_stAsset);
-    require(yieldStAsset != 0, Errors.VT_PROCESS_YIELD_INVALID);
-
-    ILendingPool(_addressesProvider.getLendingPool()).getYield(_stAsset, yieldStAsset);
-    return yieldStAsset;
-  }
-
-  /**
-   * @dev Get yield amount based on strategy
-   * @param _stAsset The address of collateral internal asset
-   * @return yield amount of collateral internal asset
-   */
-  function _getYieldAmount(address _stAsset) internal view returns (uint256) {
-    (uint256 stAssetBalance, uint256 aTokenBalance) = ILendingPool(
-      _addressesProvider.getLendingPool()
-    ).getTotalBalanceOfAssetPair(_stAsset);
-
-    // when deposit for collateral, stAssetBalance = aTokenBalance
-    // But stAssetBalance should increase overtime, so vault can grab yield from lendingPool.
-    // yield = stAssetBalance - aTokenBalance
-    if (stAssetBalance > aTokenBalance) return stAssetBalance - aTokenBalance;
-
-    return 0;
-  }
-
-  /**
    * @dev Deposit collateral external asset to yield pool based on strategy and receive collateral internal asset
    * @param _asset The address of collateral external asset
    * @param _amount The amount of collateral external asset

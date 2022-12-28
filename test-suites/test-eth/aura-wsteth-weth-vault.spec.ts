@@ -147,7 +147,6 @@ makeSuite('AuraWSTETHWETHVault - Process Yield', (testEnv: TestEnv) => {
     await auraWSTETHWETHVault
       .connect(borrower.signer)
       .depositCollateral(BAL_WSTETH_WETH_LP.address, assetAmountToDeposit);
-    expect(await auraWSTETHWETHVault.getYieldAmount()).to.be.equal(0);
     const beforeBalanceOfBAL = await BAL.balanceOf(yieldManager.address);
     const beforeBalanceOfAURA = await AURA.balanceOf(yieldManager.address);
 

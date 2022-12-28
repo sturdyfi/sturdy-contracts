@@ -158,14 +158,6 @@ contract AuraBalancerLPVault is IncentiveVault {
   }
 
   /**
-   * @dev Get yield amount based on strategy
-   * @return yield amount of collateral internal asset
-   */
-  function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(internalAssetToken);
-  }
-
-  /**
    * @dev Get price per share based on yield strategy
    * @return The value of price per share
    */

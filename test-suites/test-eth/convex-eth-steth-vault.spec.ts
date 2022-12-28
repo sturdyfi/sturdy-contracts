@@ -147,7 +147,6 @@ makeSuite('ConvexETHSTETHVault - Process Yield', (testEnv: TestEnv) => {
     await convexETHSTETHVault
       .connect(borrower.signer)
       .depositCollateral(ETH_STETH_LP.address, assetAmountToDeposit);
-    expect(await convexETHSTETHVault.getYieldAmount()).to.be.equal(0);
     const beforeBalanceOfCRV = await CRV.balanceOf(yieldManager.address);
     const beforeBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
 

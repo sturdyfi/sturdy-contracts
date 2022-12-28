@@ -196,14 +196,6 @@ abstract contract GeneralVault is VersionedInitializable {
   function pricePerShare() external view virtual returns (uint256);
 
   /**
-   * @dev Get vault Yield per year with wad decimal(=18)
-   * @return The vault yield value per year
-   */
-  function vaultYieldInPrice() external view virtual returns (uint256) {
-    return 0;
-  }
-
-  /**
    * @dev Set treasury address and vault fee
    * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    * @param _treasury The treasury address

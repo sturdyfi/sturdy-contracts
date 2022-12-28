@@ -186,6 +186,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_slippage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_leverage < 900_00, Errors.LS_INVALID_CONFIGURATION);
     require(_borrowingAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(ENABLED_BORROWING_ASSET[_borrowingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);
     require(IERC20(COLLATERAL).balanceOf(msg.sender) >= _principal, Errors.LS_SUPPLY_NOT_ALLOWED);
@@ -470,6 +471,7 @@ contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, ReentrancyGu
     require(_principal != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_leverage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
     require(_slippage != 0, Errors.LS_SWAP_AMOUNT_NOT_GT_0);
+    require(_leverage < 900_00, Errors.LS_INVALID_CONFIGURATION);
     require(_borrowAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(_zappingAsset != address(0), Errors.LS_INVALID_CONFIGURATION);
     require(ENABLED_BORROWING_ASSET[_zappingAsset], Errors.LS_BORROWING_ASSET_NOT_SUPPORTED);

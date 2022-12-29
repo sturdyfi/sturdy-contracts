@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import {LendingRateOracle} from '../mocks/oracle/LendingRateOracle.sol';
 import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';

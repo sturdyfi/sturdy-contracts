@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';

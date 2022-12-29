@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -12,9 +11,6 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
-
-  IBalancerVault public constant BALANCER_VAULT =
-    IBalancerVault(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
 
   address internal constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
   address internal constant WSTETH = 0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0;
@@ -29,6 +25,10 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     ENABLED_BORROWING_ASSET[WETH] = true;
   }
 
+  /**
+   * @dev Get the available borrowable asset list.
+   * @return assets - the asset list
+   **/
   function getAvailableBorrowingAssets() external pure override returns (address[] memory assets) {
     assets = new address[](1);
     assets[0] = WETH;
@@ -60,11 +60,11 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     });
 
     // approve
-    IERC20(WETH).safeApprove(address(BALANCER_VAULT), 0);
-    IERC20(WETH).safeApprove(address(BALANCER_VAULT), _amount);
+    IERC20(WETH).safeApprove(BALANCER_VAULT, 0);
+    IERC20(WETH).safeApprove(BALANCER_VAULT, _amount);
 
     // join pool
-    BALANCER_VAULT.joinPool(POOLID, address(this), address(this), request);
+    IBalancerVault(BALANCER_VAULT).joinPool(POOLID, address(this), address(this), request);
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     require(
       collateralAmount >= _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
@@ -101,7 +101,7 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     });
 
     // exit pool
-    BALANCER_VAULT.exitPool(POOLID, address(this), payable(address(this)), request);
+    IBalancerVault(BALANCER_VAULT).exitPool(POOLID, address(this), payable(address(this)), request);
 
     return IERC20(WETH).balanceOf(address(this));
   }

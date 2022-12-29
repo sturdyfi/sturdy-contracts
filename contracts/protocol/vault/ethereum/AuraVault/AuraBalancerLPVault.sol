@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import {IncentiveVault} from '../../IncentiveVault.sol';
 import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -55,12 +54,12 @@ contract AuraBalancerLPVault is IncentiveVault {
 
     balancerLPToken = _lpToken;
     auraPoolId = _poolId;
-    SturdyInternalAsset _interalToken = new SturdyInternalAsset(
+    SturdyInternalAsset _internalToken = new SturdyInternalAsset(
       string(abi.encodePacked('Sturdy ', IERC20Detailed(_lpToken).symbol())),
       string(abi.encodePacked('c', IERC20Detailed(_lpToken).symbol())),
       IERC20Detailed(_lpToken).decimals()
     );
-    internalAssetToken = address(_interalToken);
+    internalAssetToken = address(_internalToken);
 
     emit SetParameters(_lpToken, _poolId, internalAssetToken);
   }
@@ -198,6 +197,8 @@ contract AuraBalancerLPVault is IncentiveVault {
       SturdyInternalAsset(internalAsset).mint(address(this), _amount) == true,
       Errors.VT_COLLATERAL_DEPOSIT_INVALID
     );
+
+    // need to approve lending pool to deposit asset
     IERC20(internalAsset).safeApprove(lendingPoolAddress, 0);
     IERC20(internalAsset).safeApprove(lendingPoolAddress, _amount);
 

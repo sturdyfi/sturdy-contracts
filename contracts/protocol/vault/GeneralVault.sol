@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
@@ -196,20 +195,12 @@ abstract contract GeneralVault is VersionedInitializable {
   function pricePerShare() external view virtual returns (uint256);
 
   /**
-   * @dev Get vault Yield per year with wad decimal(=18)
-   * @return The vault yield value per year
-   */
-  function vaultYieldInPrice() external view virtual returns (uint256) {
-    return 0;
-  }
-
-  /**
    * @dev Set treasury address and vault fee
    * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    * @param _treasury The treasury address
    * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
    */
-  function setTreasuryInfo(address _treasury, uint256 _fee) external payable onlyAdmin {
+  function setTreasuryInfo(address _treasury, uint256 _fee) public payable virtual onlyAdmin {
     require(_treasury != address(0), Errors.VT_TREASURY_INVALID);
     require(_fee <= 30_00, Errors.VT_FEE_TOO_BIG);
     _treasuryAddress = _treasury;
@@ -244,37 +235,6 @@ abstract contract GeneralVault is VersionedInitializable {
     ILendingPool(_addressesProvider.getLendingPool()).deposit(_stAsset, _stAssetAmount, _user, 0);
 
     emit DepositCollateral(_asset, _user, _amount);
-  }
-
-  /**
-   * @dev Get yield based on strategy and re-deposit
-   * @param _stAsset The address of collateral internal asset
-   * @return yield amount of collateral internal asset
-   */
-  function _getYield(address _stAsset) internal returns (uint256) {
-    uint256 yieldStAsset = _getYieldAmount(_stAsset);
-    require(yieldStAsset != 0, Errors.VT_PROCESS_YIELD_INVALID);
-
-    ILendingPool(_addressesProvider.getLendingPool()).getYield(_stAsset, yieldStAsset);
-    return yieldStAsset;
-  }
-
-  /**
-   * @dev Get yield amount based on strategy
-   * @param _stAsset The address of collateral internal asset
-   * @return yield amount of collateral internal asset
-   */
-  function _getYieldAmount(address _stAsset) internal view returns (uint256) {
-    (uint256 stAssetBalance, uint256 aTokenBalance) = ILendingPool(
-      _addressesProvider.getLendingPool()
-    ).getTotalBalanceOfAssetPair(_stAsset);
-
-    // when deposit for collateral, stAssetBalance = aTokenBalance
-    // But stAssetBalance should increase overtime, so vault can grab yield from lendingPool.
-    // yield = stAssetBalance - aTokenBalance
-    if (stAssetBalance > aTokenBalance) return stAssetBalance - aTokenBalance;
-
-    return 0;
   }
 
   /**

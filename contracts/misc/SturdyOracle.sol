@@ -6,7 +6,7 @@ import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 
 import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IOracleValidate} from './interfaces/IOracleValidate.sol';
-import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
+import {IOracle} from './interfaces/IOracle.sol';
 import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
 
 /// @title SturdyOracle
@@ -108,7 +108,7 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
     } else if (source == address(0)) {
       return _fallbackOracle.getAssetPrice(asset);
     } else {
-      int256 price = IChainlinkAggregator(source).latestAnswer();
+      int256 price = IOracle(source).latestAnswer();
       if (price > 0) {
         return uint256(price);
       } else {

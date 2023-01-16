@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 // Using the same Copyleft License as in the original Repository
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import './interfaces/IOracle.sol';
 import {Variable, IBalancerWeightedPool} from '../interfaces/IBalancerWeightedPool.sol';

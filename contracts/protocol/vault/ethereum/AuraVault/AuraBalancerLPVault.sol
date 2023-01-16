@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
-pragma abicoder v2;
 
 import {IncentiveVault} from '../../IncentiveVault.sol';
 import {IERC20} from '../../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -55,12 +54,12 @@ contract AuraBalancerLPVault is IncentiveVault {
 
     balancerLPToken = _lpToken;
     auraPoolId = _poolId;
-    SturdyInternalAsset _interalToken = new SturdyInternalAsset(
+    SturdyInternalAsset _internalToken = new SturdyInternalAsset(
       string(abi.encodePacked('Sturdy ', IERC20Detailed(_lpToken).symbol())),
       string(abi.encodePacked('c', IERC20Detailed(_lpToken).symbol())),
       IERC20Detailed(_lpToken).decimals()
     );
-    internalAssetToken = address(_interalToken);
+    internalAssetToken = address(_internalToken);
 
     emit SetParameters(_lpToken, _poolId, internalAssetToken);
   }
@@ -158,14 +157,6 @@ contract AuraBalancerLPVault is IncentiveVault {
   }
 
   /**
-   * @dev Get yield amount based on strategy
-   * @return yield amount of collateral internal asset
-   */
-  function getYieldAmount() external view returns (uint256) {
-    return _getYieldAmount(internalAssetToken);
-  }
-
-  /**
    * @dev Get price per share based on yield strategy
    * @return The value of price per share
    */
@@ -194,12 +185,20 @@ contract AuraBalancerLPVault is IncentiveVault {
     // deposit Balancer LP Token to Aura
     IERC20(token).safeApprove(address(AURA_BOOSTER), 0);
     IERC20(token).safeApprove(address(AURA_BOOSTER), _amount);
-    AURA_BOOSTER.deposit(auraPoolId, _amount, true);
+    require(
+      AURA_BOOSTER.deposit(auraPoolId, _amount, true) == true,
+      Errors.VT_COLLATERAL_DEPOSIT_INVALID
+    );
 
     // mint
     address internalAsset = internalAssetToken;
     address lendingPoolAddress = _addressesProvider.getLendingPool();
-    SturdyInternalAsset(internalAsset).mint(address(this), _amount);
+    require(
+      SturdyInternalAsset(internalAsset).mint(address(this), _amount) == true,
+      Errors.VT_COLLATERAL_DEPOSIT_INVALID
+    );
+
+    // need to approve lending pool to deposit asset
     IERC20(internalAsset).safeApprove(lendingPoolAddress, 0);
     IERC20(internalAsset).safeApprove(lendingPoolAddress, _amount);
 
@@ -233,7 +232,10 @@ contract AuraBalancerLPVault is IncentiveVault {
   function _withdraw(uint256 _amount, address _to) internal returns (uint256) {
     // Withdraw from Aura
     address baseRewardPool = getBaseRewardPool();
-    IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false);
+    require(
+      IConvexBaseRewardPool(baseRewardPool).withdrawAndUnwrap(_amount, false) == true,
+      Errors.VT_COLLATERAL_WITHDRAW_INVALID
+    );
 
     // Deliver Balancer LP Token
     IERC20(balancerLPToken).safeTransfer(_to, _amount);
@@ -312,7 +314,7 @@ contract AuraBalancerLPVault is IncentiveVault {
    * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
    */
   function setIncentiveRatio(uint256 _ratio) external override onlyAdmin {
-    require(_vaultFee + _ratio <= PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
+    require(_vaultFee + _ratio < PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
 
     // Get all available rewards & Send it to YieldDistributor,
     // so that the changing ratio does not affect asset's cumulative index
@@ -323,6 +325,18 @@ contract AuraBalancerLPVault is IncentiveVault {
     _incentiveRatio = _ratio;
 
     emit SetIncentiveRatio(_ratio);
+  }
+
+  /**
+   * @dev Set treasury address and vault fee
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _treasury The treasury address
+   * @param _fee The vault fee which has more two decimals, ex: 100% = 100_00
+   */
+  function setTreasuryInfo(address _treasury, uint256 _fee) public payable override onlyAdmin {
+    require(_fee + _incentiveRatio < PercentageMath.PERCENTAGE_FACTOR, Errors.VT_FEE_TOO_BIG);
+
+    super.setTreasuryInfo(_treasury, _fee);
   }
 
   /**

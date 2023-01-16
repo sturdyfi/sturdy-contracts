@@ -65,6 +65,7 @@ import {
   AURAWSTETHWETHLevSwapFactory,
   AURAOracleFactory,
   ConvexCurveLPVault2Factory,
+  WETHGatewayFactory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -483,6 +484,14 @@ export const deployATokensAndRatesHelper = async (args: [tEthereumAddress], veri
   withSaveAndVerify(
     await new ATokensAndRatesHelperFactory(await getFirstSigner()).deploy(...args),
     eContractid.ATokensAndRatesHelper,
+    args,
+    verify
+  );
+
+export const deployWETHGateway = async (args: [], verify?: boolean) =>
+  withSaveAndVerify(
+    await new WETHGatewayFactory(await getFirstSigner()).deploy(...args),
+    eContractid.WETHGateway,
     args,
     verify
   );

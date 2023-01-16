@@ -63,6 +63,9 @@ task('sturdy:eth', 'Deploy development enviroment')
     console.log('8-6. Deploy APR Data Provider');
     await DRE.run('full:eth:deploy-sturdy-apr-data-provider', { pool: POOL_NAME, verify });
 
+    console.log('8-7. Deploy WETH Gateway');
+    await DRE.run('full:eth:deploy-weth-gateway', { pool: POOL_NAME, verify });
+
     if (usingTenderly()) {
       const postDeployHead = DRE.tenderlyNetwork.getHead();
       const postDeployFork = DRE.tenderlyNetwork.getFork();

@@ -4,6 +4,7 @@ import {
   getFirstSigner,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
+  getSturdyOracle,
 } from '../../helpers/contracts-getters';
 import { deployYieldManager } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
@@ -23,7 +24,8 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { CRV, CVX, BAL, AURA, WETH } = poolConfig as ISturdyConfiguration;
+    const { CRV, CVX, BAL, AURA, WETH, SNX, ChainlinkAggregator } =
+      poolConfig as ISturdyConfiguration;
 
     const yieldManager = await deployYieldManager(verify);
     const configurator = await getLendingPoolConfiguratorProxy();
@@ -31,11 +33,21 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     // Set Exchange Token as USDC
     await yieldManager.setExchangeToken(getParamPerNetwork(poolConfig.ReserveAssets, network).USDC);
 
-    // Register reward asset(for now CRV & CVX & BAL & WETH)
+    // Register SNX oracle
+    const sturdyOracle = await getSturdyOracle();
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(SNX, network)],
+        [getParamPerNetwork(ChainlinkAggregator, network).SNX]
+      )
+    );
+
+    // Register reward asset(for now CRV & CVX & BAL & WETH & SNX)
     await yieldManager.registerAsset(getParamPerNetwork(CRV, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(CVX, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(WETH, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(BAL, network), 1);
+    await yieldManager.registerAsset(getParamPerNetwork(SNX, network), 0);
     // await yieldManager.registerAsset(getParamPerNetwork(AURA, network));
 
     // Set curve pool for swapping USDC -> DAI via curve

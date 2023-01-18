@@ -474,5 +474,15 @@
       "address": "0xEF328E8C569CD029e5Ebb4e37525b4e255B33166",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "WETHGateway": {
+    "main": {
+      "address": "0xE27F1a136C0114ADed15b24b576aD7F71483dCCa",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xE27F1a136C0114ADed15b24b576aD7F71483dCCa",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

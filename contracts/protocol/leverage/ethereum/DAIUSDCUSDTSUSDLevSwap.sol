@@ -7,6 +7,7 @@ import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 interface ICurvePool {
   function coins(int128) external view returns (address);
@@ -51,7 +52,11 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     return 2;
   }
 
-  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(
+    address _stableAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     // stable coin -> DAIUSDCUSDTSUSD
     IERC20(_stableAsset).safeApprove(address(POOL), 0);
     IERC20(_stableAsset).safeApprove(address(POOL), _amount);
@@ -63,21 +68,22 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     POOL.add_liquidity(amountsAdded, 0);
 
     uint256 amountTo = IERC20(COLLATERAL).balanceOf(address(this));
+    require(
+      amountTo >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
 
     return amountTo;
   }
 
-  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+  function _swapFrom(address _stableAsset, uint256 _slippage) internal override returns (uint256) {
     // DAIUSDCUSDTSUSD -> stable coin
     uint256 coinIndex = _getCoinIndex(_stableAsset);
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    uint256 stableAssetDecimals = IERC20Detailed(_stableAsset).decimals();
     uint256[4] memory amounts;
-    // calculate expected receivable stable asset amount with 2% slippage
-    amounts[coinIndex] = ((((collateralAmount * ORACLE.getAssetPrice(COLLATERAL)) /
-      ORACLE.getAssetPrice(_stableAsset)) * 10**stableAssetDecimals) / 10**DECIMALS).percentMul(
-        98_00
-      );
+
+    // calculate expected receivable stable asset amount with slippage
+    amounts[coinIndex] = _getMinAmount(COLLATERAL, _stableAsset, collateralAmount, _slippage);
 
     // Withdraw a single asset from the pool
     POOL.remove_liquidity_imbalance(amounts, collateralAmount);

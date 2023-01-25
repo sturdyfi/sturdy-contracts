@@ -36,7 +36,7 @@ import {
 import { verifyEtherscanContract } from '../../helpers/etherscan-verification';
 import { impersonateAccountsHardhat } from '../../helpers/misc-utils';
 import { eNetwork, IFantomConfiguration, eContractid } from '../../helpers/types';
-import { DaiFactory, GeneralLevSwapFactory } from '../../types';
+import { DaiFactory } from '../../types';
 
 task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
   .addFlag('verify', 'Verify contracts at Etherscan')
@@ -67,7 +67,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     // const abalance = await aCVXFRAX_USDC.balanceOf(deployerAddress);
 
     // const swapManager = await getLeverageSwapManager();
-    // const fraxusdcSwapper = await GeneralLevSwapFactory.connect(await swapManager.getLevSwapper('0x27403B2756E9c2f436FB13e0B188Dd231F1da170'), signer);
+    // const fraxusdcSwapper = await IGeneralLevSwapFactory.connect(await swapManager.getLevSwapper('0x27403B2756E9c2f436FB13e0B188Dd231F1da170'), signer);
     // await aCVXFRAX_USDC
     //     .connect(signer)
     //     .approve(fraxusdcSwapper.address, abalance.mul(2));

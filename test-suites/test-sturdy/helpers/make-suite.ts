@@ -482,7 +482,7 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aDai = await getAToken(aDaiAddress);
-  testEnv.staticADai = await getStaticAToken('sDAI');
+  // testEnv.staticADai = await getStaticAToken('sDAI');
   testEnv.aStETH = await getAToken(aStETHAddress);
   // testEnv.aYVRETH_WSTETH = await getAToken(aYVRETH_WSTETHAddress);
   // testEnv.aCVXRETH_WSTETH = await getAToken(aCVXRETH_WSTETHAddress);
@@ -497,9 +497,9 @@ export async function initializeMakeSuite() {
   testEnv.aAURADAI_USDC_USDT = await getAToken(aAURADAI_USDC_USDTAddress);
   testEnv.aCVXTUSD_FRAXBP = await getAToken(aCVXTUSD_FRAXBPAddress);
   testEnv.aUsdc = await getAToken(aUsdcAddress);
-  testEnv.staticAUsdc = await getStaticAToken('sUSDC');
+  // testEnv.staticAUsdc = await getStaticAToken('sUSDC');
   testEnv.aUsdt = await getAToken(aUsdtAddress);
-  testEnv.staticAUsdt = await getStaticAToken('sUSDT');
+  // testEnv.staticAUsdt = await getStaticAToken('sUSDT');
 
   testEnv.dai = await getMintableERC20(daiAddress);
   testEnv.usdc = await getMintableERC20(usdcAddress);

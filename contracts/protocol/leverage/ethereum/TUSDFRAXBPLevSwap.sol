@@ -6,6 +6,7 @@ import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {UniswapAdapter} from '../../libraries/swap/UniswapAdapter.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 interface ICurvePool {
   function coins(uint256) external view returns (address);
@@ -50,7 +51,12 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     assets[2] = USDT;
   }
 
-  function _swapFromTUSD(address _stableAsset, uint256 _tusd_amount) internal returns (uint256) {
+  function _swapFromTUSD(
+    address _stableAsset,
+    uint256 _tusd_amount,
+    uint256 _slippage,
+    uint256 _collateralAmount
+  ) internal returns (uint256) {
     UniswapAdapter.Path memory path;
 
     path.tokens = new address[](3);
@@ -62,15 +68,20 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     path.fees[0] = 100; //0.01%
     path.fees[1] = 100; //0.01%
 
-    return
-      UniswapAdapter.swapExactTokensForTokens(
-        PROVIDER,
-        TUSD,
-        _stableAsset,
-        _tusd_amount,
-        path,
-        500
-      );
+    uint256 amountTo = UniswapAdapter.swapExactTokensForTokens(
+      PROVIDER,
+      TUSD,
+      _stableAsset,
+      _tusd_amount,
+      path,
+      _slippage
+    );
+    require(
+      amountTo >= _getMinAmount(COLLATERAL, _stableAsset, _collateralAmount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
+    return amountTo;
   }
 
   function _swapToTUSD(address _stableAsset, uint256 _amount) internal returns (uint256) {
@@ -100,7 +111,11 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
   }
 
   // stable coin -> TUSDFRAXBP
-  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(
+    address _stableAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     uint256 amountTo;
     uint256[2] memory amountsAdded;
 
@@ -122,19 +137,34 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
 
     TUSDFRAXBP.add_liquidity(amountsAdded, 0);
 
-    return IERC20(COLLATERAL).balanceOf(address(this));
+    amountTo = IERC20(COLLATERAL).balanceOf(address(this));
+    require(
+      amountTo >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
+    return amountTo;
   }
 
-  function _swapFromFRAXBP(uint256 _amount) internal returns (uint256) {
+  function _swapFromFRAXBP(
+    uint256 _amount,
+    uint256 _slippage,
+    uint256 _collateralAmount
+  ) internal returns (uint256) {
     int256 coinIndex = 1;
     uint256 minAmount = FRAXUSDC.calc_withdraw_one_coin(_amount, int128(coinIndex));
+    require(
+      minAmount >= _getMinAmount(COLLATERAL, USDC, _collateralAmount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
     uint256 usdcAmount = FRAXUSDC.remove_liquidity_one_coin(_amount, int128(coinIndex), minAmount);
 
     return usdcAmount;
   }
 
   // TUSDFRAXBP -> stable coin
-  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+  function _swapFrom(address _stableAsset, uint256 _slippage) internal override returns (uint256) {
     int256 coinIndex;
 
     if (_stableAsset == USDC) {
@@ -150,9 +180,9 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     );
 
     if (_stableAsset == USDC) {
-      return _swapFromFRAXBP(amountOut);
+      return _swapFromFRAXBP(amountOut, _slippage, collateralAmount);
     }
 
-    return _swapFromTUSD(_stableAsset, amountOut);
+    return _swapFromTUSD(_stableAsset, amountOut, _slippage, collateralAmount);
   }
 }

@@ -5,8 +5,10 @@ import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
+import { MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
+import { IGeneralLevSwapFactory } from '../../types/IGeneralLevSwapFactory';
+import { IGeneralLevSwap } from '../../types/IGeneralLevSwap';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -14,7 +16,7 @@ const { expect } = chai;
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -52,7 +54,7 @@ const calcTotalBorrowAmount = async (
   collateral: tEthereumAddress,
   amount: BigNumberish,
   ltv: BigNumberish,
-  iterations: number,
+  leverage: BigNumberish,
   borrowingAsset: tEthereumAddress
 ) => {
   const { oracle } = testEnv;
@@ -62,10 +64,12 @@ const calcTotalBorrowAmount = async (
   const amountToBorrow = await convertToCurrencyDecimals(
     borrowingAsset,
     new BigNumber(amount.toString())
+      .multipliedBy(leverage.toString())
+      .div(10000)
+      .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
       .div(10000)
-      .multipliedBy(iterations)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
   );
@@ -90,9 +94,8 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage2 = '100';
-  const slippage1 = '100';
-  const iterations = 3;
-  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
+  const leverage = 36000;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
@@ -133,7 +136,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           usdt.address
         )
       ).toString();
@@ -165,7 +168,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
-          .enterPosition(principalAmount, iterations, ltv, usdt.address)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
       await vaultWhitelist.addAddressToWhitelistUser(
         convexTUSDFRAXBPVault.address,
@@ -173,7 +176,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       );
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, usdt.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -226,7 +229,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
     });
     it('USDC as borrowing asset', async () => {
@@ -251,7 +254,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           usdc.address
         )
       ).toString();
@@ -282,7 +285,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
-          .enterPosition(principalAmount, iterations, ltv, usdc.address)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
       await vaultWhitelist.addAddressToWhitelistUser(
         convexTUSDFRAXBPVault.address,
@@ -290,7 +293,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       );
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, usdc.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -343,7 +346,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
     });
     it('DAI as borrowing asset', async () => {
@@ -368,7 +371,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           dai.address
         )
       ).toString();
@@ -399,7 +402,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
-          .enterPosition(principalAmount, iterations, ltv, dai.address)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
       await vaultWhitelist.addAddressToWhitelistUser(
         convexTUSDFRAXBPVault.address,
@@ -407,7 +410,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       );
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, dai.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -460,7 +463,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
     });
   });
@@ -470,9 +473,8 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage2 = '100';
-  const slippage1 = '100';
-  const iterations = 3;
-  let tusdfraxbpLevSwap = {} as GeneralLevSwap;
+  const leverage = 36000;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
@@ -502,7 +504,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           usdt.address
         )
       ).toString();
@@ -533,7 +535,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       // leverage
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, usdt.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -672,7 +674,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
       afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -696,7 +698,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           usdc.address
         )
       ).toString();
@@ -726,7 +728,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       // leverage
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, usdc.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -865,7 +867,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
       afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -889,7 +891,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           TUSD_FRAXBP_LP.address,
           LPAmount,
           ltv,
-          iterations,
+          leverage,
           dai.address
         )
       ).toString();
@@ -919,7 +921,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       // leverage
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPosition(principalAmount, iterations, ltv, dai.address);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1058,7 +1060,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
       afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '98'
       );
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),

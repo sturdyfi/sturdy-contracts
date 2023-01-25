@@ -5,8 +5,10 @@ import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { mint } from './helpers/mint';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
+import { MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
+import { IGeneralLevSwapFactory } from '../../types/IGeneralLevSwapFactory';
+import { IGeneralLevSwap } from '../../types/IGeneralLevSwap';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -14,7 +16,7 @@ const { expect } = chai;
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
 };
 
 const calcTotalBorrowAmount = async (
@@ -65,15 +67,19 @@ const calcETHAmount = async (testEnv: TestEnv, asset: tEthereumAddress, amount: 
 };
 
 makeSuite('SUSD Zap Deposit', (testEnv) => {
-  const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const iterations = 3;
-  let susdLevSwap = {} as GeneralLevSwap;
+  const slippage = 100;
+  let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
-      testEnv;
+    const {
+      helpersContract,
+      cvxdai_usdc_usdt_susd,
+      vaultWhitelist,
+      convexDAIUSDCUSDTSUSDVault,
+      users,
+    } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
@@ -82,6 +88,10 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
     await vaultWhitelist.addAddressToWhitelistContract(
       convexDAIUSDCUSDTSUSDVault.address,
       susdLevSwap.address
+    );
+    await vaultWhitelist.addAddressToWhitelistUser(
+      convexDAIUSDCUSDTSUSDVault.address,
+      users[0].address
     );
   });
   describe('configuration', () => {
@@ -99,13 +109,17 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
       const { dai } = testEnv;
       const principalAmount = 0;
       const stableCoin = dai.address;
-      await expect(susdLevSwap.zapDeposit(stableCoin, principalAmount)).to.be.revertedWith('113');
+      await expect(
+        susdLevSwap.zapDeposit(stableCoin, principalAmount, slippage)
+      ).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
       const { aDai } = testEnv;
       const principalAmount = 10;
       const stableCoin = aDai.address;
-      await expect(susdLevSwap.zapDeposit(stableCoin, principalAmount)).to.be.revertedWith('114');
+      await expect(
+        susdLevSwap.zapDeposit(stableCoin, principalAmount, slippage)
+      ).to.be.revertedWith('114');
     });
     it('should be reverted when collateral is not enough', async () => {
       const { users, dai } = testEnv;
@@ -113,7 +127,7 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
       const principalAmount = await convertToCurrencyDecimals(dai.address, '1000');
       const stableCoin = dai.address;
       await expect(
-        susdLevSwap.connect(borrower.signer).zapDeposit(stableCoin, principalAmount)
+        susdLevSwap.connect(borrower.signer).zapDeposit(stableCoin, principalAmount, slippage)
       ).to.be.revertedWith('115');
     });
   });
@@ -125,6 +139,7 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
         cvxdai_usdc_usdt_susd,
         convexDAIUSDCUSDTSUSDVault,
         aCVXDAI_USDC_USDT_SUSD,
+        vaultWhitelist,
       } = testEnv;
 
       const borrower = users[1];
@@ -135,7 +150,16 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
       await usdt.connect(borrower.signer).approve(susdLevSwap.address, principalAmount);
 
       // leverage
-      await susdLevSwap.connect(borrower.signer).zapDeposit(usdt.address, principalAmount);
+      await expect(
+        susdLevSwap.connect(borrower.signer).zapDeposit(usdt.address, principalAmount, slippage)
+      ).to.be.revertedWith('118');
+      await vaultWhitelist.addAddressToWhitelistUser(
+        convexDAIUSDCUSDTSUSDVault.address,
+        borrower.address
+      );
+      await susdLevSwap
+        .connect(borrower.signer)
+        .zapDeposit(usdt.address, principalAmount, slippage);
 
       expect(await usdt.balanceOf(borrower.address)).to.be.equal(0);
       expect(await cvxdai_usdc_usdt_susd.balanceOf(convexDAIUSDCUSDTSUSDVault.address)).to.be.equal(
@@ -156,12 +180,17 @@ makeSuite('SUSD Zap Leverage', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const iterations = 3;
-  let susdLevSwap = {} as GeneralLevSwap;
+  let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
-      testEnv;
+    const {
+      helpersContract,
+      cvxdai_usdc_usdt_susd,
+      vaultWhitelist,
+      convexDAIUSDCUSDTSUSDVault,
+      users,
+    } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
@@ -170,6 +199,10 @@ makeSuite('SUSD Zap Leverage', (testEnv) => {
     await vaultWhitelist.addAddressToWhitelistContract(
       convexDAIUSDCUSDTSUSDVault.address,
       susdLevSwap.address
+    );
+    await vaultWhitelist.addAddressToWhitelistUser(
+      convexDAIUSDCUSDTSUSDVault.address,
+      users[0].address
     );
   });
   describe('configuration', () => {
@@ -275,12 +308,17 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let susdLevSwap = {} as GeneralLevSwap;
+  let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxdai_usdc_usdt_susd, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
-      testEnv;
+    const {
+      helpersContract,
+      cvxdai_usdc_usdt_susd,
+      vaultWhitelist,
+      convexDAIUSDCUSDTSUSDVault,
+      users,
+    } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
@@ -289,6 +327,10 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
     await vaultWhitelist.addAddressToWhitelistContract(
       convexDAIUSDCUSDTSUSDVault.address,
       susdLevSwap.address
+    );
+    await vaultWhitelist.addAddressToWhitelistUser(
+      convexDAIUSDCUSDTSUSDVault.address,
+      users[0].address
     );
   });
   describe('configuration', () => {
@@ -356,7 +398,8 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
   });
   describe('zapLeverageWithFlashloan():', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, pool, helpersContract } = testEnv;
+      const { users, usdt, pool, helpersContract, vaultWhitelist, convexDAIUSDCUSDTSUSDVault } =
+        testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
@@ -386,6 +429,22 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      await expect(
+        susdLevSwap
+          .connect(borrower.signer)
+          .zapLeverageWithFlashloan(
+            usdt.address,
+            principalAmount,
+            leverage,
+            slippage,
+            usdt.address,
+            0
+          )
+      ).to.be.revertedWith('118');
+      await vaultWhitelist.addAddressToWhitelistUser(
+        convexDAIUSDCUSDTSUSDVault.address,
+        borrower.address
+      );
       await susdLevSwap
         .connect(borrower.signer)
         .zapLeverageWithFlashloan(

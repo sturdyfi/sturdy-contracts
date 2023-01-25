@@ -5,7 +5,7 @@
 // import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 // import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 // import { getVariableDebtToken } from '../../helpers/contracts-getters';
-// import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
+// import { MintableERC20 } from '../../types';
 // import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
 
 // const chai = require('chai');
@@ -14,7 +14,7 @@
 // const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
 //   const { levSwapManager, deployer } = testEnv;
 //   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-//   return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+//   return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
 // };
 
 // const mint = async (
@@ -107,7 +107,7 @@
 //   const LPAmount = '200';
 //   const iterations = 3;
 //   const slippage = '100';
-//   let ironbankLevSwap = {} as GeneralLevSwap;
+//   let ironbankLevSwap = {} as IGeneralLevSwap;
 //   let ltv = '';
 
 //   before(async () => {
@@ -370,7 +370,7 @@
 //   const { INVALID_HF } = ProtocolErrors;
 //   const LPAmount = '200';
 //   const iterations = 3;
-//   let ironbankLevSwap = {} as GeneralLevSwap;
+//   let ironbankLevSwap = {} as IGeneralLevSwap;
 //   let ltv = '';
 
 //   before(async () => {
@@ -945,7 +945,7 @@
 //   const LPAmount = '200';
 //   const slippage = '100';
 //   const iterations = 3;
-//   let ironbankLevSwap = {} as GeneralLevSwap;
+//   let ironbankLevSwap = {} as IGeneralLevSwap;
 //   let ltv = '';
 
 //   before(async () => {

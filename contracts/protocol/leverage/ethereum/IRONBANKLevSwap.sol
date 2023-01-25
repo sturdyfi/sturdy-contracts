@@ -5,6 +5,7 @@ pragma abicoder v2;
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 interface ICurvePool {
   function add_liquidity(
@@ -60,7 +61,11 @@ contract IRONBANKLevSwap is GeneralLevSwap {
     return 2;
   }
 
-  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(
+    address _stableAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     uint256 coinIndex = _getCoinIndex(_stableAsset);
 
     IERC20(_stableAsset).safeApprove(address(IRONBANK), 0);
@@ -69,13 +74,24 @@ contract IRONBANKLevSwap is GeneralLevSwap {
     uint256[3] memory amountsAdded;
     amountsAdded[coinIndex] = _amount;
     IRONBANK.add_liquidity(amountsAdded, 0, true);
-    return IERC20(COLLATERAL).balanceOf(address(this));
+    uint256 amountTo = IERC20(COLLATERAL).balanceOf(address(this));
+    require(
+      amountTo >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
+    return amountTo;
   }
 
-  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+  function _swapFrom(address _stableAsset, uint256 _slippage) internal override returns (uint256) {
     int256 coinIndex = int256(_getCoinIndex(_stableAsset));
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     uint256 minAmount = IRONBANK.calc_withdraw_one_coin(collateralAmount, int128(coinIndex), true);
+    require(
+      minAmount >= _getMinAmount(COLLATERAL, _stableAsset, collateralAmount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
+
     uint256 balanceBefore = IERC20(_stableAsset).balanceOf(address(this));
 
     IRONBANK.remove_liquidity_one_coin(collateralAmount, int128(coinIndex), minAmount, true);

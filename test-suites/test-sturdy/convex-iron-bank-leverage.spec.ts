@@ -8,7 +8,7 @@
 //   getVariableDebtToken,
 //   getLendingPoolConfiguratorProxy,
 // } from '../../helpers/contracts-getters';
-// import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
+// import { MintableERC20 } from '../../types';
 // import { ProtocolErrors, RateMode, tEthereumAddress } from '../../helpers/types';
 // import { getUserData } from './helpers/utils/helpers';
 
@@ -19,7 +19,7 @@
 // const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
 //   const { levSwapManager, deployer } = testEnv;
 //   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-//   return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+//   return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
 // };
 
 // const mint = async (
@@ -95,7 +95,7 @@
 //   const { INVALID_HF } = ProtocolErrors;
 //   const LPAmount = '200';
 //   const iterations = 3;
-//   let ironbankLevSwap = {} as GeneralLevSwap;
+//   let ironbankLevSwap = {} as IGeneralLevSwap;
 //   let ltv = '';
 
 //   before(async () => {

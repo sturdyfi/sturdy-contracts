@@ -8,9 +8,11 @@ import {
   getVariableDebtToken,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
-import { GeneralLevSwapFactory, GeneralLevSwap, MintableERC20 } from '../../types';
+import { MintableERC20 } from '../../types';
 import { ProtocolErrors, RateMode, tEthereumAddress } from '../../helpers/types';
 import { getUserData } from './helpers/utils/helpers';
+import { IGeneralLevSwapFactory } from '../../types/IGeneralLevSwapFactory';
+import { IGeneralLevSwap } from '../../types/IGeneralLevSwap';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -19,7 +21,7 @@ const { parseEther } = ethers.utils;
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return GeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -111,13 +113,18 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let fraxusdcLevSwap = {} as GeneralLevSwap;
+  let fraxusdcLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxfrax_usdc } = testEnv;
+    const { helpersContract, cvxfrax_usdc, vaultWhitelist, convexFRAXUSDCVault, users } = testEnv;
     fraxusdcLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_usdc.address);
     ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_usdc.address)).ltv.toString();
+    await vaultWhitelist.addAddressToWhitelistContract(
+      convexFRAXUSDCVault.address,
+      fraxusdcLevSwap.address
+    );
+    await vaultWhitelist.addAddressToWhitelistUser(convexFRAXUSDCVault.address, users[0].address);
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
@@ -174,7 +181,15 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
   });
   describe('enterPosition():', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, FRAX_USDC_LP, pool, helpersContract } = testEnv;
+      const {
+        users,
+        usdt,
+        FRAX_USDC_LP,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexFRAXUSDCVault,
+      } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
@@ -213,6 +228,12 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      await expect(
+        fraxusdcLevSwap
+          .connect(borrower.signer)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0)
+      ).to.be.revertedWith('118');
+      await vaultWhitelist.addAddressToWhitelistUser(convexFRAXUSDCVault.address, borrower.address);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
@@ -241,7 +262,15 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, FRAX_USDC_LP, pool, helpersContract } = testEnv;
+      const {
+        users,
+        usdc,
+        FRAX_USDC_LP,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexFRAXUSDCVault,
+      } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
@@ -278,6 +307,12 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      await expect(
+        fraxusdcLevSwap
+          .connect(borrower.signer)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0)
+      ).to.be.revertedWith('118');
+      await vaultWhitelist.addAddressToWhitelistUser(convexFRAXUSDCVault.address, borrower.address);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
@@ -306,7 +341,15 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, FRAX_USDC_LP, pool, helpersContract } = testEnv;
+      const {
+        users,
+        dai,
+        FRAX_USDC_LP,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexFRAXUSDCVault,
+      } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
@@ -343,6 +386,12 @@ makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      await expect(
+        fraxusdcLevSwap
+          .connect(borrower.signer)
+          .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0)
+      ).to.be.revertedWith('118');
+      await vaultWhitelist.addAddressToWhitelistUser(convexFRAXUSDCVault.address, borrower.address);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);

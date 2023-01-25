@@ -5,6 +5,7 @@ pragma abicoder v2;
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
+import {Errors} from '../../libraries/helpers/Errors.sol';
 
 interface ICurvePool {
   function add_liquidity(uint256[3] memory amounts, uint256 _min_mint_amount) external;
@@ -65,7 +66,11 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
     return 2;
   }
 
-  function _swapTo(address _stableAsset, uint256 _amount) internal override returns (uint256) {
+  function _swapTo(
+    address _stableAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     uint256 coinIndex = _getCoinIndex(_stableAsset);
 
     // stable coin -> 3CRV
@@ -82,11 +87,15 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
     THREECRV_TOKEN.safeApprove(address(POOL), amountTo);
     POOL.add_liquidity([0, amountTo], 0);
     amountTo = IERC20(COLLATERAL).balanceOf(address(this));
+    require(
+      amountTo >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
 
     return amountTo;
   }
 
-  function _swapFrom(address _stableAsset) internal override returns (uint256) {
+  function _swapFrom(address _stableAsset, uint256 _slippage) internal override returns (uint256) {
     // MIM3CRV -> 3CRV
     int256 coinIndex = 1;
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
@@ -101,6 +110,10 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
     // 3CRV -> stable coin
     coinIndex = int256(_getCoinIndex(_stableAsset));
     minAmount = THREECRV.calc_withdraw_one_coin(threeCRVAmount, int128(coinIndex));
+    require(
+      minAmount >= _getMinAmount(COLLATERAL, _stableAsset, collateralAmount, _slippage),
+      Errors.LS_SUPPLY_NOT_ALLOWED
+    );
 
     THREECRV.remove_liquidity_one_coin(threeCRVAmount, int128(coinIndex), minAmount);
 

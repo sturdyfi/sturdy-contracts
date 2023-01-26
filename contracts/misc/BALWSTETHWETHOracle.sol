@@ -57,13 +57,9 @@ contract BALWSTETHWETHOracle is IOracle, IOracleValidate {
   /// @inheritdoc IOracleValidate
   function check() external {
     IVault.UserBalanceOp[] memory ops = new IVault.UserBalanceOp[](1);
-    ops[0] = IVault.UserBalanceOp(
-      IVault.UserBalanceOpKind.WITHDRAW_INTERNAL,
-      IAsset(address(1)),
-      0,
-      address(this),
-      payable(address(this))
-    );
+    ops[0].kind = IVault.UserBalanceOpKind.WITHDRAW_INTERNAL;
+    ops[0].sender = address(this);
+
     IVault(BALANCER_VAULT).manageUserBalance(ops);
   }
 }

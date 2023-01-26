@@ -605,31 +605,31 @@
   },
   "FRAX3CRVLevSwap": {
     "main": {
-      "address": "0xd747740FfAC8A6397bA80676299c4e3105999a9A",
+      "address": "0x812F220f7e79B3Df1EF7bF9Df0d5AbeAb58f95E3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xd747740FfAC8A6397bA80676299c4e3105999a9A",
+      "address": "0x812F220f7e79B3Df1EF7bF9Df0d5AbeAb58f95E3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "DAIUSDCUSDTSUSDLevSwap": {
     "main": {
-      "address": "0xF6A16a2E50a0Dd5350aB6AAfC38D34ADd474f765",
+      "address": "0xB0E64f8E2F735857CE9441356623452E72Fb4d5f",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xF6A16a2E50a0Dd5350aB6AAfC38D34ADd474f765",
+      "address": "0xB0E64f8E2F735857CE9441356623452E72Fb4d5f",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "FRAXUSDCLevSwap": {
     "main": {
-      "address": "0x89E13eDB3A1Df9a68aFa585299561EC93Ce92754",
+      "address": "0xcEA4FB7D31856F1Ec25Cad53a519039753B01fd1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x89E13eDB3A1Df9a68aFa585299561EC93Ce92754",
+      "address": "0xcEA4FB7D31856F1Ec25Cad53a519039753B01fd1",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -721,11 +721,11 @@
   },
   "TUSDFRAXBPLevSwap": {
     "main": {
-      "address": "0xFEAe31aB1480f56E73A4A9bbfa121B2beb527471",
+      "address": "0xaaCb05194c7864519116493C5d42353D2b658ecF",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xFEAe31aB1480f56E73A4A9bbfa121B2beb527471",
+      "address": "0xaaCb05194c7864519116493C5d42353D2b658ecF",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

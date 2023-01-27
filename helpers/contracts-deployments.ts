@@ -79,8 +79,8 @@ import {
 import { StableAndVariableTokensHelper__factory } from '../types';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { LendingPoolLibraryAddresses } from '../types/factories/protocol/lendingpool/LendingPool__factory';
-import { YieldManagerLibraryAddresses } from '../types/factories/incentives/YieldManager__factory';
+import { LendingPoolLibraryAddresses } from '../types/factories/contracts/protocol/lendingpool/LendingPool__factory';
+import { YieldManagerLibraryAddresses } from '../types/factories/contracts/incentives/YieldManager__factory';
 
 const readArtifact = async (id: string) => {
   return (DRE as HardhatRuntimeEnvironment).artifacts.readArtifact(id);

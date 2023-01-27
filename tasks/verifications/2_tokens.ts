@@ -10,6 +10,7 @@ import {
   getProxy,
   getStableDebtToken,
   getVariableDebtToken,
+  getVariableYieldDistribution,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork, verifyContract } from '../../helpers/contracts-helpers';
 import { eContractid, eNetwork, ICommonConfiguration, IReserveParams } from '../../helpers/types';
@@ -35,6 +36,10 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       await getFirstSigner()
     );
 
+    const yieldDistributor = {
+      cvxETH_STETH: (await getVariableYieldDistribution()).address,
+      auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
+    };
     const configs = Object.entries(ReservesConfig) as [string, IReserveParams][];
     for (const entry of Object.entries(getParamPerNetwork(ReserveAssets, network))) {
       const [token, tokenAddress] = entry;
@@ -58,6 +63,7 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
         variableRateSlope2,
         stableRateSlope1,
         stableRateSlope2,
+        capacity,
       } = tokenConfig[1].strategy;
 
       console.log;
@@ -98,6 +104,8 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
           variableRateSlope2,
           stableRateSlope1,
           stableRateSlope2,
+          capacity,
+          yieldDistributor[token] || ZERO_ADDRESS,
         ]
       );
 

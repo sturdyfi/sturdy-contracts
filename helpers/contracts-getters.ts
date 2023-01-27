@@ -33,6 +33,8 @@ import {
   ConvexCurveLPVault2__factory,
   MintableERC20__factory,
   WETHGateway__factory,
+  ETHSTETHLevSwap__factory,
+  AURAWSTETHWETHLevSwap__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -302,11 +304,29 @@ export const getLendingPool = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getConvexETHSTETHVaultImpl = async (address?: tEthereumAddress) =>
+  await ConvexCurveLPVault2__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ConvexETHSTETHVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getConvexETHSTETHVault = async (address?: tEthereumAddress) =>
   await ConvexCurveLPVault2__factory.connect(
     address ||
       (
         await getDb().get(`${eContractid.ConvexETHSTETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getAuraWSTETHWETHVaultImpl = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVault__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraWSTETHWETHVaultImpl}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );
@@ -550,3 +570,21 @@ export const getReserveLogicLibrary = async () => {
   const db = await getDb().get(`${eContractid.ReserveLogic}.${DRE.network.name}`).value();
   return db?.address;
 };
+
+export const getETHSTETHLevSwap = async (address?: tEthereumAddress) =>
+  await ETHSTETHLevSwap__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ETHSTETHLevSwap}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getAURAWSTETHWETHLevSwap = async (address?: tEthereumAddress) =>
+  await AURAWSTETHWETHLevSwap__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AURAWSTETHWETHLevSwap}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );

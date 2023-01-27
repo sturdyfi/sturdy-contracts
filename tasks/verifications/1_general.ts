@@ -16,10 +16,22 @@ import {
   getUiIncentiveDataProvider,
   getSturdyOracle,
   getPairsTokenAggregator,
+  getConvexETHSTETHVault,
+  getConvexETHSTETHVaultImpl,
+  getAuraWSTETHWETHVault,
+  getAuraWSTETHWETHVaultImpl,
+  getETHSTETHLevSwap,
+  getAURAWSTETHWETHLevSwap,
 } from '../../helpers/contracts-getters';
 import { verifyContract, getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { DRE, notFalsyOrZeroAddress } from '../../helpers/misc-utils';
-import { eContractid, eNetwork, ICommonConfiguration, SymbolMap } from '../../helpers/types';
+import {
+  eContractid,
+  eNetwork,
+  ICommonConfiguration,
+  IEthConfiguration,
+  SymbolMap,
+} from '../../helpers/types';
 
 task('verify:general', 'Verify contracts at Etherscan')
   .addFlag('all', 'Verify all contracts at Etherscan')
@@ -36,8 +48,10 @@ task('verify:general', 'Verify contracts at Etherscan')
       ReserveAssets,
       FallbackOracle,
       ChainlinkAggregator,
+      ETH_STETH_LP,
+      BAL_WSTETH_WETH_LP,
       ProtocolGlobalParams: { UsdAddress },
-    } = poolConfig as ICommonConfiguration;
+    } = poolConfig as IEthConfiguration;
     const signer = await getFirstSigner();
     const EMISSION_EXECUTOR = await signer.getAddress();
     const registryAddress = getParamPerNetwork(ProviderRegistry, network);
@@ -89,73 +103,73 @@ task('verify:general', 'Verify contracts at Etherscan')
 
       const dataProvider = await getSturdyProtocolDataProvider();
 
-      // // Address Provider
-      // console.log('\n- Verifying address provider...\n');
-      // await verifyContract(eContractid.LendingPoolAddressesProvider, addressesProvider, [MarketId]);
+      // Address Provider
+      console.log('\n- Verifying address provider...\n');
+      await verifyContract(eContractid.LendingPoolAddressesProvider, addressesProvider, [MarketId]);
 
-      // // Sturdy Oracle
-      // const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
-      // const chainlinkAggregators = await getParamPerNetwork(ChainlinkAggregator, network);
-      // const fallbackOracleAddress = await getParamPerNetwork(FallbackOracle, network);
-      // const tokensToWatch: SymbolMap<string> = {
-      //   ...reserveAssets,
-      //   USD: UsdAddress,
-      // };
-      // const [tokens, aggregators] = getPairsTokenAggregator(
-      //   tokensToWatch,
-      //   chainlinkAggregators,
-      //   poolConfig.OracleQuoteCurrency
-      // );
+      // Sturdy Oracle
+      const reserveAssets = await getParamPerNetwork(ReserveAssets, network);
+      const chainlinkAggregators = await getParamPerNetwork(ChainlinkAggregator, network);
+      const fallbackOracleAddress = await getParamPerNetwork(FallbackOracle, network);
+      const tokensToWatch: SymbolMap<string> = {
+        ...reserveAssets,
+        USD: UsdAddress,
+      };
+      const [tokens, aggregators] = getPairsTokenAggregator(
+        tokensToWatch,
+        chainlinkAggregators,
+        poolConfig.OracleQuoteCurrency
+      );
 
-      // console.log('\n- Verifying sturdy oracle...\n');
-      // await verifyContract(eContractid.SturdyOracle, oracle, [
-      //   tokens,
-      //   aggregators,
-      //   Array(tokens.length).fill(false),
-      //   fallbackOracleAddress,
-      //   await getQuoteCurrency(poolConfig),
-      //   poolConfig.OracleQuoteUnit,
-      // ]);
+      console.log('\n- Verifying sturdy oracle...\n');
+      await verifyContract(eContractid.SturdyOracle, oracle, [
+        tokens,
+        aggregators,
+        Array(tokens.length).fill(false),
+        fallbackOracleAddress,
+        await getQuoteCurrency(poolConfig),
+        poolConfig.OracleQuoteUnit,
+      ]);
 
-      // // Address Provider Registry
-      // console.log('\n- Verifying address provider registry...\n');
-      // await verifyContract(
-      //   eContractid.LendingPoolAddressesProviderRegistry,
-      //   addressesProviderRegistry,
-      //   []
-      // );
+      // Address Provider Registry
+      console.log('\n- Verifying address provider registry...\n');
+      await verifyContract(
+        eContractid.LendingPoolAddressesProviderRegistry,
+        addressesProviderRegistry,
+        []
+      );
 
-      // // Lending Pool implementation
-      // console.log('\n- Verifying LendingPool Implementation...\n');
-      // await verifyContract(eContractid.LendingPool, lendingPoolImpl, []);
+      // Lending Pool implementation
+      console.log('\n- Verifying LendingPool Implementation...\n');
+      await verifyContract(eContractid.LendingPool, lendingPoolImpl, []);
 
-      // // Lending Pool Configurator implementation
-      // console.log('\n- Verifying LendingPool Configurator Implementation...\n');
-      // await verifyContract(eContractid.LendingPoolConfigurator, lendingPoolConfiguratorImpl, []);
+      // Lending Pool Configurator implementation
+      console.log('\n- Verifying LendingPool Configurator Implementation...\n');
+      await verifyContract(eContractid.LendingPoolConfigurator, lendingPoolConfiguratorImpl, []);
 
-      // // Lending Pool Collateral Manager implementation
-      // console.log('\n- Verifying LendingPool Collateral Manager Implementation...\n');
-      // await verifyContract(
-      //   eContractid.LendingPoolCollateralManager,
-      //   lendingPoolCollateralManagerImpl,
-      //   []
-      // );
+      // Lending Pool Collateral Manager implementation
+      console.log('\n- Verifying LendingPool Collateral Manager Implementation...\n');
+      await verifyContract(
+        eContractid.LendingPoolCollateralManager,
+        lendingPoolCollateralManagerImpl,
+        []
+      );
 
-      // // IncentiveController implementation
-      // console.log('\n- Verifying IncentiveController Implementation...\n');
-      // await verifyContract(eContractid.StakedTokenIncentivesController, incentiveControllerImpl, [
-      //   EMISSION_EXECUTOR,
-      // ]);
+      // IncentiveController implementation
+      console.log('\n- Verifying IncentiveController Implementation...\n');
+      await verifyContract(eContractid.StakedTokenIncentivesController, incentiveControllerImpl, [
+        EMISSION_EXECUTOR,
+      ]);
 
-      // // Test helpers
-      // console.log('\n- Verifying  Sturdy  Provider Helpers...\n');
-      // await verifyContract(eContractid.SturdyProtocolDataProvider, dataProvider, [
-      //   addressesProvider.address,
-      // ]);
+      // Test helpers
+      console.log('\n- Verifying  Sturdy  Provider Helpers...\n');
+      await verifyContract(eContractid.SturdyProtocolDataProvider, dataProvider, [
+        addressesProvider.address,
+      ]);
 
-      // // WalletBalanceProvider implementation
-      // console.log('\n- Verifying WalletBalanceProvider Implementation...\n');
-      // await verifyContract(eContractid.WalletBalanceProvider, walletBalanceProvider, []);
+      // WalletBalanceProvider implementation
+      console.log('\n- Verifying WalletBalanceProvider Implementation...\n');
+      await verifyContract(eContractid.WalletBalanceProvider, walletBalanceProvider, []);
 
       // UiPoolDataProvider implementation
       console.log(incentiveControllerAddress, oracleAddress);
@@ -210,25 +224,58 @@ task('verify:general', 'Verify contracts at Etherscan')
     );
 
     // Verifying vaults
-    // const lidoVaultAddress = await addressesProvider.getAddress(
-    //   DRE.ethers.utils.formatBytes32String('LIDO_VAULT')
-    // );
-    // const lidoVaultProxy = await getProxy(lidoVaultAddress);
-    // if (all) {
-    //   const lidoVaultImpl = await getLidoVaultImpl();
+    const convexETHSTETHVault = await getConvexETHSTETHVault();
+    const convexETHSTETHVaultProxy = await getProxy(convexETHSTETHVault.address);
+    if (all) {
+      const convexETHSTETHVaultImpl = await getConvexETHSTETHVaultImpl();
 
-    //   // LidoVault implementation
-    //   console.log('\n- Verifying LidoVault Implementation...\n');
-    //   await verifyContract(eContractid.LidoVault, lidoVaultImpl, []);
-    // }
+      // convexETHSTETHVault implementation
+      console.log('\n- Verifying convexETHSTETHVault Implementation...\n');
+      await verifyContract(eContractid.ConvexETHSTETHVault, convexETHSTETHVaultImpl, []);
+    }
 
-    // // LidoVault proxy
-    // console.log('\n- Verifying  LidoVault Proxy...\n');
-    // await verifyContract(
-    //   eContractid.InitializableImmutableAdminUpgradeabilityProxy,
-    //   lidoVaultProxy,
-    //   [addressesProvider.address]
-    // );
+    // convexETHSTETHVault proxy
+    console.log('\n- Verifying  convexETHSTETHVault Proxy...\n');
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      convexETHSTETHVaultProxy,
+      [addressesProvider.address]
+    );
+
+    const auraWSTETHWETHVault = await getAuraWSTETHWETHVault();
+    const auraWSTETHWETHVaultProxy = await getProxy(auraWSTETHWETHVault.address);
+    if (all) {
+      const auraWSTETHWETHVaultImpl = await getAuraWSTETHWETHVaultImpl();
+
+      // auraWSTETHWETHVault implementation
+      console.log('\n- Verifying auraWSTETHWETHVault Implementation...\n');
+      await verifyContract(eContractid.AuraWSTETHWETHVault, auraWSTETHWETHVaultImpl, []);
+    }
+
+    // auraWSTETHWETHVault proxy
+    console.log('\n- Verifying  auraWSTETHWETHVault Proxy...\n');
+    await verifyContract(
+      eContractid.InitializableImmutableAdminUpgradeabilityProxy,
+      auraWSTETHWETHVaultProxy,
+      [addressesProvider.address]
+    );
+
+    // Verifying Leverage contract
+    const convexETHSTETHLeverage = await getETHSTETHLevSwap();
+    console.log('\n- Verifying convexETHSTETHLeverage...\n');
+    await verifyContract(eContractid.ETHSTETHLevSwap, convexETHSTETHLeverage, [
+      getParamPerNetwork(ETH_STETH_LP, network),
+      convexETHSTETHVault.address,
+      addressesProvider.address,
+    ]);
+
+    const auraWSTETHWETHLeverage = await getAURAWSTETHWETHLevSwap();
+    console.log('\n- Verifying auraWSTETHWETHLeverage...\n');
+    await verifyContract(eContractid.AURAWSTETHWETHLevSwap, auraWSTETHWETHLeverage, [
+      getParamPerNetwork(BAL_WSTETH_WETH_LP, network),
+      auraWSTETHWETHVault.address,
+      addressesProvider.address,
+    ]);
 
     console.log('Finished verifications.');
   });

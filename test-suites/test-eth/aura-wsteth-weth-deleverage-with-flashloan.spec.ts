@@ -5,11 +5,9 @@ import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20 } from '../../types';
+import { GeneralLevSwap__factory, GeneralLevSwap, MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
 import { mint } from './helpers/mint';
-import { IGeneralLevSwapFactory } from '../../types/IGeneralLevSwapFactory';
-import { IGeneralLevSwap } from '../../types/IGeneralLevSwap';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -17,7 +15,7 @@ const { expect } = chai;
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+  return GeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const calcTotalBorrowAmount = async (
@@ -66,7 +64,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
   const LPAmount = '2';
   const slippage = 200;
   const leverage = 36000;
-  let wstethwethLevSwap = {} as IGeneralLevSwap;
+  let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
@@ -159,7 +157,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
   const LPAmount = '2';
   const slippage = 200;
   const leverage = 36000;
-  let wstethwethLevSwap = {} as IGeneralLevSwap;
+  let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {

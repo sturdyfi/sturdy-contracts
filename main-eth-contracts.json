@@ -263,21 +263,21 @@
   },
   "ETHSTETHOracle": {
     "main": {
-      "address": "0xD783c7ff0666bb8245229946D595A819f5B21170",
+      "address": "0xA5B6Eb2aa854409B2B336FC6D48b6CEed34ed25F",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xD783c7ff0666bb8245229946D595A819f5B21170",
+      "address": "0xA5B6Eb2aa854409B2B336FC6D48b6CEed34ed25F",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "AuraWSTETHWETHVaultImpl": {
     "main": {
-      "address": "0x0844d5a02bc45AA6175a917725797f0B3C631fDC",
+      "address": "0x7Ca912BC16f3490438aA1450b053f4Ae11d22b90",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x0844d5a02bc45AA6175a917725797f0B3C631fDC",
+      "address": "0x7Ca912BC16f3490438aA1450b053f4Ae11d22b90",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -291,11 +291,11 @@
   },
   "BALWSTETHWETHOracle": {
     "main": {
-      "address": "0x89a6EB70763cd22ace8Fdb18719d481DDCeEDa06",
+      "address": "0x65e16810CBD33B6b187e7E77f0Ae662233b5181e",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x89a6EB70763cd22ace8Fdb18719d481DDCeEDa06",
+      "address": "0x65e16810CBD33B6b187e7E77f0Ae662233b5181e",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -373,21 +373,21 @@
   },
   "UiPoolDataProvider": {
     "main": {
-      "address": "0xE434D45Fff856BC6615BCf0Db37612128A548595",
+      "address": "0x88435B0324239D79D1b92D4f49a3201f74B3721e",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xE434D45Fff856BC6615BCf0Db37612128A548595",
+      "address": "0x88435B0324239D79D1b92D4f49a3201f74B3721e",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "UiIncentiveDataProvider": {
     "main": {
-      "address": "0x54F3e84B15eD59152A0fa5561Ef1d9591090ae4c",
+      "address": "0x36711892A0f634494921D3031E9D2C98CE7ce659",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x54F3e84B15eD59152A0fa5561Ef1d9591090ae4c",
+      "address": "0x36711892A0f634494921D3031E9D2C98CE7ce659",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -447,21 +447,21 @@
   },
   "ETHSTETHLevSwap": {
     "main": {
-      "address": "0x638B129Ab6d241Ec2F890Aa3af197bF84b5FF1bB",
+      "address": "0x6d421123Db7e8Df8CC5606E8Bbe25bc942995F71",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x638B129Ab6d241Ec2F890Aa3af197bF84b5FF1bB",
+      "address": "0x6d421123Db7e8Df8CC5606E8Bbe25bc942995F71",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
   "AURAWSTETHWETHLevSwap": {
     "main": {
-      "address": "0xf1859145906b08C66fB99E167a1406aC00a2079E",
+      "address": "0xF17A88D81A1Ca148f5e6267aB26e4E0e7207D797",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xf1859145906b08C66fB99E167a1406aC00a2079E",
+      "address": "0xF17A88D81A1Ca148f5e6267aB26e4E0e7207D797",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -472,16 +472,6 @@
     },
     "localhost": {
       "address": "0xEF328E8C569CD029e5Ebb4e37525b4e255B33166",
-      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
-    }
-  },
-  "WETHGateway": {
-    "main": {
-      "address": "0xE27F1a136C0114ADed15b24b576aD7F71483dCCa",
-      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
-    },
-    "localhost": {
-      "address": "0xE27F1a136C0114ADed15b24b576aD7F71483dCCa",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

@@ -17,6 +17,8 @@ import {
   getVariableYieldDistribution,
   getConvexETHSTETHVault,
   getAuraWSTETHWETHVault,
+  getUiPoolDataProvider,
+  getSturdyIncentivesController,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -38,8 +40,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         IncentivesController,
       } = poolConfig as ICommonConfiguration;
 
-      const reserveAssets = getParamPerNetwork(ReserveAssets, network);
-      const incentivesController = getParamPerNetwork(IncentivesController, network);
+      // const reserveAssets = getParamPerNetwork(ReserveAssets, network);
+      const incentivesController = (await getSturdyIncentivesController()).address;
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       const testHelpers = await getSturdyProtocolDataProvider();
@@ -47,64 +49,64 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const admin = await addressesProvider.getPoolAdmin();
       const oracle = await addressesProvider.getPriceOracle();
 
-      if (!reserveAssets) {
-        throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
-      }
+      // if (!reserveAssets) {
+      //   throw 'Reserve assets is undefined. Check ReserveAssets configuration at config directory';
+      // }
 
-      const treasuryAddress = await getTreasuryAddress(poolConfig);
-      const yieldAddresses = {
-        cvxETH_STETH: (await getConvexETHSTETHVault()).address,
-        auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
-      };
+      // const treasuryAddress = await getTreasuryAddress(poolConfig);
+      // const yieldAddresses = {
+      //   cvxETH_STETH: (await getConvexETHSTETHVault()).address,
+      //   auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
+      // };
 
-      const yieldDistributor = {
-        cvxETH_STETH: (await getVariableYieldDistribution()).address,
-        auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
-      };
+      // const yieldDistributor = {
+      //   cvxETH_STETH: (await getVariableYieldDistribution()).address,
+      //   auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
+      // };
 
-      await initReservesByHelper(
-        ReservesConfig,
-        reserveAssets,
-        ATokenNamePrefix,
-        StableDebtTokenNamePrefix,
-        VariableDebtTokenNamePrefix,
-        SymbolPrefix,
-        admin,
-        treasuryAddress,
-        yieldAddresses,
-        yieldDistributor,
-        verify
-      );
-      await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
+      // await initReservesByHelper(
+      //   ReservesConfig,
+      //   reserveAssets,
+      //   ATokenNamePrefix,
+      //   StableDebtTokenNamePrefix,
+      //   VariableDebtTokenNamePrefix,
+      //   SymbolPrefix,
+      //   admin,
+      //   treasuryAddress,
+      //   yieldAddresses,
+      //   yieldDistributor,
+      //   verify
+      // );
+      // await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);
 
-      let collateralManagerAddress = getParamPerNetwork(LendingPoolCollateralManager, network);
-      if (!notFalsyOrZeroAddress(collateralManagerAddress)) {
-        const collateralManager = await deployLendingPoolCollateralManager(verify);
-        collateralManagerAddress = collateralManager.address;
-      }
-      // Seems unnecessary to register the collateral manager in the JSON db
+      // let collateralManagerAddress = getParamPerNetwork(LendingPoolCollateralManager, network);
+      // if (!notFalsyOrZeroAddress(collateralManagerAddress)) {
+      //   const collateralManager = await deployLendingPoolCollateralManager(verify);
+      //   collateralManagerAddress = collateralManager.address;
+      // }
+      // // Seems unnecessary to register the collateral manager in the JSON db
 
-      console.log(
-        '\tSetting lending pool collateral manager implementation with address',
-        collateralManagerAddress
-      );
-      await waitForTx(
-        await addressesProvider.setLendingPoolCollateralManager(collateralManagerAddress)
-      );
+      // console.log(
+      //   '\tSetting lending pool collateral manager implementation with address',
+      //   collateralManagerAddress
+      // );
+      // await waitForTx(
+      //   await addressesProvider.setLendingPoolCollateralManager(collateralManagerAddress)
+      // );
 
-      console.log(
-        '\tSetting SturdyProtocolDataProvider at AddressesProvider at id: 0x01',
-        collateralManagerAddress
-      );
-      const sturdyProtocolDataProvider = await getSturdyProtocolDataProvider();
-      await waitForTx(
-        await addressesProvider.setAddress(
-          '0x0100000000000000000000000000000000000000000000000000000000000000',
-          sturdyProtocolDataProvider.address
-        )
-      );
+      // console.log(
+      //   '\tSetting SturdyProtocolDataProvider at AddressesProvider at id: 0x01',
+      //   collateralManagerAddress
+      // );
+      // const sturdyProtocolDataProvider = await getSturdyProtocolDataProvider();
+      // await waitForTx(
+      //   await addressesProvider.setAddress(
+      //     '0x0100000000000000000000000000000000000000000000000000000000000000',
+      //     sturdyProtocolDataProvider.address
+      //   )
+      // );
 
-      await deployWalletBalancerProvider(verify);
+      // await deployWalletBalancerProvider(verify);
 
       const uiPoolDataProvider = await deployUiPoolDataProvider(
         [incentivesController, oracle],
@@ -112,8 +114,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       );
       console.log('UiPoolDataProvider deployed at:', uiPoolDataProvider.address);
 
-      const uiIncentiveDataProvider = await deployUiIncentiveDataProvider(verify);
-      console.log('UiIncentiveDataProvider deployed at:', uiIncentiveDataProvider.address);
+      // const uiIncentiveDataProvider = await deployUiIncentiveDataProvider(verify);
+      // console.log('UiIncentiveDataProvider deployed at:', uiIncentiveDataProvider.address);
     } catch (err) {
       console.error(err);
       exit(1);

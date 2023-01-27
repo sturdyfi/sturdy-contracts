@@ -22,21 +22,20 @@ import {
   getLeverageSwapManager,
   getAuraWSTETHWETHVault,
   getSturdyOracle,
-  getWETHGateway,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
-import { LendingPool } from '../../../types/LendingPool';
-import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
-import { MintableERC20 } from '../../../types/MintableERC20';
-import { AToken } from '../../../types/AToken';
-import { LendingPoolConfigurator } from '../../../types/LendingPoolConfigurator';
+import { LendingPool } from '../../../types';
+import { SturdyProtocolDataProvider } from '../../../types';
+import { MintableERC20 } from '../../../types';
+import { AToken } from '../../../types';
+import { LendingPoolConfigurator } from '../../../types';
 
 import chai from 'chai';
 // @ts-ignore
 import bignumberChai from 'chai-bignumber';
 import { almostEqual } from './almost-equal';
-import { LendingPoolAddressesProvider } from '../../../types/LendingPoolAddressesProvider';
-import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPoolAddressesProviderRegistry';
+import { LendingPoolAddressesProvider } from '../../../types';
+import { LendingPoolAddressesProviderRegistry } from '../../../types';
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
@@ -47,19 +46,18 @@ import {
   SturdyInternalAsset,
   LeverageSwapManager,
   SturdyAPRDataProvider,
-  SturdyInternalAssetFactory,
+  SturdyInternalAsset__factory,
   AuraBalancerLPVault,
   ConvexCurveLPVault2,
   SturdyOracle,
-  WETHGateway,
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { parseEther } from '@ethersproject/units';
 import EthConfig from '../../../markets/eth';
-import { IERC20Detailed } from '../../../types/IERC20Detailed';
-import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
+import { IERC20Detailed } from '../../../types';
+import { IERC20Detailed__factory } from '../../../types';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -99,7 +97,6 @@ export interface TestEnv {
   AURA: IERC20Detailed;
   levSwapManager: LeverageSwapManager;
   aprProvider: SturdyAPRDataProvider;
-  wethGateway: WETHGateway;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -136,12 +133,10 @@ const testEnv: TestEnv = {
   AURA: {} as IERC20Detailed,
   levSwapManager: {} as LeverageSwapManager,
   aprProvider: {} as SturdyAPRDataProvider,
-  wethGateway: {} as WETHGateway,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
   // Mainnet missing addresses
-  const ethers = (DRE as any).ethers;
   const poolConfig = loadPoolConfig(ConfigNames.Eth) as IEthConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const EthStEthLPAddress = getParamPerNetwork(poolConfig.ETH_STETH_LP, network);
@@ -211,7 +206,7 @@ export async function initializeMakeSuite() {
       process.env.FORK as eNetwork
     );
     if (!providerRegistryOwner) testEnv.registryOwnerSigner = await getFirstSigner();
-    else testEnv.registryOwnerSigner = ethers.provider.getSigner(providerRegistryOwner);
+    else testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     // testEnv.oracle = await getPriceOracle();
@@ -250,16 +245,15 @@ export async function initializeMakeSuite() {
   testEnv.aAURAWSTETH_WETH = await getAToken(aAURAWSTETH_WETHAddress);
 
   testEnv.weth = await getMintableERC20(wethAddress);
-  testEnv.wethGateway = await getWETHGateway();
   testEnv.ETH_STETH_LP = await getMintableERC20(EthStEthLPAddress);
   testEnv.BAL_WSTETH_WETH_LP = await getMintableERC20(BalWstethWethLPAddress);
 
-  testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
-  testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
-  testEnv.BAL = IERC20DetailedFactory.connect(balAddress, deployer.signer);
-  testEnv.AURA = IERC20DetailedFactory.connect(auraAddress, deployer.signer);
-  testEnv.cvxeth_steth = SturdyInternalAssetFactory.connect(cvxethstethAddress, deployer.signer);
-  testEnv.aurawsteth_weth = SturdyInternalAssetFactory.connect(aurawstethwethAddress, deployer.signer);
+  testEnv.CRV = IERC20Detailed__factory.connect(crvAddress, deployer.signer);
+  testEnv.CVX = IERC20Detailed__factory.connect(cvxAddress, deployer.signer);
+  testEnv.BAL = IERC20Detailed__factory.connect(balAddress, deployer.signer);
+  testEnv.AURA = IERC20Detailed__factory.connect(auraAddress, deployer.signer);
+  testEnv.cvxeth_steth = SturdyInternalAsset__factory.connect(cvxethstethAddress, deployer.signer);
+  testEnv.aurawsteth_weth = SturdyInternalAsset__factory.connect(aurawstethwethAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

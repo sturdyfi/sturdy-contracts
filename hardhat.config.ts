@@ -18,7 +18,7 @@ import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-etherscan';
 import 'hardhat-gas-reporter';
-import 'hardhat-typechain';
+import '@typechain/hardhat';
 import '@tenderly/hardhat-tenderly';
 import 'solidity-coverage';
 import "hardhat-contract-sizer";
@@ -36,7 +36,7 @@ const FORK = process.env.FORK || 'main';
 
 // Prevent to load scripts before compilation and typechain
 if (!SKIP_LOAD) {
-  ['misc', 'migrations', 'full', 'deployments', 'helpers'].forEach(
+  ['misc', 'migrations', 'full', 'deployments', 'helpers', 'verifications'].forEach(
     (folder) => {
       const tasksPath = path.join(__dirname, 'tasks', folder);
       fs.readdirSync(tasksPath)

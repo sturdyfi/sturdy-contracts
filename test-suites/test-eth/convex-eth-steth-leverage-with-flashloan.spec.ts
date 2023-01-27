@@ -8,12 +8,10 @@ import {
   getVariableDebtToken,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
-import { MintableERC20 } from '../../types';
+import { GeneralLevSwap__factory, GeneralLevSwap, MintableERC20 } from '../../types';
 import { ProtocolErrors, RateMode, tEthereumAddress } from '../../helpers/types';
 import { getUserData } from './helpers/utils/helpers';
 import { mint } from './helpers/mint';
-import { IGeneralLevSwapFactory } from '../../types/IGeneralLevSwapFactory';
-import { IGeneralLevSwap } from '../../types/IGeneralLevSwap';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -22,7 +20,7 @@ const { parseEther } = ethers.utils;
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+  return GeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const calcTotalBorrowAmount = async (
@@ -77,14 +75,14 @@ const depositToLendingPool = async (
 makeSuite('ETHSTETH Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage = 100;
+  const slippage = 200;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let ethstethLevSwap = {} as IGeneralLevSwap;
+  let ethstethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
@@ -95,7 +93,7 @@ makeSuite('ETHSTETH Leverage Swap', (testEnv) => {
   describe('configuration', () => {
     it('WETH should be available for borrowing.', async () => {
       const { weth } = testEnv;
-      const coins = (await ethstethLevSwap.getAvailableBorrowingAssets()).map((coin) =>
+      const coins = (await ethstethLevSwap.getAvailableStableCoins()).map((coin) =>
         coin.toUpperCase()
       );
       expect(coins.length).to.be.equal(1);

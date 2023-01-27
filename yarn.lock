@@ -55,6 +55,11 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
+"@balancer-labs/v2-interfaces@^0.2.1":
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/@balancer-labs/v2-interfaces/-/v2-interfaces-0.2.1.tgz#df6f02496939fe1599fc17232fbb6704cef63cc8"
+  integrity sha512-CBbUKjIJKdPwPGW5PCjqwStbvu9+qonnx0sY8vhIn1hJ17kopio6HCe7SsyMF7vWOd4YqzUq4Zc/6kyHH+8Bpg==
+
 "@colors/colors@1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"

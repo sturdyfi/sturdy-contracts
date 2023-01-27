@@ -75,7 +75,7 @@ const depositToLendingPool = async (
 makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
@@ -93,7 +93,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   describe('configuration', () => {
     it('WETH should be available for borrowing.', async () => {
       const { weth } = testEnv;
-      const coins = (await wstethwethLevSwap.getAvailableStableCoins()).map((coin) =>
+      const coins = (await wstethwethLevSwap.getAvailableBorrowingAssets()).map((coin) =>
         coin.toUpperCase()
       );
       expect(coins.length).to.be.equal(1);

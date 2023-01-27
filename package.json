@@ -101,6 +101,7 @@
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@balancer-labs/v2-interfaces": "^0.2.1",
     "@nomiclabs/buidler": "^1.4.8",
     "@nomiclabs/buidler-ethers": "^2.0.2",
     "@nomiclabs/buidler-etherscan": "^2.1.0",

@@ -32,6 +32,7 @@ import {
   AuraBalancerLPVault__factory,
   ConvexCurveLPVault2__factory,
   MintableERC20__factory,
+  WETHGateway__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -223,6 +224,15 @@ export const getATokensAndRatesHelper = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.ATokensAndRatesHelper}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getWETHGateway = async (address?: tEthereumAddress) =>
+  await WETHGateway__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.WETHGateway}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

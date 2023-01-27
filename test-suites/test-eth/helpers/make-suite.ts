@@ -22,9 +22,10 @@ import {
   getLeverageSwapManager,
   getAuraWSTETHWETHVault,
   getSturdyOracle,
+  getWETHGateway,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
-import { LendingPool } from '../../../types';
+import { LendingPool, WETHGateway } from '../../../types';
 import { SturdyProtocolDataProvider } from '../../../types';
 import { MintableERC20 } from '../../../types';
 import { AToken } from '../../../types';
@@ -97,6 +98,7 @@ export interface TestEnv {
   AURA: IERC20Detailed;
   levSwapManager: LeverageSwapManager;
   aprProvider: SturdyAPRDataProvider;
+  wethGateway: WETHGateway;
 }
 
 let buidlerevmSnapshotId: string = '0x1';
@@ -133,10 +135,12 @@ const testEnv: TestEnv = {
   AURA: {} as IERC20Detailed,
   levSwapManager: {} as LeverageSwapManager,
   aprProvider: {} as SturdyAPRDataProvider,
+  wethGateway: {} as WETHGateway,
 } as TestEnv;
 
 export async function initializeMakeSuite() {
   // Mainnet missing addresses
+  const ethers = (DRE as any).ethers;
   const poolConfig = loadPoolConfig(ConfigNames.Eth) as IEthConfiguration;
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const EthStEthLPAddress = getParamPerNetwork(poolConfig.ETH_STETH_LP, network);
@@ -206,7 +210,7 @@ export async function initializeMakeSuite() {
       process.env.FORK as eNetwork
     );
     if (!providerRegistryOwner) testEnv.registryOwnerSigner = await getFirstSigner();
-    else testEnv.registryOwnerSigner = DRE.ethers.provider.getSigner(providerRegistryOwner);
+    else testEnv.registryOwnerSigner = ethers.provider.getSigner(providerRegistryOwner);
   } else {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry();
     // testEnv.oracle = await getPriceOracle();
@@ -245,6 +249,7 @@ export async function initializeMakeSuite() {
   testEnv.aAURAWSTETH_WETH = await getAToken(aAURAWSTETH_WETHAddress);
 
   testEnv.weth = await getMintableERC20(wethAddress);
+  testEnv.wethGateway = await getWETHGateway();
   testEnv.ETH_STETH_LP = await getMintableERC20(EthStEthLPAddress);
   testEnv.BAL_WSTETH_WETH_LP = await getMintableERC20(BalWstethWethLPAddress);
 

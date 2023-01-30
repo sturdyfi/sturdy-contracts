@@ -5,7 +5,7 @@ import {
   IReserveParams,
   tEthereumAddress,
 } from './types';
-import { SturdyProtocolDataProvider } from '../types/SturdyProtocolDataProvider';
+import { SturdyProtocolDataProvider } from '../types';
 import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,

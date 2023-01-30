@@ -11,8 +11,8 @@ import {
 import { MintableERC20 } from '../../types';
 import { ProtocolErrors, RateMode, tEthereumAddress } from '../../helpers/types';
 import { getUserData } from './helpers/utils/helpers';
-import { IGeneralLevSwapFactory } from '../../types/IGeneralLevSwapFactory';
-import { IGeneralLevSwap } from '../../types/IGeneralLevSwap';
+import { IGeneralLevSwap__factory } from '../../types';
+import { IGeneralLevSwap } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -21,7 +21,7 @@ const { parseEther } = ethers.utils;
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (

@@ -11,7 +11,7 @@ import {
   timeLatest,
   waitForTx,
 } from '../../helpers/misc-utils';
-import { IERC20DetailedFactory } from '../../types/IERC20DetailedFactory';
+import { IERC20Detailed__factory } from '../../types';
 import { getFXSStableYieldDistribution, getMintableERC20 } from '../../helpers/contracts-getters';
 
 const chai = require('chai');

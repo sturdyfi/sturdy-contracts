@@ -1,5 +1,5 @@
-import { BigNumberish, Contract } from 'ethers';
-import { DRE, impersonateAccountsHardhat, waitForTx } from './misc-utils';
+import { Contract } from 'ethers';
+import { DRE, waitForTx } from './misc-utils';
 import {
   tEthereumAddress,
   eContractid,
@@ -14,7 +14,7 @@ import {
   eNetwork,
   IFantomConfiguration,
 } from './types';
-import { MintableERC20 } from '../types/MintableERC20';
+import { MintableERC20 } from '../types';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
@@ -63,107 +63,106 @@ import {
   getBalancerswapAdapterAddress,
   getConvexTUSDFRAXBPVault,
 } from './contracts-getters';
-import { ZERO_ADDRESS } from './constants';
 import {
-  SturdyProtocolDataProviderFactory,
-  ATokenFactory,
-  ATokensAndRatesHelperFactory,
-  SturdyOracleFactory,
-  DefaultReserveInterestRateStrategyFactory,
-  LendingPoolAddressesProviderFactory,
-  LendingPoolAddressesProviderRegistryFactory,
-  LendingPoolCollateralManagerFactory,
-  LendingPoolConfiguratorFactory,
-  LendingRateOracleFactory,
-  MintableDelegationERC20Factory,
-  MintableERC20Factory,
-  MockAggregatorFactory,
-  MockATokenFactory,
-  MockStableDebtTokenFactory,
-  MockVariableDebtTokenFactory,
-  PriceOracleFactory,
-  ReserveLogicFactory,
-  StableDebtTokenFactory,
-  VariableDebtTokenFactory,
-  WETH9MockedFactory,
-  LendingPoolFactory,
-  LidoVaultFactory,
-  StakedTokenIncentivesControllerFactory,
-  SturdyTokenFactory,
+  SturdyProtocolDataProvider__factory,
+  AToken__factory,
+  ATokensAndRatesHelper__factory,
+  SturdyOracle__factory,
+  DefaultReserveInterestRateStrategy__factory,
+  LendingPoolAddressesProvider__factory,
+  LendingPoolAddressesProviderRegistry__factory,
+  LendingPoolCollateralManager__factory,
+  LendingPoolConfigurator__factory,
+  LendingRateOracle__factory,
+  MintableDelegationERC20__factory,
+  MintableERC20__factory,
+  MockAggregator__factory,
+  MockAToken__factory,
+  MockStableDebtToken__factory,
+  MockVariableDebtToken__factory,
+  PriceOracle__factory,
+  ReserveLogic__factory,
+  StableDebtToken__factory,
+  VariableDebtToken__factory,
+  WETH9Mocked__factory,
+  LendingPool__factory,
+  LidoVault__factory,
+  StakedTokenIncentivesController__factory,
+  SturdyToken__factory,
   UiPoolDataProvider,
-  WalletBalanceProviderFactory,
-  UiIncentiveDataProviderFactory,
-  DaiFactory,
-  ATokenForCollateralFactory,
-  YearnVaultFactory,
-  BeefyETHVaultFactory,
-  MockyvWFTMFactory,
-  UsdcFactory,
-  UsdtFactory,
-  YearnWETHVaultFactory,
-  MockyvWETHFactory,
-  MockWETHForFTMFactory,
-  YearnWBTCVaultFactory,
-  MockyvWBTCFactory,
-  MockWBTCForFTMFactory,
-  CollateralAdapterFactory,
-  YearnBOOVaultFactory,
-  BooOracleFactory,
-  MockyvBOOFactory,
-  MockBOOForFTMFactory,
-  TombOracleFactory,
-  TombFtmLPOracleFactory,
-  TombFtmBeefyVaultFactory,
-  MockMooTOMBFTMFactory,
-  TombMiMaticLPOracleFactory,
-  TombMimaticBeefyVaultFactory,
-  MockMooTOMBMIMATICFactory,
-  FTMLiquidatorFactory,
-  ETHLiquidatorFactory,
-  YearnFBEETSVaultFactory,
-  FBeetsOracleFactory,
-  BeetsOracleFactory,
-  YearnLINKVaultFactory,
-  MockYearnVaultFactory,
-  MockBeefyVaultFactory,
-  YearnCRVVaultFactory,
-  YearnSPELLVaultFactory,
-  DeployVaultHelperFactory,
-  BasedOracleFactory,
-  BasedMiMaticLPOracleFactory,
-  BasedMimaticBeefyVaultFactory,
-  MockMooBASEDMIMATICFactory,
-  YearnRETHWstETHVaultFactory,
-  CrvREthWstETHOracleFactory,
-  ConvexCurveLPVaultFactory,
-  FRAX3CRVOracleFactory,
-  STECRVOracleFactory,
-  DOLA3CRVOracleFactory,
-  YieldManagerFactory,
-  StableYieldDistributionFactory,
-  MIM3CRVOracleFactory,
-  DAIUSDCUSDTSUSDOracleFactory,
-  VariableYieldDistributionFactory,
-  HBTCWBTCOracleFactory,
-  BeefyMIM2CRVVaultFactory,
-  MIM2CRVOracleFactory,
-  IronBankOracleFactory,
-  LeverageSwapManagerFactory,
-  FRAX3CRVLevSwapFactory,
-  DAIUSDCUSDTSUSDLevSwapFactory,
-  FRAXUSDCOracleFactory,
-  MIM3CRVLevSwapFactory,
-  IRONBANKLevSwapFactory,
-  FRAXUSDCLevSwapFactory,
-  SturdyAPRDataProviderFactory,
-  AuraBalancerLPVaultFactory,
-  BALDAIUSDCUSDTOracleFactory,
-  TUSDFRAXBPOracleFactory,
-  TUSDFRAXBPLevSwapFactory,
-  VaultWhitelistFactory,
-  ConvexCurveLPVault2Factory,
-  StaticATokenFactory,
-  InitializableAdminUpgradeabilityProxyFactory,
+  WalletBalanceProvider__factory,
+  UiIncentiveDataProvider__factory,
+  Dai__factory,
+  ATokenForCollateral__factory,
+  YearnVault__factory,
+  BeefyETHVault__factory,
+  MockyvWFTM__factory,
+  Usdc__factory,
+  Usdt__factory,
+  YearnWETHVault__factory,
+  MockyvWETH__factory,
+  MockWETHForFTM__factory,
+  YearnWBTCVault__factory,
+  MockyvWBTC__factory,
+  MockWBTCForFTM__factory,
+  CollateralAdapter__factory,
+  YearnBOOVault__factory,
+  BooOracle__factory,
+  MockyvBOO__factory,
+  MockBOOForFTM__factory,
+  TombOracle__factory,
+  TombFtmLPOracle__factory,
+  TombFtmBeefyVault__factory,
+  MockMooTOMBFTM__factory,
+  TombMiMaticLPOracle__factory,
+  TombMimaticBeefyVault__factory,
+  MockMooTOMBMIMATIC__factory,
+  FTMLiquidator__factory,
+  ETHLiquidator__factory,
+  YearnFBEETSVault__factory,
+  FBeetsOracle__factory,
+  BeetsOracle__factory,
+  YearnLINKVault__factory,
+  MockYearnVault__factory,
+  MockBeefyVault__factory,
+  YearnCRVVault__factory,
+  YearnSPELLVault__factory,
+  DeployVaultHelper__factory,
+  BasedOracle__factory,
+  BasedMiMaticLPOracle__factory,
+  BasedMimaticBeefyVault__factory,
+  MockMooBASEDMIMATIC__factory,
+  YearnRETHWstETHVault__factory,
+  CrvREthWstETHOracle__factory,
+  ConvexCurveLPVault__factory,
+  FRAX3CRVOracle__factory,
+  STECRVOracle__factory,
+  DOLA3CRVOracle__factory,
+  YieldManager__factory,
+  StableYieldDistribution__factory,
+  MIM3CRVOracle__factory,
+  DAIUSDCUSDTSUSDOracle__factory,
+  VariableYieldDistribution__factory,
+  HBTCWBTCOracle__factory,
+  BeefyMIM2CRVVault__factory,
+  MIM2CRVOracle__factory,
+  IronBankOracle__factory,
+  LeverageSwapManager__factory,
+  FRAX3CRVLevSwap__factory,
+  DAIUSDCUSDTSUSDLevSwap__factory,
+  FRAXUSDCOracle__factory,
+  MIM3CRVLevSwap__factory,
+  IRONBANKLevSwap__factory,
+  FRAXUSDCLevSwap__factory,
+  SturdyAPRDataProvider__factory,
+  AuraBalancerLPVault__factory,
+  BALDAIUSDCUSDTOracle__factory,
+  TUSDFRAXBPOracle__factory,
+  TUSDFRAXBPLevSwap__factory,
+  VaultWhitelist__factory,
+  ConvexCurveLPVault2__factory,
+  StaticAToken__factory,
+  InitializableAdminUpgradeabilityProxy__factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -175,17 +174,14 @@ import {
   verifyContract,
   getContract,
 } from './contracts-helpers';
-import { StableAndVariableTokensHelperFactory } from '../types/StableAndVariableTokensHelperFactory';
-import { MintableDelegationERC20 } from '../types/MintableDelegationERC20';
+import { StableAndVariableTokensHelper__factory } from '../types';
+import { MintableDelegationERC20 } from '../types';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { LendingPoolLibraryAddresses } from '../types/LendingPoolFactory';
-import BigNumber from 'bignumber.js';
-import { verify } from 'crypto';
-import { boolean } from 'hardhat/internal/core/params/argumentTypes';
-import { YieldManagerLibraryAddresses } from '../types/YieldManagerFactory';
-import { LidoVaultLibraryAddresses } from '../types/LidoVaultFactory';
-import { YearnRETHWstETHVaultLibraryAddresses } from '../types/YearnRETHWstETHVaultFactory';
+import { LendingPoolLibraryAddresses } from '../types/factories/protocol/lendingpool/LendingPool__factory';
+import { YieldManagerLibraryAddresses } from '../types/factories/incentives/YieldManager__factory';
+import { LidoVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/LidoVault__factory';
+import { YearnRETHWstETHVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/YearnRETHWstETHVault__factory';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -196,7 +192,7 @@ const readArtifact = async (id: string) => {
 
 export const deployLendingPoolAddressesProvider = async (marketId: string, verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingPoolAddressesProviderFactory(await getFirstSigner()).deploy(marketId),
+    await new LendingPoolAddressesProvider__factory(await getFirstSigner()).deploy(marketId),
     eContractid.LendingPoolAddressesProvider,
     [marketId],
     verify
@@ -204,7 +200,7 @@ export const deployLendingPoolAddressesProvider = async (marketId: string, verif
 
 export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingPoolAddressesProviderRegistryFactory(await getFirstSigner()).deploy(),
+    await new LendingPoolAddressesProviderRegistry__factory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolAddressesProviderRegistry,
     [],
     verify
@@ -212,14 +208,14 @@ export const deployLendingPoolAddressesProviderRegistry = async (verify?: boolea
 
 export const deployLendingPoolConfiguratorImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingPoolConfiguratorFactory(await getFirstSigner()).deploy(),
+    await new LendingPoolConfigurator__factory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolConfiguratorImpl,
     [],
     verify
   );
 
 export const deployLendingPoolConfigurator = async (verify?: boolean) => {
-  const lendingPoolConfiguratorImpl = await new LendingPoolConfiguratorFactory(
+  const lendingPoolConfiguratorImpl = await new LendingPoolConfigurator__factory(
     await getFirstSigner()
   ).deploy();
   return withSaveAndVerify(
@@ -237,7 +233,7 @@ export const deployReserveLogicLibrary = async (verify?: boolean) => {
   }
 
   return withSaveAndVerify(
-    await new ReserveLogicFactory(await getFirstSigner()).deploy(),
+    await new ReserveLogic__factory(await getFirstSigner()).deploy(),
     eContractid.ReserveLogic,
     [],
     verify
@@ -256,13 +252,13 @@ export const deployGenericLogic = async (reserveLogic: Contract, verify?: boolea
     [eContractid.ReserveLogic]: reserveLogic.address,
   });
 
-  const genericLogicFactory = await DRE.ethers.getContractFactory(
+  const genericLogic__factory = await DRE.ethers.getContractFactory(
     genericLogicArtifact.abi,
     linkedGenericLogicByteCode
   );
 
   const genericLogic = await (
-    await genericLogicFactory.connect(await getFirstSigner()).deploy()
+    await genericLogic__factory.connect(await getFirstSigner()).deploy()
   ).deployed();
   return withSaveAndVerify(genericLogic, eContractid.GenericLogic, [], verify);
 };
@@ -284,13 +280,13 @@ export const deployValidationLogic = async (
     [eContractid.GenericLogic]: genericLogic.address,
   });
 
-  const validationLogicFactory = await DRE.ethers.getContractFactory(
+  const validationLogic__factory = await DRE.ethers.getContractFactory(
     validationLogicArtifact.abi,
     linkedValidationLogicByteCode
   );
 
   const validationLogic = await (
-    await validationLogicFactory.connect(await getFirstSigner()).deploy()
+    await validationLogic__factory.connect(await getFirstSigner()).deploy()
   ).deployed();
 
   return withSaveAndVerify(validationLogic, eContractid.ValidationLogic, [], verify);
@@ -315,28 +311,28 @@ export const deploySturdyLibraries = async (
   // libPath example: contracts/libraries/logic/GenericLogic.sol
   // libName example: GenericLogic
   return {
-    ['__$de8c0cf1a7d7c36c802af9a64fb9d86036$__']: validationLogic.address,
-    ['__$22cd43a9dda9ce44e9b92ba393b88fb9ac$__']: reserveLogic.address,
+    ['contracts/protocol/libraries/logic/ValidationLogic.sol:ValidationLogic']: validationLogic.address,
+    ['contracts/protocol/libraries/logic/ReserveLogic.sol:ReserveLogic']: reserveLogic.address,
   };
 };
 
 export const deployLendingPoolImpl = async (verify?: boolean) => {
   const libraries = await deploySturdyLibraries(verify);
-  const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
+  const lendingPoolImpl = await new LendingPool__factory(libraries, await getFirstSigner()).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
   return lendingPoolImpl;
 };
 
 export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deploySturdyLibraries(verify);
-  const lendingPoolImpl = await new LendingPoolFactory(libraries, await getFirstSigner()).deploy();
+  const lendingPoolImpl = await new LendingPool__factory(libraries, await getFirstSigner()).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
   return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPoolImpl, [], verify);
 };
 
 export const deployPriceOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new PriceOracleFactory(await getFirstSigner()).deploy(),
+    await new PriceOracle__factory(await getFirstSigner()).deploy(),
     eContractid.PriceOracle,
     [],
     verify
@@ -344,7 +340,7 @@ export const deployPriceOracle = async (verify?: boolean) =>
 
 export const deployLendingRateOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingRateOracleFactory(await getFirstSigner()).deploy(),
+    await new LendingRateOracle__factory(await getFirstSigner()).deploy(),
     eContractid.LendingRateOracle,
     [],
     verify
@@ -352,7 +348,7 @@ export const deployLendingRateOracle = async (verify?: boolean) =>
 
 export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify?: boolean) =>
   withSaveAndVerify(
-    await new MockAggregatorFactory(await getFirstSigner()).deploy(price),
+    await new MockAggregator__factory(await getFirstSigner()).deploy(price),
     eContractid.MockAggregator,
     [price],
     verify
@@ -363,7 +359,7 @@ export const deploySturdyOracle = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new SturdyOracleFactory(await getFirstSigner()).deploy(...args),
+    await new SturdyOracle__factory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyOracle,
     args,
     verify
@@ -371,7 +367,7 @@ export const deploySturdyOracle = async (
 
 export const deployBooOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BooOracleFactory(await getFirstSigner()).deploy(),
+    await new BooOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BooOracle,
     [],
     verify
@@ -379,7 +375,7 @@ export const deployBooOracle = async (verify?: boolean) =>
 
 export const deployTombOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new TombOracleFactory(await getFirstSigner()).deploy(),
+    await new TombOracle__factory(await getFirstSigner()).deploy(),
     eContractid.TombOracle,
     [],
     verify
@@ -387,7 +383,7 @@ export const deployTombOracle = async (verify?: boolean) =>
 
 export const deployTombFtmLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new TombFtmLPOracleFactory(await getFirstSigner()).deploy(),
+    await new TombFtmLPOracle__factory(await getFirstSigner()).deploy(),
     eContractid.TombFtmLPOracle,
     [],
     verify
@@ -395,7 +391,7 @@ export const deployTombFtmLPOracle = async (verify?: boolean) =>
 
 export const deployTombMiMaticLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new TombMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
+    await new TombMiMaticLPOracle__factory(await getFirstSigner()).deploy(),
     eContractid.TombMiMaticLPOracle,
     [],
     verify
@@ -403,7 +399,7 @@ export const deployTombMiMaticLPOracle = async (verify?: boolean) =>
 
 export const deployFBeetsOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new FBeetsOracleFactory(await getFirstSigner()).deploy(),
+    await new FBeetsOracle__factory(await getFirstSigner()).deploy(),
     eContractid.FBeetsOracle,
     [],
     verify
@@ -411,7 +407,7 @@ export const deployFBeetsOracle = async (verify?: boolean) =>
 
 export const deployBeetsOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BeetsOracleFactory(await getFirstSigner()).deploy(),
+    await new BeetsOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BeetsOracle,
     [],
     verify
@@ -419,7 +415,7 @@ export const deployBeetsOracle = async (verify?: boolean) =>
 
 export const deployBasedOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BasedOracleFactory(await getFirstSigner()).deploy(),
+    await new BasedOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BasedOracle,
     [],
     verify
@@ -427,7 +423,7 @@ export const deployBasedOracle = async (verify?: boolean) =>
 
 export const deployBasedMiMaticLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BasedMiMaticLPOracleFactory(await getFirstSigner()).deploy(),
+    await new BasedMiMaticLPOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BasedMiMaticLPOracle,
     [],
     verify
@@ -435,7 +431,7 @@ export const deployBasedMiMaticLPOracle = async (verify?: boolean) =>
 
 export const deployMIM2CRVLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new MIM2CRVOracleFactory(await getFirstSigner()).deploy(),
+    await new MIM2CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.MIM2CRVOracle,
     [],
     verify
@@ -443,7 +439,7 @@ export const deployMIM2CRVLPOracle = async (verify?: boolean) =>
 
 export const deployRETHWstETHLPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new CrvREthWstETHOracleFactory(await getFirstSigner()).deploy(),
+    await new CrvREthWstETHOracle__factory(await getFirstSigner()).deploy(),
     eContractid.RETHWstETHLPOracle,
     [],
     verify
@@ -451,7 +447,7 @@ export const deployRETHWstETHLPOracle = async (verify?: boolean) =>
 
 export const deployFRAX3CRVPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new FRAX3CRVOracleFactory(await getFirstSigner()).deploy(),
+    await new FRAX3CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.FRAX3CRVOracle,
     [],
     verify
@@ -459,7 +455,7 @@ export const deployFRAX3CRVPOracle = async (verify?: boolean) =>
 
 export const deploySTECRVOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new STECRVOracleFactory(await getFirstSigner()).deploy(),
+    await new STECRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.STECRVOracle,
     [],
     verify
@@ -467,7 +463,7 @@ export const deploySTECRVOracle = async (verify?: boolean) =>
 
 export const deployDOLA3CRVOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new DOLA3CRVOracleFactory(await getFirstSigner()).deploy(),
+    await new DOLA3CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.DOLA3CRVOracle,
     [],
     verify
@@ -475,7 +471,7 @@ export const deployDOLA3CRVOracle = async (verify?: boolean) =>
 
 export const deployMIM3CRVPOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new MIM3CRVOracleFactory(await getFirstSigner()).deploy(),
+    await new MIM3CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.MIM3CRVOracle,
     [],
     verify
@@ -483,7 +479,7 @@ export const deployMIM3CRVPOracle = async (verify?: boolean) =>
 
 export const deployDAIUSDCUSDTSUSDOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new DAIUSDCUSDTSUSDOracleFactory(await getFirstSigner()).deploy(),
+    await new DAIUSDCUSDTSUSDOracle__factory(await getFirstSigner()).deploy(),
     eContractid.DAIUSDCUSDTSUSDOracle,
     [],
     verify
@@ -491,7 +487,7 @@ export const deployDAIUSDCUSDTSUSDOracle = async (verify?: boolean) =>
 
 export const deployHBTCWBTCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new HBTCWBTCOracleFactory(await getFirstSigner()).deploy(),
+    await new HBTCWBTCOracle__factory(await getFirstSigner()).deploy(),
     eContractid.HBTCWBTCOracle,
     [],
     verify
@@ -499,7 +495,7 @@ export const deployHBTCWBTCOracle = async (verify?: boolean) =>
 
 export const deployIronBankOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new IronBankOracleFactory(await getFirstSigner()).deploy(),
+    await new IronBankOracle__factory(await getFirstSigner()).deploy(),
     eContractid.IronBankOracle,
     [],
     verify
@@ -507,7 +503,7 @@ export const deployIronBankOracle = async (verify?: boolean) =>
 
 export const deployFRAXUSDCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new FRAXUSDCOracleFactory(await getFirstSigner()).deploy(),
+    await new FRAXUSDCOracle__factory(await getFirstSigner()).deploy(),
     eContractid.FRAXUSDCOracle,
     [],
     verify
@@ -515,7 +511,7 @@ export const deployFRAXUSDCOracle = async (verify?: boolean) =>
 
 export const deployBALDAIUSDCUSDTOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BALDAIUSDCUSDTOracleFactory(await getFirstSigner()).deploy(),
+    await new BALDAIUSDCUSDTOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BALDAIUSDCUSDTOracle,
     [],
     verify
@@ -523,7 +519,7 @@ export const deployBALDAIUSDCUSDTOracle = async (verify?: boolean) =>
 
 export const deployTUSDFRAXBPCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new TUSDFRAXBPOracleFactory(await getFirstSigner()).deploy(),
+    await new TUSDFRAXBPOracle__factory(await getFirstSigner()).deploy(),
     eContractid.TUSDFRAXBPOracle,
     [],
     verify
@@ -531,14 +527,14 @@ export const deployTUSDFRAXBPCOracle = async (verify?: boolean) =>
 
 export const deployLendingPoolCollateralManagerImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new LendingPoolCollateralManagerFactory(await getFirstSigner()).deploy(),
+    await new LendingPoolCollateralManager__factory(await getFirstSigner()).deploy(),
     eContractid.LendingPoolCollateralManagerImpl,
     [],
     verify
   );
 
 export const deployLendingPoolCollateralManager = async (verify?: boolean) => {
-  const collateralManagerImpl = await new LendingPoolCollateralManagerFactory(
+  const collateralManagerImpl = await new LendingPoolCollateralManager__factory(
     await getFirstSigner()
   ).deploy();
   await insertContractAddressInDb(
@@ -558,7 +554,7 @@ export const deploySturdyProtocolDataProvider = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new SturdyProtocolDataProviderFactory(await getFirstSigner()).deploy(addressesProvider),
+    await new SturdyProtocolDataProvider__factory(await getFirstSigner()).deploy(addressesProvider),
     eContractid.SturdyProtocolDataProvider,
     [addressesProvider],
     verify
@@ -569,7 +565,7 @@ export const deployMintableERC20 = async (
   verify?: boolean
 ): Promise<MintableERC20> =>
   withSaveAndVerify(
-    await new MintableERC20Factory(await getFirstSigner()).deploy(...args),
+    await new MintableERC20__factory(await getFirstSigner()).deploy(...args),
     eContractid.MintableERC20,
     args,
     verify
@@ -580,7 +576,7 @@ export const deployMintableDelegationERC20 = async (
   verify?: boolean
 ): Promise<MintableDelegationERC20> =>
   withSaveAndVerify(
-    await new MintableDelegationERC20Factory(await getFirstSigner()).deploy(...args),
+    await new MintableDelegationERC20__factory(await getFirstSigner()).deploy(...args),
     eContractid.MintableDelegationERC20,
     args,
     verify
@@ -590,7 +586,7 @@ export const deployDefaultReserveInterestRateStrategy = async (
   verify: boolean
 ) =>
   withSaveAndVerify(
-    await new DefaultReserveInterestRateStrategyFactory(await getFirstSigner()).deploy(...args),
+    await new DefaultReserveInterestRateStrategy__factory(await getFirstSigner()).deploy(...args),
     eContractid.DefaultReserveInterestRateStrategy,
     args,
     verify
@@ -601,7 +597,7 @@ export const deployStableDebtToken = async (
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
+    await new StableDebtToken__factory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,
     [],
     verify
@@ -617,7 +613,7 @@ export const deployVariableDebtToken = async (
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new VariableDebtTokenFactory(await getFirstSigner()).deploy(),
+    await new VariableDebtToken__factory(await getFirstSigner()).deploy(),
     eContractid.VariableDebtToken,
     [],
     verify
@@ -630,7 +626,7 @@ export const deployVariableDebtToken = async (
 
 export const deployGenericStableDebtToken = async () =>
   withSaveAndVerify(
-    await new StableDebtTokenFactory(await getFirstSigner()).deploy(),
+    await new StableDebtToken__factory(await getFirstSigner()).deploy(),
     eContractid.StableDebtToken,
     [],
     false
@@ -638,7 +634,7 @@ export const deployGenericStableDebtToken = async () =>
 
 export const deployGenericVariableDebtToken = async () =>
   withSaveAndVerify(
-    await new VariableDebtTokenFactory(await getFirstSigner()).deploy(),
+    await new VariableDebtToken__factory(await getFirstSigner()).deploy(),
     eContractid.VariableDebtToken,
     [],
     false
@@ -665,7 +661,7 @@ export const deployGenericAToken = async (
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new ATokenFactory(await getFirstSigner()).deploy(),
+    await new AToken__factory(await getFirstSigner()).deploy(),
     eContractid.AToken,
     [],
     verify
@@ -706,7 +702,7 @@ export const deployCollateralAToken = async (
   verify: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new ATokenForCollateralFactory(await getFirstSigner()).deploy(),
+    await new ATokenForCollateral__factory(await getFirstSigner()).deploy(),
     eContractid.ATokenForCollateral,
     [],
     verify
@@ -728,7 +724,7 @@ export const deployCollateralAToken = async (
 
 export const deployGenericATokenImpl = async (verify: boolean) =>
   withSaveAndVerify(
-    await new ATokenFactory(await getFirstSigner()).deploy(),
+    await new AToken__factory(await getFirstSigner()).deploy(),
     eContractid.AToken,
     [],
     verify
@@ -736,7 +732,7 @@ export const deployGenericATokenImpl = async (verify: boolean) =>
 
 export const deployCollateralATokenImpl = async (verify: boolean) =>
   withSaveAndVerify(
-    await new ATokenForCollateralFactory(await getFirstSigner()).deploy(),
+    await new ATokenForCollateral__factory(await getFirstSigner()).deploy(),
     eContractid.ATokenForCollateral,
     [],
     verify
@@ -784,7 +780,7 @@ export const deployMockTokens = async (config: PoolConfiguration, verify?: boole
 
 export const deployStableAndVariableTokensHelper = async (args: [], verify?: boolean) =>
   withSaveAndVerify(
-    await new StableAndVariableTokensHelperFactory(await getFirstSigner()).deploy(...args),
+    await new StableAndVariableTokensHelper__factory(await getFirstSigner()).deploy(...args),
     eContractid.StableAndVariableTokensHelper,
     args,
     verify
@@ -792,7 +788,7 @@ export const deployStableAndVariableTokensHelper = async (args: [], verify?: boo
 
 export const deployATokensAndRatesHelper = async (args: [tEthereumAddress], verify?: boolean) =>
   withSaveAndVerify(
-    await new ATokensAndRatesHelperFactory(await getFirstSigner()).deploy(...args),
+    await new ATokensAndRatesHelper__factory(await getFirstSigner()).deploy(...args),
     eContractid.ATokensAndRatesHelper,
     args,
     verify
@@ -803,7 +799,7 @@ export const deployMockStableDebtToken = async (
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new MockStableDebtTokenFactory(await getFirstSigner()).deploy(),
+    await new MockStableDebtToken__factory(await getFirstSigner()).deploy(),
     eContractid.MockStableDebtToken,
     [],
     verify
@@ -816,7 +812,7 @@ export const deployMockStableDebtToken = async (
 
 export const deployWETHMocked = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new WETH9MockedFactory(await getFirstSigner()).deploy(),
+    await new WETH9Mocked__factory(await getFirstSigner()).deploy(),
     eContractid.WETHMocked,
     [],
     verify
@@ -827,7 +823,7 @@ export const deployMockVariableDebtToken = async (
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new MockVariableDebtTokenFactory(await getFirstSigner()).deploy(),
+    await new MockVariableDebtToken__factory(await getFirstSigner()).deploy(),
     eContractid.MockVariableDebtToken,
     [],
     verify
@@ -851,7 +847,7 @@ export const deployMockAToken = async (
   verify?: boolean
 ) => {
   const instance = await withSaveAndVerify(
-    await new MockATokenFactory(await getFirstSigner()).deploy(),
+    await new MockAToken__factory(await getFirstSigner()).deploy(),
     eContractid.MockAToken,
     [],
     verify
@@ -864,7 +860,7 @@ export const deployMockAToken = async (
 
 export const deployWalletBalancerProvider = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new WalletBalanceProviderFactory(await getFirstSigner()).deploy(),
+    await new WalletBalanceProvider__factory(await getFirstSigner()).deploy(),
     eContractid.WalletBalanceProvider,
     [],
     verify
@@ -885,7 +881,7 @@ export const deployUiPoolDataProvider = async (
 
 export const deployUiIncentiveDataProvider = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new UiIncentiveDataProviderFactory(await getFirstSigner()).deploy(),
+    await new UiIncentiveDataProvider__factory(await getFirstSigner()).deploy(),
     eContractid.UiIncentiveDataProvider,
     [],
     verify
@@ -897,14 +893,14 @@ export const deployLidoVaultLibraries = async (
   const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
 
   return {
-    ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']: curveswapAdapter.address,
   };
 };
 
 export const deployLidoVaultImpl = async (verify?: boolean) => {
   const libraries = await deployLidoVaultLibraries(verify);
   return withSaveAndVerify(
-    await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
+    await new LidoVault__factory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
     [],
     verify
@@ -914,7 +910,7 @@ export const deployLidoVaultImpl = async (verify?: boolean) => {
 export const deployLidoVault = async (verify?: boolean) => {
   const libraries = await deployLidoVaultLibraries(verify);
   const lidoVaultImpl = await withSaveAndVerify(
-    await new LidoVaultFactory(libraries, await getFirstSigner()).deploy(),
+    await new LidoVault__factory(libraries, await getFirstSigner()).deploy(),
     eContractid.LidoVaultImpl,
     [],
     verify
@@ -973,14 +969,14 @@ export const deployYearnRETHWstETHVaultLibraries = async (
   const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
 
   return {
-    ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']: curveswapAdapter.address,
   };
 };
 
 export const deployYearnRETHWstETHVaultImpl = async (verify?: boolean) => {
   const libraries = await deployYearnRETHWstETHVaultLibraries(verify);
   withSaveAndVerify(
-    await new YearnRETHWstETHVaultFactory(libraries, await getFirstSigner()).deploy(),
+    await new YearnRETHWstETHVault__factory(libraries, await getFirstSigner()).deploy(),
     eContractid.YearnRETHWstETHVaultImpl,
     [],
     verify
@@ -990,7 +986,7 @@ export const deployYearnRETHWstETHVaultImpl = async (verify?: boolean) => {
 export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
   const libraries = await deployYearnRETHWstETHVaultLibraries(verify);
   const vaultImpl = await withSaveAndVerify(
-    await new YearnRETHWstETHVaultFactory(libraries, await getFirstSigner()).deploy(),
+    await new YearnRETHWstETHVault__factory(libraries, await getFirstSigner()).deploy(),
     eContractid.YearnRETHWstETHVaultImpl,
     [],
     verify
@@ -1039,7 +1035,7 @@ export const deployYearnRETHWstETHVaultVault = async (verify?: boolean) => {
 
 export const deployConvexRocketPoolETHVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexRocketPoolETHVaulttImpl,
     [],
     verify
@@ -1050,7 +1046,7 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
   const network = <eNetwork>DRE.network.name;
 
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexRocketPoolETHVaulttImpl,
     [],
     verify
@@ -1103,7 +1099,7 @@ export const deployConvexRocketPoolETHVault = async (verify?: boolean) => {
 
 export const deployConvexFRAX3CRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexFRAX3CRVVaultImpl,
     [],
     verify
@@ -1114,7 +1110,7 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
   const network = <eNetwork>DRE.network.name;
 
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexFRAX3CRVVaultImpl,
     [],
     verify
@@ -1153,7 +1149,7 @@ export const deployConvexFRAX3CRVVault = async (verify?: boolean) => {
 
 export const deployConvexSTETHVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexSTETHVaultImpl,
     [],
     verify
@@ -1161,7 +1157,7 @@ export const deployConvexSTETHVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexSTETHVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexSTETHVaultImpl,
     [],
     verify
@@ -1186,7 +1182,7 @@ export const deployConvexSTETHVault = async (verify?: boolean) => {
 
 export const deployConvexDOLA3CRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexDOLA3CRVVaultImpl,
     [],
     verify
@@ -1194,7 +1190,7 @@ export const deployConvexDOLA3CRVVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexDOLA3CRVVaultImpl,
     [],
     verify
@@ -1219,7 +1215,7 @@ export const deployConvexDOLA3CRVVault = async (verify?: boolean) => {
 
 export const deployConvexMIM3CRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexMIM3CRVVaultImpl,
     [],
     verify
@@ -1227,7 +1223,7 @@ export const deployConvexMIM3CRVVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexMIM3CRVVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexMIM3CRVVaultImpl,
     [],
     verify
@@ -1252,7 +1248,7 @@ export const deployConvexMIM3CRVVault = async (verify?: boolean) => {
 
 export const deployConvexDAIUSDCUSDTSUSDVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexDAIUSDCUSDTSUSDVaultImpl,
     [],
     verify
@@ -1260,7 +1256,7 @@ export const deployConvexDAIUSDCUSDTSUSDVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexDAIUSDCUSDTSUSDVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexDAIUSDCUSDTSUSDVaultImpl,
     [],
     verify
@@ -1285,7 +1281,7 @@ export const deployConvexDAIUSDCUSDTSUSDVault = async (verify?: boolean) => {
 
 export const deployConvexHBTCWBTCVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexHBTCWBTCVaultImpl,
     [],
     verify
@@ -1293,7 +1289,7 @@ export const deployConvexHBTCWBTCVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexHBTCWBTCVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexHBTCWBTCVaultImpl,
     [],
     verify
@@ -1318,7 +1314,7 @@ export const deployConvexHBTCWBTCVault = async (verify?: boolean) => {
 
 export const deployConvexIronBankVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexIronBankVaultImpl,
     [],
     verify
@@ -1326,7 +1322,7 @@ export const deployConvexIronBankVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexIronBankVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexIronBankVaultImpl,
     [],
     verify
@@ -1351,7 +1347,7 @@ export const deployConvexIronBankVault = async (verify?: boolean) => {
 
 export const deployConvexFRAXUSDCVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexFRAXUSDCVaultImpl,
     [],
     verify
@@ -1359,7 +1355,7 @@ export const deployConvexFRAXUSDCVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexFRAXUSDCVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVaultFactory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexFRAXUSDCVaultImpl,
     [],
     verify
@@ -1384,7 +1380,7 @@ export const deployConvexFRAXUSDCVault = async (verify?: boolean) => {
 
 export const deployAuraDAIUSDCUSDTVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new AuraBalancerLPVaultFactory(await getFirstSigner()).deploy(),
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
     eContractid.AuraDAIUSDCUSDTVaultImpl,
     [],
     verify
@@ -1409,7 +1405,7 @@ export const deployAuraDAIUSDCUSDTVault = async (verify?: boolean) => {
 
 export const deployConvexTUSDFRAXBPVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new ConvexCurveLPVault2Factory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault2__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexTUSDFRAXBPVaultImpl,
     [],
     verify
@@ -1417,7 +1413,7 @@ export const deployConvexTUSDFRAXBPVaultImpl = async (verify?: boolean) =>
 
 export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
-    await new ConvexCurveLPVault2Factory(await getFirstSigner()).deploy(),
+    await new ConvexCurveLPVault2__factory(await getFirstSigner()).deploy(),
     eContractid.ConvexTUSDFRAXBPVaultImpl,
     [],
     verify
@@ -1442,7 +1438,7 @@ export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnVaultImpl,
     [],
     verify
@@ -1450,7 +1446,7 @@ export const deployYearnVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnVault = async (verify?: boolean) => {
   const yearnVaultImpl = await withSaveAndVerify(
-    await new YearnVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnVaultImpl,
     [],
     verify
@@ -1497,7 +1493,7 @@ export const deployYearnVault = async (verify?: boolean) => {
 
 export const deployYearnWETHVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnWETHVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnWETHVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnWETHVaultImpl,
     [],
     verify
@@ -1505,7 +1501,7 @@ export const deployYearnWETHVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnWETHVault = async (verify?: boolean) => {
   const yearnWETHVaultImpl = await withSaveAndVerify(
-    await new YearnWETHVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnWETHVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnWETHVaultImpl,
     [],
     verify
@@ -1545,7 +1541,7 @@ export const deployYearnWETHVault = async (verify?: boolean) => {
 
 export const deployYearnWBTCVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnWBTCVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnWBTCVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnWBTCVaultImpl,
     [],
     verify
@@ -1553,7 +1549,7 @@ export const deployYearnWBTCVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnWBTCVault = async (verify?: boolean) => {
   const yearnWBTCVaultImpl = await withSaveAndVerify(
-    await new YearnWBTCVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnWBTCVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnWBTCVaultImpl,
     [],
     verify
@@ -1593,7 +1589,7 @@ export const deployYearnWBTCVault = async (verify?: boolean) => {
 
 export const deployYearnBOOVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnBOOVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnBOOVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnBOOVaultImpl,
     [],
     verify
@@ -1601,7 +1597,7 @@ export const deployYearnBOOVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnBOOVault = async (verify?: boolean) => {
   const yearnBOOVaultImpl = await withSaveAndVerify(
-    await new YearnBOOVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnBOOVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnBOOVaultImpl,
     [],
     verify
@@ -1641,7 +1637,7 @@ export const deployYearnBOOVault = async (verify?: boolean) => {
 
 export const deployTombFTMBeefyVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new TombFtmBeefyVaultFactory(await getFirstSigner()).deploy(),
+    await new TombFtmBeefyVault__factory(await getFirstSigner()).deploy(),
     eContractid.TombFtmBeefyVaultImpl,
     [],
     verify
@@ -1649,7 +1645,7 @@ export const deployTombFTMBeefyVaultImpl = async (verify?: boolean) =>
 
 export const deployTombFTMBeefyVault = async (verify?: boolean) => {
   const tombFtmBeefyVaultImpl = await withSaveAndVerify(
-    await new TombFtmBeefyVaultFactory(await getFirstSigner()).deploy(),
+    await new TombFtmBeefyVault__factory(await getFirstSigner()).deploy(),
     eContractid.TombFtmBeefyVaultImpl,
     [],
     verify
@@ -1696,7 +1692,7 @@ export const deployTombFTMBeefyVault = async (verify?: boolean) => {
 
 export const deployTombMiMaticBeefyVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new TombMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    await new TombMimaticBeefyVault__factory(await getFirstSigner()).deploy(),
     eContractid.TombMiMaticBeefyVaultImpl,
     [],
     verify
@@ -1704,7 +1700,7 @@ export const deployTombMiMaticBeefyVaultImpl = async (verify?: boolean) =>
 
 export const deployTombMiMaticBeefyVault = async (verify?: boolean) => {
   const tombMiMaticBeefyVaultImpl = await withSaveAndVerify(
-    await new TombMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    await new TombMimaticBeefyVault__factory(await getFirstSigner()).deploy(),
     eContractid.TombMiMaticBeefyVaultImpl,
     [],
     verify
@@ -1768,7 +1764,7 @@ export const deployTombMiMaticBeefyVault = async (verify?: boolean) => {
 
 export const deployBasedMiMaticBeefyVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BasedMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    await new BasedMimaticBeefyVault__factory(await getFirstSigner()).deploy(),
     eContractid.BasedMiMaticBeefyVaultImpl,
     [],
     verify
@@ -1776,7 +1772,7 @@ export const deployBasedMiMaticBeefyVaultImpl = async (verify?: boolean) =>
 
 export const deployBasedMiMaticBeefyVault = async (verify?: boolean) => {
   const basedMiMaticBeefyVaultImpl = await withSaveAndVerify(
-    await new BasedMimaticBeefyVaultFactory(await getFirstSigner()).deploy(),
+    await new BasedMimaticBeefyVault__factory(await getFirstSigner()).deploy(),
     eContractid.BasedMiMaticBeefyVaultImpl,
     [],
     verify
@@ -1826,7 +1822,7 @@ export const deployBasedMiMaticBeefyVault = async (verify?: boolean) => {
 
 export const deployBeefyMIM2CRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new BeefyMIM2CRVVaultFactory(await getFirstSigner()).deploy(),
+    await new BeefyMIM2CRVVault__factory(await getFirstSigner()).deploy(),
     eContractid.BeefyMIM2CRVVaultImpl,
     [],
     verify
@@ -1834,7 +1830,7 @@ export const deployBeefyMIM2CRVVaultImpl = async (verify?: boolean) =>
 
 export const deployBeefyMIM2CRVVault = async (verify?: boolean) => {
   const beefyMIM2CRVVaultImpl = await withSaveAndVerify(
-    await new BeefyMIM2CRVVaultFactory(await getFirstSigner()).deploy(),
+    await new BeefyMIM2CRVVault__factory(await getFirstSigner()).deploy(),
     eContractid.BeefyMIM2CRVVaultImpl,
     [],
     verify
@@ -1874,7 +1870,7 @@ export const deployBeefyMIM2CRVVault = async (verify?: boolean) => {
 
 export const deployYearnFBeetsVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnFBEETSVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnFBEETSVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnFBEETSVaultImpl,
     [],
     verify
@@ -1882,7 +1878,7 @@ export const deployYearnFBeetsVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnFBeetsVault = async (verify?: boolean) => {
   const yearnFBEETSVaultImpl = await withSaveAndVerify(
-    await new YearnFBEETSVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnFBEETSVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnFBEETSVaultImpl,
     [],
     verify
@@ -1929,7 +1925,7 @@ export const deployYearnFBeetsVault = async (verify?: boolean) => {
 
 export const deployYearnLINKVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnLINKVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnLINKVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnLINKVaultImpl,
     [],
     verify
@@ -1937,7 +1933,7 @@ export const deployYearnLINKVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnLINKVault = async (verify?: boolean) => {
   const yearnLINKVaultImpl = await withSaveAndVerify(
-    await new YearnLINKVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnLINKVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnLINKVaultImpl,
     [],
     verify
@@ -1977,7 +1973,7 @@ export const deployYearnLINKVault = async (verify?: boolean) => {
 
 export const deployBeefyETHVault = async (verify?: boolean) => {
   const beefyETHVault = await withSaveAndVerify(
-    await new BeefyETHVaultFactory(await getFirstSigner()).deploy(),
+    await new BeefyETHVault__factory(await getFirstSigner()).deploy(),
     eContractid.BeefyETHVaultImpl,
     [],
     verify
@@ -2017,7 +2013,7 @@ export const deployBeefyETHVault = async (verify?: boolean) => {
 
 export const deployYearnCRVVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnCRVVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnCRVVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnCRVVaultImpl,
     [],
     verify
@@ -2025,7 +2021,7 @@ export const deployYearnCRVVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnCRVVault = async (verify?: boolean) => {
   const yearnCRVVaultImpl = await withSaveAndVerify(
-    await new YearnCRVVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnCRVVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnCRVVaultImpl,
     [],
     verify
@@ -2065,7 +2061,7 @@ export const deployYearnCRVVault = async (verify?: boolean) => {
 
 export const deployYearnSPELLVaultImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new YearnSPELLVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnSPELLVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnSPELLVaultImpl,
     [],
     verify
@@ -2073,7 +2069,7 @@ export const deployYearnSPELLVaultImpl = async (verify?: boolean) =>
 
 export const deployYearnSPELLVault = async (verify?: boolean) => {
   const yearnSPELLVaultImpl = await withSaveAndVerify(
-    await new YearnSPELLVaultFactory(await getFirstSigner()).deploy(),
+    await new YearnSPELLVault__factory(await getFirstSigner()).deploy(),
     eContractid.YearnSPELLVaultImpl,
     [],
     verify
@@ -2116,7 +2112,7 @@ export const deploySturdyIncentivesControllerImpl = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
+    await new StakedTokenIncentivesController__factory(await getFirstSigner()).deploy(...args),
     eContractid.StakedTokenIncentivesControllerImpl,
     args,
     verify
@@ -2127,7 +2123,7 @@ export const deploySturdyIncentivesController = async (
   verify?: boolean
 ) => {
   const incentiveControllerImpl = await withSaveAndVerify(
-    await new StakedTokenIncentivesControllerFactory(await getFirstSigner()).deploy(...args),
+    await new StakedTokenIncentivesController__factory(await getFirstSigner()).deploy(...args),
     eContractid.StakedTokenIncentivesControllerImpl,
     args,
     verify
@@ -2149,7 +2145,7 @@ export const deploySturdyIncentivesController = async (
 
 export const deploySturdyTokenImpl = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new SturdyTokenFactory(await getFirstSigner()).deploy(),
+    await new SturdyToken__factory(await getFirstSigner()).deploy(),
     eContractid.SturdyTokenImpl,
     [],
     verify
@@ -2157,7 +2153,7 @@ export const deploySturdyTokenImpl = async (verify?: boolean) =>
 
 export const deploySturdyToken = async (verify?: boolean) => {
   const incentiveTokenImpl = await withSaveAndVerify(
-    await new SturdyTokenFactory(await getFirstSigner()).deploy(),
+    await new SturdyToken__factory(await getFirstSigner()).deploy(),
     eContractid.SturdyTokenImpl,
     [],
     verify
@@ -2176,7 +2172,7 @@ export const deploySturdyToken = async (verify?: boolean) => {
 
 export const deployStableYieldDistributionImpl = async (args: [string], verify?: boolean) => {
   const impl = await withSaveAndVerify(
-    await new StableYieldDistributionFactory(await getFirstSigner()).deploy(...args),
+    await new StableYieldDistribution__factory(await getFirstSigner()).deploy(...args),
     eContractid.StableYieldDistributionImpl,
     args,
     verify
@@ -2207,7 +2203,7 @@ export const deployFXSStableYieldDistribution = async () => {
 
 export const deployVariableYieldDistributionImpl = async (args: [string], verify?: boolean) => {
   const impl = await withSaveAndVerify(
-    await new VariableYieldDistributionFactory(await getFirstSigner()).deploy(...args),
+    await new VariableYieldDistribution__factory(await getFirstSigner()).deploy(...args),
     eContractid.VariableYieldDistributionImpl,
     args,
     verify
@@ -2238,7 +2234,7 @@ export const deployVariableYieldDistribution = async () => {
 
 export const deployCollateralAdapter = async (verify?: boolean) => {
   const collateralAdapterImpl = await withSaveAndVerify(
-    await new CollateralAdapterFactory(await getFirstSigner()).deploy(),
+    await new CollateralAdapter__factory(await getFirstSigner()).deploy(),
     eContractid.CollateralAdapterImpl,
     [],
     verify
@@ -2262,7 +2258,7 @@ export const deployCollateralAdapter = async (verify?: boolean) => {
 
 export const deployMockDai = async (chainId: any, verify?: boolean) =>
   withSaveAndVerify(
-    await new DaiFactory(await getFirstSigner()).deploy(chainId),
+    await new Dai__factory(await getFirstSigner()).deploy(chainId),
     eContractid.DAIToken,
     [chainId],
     verify
@@ -2270,7 +2266,7 @@ export const deployMockDai = async (chainId: any, verify?: boolean) =>
 
 export const deployMockUSDC = async (args: [string, string, any, string], verify?: boolean) =>
   withSaveAndVerify(
-    await new UsdcFactory(await getFirstSigner()).deploy(...args),
+    await new Usdc__factory(await getFirstSigner()).deploy(...args),
     eContractid.USDCToken,
     args,
     verify
@@ -2278,7 +2274,7 @@ export const deployMockUSDC = async (args: [string, string, any, string], verify
 
 export const deployMockUSDT = async (args: [string, string, any, string], verify?: boolean) =>
   withSaveAndVerify(
-    await new UsdtFactory(await getFirstSigner()).deploy(...args),
+    await new Usdt__factory(await getFirstSigner()).deploy(...args),
     eContractid.USDTToken,
     args,
     verify
@@ -2289,7 +2285,7 @@ export const deployMockyvWFTM = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockyvWFTMFactory(await getFirstSigner()).deploy(...args),
+    await new MockyvWFTM__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockyvWFTM,
     args,
     verify
@@ -2300,7 +2296,7 @@ export const deployMockyvWETH = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockyvWETHFactory(await getFirstSigner()).deploy(...args),
+    await new MockyvWETH__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockyvWETH,
     args,
     verify
@@ -2311,7 +2307,7 @@ export const deployMockyvWBTC = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockyvWBTCFactory(await getFirstSigner()).deploy(...args),
+    await new MockyvWBTC__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockyvWBTC,
     args,
     verify
@@ -2322,7 +2318,7 @@ export const deployMockyvBOO = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockyvBOOFactory(await getFirstSigner()).deploy(...args),
+    await new MockyvBOO__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockyvBOO,
     args,
     verify
@@ -2333,7 +2329,7 @@ export const deployMockWETHForFTM = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockWETHForFTMFactory(await getFirstSigner()).deploy(...args),
+    await new MockWETHForFTM__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockWETHForFTM,
     args,
     verify
@@ -2344,7 +2340,7 @@ export const deployMockWBTCForFTM = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockWBTCForFTMFactory(await getFirstSigner()).deploy(...args),
+    await new MockWBTCForFTM__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockWBTCForFTM,
     args,
     verify
@@ -2355,7 +2351,7 @@ export const deployMockBOOForFTM = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockBOOForFTMFactory(await getFirstSigner()).deploy(...args),
+    await new MockBOOForFTM__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockBOOForFTM,
     args,
     verify
@@ -2366,7 +2362,7 @@ export const deployMockMooTOMBFTM = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockMooTOMBFTMFactory(await getFirstSigner()).deploy(...args),
+    await new MockMooTOMBFTM__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooTOMBFTM,
     args,
     verify
@@ -2377,7 +2373,7 @@ export const deployMockMooTOMBMIMATIC = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockMooTOMBMIMATICFactory(await getFirstSigner()).deploy(...args),
+    await new MockMooTOMBMIMATIC__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooTOMBMIMATIC,
     args,
     verify
@@ -2388,7 +2384,7 @@ export const deployMockMooBASEDMIMATIC = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockMooBASEDMIMATICFactory(await getFirstSigner()).deploy(...args),
+    await new MockMooBASEDMIMATIC__factory(await getFirstSigner()).deploy(...args),
     eContractid.MockMooBASEDMIMATIC,
     args,
     verify
@@ -2400,7 +2396,7 @@ export const deployMockYearnVault = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockYearnVaultFactory(await getFirstSigner()).deploy(...args),
+    await new MockYearnVault__factory(await getFirstSigner()).deploy(...args),
     id,
     args,
     verify
@@ -2412,7 +2408,7 @@ export const deployMockBeefyVault = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MockBeefyVaultFactory(await getFirstSigner()).deploy(...args),
+    await new MockBeefyVault__factory(await getFirstSigner()).deploy(...args),
     id,
     args,
     verify
@@ -2420,7 +2416,7 @@ export const deployMockBeefyVault = async (
 
 export const deployFTMLiquidator = async (args: [string], verify?: boolean) => {
   const liquidator = await withSaveAndVerify(
-    await new FTMLiquidatorFactory(await getFirstSigner()).deploy(...args),
+    await new FTMLiquidator__factory(await getFirstSigner()).deploy(...args),
     eContractid.FTMLiquidator,
     args,
     verify
@@ -2442,7 +2438,7 @@ export const deployFTMLiquidator = async (args: [string], verify?: boolean) => {
 export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
   const libraries = await deploySwapAdapterLibraries(verify);
   const liquidator = await withSaveAndVerify(
-    await new ETHLiquidatorFactory(libraries, await getFirstSigner()).deploy(...args),
+    await new ETHLiquidator__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.ETHLiquidator,
     args,
     verify
@@ -2463,7 +2459,7 @@ export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
 
 export const deployVaultHelper = async (args: [string], verify?: boolean) =>
   withSaveAndVerify(
-    await new DeployVaultHelperFactory(await getFirstSigner()).deploy(...args),
+    await new DeployVaultHelper__factory(await getFirstSigner()).deploy(...args),
     eContractid.DeployVaultHelper,
     args,
     verify
@@ -2479,13 +2475,13 @@ export const deployUniswapAdapterLibrary = async (verify?: boolean) => {
 
   const linkedUniswapAdapterByteCode = linkBytecode(uniswapAdapterArtifact, {});
 
-  const uniswapAdapterFactory = await DRE.ethers.getContractFactory(
+  const uniswapAdapter__factory = await DRE.ethers.getContractFactory(
     uniswapAdapterArtifact.abi,
     linkedUniswapAdapterByteCode
   );
 
   const uniswapAdapter = await (
-    await uniswapAdapterFactory.connect(await getFirstSigner()).deploy()
+    await uniswapAdapter__factory.connect(await getFirstSigner()).deploy()
   ).deployed();
 
   return withSaveAndVerify(uniswapAdapter, eContractid.UniswapAdapter, [], verify);
@@ -2512,13 +2508,13 @@ export const deployCurveswapAdapterLibrary = async (verify?: boolean) => {
 
   const linkedCurveswapAdapterByteCode = linkBytecode(curveswapAdapterArtifact, {});
 
-  const curveswapAdapterFactory = await DRE.ethers.getContractFactory(
+  const curveswapAdapter__factory = await DRE.ethers.getContractFactory(
     curveswapAdapterArtifact.abi,
     linkedCurveswapAdapterByteCode
   );
 
   const curveswapAdapter = await (
-    await curveswapAdapterFactory.connect(await getFirstSigner()).deploy()
+    await curveswapAdapter__factory.connect(await getFirstSigner()).deploy()
   ).deployed();
 
   return withSaveAndVerify(curveswapAdapter, eContractid.CurveswapAdapter, [], verify);
@@ -2534,13 +2530,13 @@ export const deployBalancerswapAdapterLibrary = async (verify?: boolean) => {
 
   const linkedBalancerswapAdapterByteCode = linkBytecode(balancerswapAdapterArtifact, {});
 
-  const balancerswapAdapterFactory = await DRE.ethers.getContractFactory(
+  const balancerswapAdapter__factory = await DRE.ethers.getContractFactory(
     balancerswapAdapterArtifact.abi,
     linkedBalancerswapAdapterByteCode
   );
 
   const balancerswapAdapter = await (
-    await balancerswapAdapterFactory.connect(await getFirstSigner()).deploy()
+    await balancerswapAdapter__factory.connect(await getFirstSigner()).deploy()
   ).deployed();
 
   return withSaveAndVerify(balancerswapAdapter, eContractid.BalancerswapAdapter, [], verify);
@@ -2554,16 +2550,16 @@ export const deploySwapAdapterLibraries = async (
   const balancerswapAdapter = await deployBalancerswapAdapterLibrary(verify);
 
   return {
-    ['__$bcdc6d14c161e470cad87c28c9e4ece31f$__']: balancerswapAdapter.address,
-    ['__$efebe91d5f5edc44768630199364d824de$__']: uniswapAdapter.address,
-    ['__$dd23f1857e690ebd380179be2f7f3c5f60$__']: curveswapAdapter.address,
+    ['contracts/protocol/libraries/swap/BalancerswapAdapter.sol:BalancerswapAdapter']: balancerswapAdapter.address,
+    ['contracts/protocol/libraries/swap/UniswapAdapter.sol:UniswapAdapter']: uniswapAdapter.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']: curveswapAdapter.address,
   };
 };
 
 export const deployYieldManagerImpl = async (verify?: boolean) => {
   const libraries = await deploySwapAdapterLibraries(verify);
   withSaveAndVerify(
-    await new YieldManagerFactory(libraries, await getFirstSigner()).deploy(),
+    await new YieldManager__factory(libraries, await getFirstSigner()).deploy(),
     eContractid.YieldManagerImpl,
     [],
     verify
@@ -2576,7 +2572,7 @@ export const deployYieldManager = async (verify?: boolean) => {
 
   const libraries = await deploySwapAdapterLibraries(verify);
   const yieldManagerImpl = await withSaveAndVerify(
-    await new YieldManagerFactory(libraries, await getFirstSigner()).deploy(),
+    await new YieldManager__factory(libraries, await getFirstSigner()).deploy(),
     eContractid.YieldManagerImpl,
     [],
     verify
@@ -2601,7 +2597,7 @@ export const deployYieldManager = async (verify?: boolean) => {
 
 export const deployLeverageSwapManagerImpl = async (verify?: boolean) => {
   withSaveAndVerify(
-    await new LeverageSwapManagerFactory(await getFirstSigner()).deploy(),
+    await new LeverageSwapManager__factory(await getFirstSigner()).deploy(),
     eContractid.LeverageSwapManagerImpl,
     [],
     verify
@@ -2610,7 +2606,7 @@ export const deployLeverageSwapManagerImpl = async (verify?: boolean) => {
 
 export const deployLeverageSwapManager = async (verify?: boolean) => {
   const leverageManagerImpl = await withSaveAndVerify(
-    await new LeverageSwapManagerFactory(await getFirstSigner()).deploy(),
+    await new LeverageSwapManager__factory(await getFirstSigner()).deploy(),
     eContractid.LeverageSwapManagerImpl,
     [],
     verify
@@ -2638,7 +2634,7 @@ export const deployFRAX3CRVLevSwap = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new FRAX3CRVLevSwapFactory(await getFirstSigner()).deploy(...args),
+    await new FRAX3CRVLevSwap__factory(await getFirstSigner()).deploy(...args),
     eContractid.FRAX3CRVLevSwap,
     args,
     verify
@@ -2649,7 +2645,7 @@ export const deployDAIUSDCUSDTSUSDLevSwap = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new DAIUSDCUSDTSUSDLevSwapFactory(await getFirstSigner()).deploy(...args),
+    await new DAIUSDCUSDTSUSDLevSwap__factory(await getFirstSigner()).deploy(...args),
     eContractid.DAIUSDCUSDTSUSDLevSwap,
     args,
     verify
@@ -2660,7 +2656,7 @@ export const deployMIM3CRVLevSwap = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new MIM3CRVLevSwapFactory(await getFirstSigner()).deploy(...args),
+    await new MIM3CRVLevSwap__factory(await getFirstSigner()).deploy(...args),
     eContractid.MIM3CRVLevSwap,
     args,
     verify
@@ -2671,7 +2667,7 @@ export const deployIRONBANKLevSwap = async (
   verify?: boolean
 ) =>
   withSaveAndVerify(
-    await new IRONBANKLevSwapFactory(await getFirstSigner()).deploy(...args),
+    await new IRONBANKLevSwap__factory(await getFirstSigner()).deploy(...args),
     eContractid.IRONBANKLevSwap,
     args,
     verify
@@ -2684,7 +2680,7 @@ export const deployFRAXUSDCLevSwap = async (
   const libraries = await deploySwapAdapterLibraries(verify);
 
   const levSwap = await withSaveAndVerify(
-    await new FRAXUSDCLevSwapFactory(libraries, await getFirstSigner()).deploy(...args),
+    await new FRAXUSDCLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.FRAXUSDCLevSwap,
     args,
     verify
@@ -2700,7 +2696,7 @@ export const deployTUSDFRAXBPLevSwap = async (
   const libraries = await deploySwapAdapterLibraries(verify);
 
   const levSwap = await withSaveAndVerify(
-    await new TUSDFRAXBPLevSwapFactory(libraries, await getFirstSigner()).deploy(...args),
+    await new TUSDFRAXBPLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.TUSDFRAXBPLevSwap,
     args,
     verify
@@ -2711,7 +2707,7 @@ export const deployTUSDFRAXBPLevSwap = async (
 
 export const deploySturdyAPRDataProvider = async (args: [tEthereumAddress], verify?: boolean) =>
   withSaveAndVerify(
-    await new SturdyAPRDataProviderFactory(await getFirstSigner()).deploy(...args),
+    await new SturdyAPRDataProvider__factory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyAPRDataProvider,
     args,
     verify
@@ -2719,7 +2715,7 @@ export const deploySturdyAPRDataProvider = async (args: [tEthereumAddress], veri
 
 export const deployVaultWhitelist = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new VaultWhitelistFactory(await getFirstSigner()).deploy(),
+    await new VaultWhitelist__factory(await getFirstSigner()).deploy(),
     eContractid.VaultWhitelist,
     [],
     verify
@@ -2727,7 +2723,7 @@ export const deployVaultWhitelist = async (verify?: boolean) =>
 
 export const deployInitializableAdminUpgradeabilityProxy = async (verify?: boolean) =>
   withSaveAndVerify(
-    await new InitializableAdminUpgradeabilityProxyFactory(await getFirstSigner()).deploy(),
+    await new InitializableAdminUpgradeabilityProxy__factory(await getFirstSigner()).deploy(),
     eContractid.InitializableAdminUpgradeabilityProxy,
     [],
     verify
@@ -2745,7 +2741,7 @@ export const deployStaticAToken = async (
   const args: [string, string, string, string] = [pool, aTokenAddress, `Wrapped ${symbol}`, symbol];
 
   const staticATokenImplementation = await withSaveAndVerify(
-    await new StaticATokenFactory(await getFirstSigner()).deploy(),
+    await new StaticAToken__factory(await getFirstSigner()).deploy(),
     symbol + eContractid.StaticATokenImpl,
     [],
     verify

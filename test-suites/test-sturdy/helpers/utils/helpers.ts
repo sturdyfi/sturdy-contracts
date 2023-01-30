@@ -1,4 +1,4 @@
-import { LendingPool } from '../../../../types/LendingPool';
+import { LendingPool } from '../../../../types';
 import { ReserveData, UserReserveData } from './interfaces';
 import {
   getLendingRateOracle,
@@ -11,7 +11,7 @@ import {
 import { eNetwork, tEthereumAddress } from '../../../../helpers/types';
 import BigNumber from 'bignumber.js';
 import { getDb, DRE } from '../../../../helpers/misc-utils';
-import { SturdyProtocolDataProvider } from '../../../../types/SturdyProtocolDataProvider';
+import { SturdyProtocolDataProvider } from '../../../../types';
 import './math';
 import web3 from 'web3';
 import { ConfigNames, loadPoolConfig } from '../../../../helpers/configuration';

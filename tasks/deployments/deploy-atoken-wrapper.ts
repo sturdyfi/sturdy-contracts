@@ -1,8 +1,8 @@
 import { task } from 'hardhat/config';
 import { deployStaticAToken } from '../../helpers/contracts-deployments';
 import { getFirstSigner } from '../../helpers/contracts-getters';
-import { IERC20Detailed } from '../../types/IERC20Detailed';
-import { IERC20DetailedFactory } from '../../types/IERC20DetailedFactory';
+import { IERC20Detailed } from '../../types';
+import { IERC20DetailedFactory } from '../../types';
 
 task(
   `deploy-atoken-wrapper`,

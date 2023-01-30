@@ -41,7 +41,7 @@ import {
 import chai from 'chai';
 import { ReserveData, UserReserveData } from './utils/interfaces';
 import { ContractReceipt } from 'ethers';
-import { AToken } from '../../../types/AToken';
+import { AToken } from '../../../types';
 import { eNetwork, RateMode, tEthereumAddress } from '../../../helpers/types';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 

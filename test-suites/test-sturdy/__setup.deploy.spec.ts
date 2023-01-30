@@ -27,7 +27,7 @@ import {
 import { eEthereumNetwork, ICommonConfiguration } from '../../helpers/types';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, SturdyPools } from '../../helpers/types';
-import { MintableERC20 } from '../../types/MintableERC20';
+import { MintableERC20 } from '../../types';
 import {
   ConfigNames,
   getReservesConfigByPool,
@@ -52,7 +52,7 @@ import {
   getPairsTokenAggregator,
   getPriceOracle,
 } from '../../helpers/contracts-getters';
-import { WETH9Mocked } from '../../types/WETH9Mocked';
+import { WETH9Mocked } from '../../types';
 
 const MOCK_USD_PRICE_IN_WEI = SturdyConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = SturdyConfig.Mocks.AllAssetsInitialPrices;

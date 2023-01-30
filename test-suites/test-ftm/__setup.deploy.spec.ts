@@ -32,7 +32,7 @@ import {
 } from '../../helpers/contracts-deployments';
 import { Signer } from 'ethers';
 import { TokenContractId, eContractid, tEthereumAddress, SturdyPools, eNetwork, IFantomConfiguration } from '../../helpers/types';
-import { MintableERC20 } from '../../types/MintableERC20';
+import { MintableERC20 } from '../../types';
 import {
   ConfigNames,
   getReservesConfigByPool,
@@ -63,7 +63,7 @@ import {
   getYearnVault,
   getYearnWETHVault,
 } from '../../helpers/contracts-getters';
-import { WETH9Mocked } from '../../types/WETH9Mocked';
+import { WETH9Mocked } from '../../types';
 
 const MOCK_USD_PRICE_IN_WEI = FantomConfig.ProtocolGlobalParams.MockUsdPriceInWei;
 const ALL_ASSETS_INITIAL_PRICES = FantomConfig.Mocks.AllAssetsInitialPrices;

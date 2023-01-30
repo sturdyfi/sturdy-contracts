@@ -41,6 +41,7 @@ import {
   getConvexFRAXUSDCVault,
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
+  getSturdyIncentivesController,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -63,7 +64,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       } = poolConfig as ICommonConfiguration;
 
       const reserveAssets = getParamPerNetwork(ReserveAssets, network);
-      const incentivesController = getParamPerNetwork(IncentivesController, network);
+      const incentivesController = (await getSturdyIncentivesController()).address;
       const addressesProvider = await getLendingPoolAddressesProvider();
 
       const testHelpers = await getSturdyProtocolDataProvider();

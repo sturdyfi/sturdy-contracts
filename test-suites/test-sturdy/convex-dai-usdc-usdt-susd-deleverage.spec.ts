@@ -14,7 +14,7 @@
 // const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
 //   const { levSwapManager, deployer } = testEnv;
 //   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-//   return IGeneralLevSwapFactory.connect(levSwapAddress, deployer.signer);
+//   return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
 // };
 
 // const mint = async (

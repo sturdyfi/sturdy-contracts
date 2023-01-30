@@ -7,9 +7,9 @@ import {
   SymbolMap,
 } from './types';
 
-import { LendingRateOracle } from '../types/LendingRateOracle';
-import { PriceOracle } from '../types/PriceOracle';
-import { MockAggregator } from '../types/MockAggregator';
+import { LendingRateOracle } from '../types';
+import { PriceOracle } from '../types';
+import { MockAggregator } from '../types';
 import { deployMockAggregator } from './contracts-deployments';
 import { chunk, waitForTx } from './misc-utils';
 import { getStableAndVariableTokensHelper } from './contracts-getters';

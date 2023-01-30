@@ -10,8 +10,8 @@ import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/consta
 import { convertToCurrencyDecimals, getContract } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { printUserAccountData, printDivider } from './helpers/utils/helpers';
-import type { ICurveExchange } from '../../types/ICurveExchange';
-import { IERC20DetailedFactory } from '../../types/IERC20DetailedFactory';
+import type { ICurveExchange } from '../../types';
+import { IERC20Detailed__factory } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;

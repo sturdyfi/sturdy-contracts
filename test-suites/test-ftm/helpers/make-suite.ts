@@ -34,20 +34,20 @@ import {
   getFTMLiquidator,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IFantomConfiguration, tEthereumAddress } from '../../../helpers/types';
-import { LendingPool } from '../../../types/LendingPool';
-import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
-import { MintableERC20 } from '../../../types/MintableERC20';
-import { SwapinERC20 } from '../../../types/SwapinERC20';
-import { AToken } from '../../../types/AToken';
-import { LendingPoolConfigurator } from '../../../types/LendingPoolConfigurator';
+import { LendingPool } from '../../../types';
+import { SturdyProtocolDataProvider } from '../../../types';
+import { MintableERC20 } from '../../../types';
+import { SwapinERC20 } from '../../../types';
+import { AToken } from '../../../types';
+import { LendingPoolConfigurator } from '../../../types';
 
 import chai from 'chai';
 // @ts-ignore
 import bignumberChai from 'chai-bignumber';
 import { almostEqual } from './almost-equal';
-import { PriceOracle } from '../../../types/PriceOracle';
-import { LendingPoolAddressesProvider } from '../../../types/LendingPoolAddressesProvider';
-import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPoolAddressesProviderRegistry';
+import { PriceOracle } from '../../../types';
+import { LendingPoolAddressesProvider } from '../../../types';
+import { LendingPoolAddressesProviderRegistry } from '../../../types';
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
@@ -72,10 +72,10 @@ import {
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
-import { IERC20Detailed } from '../../../types/IERC20Detailed';
-import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
+import { IERC20Detailed } from '../../../types';
+import { IERC20Detailed__factory } from '../../../types';
 import { parseEther } from '@ethersproject/units';
-import { ILiquidator } from '../../../types/ILiquidator';
+import { ILiquidator } from '../../../types';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -447,19 +447,19 @@ export async function initializeMakeSuite() {
   testEnv.CRV = await getMintableERC20(crvAddress);
   testEnv.SPELL = await getMintableERC20(spellAddress);
   testEnv.brick = await getSturdyToken();
-  testEnv.yvwftm = IERC20DetailedFactory.connect(yvwftmAddress, deployer.signer);
-  testEnv.yvweth = IERC20DetailedFactory.connect(yvwethAddress, deployer.signer);
-  testEnv.yvwbtc = IERC20DetailedFactory.connect(yvwbtcAddress, deployer.signer);
-  testEnv.yvboo = IERC20DetailedFactory.connect(yvbooAddress, deployer.signer);
-  testEnv.mootomb_ftm = IERC20DetailedFactory.connect(mooTombFtmAddress, deployer.signer);
-  testEnv.mootomb_mimatic = IERC20DetailedFactory.connect(mooTombMiMaticAddress, deployer.signer);
-  testEnv.moobased_mimatic = IERC20DetailedFactory.connect(mooBasedMiMaticAddress, deployer.signer);
-  // testEnv.moomim_2crv = IERC20DetailedFactory.connect(mooMim2CrvLPAddress, deployer.signer);
-  testEnv.yvfbeets = IERC20DetailedFactory.connect(yvfbeetsAddress, deployer.signer);
-  testEnv.yvlink = IERC20DetailedFactory.connect(yvlinkAddress, deployer.signer);
-  testEnv.yvcrv = IERC20DetailedFactory.connect(yvcrvAddress, deployer.signer);
-  testEnv.yvspell = IERC20DetailedFactory.connect(yvspellAddress, deployer.signer);
-  // testEnv.mooweth = IERC20DetailedFactory.connect(moowethAddress, deployer.signer);
+  testEnv.yvwftm = IERC20Detailed__factory.connect(yvwftmAddress, deployer.signer);
+  testEnv.yvweth = IERC20Detailed__factory.connect(yvwethAddress, deployer.signer);
+  testEnv.yvwbtc = IERC20Detailed__factory.connect(yvwbtcAddress, deployer.signer);
+  testEnv.yvboo = IERC20Detailed__factory.connect(yvbooAddress, deployer.signer);
+  testEnv.mootomb_ftm = IERC20Detailed__factory.connect(mooTombFtmAddress, deployer.signer);
+  testEnv.mootomb_mimatic = IERC20Detailed__factory.connect(mooTombMiMaticAddress, deployer.signer);
+  testEnv.moobased_mimatic = IERC20Detailed__factory.connect(mooBasedMiMaticAddress, deployer.signer);
+  // testEnv.moomim_2crv = IERC20Detailed__factory.connect(mooMim2CrvLPAddress, deployer.signer);
+  testEnv.yvfbeets = IERC20Detailed__factory.connect(yvfbeetsAddress, deployer.signer);
+  testEnv.yvlink = IERC20Detailed__factory.connect(yvlinkAddress, deployer.signer);
+  testEnv.yvcrv = IERC20Detailed__factory.connect(yvcrvAddress, deployer.signer);
+  testEnv.yvspell = IERC20Detailed__factory.connect(yvspellAddress, deployer.signer);
+  // testEnv.mooweth = IERC20Detailed__factory.connect(moowethAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

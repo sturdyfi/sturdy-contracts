@@ -1,5 +1,5 @@
 import { tEthereumAddress } from './types';
-import { MockAggregator } from '../types/MockAggregator';
+import { MockAggregator } from '../types';
 import { MockTokenMap } from './contracts-helpers';
 
 export const getAllTokenAddresses = (mockTokens: MockTokenMap) =>

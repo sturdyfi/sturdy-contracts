@@ -39,19 +39,19 @@ import {
   getStaticAToken,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, ISturdyConfiguration, tEthereumAddress } from '../../../helpers/types';
-import { LendingPool } from '../../../types/LendingPool';
-import { SturdyProtocolDataProvider } from '../../../types/SturdyProtocolDataProvider';
-import { MintableERC20 } from '../../../types/MintableERC20';
-import { AToken } from '../../../types/AToken';
-import { LendingPoolConfigurator } from '../../../types/LendingPoolConfigurator';
+import { LendingPool } from '../../../types';
+import { SturdyProtocolDataProvider } from '../../../types';
+import { MintableERC20 } from '../../../types';
+import { AToken } from '../../../types';
+import { LendingPoolConfigurator } from '../../../types';
 
 import chai from 'chai';
 // @ts-ignore
 import bignumberChai from 'chai-bignumber';
 import { almostEqual } from './almost-equal';
-import { PriceOracle } from '../../../types/PriceOracle';
-import { LendingPoolAddressesProvider } from '../../../types/LendingPoolAddressesProvider';
-import { LendingPoolAddressesProviderRegistry } from '../../../types/LendingPoolAddressesProviderRegistry';
+import { PriceOracle } from '../../../types';
+import { LendingPoolAddressesProvider } from '../../../types';
+import { LendingPoolAddressesProviderRegistry } from '../../../types';
 import { getEthersSigners } from '../../../helpers/contracts-helpers';
 import { getParamPerNetwork } from '../../../helpers/contracts-helpers';
 import { solidity } from 'ethereum-waffle';
@@ -62,7 +62,7 @@ import {
   SturdyToken,
   YearnRETHWstETHVault,
   ConvexCurveLPVault,
-  SturdyInternalAssetFactory,
+  SturdyInternalAsset__factory,
   YieldManager,
   VariableYieldDistribution,
   LeverageSwapManager,
@@ -74,14 +74,14 @@ import {
 } from '../../../types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { usingTenderly } from '../../../helpers/tenderly-utils';
-import { ILido } from '../../../types/ILido';
-import { ILidoFactory } from '../../../types/ILidoFactory';
+import { ILido } from '../../../types';
+import { ILido__factory } from '../../../types';
 import { ConfigNames, loadPoolConfig } from '../../../helpers/configuration';
 import { parseEther } from '@ethersproject/units';
-import { IERC20Detailed } from '../../../types/IERC20Detailed';
-import { IERC20DetailedFactory } from '../../../types/IERC20DetailedFactory';
-import { SturdyInternalAsset } from '../../../types/SturdyInternalAsset';
-import { ILiquidator } from '../../../types/ILiquidator';
+import { IERC20Detailed } from '../../../types';
+import { IERC20Detailed__factory } from '../../../types';
+import { SturdyInternalAsset } from '../../../types';
+import { ILiquidator } from '../../../types';
 
 chai.use(bignumberChai());
 chai.use(almostEqual());
@@ -505,7 +505,7 @@ export async function initializeMakeSuite() {
   testEnv.usdc = await getMintableERC20(usdcAddress);
   testEnv.usdt = await getMintableERC20(usdtAddress);
   testEnv.brick = await getSturdyToken();
-  testEnv.lido = ILidoFactory.connect(lidoAddress, deployer.signer);
+  testEnv.lido = ILido__factory.connect(lidoAddress, deployer.signer);
   // testEnv.RETH_WSTETH_LP = await getMintableERC20(rEthWstEthLPAddress);
   testEnv.FRAX_3CRV_LP = await getMintableERC20(Frax3CrvLPAddress);
   // testEnv.STECRV_LP = await getMintableERC20(SteCrvLPAddress);
@@ -517,32 +517,32 @@ export async function initializeMakeSuite() {
   testEnv.FRAX_USDC_LP = await getMintableERC20(FraxUsdcLPAddress);
   testEnv.BAL_DAI_USDC_USDT_LP = await getMintableERC20(BalDaiUsdcUsdtLPAddress);
   testEnv.TUSD_FRAXBP_LP = await getMintableERC20(TusdFraxbpLPAddress);
-  testEnv.WETH = IERC20DetailedFactory.connect(wethAddress, deployer.signer);
-  testEnv.CRV = IERC20DetailedFactory.connect(crvAddress, deployer.signer);
-  testEnv.CVX = IERC20DetailedFactory.connect(cvxAddress, deployer.signer);
-  testEnv.BAL = IERC20DetailedFactory.connect(balAddress, deployer.signer);
-  testEnv.AURA = IERC20DetailedFactory.connect(auraAddress, deployer.signer);
-  // testEnv.yvreth_wsteth = IERC20DetailedFactory.connect(yvrethwstethAddress, deployer.signer);
-  // testEnv.cvxreth_wsteth = SturdyInternalAssetFactory.connect(
+  testEnv.WETH = IERC20Detailed__factory.connect(wethAddress, deployer.signer);
+  testEnv.CRV = IERC20Detailed__factory.connect(crvAddress, deployer.signer);
+  testEnv.CVX = IERC20Detailed__factory.connect(cvxAddress, deployer.signer);
+  testEnv.BAL = IERC20Detailed__factory.connect(balAddress, deployer.signer);
+  testEnv.AURA = IERC20Detailed__factory.connect(auraAddress, deployer.signer);
+  // testEnv.yvreth_wsteth = IERC20Detailed__factory.connect(yvrethwstethAddress, deployer.signer);
+  // testEnv.cvxreth_wsteth = SturdyInternalAsset__factory.connect(
   //   cvxrethwstethAddress,
   //   deployer.signer
   // );
-  testEnv.cvxfrax_3crv = SturdyInternalAssetFactory.connect(cvxfrax3crvAddress, deployer.signer);
-  // testEnv.cvxstecrv = SturdyInternalAssetFactory.connect(cvxstecrvAddress, deployer.signer);
-  // testEnv.cvxdola_3crv = SturdyInternalAssetFactory.connect(cvxdola3crvAddress, deployer.signer);
-  testEnv.cvxmim_3crv = SturdyInternalAssetFactory.connect(cvxmim3crvAddress, deployer.signer);
-  testEnv.cvxdai_usdc_usdt_susd = SturdyInternalAssetFactory.connect(
+  testEnv.cvxfrax_3crv = SturdyInternalAsset__factory.connect(cvxfrax3crvAddress, deployer.signer);
+  // testEnv.cvxstecrv = SturdyInternalAsset__factory.connect(cvxstecrvAddress, deployer.signer);
+  // testEnv.cvxdola_3crv = SturdyInternalAsset__factory.connect(cvxdola3crvAddress, deployer.signer);
+  testEnv.cvxmim_3crv = SturdyInternalAsset__factory.connect(cvxmim3crvAddress, deployer.signer);
+  testEnv.cvxdai_usdc_usdt_susd = SturdyInternalAsset__factory.connect(
     cvxdaiusdcusdtsusdAddress,
     deployer.signer
   );
-  // testEnv.cvxhbtc_wbtc = SturdyInternalAssetFactory.connect(cvxhbtcwbtcAddress, deployer.signer);
-  testEnv.cvxiron_bank = SturdyInternalAssetFactory.connect(cvxironbankAddress, deployer.signer);
-  testEnv.cvxfrax_usdc = SturdyInternalAssetFactory.connect(cvxfraxusdcAddress, deployer.signer);
-  // testEnv.auradai_usdc_usdt = SturdyInternalAssetFactory.connect(
+  // testEnv.cvxhbtc_wbtc = SturdyInternalAsset__factory.connect(cvxhbtcwbtcAddress, deployer.signer);
+  testEnv.cvxiron_bank = SturdyInternalAsset__factory.connect(cvxironbankAddress, deployer.signer);
+  testEnv.cvxfrax_usdc = SturdyInternalAsset__factory.connect(cvxfraxusdcAddress, deployer.signer);
+  // testEnv.auradai_usdc_usdt = SturdyInternalAsset__factory.connect(
   //   auradaiusdcusdtAddress,
   //   deployer.signer
   // );
-  testEnv.cvxtusd_fraxbp = SturdyInternalAssetFactory.connect(
+  testEnv.cvxtusd_fraxbp = SturdyInternalAsset__factory.connect(
     cvxtusdfraxbpAddress,
     deployer.signer
   );

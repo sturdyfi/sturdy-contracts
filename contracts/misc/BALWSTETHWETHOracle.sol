@@ -7,7 +7,6 @@ import './interfaces/IOracle.sol';
 import './interfaces/IOracleValidate.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/IBalancerStablePool.sol';
-import '../interfaces/IWstETH.sol';
 import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 
@@ -19,7 +18,6 @@ contract BALWSTETHWETHOracle is IOracle, IOracleValidate {
     IBalancerStablePool(0x32296969Ef14EB0c6d29669C550D4a0449130230);
   IChainlinkAggregator private constant STETH =
     IChainlinkAggregator(0x86392dC19c0b719886221c78AB11eb8Cf5c52812);
-  IWstETH private constant WSTETH = IWstETH(0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0);
   address private constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
 
   /**
@@ -30,7 +28,7 @@ contract BALWSTETHWETHOracle is IOracle, IOracleValidate {
     require(updatedAt > block.timestamp - 1 days, Errors.O_WRONG_PRICE);
     require(stETHPrice > 0, Errors.O_WRONG_PRICE);
 
-    uint256 minValue = Math.min((uint256(stETHPrice) * WSTETH.stEthPerToken()) / 1e18, 1e18);
+    uint256 minValue = Math.min(uint256(stETHPrice), 1e18);
 
     return (BALWSTETHWETH.getRate() * minValue) / 1e18;
   }

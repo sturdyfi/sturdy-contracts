@@ -144,7 +144,7 @@ contract ConvexCurveLPVault2 is IncentiveVault {
    * @param _offset extraRewards start offset.
    * @param _count extraRewards count
    */
-  function processExtraYield(uint256 _offset, uint256 _count) external payable onlyAdmin {
+  function processExtraYield(uint256 _offset, uint256 _count) external {
     address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
 
@@ -171,7 +171,7 @@ contract ConvexCurveLPVault2 is IncentiveVault {
    */
   function pricePerShare() external view override returns (uint256) {
     uint256 decimals = IERC20Detailed(internalAssetToken).decimals();
-    return 10**decimals;
+    return 10 ** decimals;
   }
 
   /**
@@ -181,11 +181,10 @@ contract ConvexCurveLPVault2 is IncentiveVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     // receive Curve LP Token from user
     address token = curveLPToken;
     require(_asset == token, Errors.VT_COLLATERAL_DEPOSIT_INVALID);
@@ -213,12 +212,10 @@ contract ConvexCurveLPVault2 is IncentiveVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     require(_asset == curveLPToken, Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
     // In this vault, return same amount of asset.
@@ -251,11 +248,10 @@ contract ConvexCurveLPVault2 is IncentiveVault {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external override returns (uint256) {
     require(_asset == curveLPToken, Errors.LP_LIQUIDATION_CALL_FAILED);
     require(msg.sender == _addressesProvider.getLendingPool(), Errors.LP_LIQUIDATION_CALL_FAILED);
 

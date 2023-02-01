@@ -97,7 +97,8 @@ export const CommonsConfig: ICommonConfiguration = {
       CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
       CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
       BAL: '0xC1438AA3823A6Ba0C159CfA8D98dF5A994bA120b',
-      AURA: '' //'0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
+      AURA: '', //'0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
+      LDO: '0x4e844125952d32acdf339be976c98e22f6f318db',
     },
     [eEthereumNetwork.tenderly]: {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
@@ -107,6 +108,7 @@ export const CommonsConfig: ICommonConfiguration = {
       CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
       BAL: '0xC1438AA3823A6Ba0C159CfA8D98dF5A994bA120b',
       AURA: '0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
+      LDO: '0x4e844125952d32acdf339be976c98e22f6f318db',
     },
   },
   ReserveAssets: {

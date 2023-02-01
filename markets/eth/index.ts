@@ -48,6 +48,10 @@ export const EthConfig: IEthConfiguration = {
     [eEthereumNetwork.main]: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
     [eEthereumNetwork.tenderly]: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
   },
+  LDO: {
+    [eEthereumNetwork.main]: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
+    [eEthereumNetwork.tenderly]: '0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32',
+  },
   ETH_STETH_LP: {
     [eEthereumNetwork.main]: '0x06325440D014e39736583c165C2963BA99fAf14E',
     [eEthereumNetwork.tenderly]: '0x06325440D014e39736583c165C2963BA99fAf14E',

@@ -354,6 +354,7 @@ export interface IEthConfiguration extends ICommonConfiguration {
   CVX: iParamsPerNetwork<tEthereumAddress>;
   BAL: iParamsPerNetwork<tEthereumAddress>;
   AURA: iParamsPerNetwork<tEthereumAddress>;
+  LDO: iParamsPerNetwork<tEthereumAddress>;
   ETH_STETH_LP: iParamsPerNetwork<tEthereumAddress>;
   BAL_WSTETH_WETH_LP: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

@@ -245,11 +245,11 @@
   },
   "ConvexETHSTETHVaultImpl": {
     "main": {
-      "address": "0xF9D31BB4D30a4C6767a9A5eeF9d135FE38897229",
+      "address": "0x70dcdB53e428945FDE7F6739e491fF1eEAE16704",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xF9D31BB4D30a4C6767a9A5eeF9d135FE38897229",
+      "address": "0x70dcdB53e428945FDE7F6739e491fF1eEAE16704",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

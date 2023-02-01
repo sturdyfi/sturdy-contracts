@@ -7,11 +7,8 @@ import {
   timeLatest,
 } from '../../helpers/misc-utils';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
-import { convertToCurrencyDecimals, getContract } from '../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
-import { printUserAccountData, printDivider } from './helpers/utils/helpers';
-import type { ICurveExchange } from '../../types/ICurveExchange';
-import { IERC20DetailedFactory } from '../../types/IERC20DetailedFactory';
 
 const chai = require('chai');
 const { expect } = chai;

@@ -6,14 +6,14 @@ import { expect } from 'chai';
 import { makeSuite, TestEnv } from './helpers/make-suite';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { mint } from './helpers/mint';
-import { ReEntrancyTest, ReEntrancyTestFactory } from '../../types';
+import { ReEntrancyTest, ReEntrancyTest__factory } from '../../types';
 import { getFirstSigner } from '../../helpers/contracts-getters';
 
 makeSuite('ReEntrancy Oracle Test - if check is disabled, re-entrancy attack would be success', (testEnv: TestEnv) => {
   let testContract = {} as ReEntrancyTest;
 
   before(async () => {
-    testContract = await new ReEntrancyTestFactory(await getFirstSigner()).deploy();
+    testContract = await new ReEntrancyTest__factory(await getFirstSigner()).deploy();
   });
 
   it('Curve ETH_STETH LP Token Price', async () => {
@@ -40,7 +40,7 @@ makeSuite('ReEntrancy Oracle Test - if check is enabled, re-entrancy attack woul
   let testContract = {} as ReEntrancyTest;
 
   before(async () => {
-    testContract = await new ReEntrancyTestFactory(await getFirstSigner()).deploy();
+    testContract = await new ReEntrancyTest__factory(await getFirstSigner()).deploy();
   });
 
   it('Curve ETH_STETH LP Token Price', async () => {

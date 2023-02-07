@@ -94,6 +94,7 @@ export interface TestEnv {
   variableYieldDistributor: VariableYieldDistribution;
   CRV: IERC20Detailed;
   CVX: IERC20Detailed;
+  LDO: IERC20Detailed;
   BAL: IERC20Detailed;
   AURA: IERC20Detailed;
   levSwapManager: LeverageSwapManager;
@@ -131,6 +132,7 @@ const testEnv: TestEnv = {
   variableYieldDistributor: {} as VariableYieldDistribution,
   CRV: {} as IERC20Detailed,
   CVX: {} as IERC20Detailed,
+  LDO: {} as IERC20Detailed,
   BAL: {} as IERC20Detailed,
   AURA: {} as IERC20Detailed,
   levSwapManager: {} as LeverageSwapManager,
@@ -147,6 +149,7 @@ export async function initializeMakeSuite() {
   const BalWstethWethLPAddress = getParamPerNetwork(poolConfig.BAL_WSTETH_WETH_LP, network);
   const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
   const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
+  const ldoAddress = getParamPerNetwork(poolConfig.LDO, network);
   const balAddress = getParamPerNetwork(poolConfig.BAL, network);
   const auraAddress = getParamPerNetwork(poolConfig.AURA, network);
 
@@ -255,6 +258,7 @@ export async function initializeMakeSuite() {
 
   testEnv.CRV = IERC20Detailed__factory.connect(crvAddress, deployer.signer);
   testEnv.CVX = IERC20Detailed__factory.connect(cvxAddress, deployer.signer);
+  testEnv.LDO = IERC20Detailed__factory.connect(ldoAddress, deployer.signer);
   testEnv.BAL = IERC20Detailed__factory.connect(balAddress, deployer.signer);
   testEnv.AURA = IERC20Detailed__factory.connect(auraAddress, deployer.signer);
   testEnv.cvxeth_steth = SturdyInternalAsset__factory.connect(cvxethstethAddress, deployer.signer);

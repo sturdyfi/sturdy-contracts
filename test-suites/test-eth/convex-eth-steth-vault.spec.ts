@@ -131,7 +131,7 @@ makeSuite('ConvexETHSTETHVault - Deposit & Withdraw', (testEnv: TestEnv) => {
 
 makeSuite('ConvexETHSTETHVault - Process Yield', (testEnv: TestEnv) => {
   it('send yield to YieldManager', async () => {
-    const { convexETHSTETHVault, users, ETH_STETH_LP, CRV, CVX, yieldManager } = testEnv;
+    const { convexETHSTETHVault, users, ETH_STETH_LP, CRV, CVX, LDO, yieldManager } = testEnv;
     const borrower = users[1];
 
     // borrower provides ETHSTETH
@@ -160,5 +160,12 @@ makeSuite('ConvexETHSTETHVault - Process Yield', (testEnv: TestEnv) => {
     const afterBalanceOfCVX = await CVX.balanceOf(yieldManager.address);
     expect(afterBalanceOfCRV).to.be.gt(beforeBalanceOfCRV);
     expect(afterBalanceOfCVX).to.be.gt(beforeBalanceOfCVX);
+    expect(await LDO.balanceOf(convexETHSTETHVault.address)).to.be.equal(0);
+    expect(await LDO.balanceOf(yieldManager.address)).to.be.equal(0);
+
+    // process extra yield (LDO), so all LDO yield should be sent to YieldManager
+    await convexETHSTETHVault.processExtraYield(0, 1)
+    expect(await LDO.balanceOf(convexETHSTETHVault.address)).to.be.equal(0);
+    expect(await LDO.balanceOf(yieldManager.address)).to.be.gt(0);
   });
 });

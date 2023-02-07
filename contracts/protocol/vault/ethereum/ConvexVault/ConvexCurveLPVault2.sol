@@ -153,7 +153,7 @@ contract ConvexCurveLPVault2 is IncentiveVault {
 
     for (uint256 i; i < _count; ++i) {
       address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(_offset + i);
-      IConvexBaseRewardPool(_extraReward).getReward();
+      IRewards(_extraReward).getReward();
 
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);

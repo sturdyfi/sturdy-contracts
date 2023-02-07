@@ -16,6 +16,8 @@ import {ILendingPool} from '../../../../interfaces/ILendingPool.sol';
 
 interface IRewards {
   function rewardToken() external view returns (address);
+
+  function getReward() external;
 }
 
 /**
@@ -129,7 +131,7 @@ contract ConvexCurveLPVault2 is IncentiveVault {
   function processYield() external override {
     // Claim Rewards(CRV, CVX, Extra incentive tokens)
     address baseRewardPool = getBaseRewardPool();
-    IConvexBaseRewardPool(baseRewardPool).getReward();
+    IConvexBaseRewardPool(baseRewardPool).getReward(address(this), false);
 
     // Transfer CRV to YieldManager
     _transferYield(IConvexBaseRewardPool(baseRewardPool).rewardToken());
@@ -152,6 +154,8 @@ contract ConvexCurveLPVault2 is IncentiveVault {
 
     for (uint256 i; i < _count; ++i) {
       address _extraReward = IConvexBaseRewardPool(baseRewardPool).extraRewards(_offset + i);
+      IRewards(_extraReward).getReward();
+
       address _rewardToken = IRewards(_extraReward).rewardToken();
       _transferYield(_rewardToken);
     }

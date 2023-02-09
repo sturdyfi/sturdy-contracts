@@ -35,6 +35,7 @@ import {
   WETHGateway__factory,
   ETHSTETHLevSwap__factory,
   AURAWSTETHWETHLevSwap__factory,
+  YieldDistributorAdapter__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -416,11 +417,11 @@ export const getStableYieldDistributionImpl = async (address?: tEthereumAddress)
     await getFirstSigner()
   );
 
-export const getFXSStableYieldDistribution = async (address?: tEthereumAddress) =>
+export const getLDOStableYieldDistribution = async (address?: tEthereumAddress) =>
   await StableYieldDistribution__factory.connect(
     address ||
       (
-        await getDb().get(`${eContractid.FXSStableYieldDistribution}.${DRE.network.name}`).value()
+        await getDb().get(`${eContractid.LDOStableYieldDistribution}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );
@@ -441,6 +442,15 @@ export const getVariableYieldDistribution = async (address?: tEthereumAddress) =
     address ||
       (
         await getDb().get(`${eContractid.VariableYieldDistribution}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getYieldDistributorAdapter = async (address?: tEthereumAddress) =>
+  await YieldDistributorAdapter__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.YieldDistributorAdapter}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

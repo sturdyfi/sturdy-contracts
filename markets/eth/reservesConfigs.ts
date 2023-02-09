@@ -31,7 +31,7 @@ export const strategyCVXETH_STETH: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
 };
 
 export const strategyAURAWSTETH_WETH: IReserveParams = {
@@ -45,5 +45,5 @@ export const strategyAURAWSTETH_WETH: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
 };

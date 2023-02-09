@@ -79,7 +79,6 @@ WRONG RESERVE ASSET SETUP:
           strategyParams.strategy.stableRateSlope1,
           strategyParams.strategy.stableRateSlope2,
           strategyParams.strategy.capacity,
-          yieldDistributor || ZERO_ADDRESS,
         ],
         verify
       );

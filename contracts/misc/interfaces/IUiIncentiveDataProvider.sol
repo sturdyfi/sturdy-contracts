@@ -9,7 +9,8 @@ interface IUiIncentiveDataProvider {
     IncentiveData aIncentiveData;
     IncentiveData vIncentiveData;
     IncentiveData sIncentiveData;
-    RewardData rewardData;
+    StableRewardData[] stableRewardDatas;
+    VariableRewardData variableRewardData;
   }
 
   struct IncentiveData {
@@ -24,11 +25,20 @@ interface IUiIncentiveDataProvider {
     uint8 precision;
   }
 
-  struct RewardData {
+  struct StableRewardData {
     // stable reward info
     uint256 emissionPerSecond;
     uint256 incentivesLastUpdateTimestamp;
     uint256 emissionEndTimestamp;
+    // common reward info
+    uint256 tokenIncentivesIndex;
+    address tokenAddress;
+    address rewardTokenAddress;
+    address distributorAddress;
+    uint8 rewardTokenDecimals;
+  }
+
+  struct VariableRewardData {
     // variable reward info
     uint256 incentiveRatio;
     uint256 lastAvailableRewards;
@@ -45,7 +55,8 @@ interface IUiIncentiveDataProvider {
     UserIncentiveData aTokenIncentivesUserData;
     UserIncentiveData vTokenIncentivesUserData;
     UserIncentiveData sTokenIncentivesUserData;
-    UserRewardData rewardUserData;
+    UserRewardData[] stableRewardUserDatas;
+    UserRewardData variableRewardUserData;
   }
 
   struct UserIncentiveData {
@@ -66,18 +77,20 @@ interface IUiIncentiveDataProvider {
     uint8 rewardTokenDecimals;
   }
 
-  function getReservesIncentivesData(ILendingPoolAddressesProvider provider)
-    external
-    view
-    returns (AggregatedReserveIncentiveData[] memory);
+  function getReservesIncentivesData(
+    ILendingPoolAddressesProvider provider
+  ) external view returns (AggregatedReserveIncentiveData[] memory);
 
-  function getUserReservesIncentivesData(ILendingPoolAddressesProvider provider, address user)
-    external
-    view
-    returns (UserReserveIncentiveData[] memory);
+  function getUserReservesIncentivesData(
+    ILendingPoolAddressesProvider provider,
+    address user
+  ) external view returns (UserReserveIncentiveData[] memory);
 
   // generic method with full data
-  function getFullReservesIncentiveData(ILendingPoolAddressesProvider provider, address user)
+  function getFullReservesIncentiveData(
+    ILendingPoolAddressesProvider provider,
+    address user
+  )
     external
     view
     returns (AggregatedReserveIncentiveData[] memory, UserReserveIncentiveData[] memory);

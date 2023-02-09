@@ -18,7 +18,7 @@ import {
   getUniswapAdapterAddress,
   getCurveswapAdapterAddress,
   getStableYieldDistributionImpl,
-  getFXSStableYieldDistribution,
+  getLDOStableYieldDistribution,
   getVariableYieldDistributionImpl,
   getVariableYieldDistribution,
   getLeverageSwapManager,
@@ -66,6 +66,7 @@ import {
   AURAOracle__factory,
   ConvexCurveLPVault2__factory,
   WETHGateway__factory,
+  YieldDistributorAdapter__factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -323,7 +324,7 @@ export const deploySturdyProtocolDataProvider = async (
   );
 
 export const deployDefaultReserveInterestRateStrategy = async (
-  args: [tEthereumAddress, string, string, string, string, string, string, string, string],
+  args: [tEthereumAddress, string, string, string, string, string, string, string],
   verify: boolean
 ) =>
   withSaveAndVerify(
@@ -666,22 +667,22 @@ export const deployStableYieldDistributionImpl = async (args: [string], verify?:
   return impl;
 };
 
-export const deployFXSStableYieldDistribution = async () => {
+export const deployLDOStableYieldDistribution = async () => {
   const stableYieldDistributionImpl = await getStableYieldDistributionImpl();
   const addressesProvider = await getLendingPoolAddressesProvider();
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
-      DRE.ethers.utils.formatBytes32String('FXS_YIELD_DISTRIBUTOR'),
+      DRE.ethers.utils.formatBytes32String('LDO_STABLE_YIELD_DISTRIBUTOR'),
       stableYieldDistributionImpl.address
     )
   );
 
   const proxyAddress = await addressesProvider.getAddress(
-    DRE.ethers.utils.formatBytes32String('FXS_YIELD_DISTRIBUTOR')
+    DRE.ethers.utils.formatBytes32String('LDO_STABLE_YIELD_DISTRIBUTOR')
   );
-  await insertContractAddressInDb(eContractid.FXSStableYieldDistribution, proxyAddress);
+  await insertContractAddressInDb(eContractid.LDOStableYieldDistribution, proxyAddress);
 
-  return await getFXSStableYieldDistribution();
+  return await getLDOStableYieldDistribution();
 };
 
 export const deployVariableYieldDistributionImpl = async (args: [string], verify?: boolean) => {
@@ -713,6 +714,25 @@ export const deployVariableYieldDistribution = async () => {
   await insertContractAddressInDb(eContractid.VariableYieldDistribution, proxyAddress);
 
   return await getVariableYieldDistribution();
+};
+
+export const deployYieldDistributorAdapter = async (args: [string], verify?: boolean) => {
+  const impl = await withSaveAndVerify(
+    await new YieldDistributorAdapter__factory(await getFirstSigner()).deploy(...args),
+    eContractid.YieldDistributorAdapter,
+    args,
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YIELD_DISTRIBUTOR_ADAPTER'),
+      impl.address
+    )
+  );
+
+  return impl;
 };
 
 export const deployCollateralAdapter = async (verify?: boolean) => {

@@ -13,6 +13,7 @@ import {IAToken} from '../interfaces/IAToken.sol';
 import {ILendingPool} from '../interfaces/ILendingPool.sol';
 import {IReserveInterestRateStrategy} from '../interfaces/IReserveInterestRateStrategy.sol';
 import {IYieldDistribution} from '../interfaces/IYieldDistribution.sol';
+import {IYieldDistributorAdapter} from '../interfaces/IYieldDistributorAdapter.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
@@ -30,6 +31,7 @@ contract StakedTokenIncentivesController is
   using SafeERC20 for IERC20;
 
   uint256 private constant REVISION = 1;
+  address private constant STURDY_TOKEN = 0x59276455177429ae2af1cc62B77AE31B34EC3890;
 
   mapping(address => uint256) internal _usersUnclaimedRewards;
   ILendingPoolAddressesProvider internal _addressProvider;
@@ -54,12 +56,10 @@ contract StakedTokenIncentivesController is
   }
 
   /// @inheritdoc ISturdyIncentivesController
-  function configureAssets(address[] calldata assets, uint256[] calldata emissionsPerSecond)
-    external
-    payable
-    override
-    onlyEmissionManager
-  {
+  function configureAssets(
+    address[] calldata assets,
+    uint256[] calldata emissionsPerSecond
+  ) external payable override onlyEmissionManager {
     uint256 length = assets.length;
     require(length == emissionsPerSecond.length, Errors.YD_INVALID_CONFIGURATION);
 
@@ -81,39 +81,53 @@ contract StakedTokenIncentivesController is
   }
 
   /// @inheritdoc ISturdyIncentivesController
-  function handleAction(
-    address user,
-    uint256 totalSupply,
-    uint256 userBalance
-  ) external override {
-    if (assets[msg.sender].emissionPerSecond == 0) return;
-
+  function handleAction(address user, uint256 totalSupply, uint256 userBalance) external override {
     ILendingPoolAddressesProvider provider = _addressProvider;
     address reserveAsset = IAToken(msg.sender).UNDERLYING_ASSET_ADDRESS();
     require(reserveAsset != address(0), Errors.YD_INVALID_CONFIGURATION);
 
-    DataTypes.ReserveData memory reserveData = ILendingPool(provider.getLendingPool())
-      .getReserveData(reserveAsset);
-    address yieldDistributor = IReserveInterestRateStrategy(reserveData.interestRateStrategyAddress)
-      .yieldDistributor();
-    if (yieldDistributor != address(0)) {
-      IYieldDistribution(yieldDistributor).handleAction(user, msg.sender, totalSupply, userBalance);
+    IYieldDistributorAdapter distributorAdapter = IYieldDistributorAdapter(
+      _addressProvider.getAddress('YIELD_DISTRIBUTOR_ADAPTER')
+    );
+    address[] memory sYieldDistributors = distributorAdapter.getStableYieldDistributors(
+      reserveAsset
+    );
+    uint256 length = sYieldDistributors.length;
+    if (length != 0) {
+      for (uint256 i = 0; i < length; ++i) {
+        IYieldDistribution(sYieldDistributors[i]).handleAction(
+          user,
+          msg.sender,
+          totalSupply,
+          userBalance
+        );
+      }
     }
 
-    // uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
-    // if (accruedRewards != 0) {
-    //   _usersUnclaimedRewards[user] += accruedRewards;
-    //   emit RewardsAccrued(user, accruedRewards);
-    // }
+    address vYieldDistributor = distributorAdapter.getVariableYieldDistributor(reserveAsset);
+    if (vYieldDistributor != address(0)) {
+      IYieldDistribution(vYieldDistributor).handleAction(
+        user,
+        msg.sender,
+        totalSupply,
+        userBalance
+      );
+    }
+
+    if (assets[msg.sender].emissionPerSecond == 0) return;
+
+    uint256 accruedRewards = _updateUserAssetInternal(user, msg.sender, userBalance, totalSupply);
+    if (accruedRewards != 0) {
+      _usersUnclaimedRewards[user] += accruedRewards;
+      emit RewardsAccrued(user, accruedRewards);
+    }
   }
 
   /// @inheritdoc ISturdyIncentivesController
-  function getRewardsBalance(address[] calldata assets, address user)
-    external
-    view
-    override
-    returns (uint256)
-  {
+  function getRewardsBalance(
+    address[] calldata assets,
+    address user
+  ) external view override returns (uint256) {
     uint256 unclaimedRewards = _usersUnclaimedRewards[user];
     uint256 length = assets.length;
     DistributionTypes.UserStakeInput[] memory userState = new DistributionTypes.UserStakeInput[](
@@ -176,7 +190,7 @@ contract StakedTokenIncentivesController is
 
   /// @inheritdoc ISturdyIncentivesController
   function REWARD_TOKEN() external view override returns (address) {
-    return _addressProvider.getIncentiveToken();
+    return STURDY_TOKEN;
   }
 
   /// @inheritdoc ISturdyIncentivesController
@@ -190,15 +204,13 @@ contract StakedTokenIncentivesController is
   }
 
   /// @inheritdoc ISturdyIncentivesController
-  function getAssetData(address asset)
+  function getAssetData(
+    address asset
+  )
     public
     view
     override(DistributionManager, ISturdyIncentivesController)
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
+    returns (uint256, uint256, uint256)
   {
     return (
       assets[asset].index,
@@ -208,12 +220,10 @@ contract StakedTokenIncentivesController is
   }
 
   /// @inheritdoc ISturdyIncentivesController
-  function getUserAssetData(address user, address asset)
-    public
-    view
-    override(DistributionManager, ISturdyIncentivesController)
-    returns (uint256)
-  {
+  function getUserAssetData(
+    address user,
+    address asset
+  ) public view override(DistributionManager, ISturdyIncentivesController) returns (uint256) {
     return assets[asset].users[user];
   }
 
@@ -269,10 +279,8 @@ contract StakedTokenIncentivesController is
     uint256 amountToClaim = amount > unclaimedRewards ? unclaimedRewards : amount;
     _usersUnclaimedRewards[user] = unclaimedRewards - amountToClaim; // Safe due to the previous line
 
-    // STAKE_TOKEN.stake(to, amountToClaim);
-    IERC20 stakeToken = IERC20(_addressProvider.getIncentiveToken());
-    if (stakeToken.balanceOf(address(this)) >= amountToClaim) {
-      stakeToken.safeTransfer(to, amountToClaim);
+    if (IERC20(STURDY_TOKEN).balanceOf(address(this)) >= amountToClaim) {
+      IERC20(STURDY_TOKEN).safeTransfer(to, amountToClaim);
     }
 
     emit RewardsClaimed(user, to, claimer, amountToClaim);

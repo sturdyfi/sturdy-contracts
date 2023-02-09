@@ -56,9 +56,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   // Available total reserve amount which user can deposit.
   uint256 internal immutable _reserveCapacity;
 
-  // Borrower's incentive yield mode.
-  address internal immutable _yieldDistributor;
-
   constructor(
     ILendingPoolAddressesProvider provider,
     uint256 optimalUtilizationRate,
@@ -67,8 +64,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 variableRateSlope2,
     uint256 stableRateSlope1,
     uint256 stableRateSlope2,
-    uint256 reserveCapacity,
-    address yieldDistributor
+    uint256 reserveCapacity
   ) {
     OPTIMAL_UTILIZATION_RATE = optimalUtilizationRate;
     EXCESS_UTILIZATION_RATE = WadRayMath.ray() - optimalUtilizationRate;
@@ -79,7 +75,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     _stableRateSlope1 = stableRateSlope1;
     _stableRateSlope2 = stableRateSlope2;
     _reserveCapacity = reserveCapacity;
-    _yieldDistributor = yieldDistributor;
   }
 
   function variableRateSlope1() external view override returns (uint256) {
@@ -106,10 +101,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _reserveCapacity;
   }
 
-  function yieldDistributor() external view override returns (address) {
-    return _yieldDistributor;
-  }
-
   function getMaxVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate + _variableRateSlope1 + _variableRateSlope2;
   }
@@ -134,16 +125,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 totalVariableDebt,
     uint256 averageStableBorrowRate,
     uint256 reserveFactor
-  )
-    external
-    view
-    override
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  ) external view override returns (uint256, uint256, uint256) {
     uint256 availableLiquidity = IERC20(reserve).balanceOf(aToken);
     //avoid stack too deep
     availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
@@ -186,16 +168,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     uint256 totalVariableDebt,
     uint256 averageStableBorrowRate,
     uint256 reserveFactor
-  )
-    public
-    view
-    override
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  ) public view override returns (uint256, uint256, uint256) {
     CalcInterestRatesLocalVars memory vars;
 
     vars.totalDebt = totalStableDebt + totalVariableDebt;

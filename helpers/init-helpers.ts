@@ -10,13 +10,14 @@ import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
-  getFXSStableYieldDistribution,
+  getLDOStableYieldDistribution,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
   getSturdyIncentivesController,
   getVariableYieldDistribution,
+  getYieldDistributorAdapter,
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
@@ -111,7 +112,6 @@ export const initReservesByHelper = async (
     string,
     string,
     string,
-    string,
     string
   ];
   let rateStrategies: Record<string, typeof strategyRates> = {};
@@ -179,7 +179,6 @@ export const initReservesByHelper = async (
         stableRateSlope1,
         stableRateSlope2,
         capacity,
-        yieldDistributor[symbol] || ZERO_ADDRESS,
       ];
       strategyAddresses[strategy.name] = (
         await deployDefaultReserveInterestRateStrategy(rateStrategies[strategy.name], verify)
@@ -259,16 +258,32 @@ export const initReservesByHelper = async (
 
       tokensForIncentive = tokensForIncentive.concat([
         response.aTokenAddress,
-        response.variableDebtTokenAddress,
+        // response.variableDebtTokenAddress,
       ]);
       emissionsPerSecond = emissionsPerSecond.concat([
         emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
-        emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
+        // emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
       ]);
     }
   }
 
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
+
+  const yieldDistributorAdapter = await getYieldDistributorAdapter();
+  if (tokenAddresses['WETH']) {
+    //LDO StableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.WETH);
+    const LDOStableYieldDistributor = await getLDOStableYieldDistribution();
+    await LDOStableYieldDistributor.configureAssets(
+      [response.aTokenAddress],
+      [reservesParams['WETH'].emissionPerSecond]
+    );
+
+    await yieldDistributorAdapter.addStableYieldDistributor(
+      tokenAddresses.WETH,
+      LDOStableYieldDistributor.address
+    );
+  }
 
   if (tokenAddresses['cvxETH_STETH']) {
     //CRV VariableYieldDistributor config
@@ -277,6 +292,11 @@ export const initReservesByHelper = async (
     await VariableYieldDistributor.registerAsset(
       response.aTokenAddress,
       yieldAddresses['cvxETH_STETH']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxETH_STETH,
+      VariableYieldDistributor.address
     );
   }
 
@@ -287,6 +307,11 @@ export const initReservesByHelper = async (
     await VariableYieldDistributor.registerAsset(
       response.aTokenAddress,
       yieldAddresses['auraWSTETH_WETH']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.auraWSTETH_WETH,
+      VariableYieldDistributor.address
     );
   }
 

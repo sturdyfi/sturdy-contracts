@@ -37,8 +37,7 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
         rateStrategyWETH.variableRateSlope2,
         rateStrategyWETH.stableRateSlope1,
         rateStrategyWETH.stableRateSlope2,
-        rateStrategyWETH.capacity,
-        ZERO_ADDRESS,
+        rateStrategyWETH.capacity
       ],
       false
     );

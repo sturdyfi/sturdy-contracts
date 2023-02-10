@@ -126,14 +126,16 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxmim_3crv, vaultWhitelist, convexMIM3CRVVault, users } = testEnv;
+    const { helpersContract, cvxmim_3crv, vaultWhitelist, convexMIM3CRVVault, users, owner } =
+      testEnv;
     mim3crvLevSwap = await getCollateralLevSwapper(testEnv, cvxmim_3crv.address);
     ltv = (await helpersContract.getReserveConfigurationData(cvxmim_3crv.address)).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexMIM3CRVVault.address,
-      mim3crvLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(convexMIM3CRVVault.address, users[0].address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexMIM3CRVVault.address, mim3crvLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexMIM3CRVVault.address, users[0].address);
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
@@ -198,6 +200,7 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexMIM3CRVVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -242,7 +245,9 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
       await mim3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
@@ -279,6 +284,7 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexMIM3CRVVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -321,7 +327,9 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
       await mim3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
@@ -350,8 +358,16 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, MIM_3CRV_LP, pool, helpersContract, vaultWhitelist, convexMIM3CRVVault } =
-        testEnv;
+      const {
+        users,
+        dai,
+        MIM_3CRV_LP,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexMIM3CRVVault,
+        owner,
+      } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
@@ -393,7 +409,9 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
       await mim3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);

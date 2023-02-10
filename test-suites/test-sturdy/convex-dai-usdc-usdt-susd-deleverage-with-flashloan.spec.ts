@@ -105,19 +105,18 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       vaultWhitelist,
       convexDAIUSDCUSDTSUSDVault,
       users,
+      owner,
     } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexDAIUSDCUSDTSUSDVault.address,
-      susdLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(
-      convexDAIUSDCUSDTSUSDVault.address,
-      users[0].address
-    );
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexDAIUSDCUSDTSUSDVault.address, susdLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, users[0].address);
   });
   describe('leavePosition - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
@@ -130,6 +129,7 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -177,10 +177,9 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
@@ -230,6 +229,7 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -275,10 +275,9 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
@@ -328,6 +327,7 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -373,10 +373,9 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
@@ -434,19 +433,18 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       vaultWhitelist,
       convexDAIUSDCUSDTSUSDVault,
       users,
+      owner,
     } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexDAIUSDCUSDTSUSDVault.address,
-      susdLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(
-      convexDAIUSDCUSDTSUSDVault.address,
-      users[0].address
-    );
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexDAIUSDCUSDTSUSDVault.address, susdLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, users[0].address);
   });
   describe('leavePosition - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
@@ -459,6 +457,7 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -506,10 +505,9 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
@@ -559,6 +557,7 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -604,10 +603,9 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
@@ -657,6 +655,7 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -702,10 +701,9 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
@@ -763,19 +761,18 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       vaultWhitelist,
       convexDAIUSDCUSDTSUSDVault,
       users,
+      owner,
     } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexDAIUSDCUSDTSUSDVault.address,
-      susdLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(
-      convexDAIUSDCUSDTSUSDVault.address,
-      users[0].address
-    );
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexDAIUSDCUSDTSUSDVault.address, susdLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, users[0].address);
   });
   describe('leavePosition - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {
@@ -788,6 +785,7 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -835,10 +833,9 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
@@ -1001,6 +998,7 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -1046,10 +1044,9 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
@@ -1212,6 +1209,7 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -1257,10 +1255,9 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);

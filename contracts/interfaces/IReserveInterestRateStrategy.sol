@@ -15,8 +15,6 @@ interface IReserveInterestRateStrategy {
 
   function reserveCapacity() external view returns (uint256);
 
-  function yieldDistributor() external view returns (address);
-
   function getMaxVariableBorrowRate() external view returns (uint256);
 
   function calculateInterestRates(
@@ -26,14 +24,7 @@ interface IReserveInterestRateStrategy {
     uint256 totalVariableDebt,
     uint256 averageStableBorrowRate,
     uint256 reserveFactor
-  )
-    external
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    );
+  ) external view returns (uint256, uint256, uint256);
 
   function calculateInterestRates(
     address reserve,
@@ -47,9 +38,5 @@ interface IReserveInterestRateStrategy {
   )
     external
     view
-    returns (
-      uint256 liquidityRate,
-      uint256 stableBorrowRate,
-      uint256 variableBorrowRate
-    );
+    returns (uint256 liquidityRate, uint256 stableBorrowRate, uint256 variableBorrowRate);
 }

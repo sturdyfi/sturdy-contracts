@@ -183,7 +183,7 @@ makeSuite('ConvexTUSDFRAXBPVault - Process Yield', (testEnv: TestEnv) => {
 //       assetAmountToDeposit
 //     );
 
-//     await vaultWhitelist.addAddressesToWhitelistUser(convexTUSDFRAXBPVault.address, [deployer.address]);
+//     await vaultWhitelist.connect(owner.signer).addAddressesToWhitelistUser(convexTUSDFRAXBPVault.address, [deployer.address]);
 //     await expect(
 //       convexTUSDFRAXBPVault
 //         .connect(users[1].signer)
@@ -220,8 +220,8 @@ makeSuite('ConvexTUSDFRAXBPVault - Process Yield', (testEnv: TestEnv) => {
 //       .connect(deployer.signer)
 //       .withdrawCollateral(TUSD_FRAXBP_LP.address, amountAssetToWithdraw, 5900, deployer.address);
 
-//     await vaultWhitelist.removeAddressesFromWhitelistUser(convexTUSDFRAXBPVault.address, [deployer.address]);
-//     expect(await vaultWhitelist.whitelistUserCount(convexTUSDFRAXBPVault.address)).to.be.equal(0);
+//     await vaultWhitelist.connect(owner.signer).removeAddressesFromWhitelistUser(convexTUSDFRAXBPVault.address, [deployer.address]);
+//     expect(await vaultWhitelist.connect(owner.signer).whitelistUserCount(convexTUSDFRAXBPVault.address)).to.be.equal(0);
 
 //     const afterBalanceOfUser = await TUSD_FRAXBP_LP.balanceOf(deployer.address);
 

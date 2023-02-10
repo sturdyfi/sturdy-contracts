@@ -123,19 +123,18 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
       vaultWhitelist,
       convexDAIUSDCUSDTSUSDVault,
       users,
+      owner,
     } = testEnv;
     susdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
     ).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexDAIUSDCUSDTSUSDVault.address,
-      susdLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(
-      convexDAIUSDCUSDTSUSDVault.address,
-      users[0].address
-    );
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexDAIUSDCUSDTSUSDVault.address, susdLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, users[0].address);
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
@@ -189,6 +188,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -236,10 +236,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
@@ -280,6 +279,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -325,10 +325,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
@@ -369,6 +368,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -414,10 +414,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);
@@ -460,6 +459,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -507,10 +507,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 1);
@@ -551,6 +550,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[5];
@@ -596,10 +596,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 1);
@@ -640,6 +639,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[6];
@@ -685,10 +685,9 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexDAIUSDCUSDTSUSDVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 1);

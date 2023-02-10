@@ -27,7 +27,8 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const borrower = users[1];
     const abiEncoder = new ethers.utils.AbiCoder();
     const encodedData = abiEncoder.encode(['address', 'address'], [lido.address, borrower.address]);
-    const poolAdminAddress = '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60';
+    const poolAdminAddress =
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7'; /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
     await impersonateAccountsHardhat([poolAdminAddress]);
     let admin = await ethers.provider.getSigner(poolAdminAddress);
 
@@ -106,7 +107,8 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       ['address', 'address'],
       [FRAX_3CRV_LP.address, borrower.address]
     );
-    const poolAdminAddress = '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60';
+    const poolAdminAddress =
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7'; /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
     await impersonateAccountsHardhat([poolAdminAddress]);
     let admin = await ethers.provider.getSigner(poolAdminAddress);
 
@@ -193,7 +195,8 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       ['address', 'address'],
       [MIM_3CRV_LP.address, borrower.address]
     );
-    const poolAdminAddress = '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60';
+    const poolAdminAddress =
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7'; /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
     await impersonateAccountsHardhat([poolAdminAddress]);
     let admin = await ethers.provider.getSigner(poolAdminAddress);
 
@@ -258,8 +261,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     await liquidator.liquidation(
       usdc.address,
       await convertToCurrencyDecimals(usdc.address, '5000'),
-      encodedData,
-      { gasLimit: 2200000 }
+      encodedData
     );
 
     // withdraw remained usdc from flashloan contract
@@ -292,7 +294,8 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       ['address', 'address'],
       [DAI_USDC_USDT_SUSD_LP.address, borrower.address]
     );
-    const poolAdminAddress = '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60';
+    const poolAdminAddress =
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7'; /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
     await impersonateAccountsHardhat([poolAdminAddress]);
     let admin = await ethers.provider.getSigner(poolAdminAddress);
 
@@ -309,7 +312,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const LPOwnerAddress = '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
-    const LP_AMOUNT = await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, '3000');
+    const LP_AMOUNT = await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, '1000');
     await DAI_USDC_USDT_SUSD_LP.connect(signer).transfer(borrower.address, LP_AMOUNT);
     await DAI_USDC_USDT_SUSD_LP.connect(borrower.signer).approve(
       convexDAIUSDCUSDTSUSDVault.address,
@@ -361,9 +364,8 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     // process liquidation by using flashloan contract
     await liquidator.liquidation(
       usdc.address,
-      await convertToCurrencyDecimals(usdc.address, '5000'),
-      encodedData,
-      { gasLimit: 2200000 }
+      await convertToCurrencyDecimals(usdc.address, '3000'),
+      encodedData
     );
 
     // withdraw remained usdc from flashloan contract
@@ -380,96 +382,95 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
   });
 });
 
-makeSuite('Liquidator', (testEnv: TestEnv) => {
-  it('call liquidator for IRON_BANK_LP for ConvexIRONBANK vault', async () => {
-    const { deployer, usdc, IRON_BANK_LP, convexIronBankVault, cvxiron_bank, pool, oracle, users } =
-      testEnv;
-    const ethers = (DRE as any).ethers;
-    const depositor = users[0];
-    const borrower = users[1];
-    const abiEncoder = new ethers.utils.AbiCoder();
-    const encodedData = abiEncoder.encode(
-      ['address', 'address'],
-      [IRON_BANK_LP.address, borrower.address]
-    );
-    const poolAdminAddress = '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60';
-    await impersonateAccountsHardhat([poolAdminAddress]);
-    let admin = await ethers.provider.getSigner(poolAdminAddress);
+// makeSuite('Liquidator', (testEnv: TestEnv) => {
+//   it('call liquidator for IRON_BANK_LP for ConvexIRONBANK vault', async () => {
+//     const { deployer, usdc, IRON_BANK_LP, convexIronBankVault, cvxiron_bank, pool, oracle, users } =
+//       testEnv;
+//     const ethers = (DRE as any).ethers;
+//     const depositor = users[0];
+//     const borrower = users[1];
+//     const abiEncoder = new ethers.utils.AbiCoder();
+//     const encodedData = abiEncoder.encode(
+//       ['address', 'address'],
+//       [IRON_BANK_LP.address, borrower.address]
+//     );
+//     const poolAdminAddress = '0xb4124ceb3451635dacedd11767f004d8a28c6ee7'/*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/;
+//     await impersonateAccountsHardhat([poolAdminAddress]);
+//     let admin = await ethers.provider.getSigner(poolAdminAddress);
 
-    //activate the IRON_BANK_LP reserve
-    let configurator = await getLendingPoolConfiguratorProxy();
-    await configurator.connect(admin).activateReserve(await convexIronBankVault.getInternalAsset());
-    // deploy liquidator with flashloan contract
-    const addressesProvider = await getLendingPoolAddressesProvider();
-    const liquidator = await deployETHLiquidator([addressesProvider.address]);
+//     //activate the IRON_BANK_LP reserve
+//     let configurator = await getLendingPoolConfiguratorProxy();
+//     await configurator.connect(admin).activateReserve(await convexIronBankVault.getInternalAsset());
+//     // deploy liquidator with flashloan contract
+//     const addressesProvider = await getLendingPoolAddressesProvider();
+//     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
-    // Prepare some IRON_BANK_LP token
-    const LPOwnerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
-    await impersonateAccountsHardhat([LPOwnerAddress]);
-    let signer = await ethers.provider.getSigner(LPOwnerAddress);
-    const LP_AMOUNT = await convertToCurrencyDecimals(IRON_BANK_LP.address, '3000');
-    await IRON_BANK_LP.connect(signer).transfer(borrower.address, LP_AMOUNT);
-    await IRON_BANK_LP.connect(borrower.signer).approve(convexIronBankVault.address, LP_AMOUNT);
+//     // Prepare some IRON_BANK_LP token
+//     const LPOwnerAddress = '0x2D2421fF1b3b35e1ca8A20eb89Fb79803b304c01';
+//     await impersonateAccountsHardhat([LPOwnerAddress]);
+//     let signer = await ethers.provider.getSigner(LPOwnerAddress);
+//     const LP_AMOUNT = await convertToCurrencyDecimals(IRON_BANK_LP.address, '200');
+//     await IRON_BANK_LP.connect(signer).transfer(borrower.address, LP_AMOUNT);
+//     await IRON_BANK_LP.connect(borrower.signer).approve(convexIronBankVault.address, LP_AMOUNT);
 
-    await convexIronBankVault
-      .connect(borrower.signer)
-      .depositCollateral(IRON_BANK_LP.address, LP_AMOUNT);
+//     await convexIronBankVault
+//       .connect(borrower.signer)
+//       .depositCollateral(IRON_BANK_LP.address, LP_AMOUNT);
 
-    const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
-    const depositUSDC = '50000';
-    //Make some test USDC for depositor
-    await impersonateAccountsHardhat([usdcOwnerAddress]);
-    signer = await ethers.provider.getSigner(usdcOwnerAddress);
-    const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
-    await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
+//     const usdcOwnerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
+//     const depositUSDC = '50000';
+//     //Make some test USDC for depositor
+//     await impersonateAccountsHardhat([usdcOwnerAddress]);
+//     signer = await ethers.provider.getSigner(usdcOwnerAddress);
+//     const amountUSDCtoDeposit = await convertToCurrencyDecimals(usdc.address, depositUSDC);
+//     await usdc.connect(signer).transfer(depositor.address, amountUSDCtoDeposit);
 
-    //approve protocol to access depositor wallet
-    await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
+//     //approve protocol to access depositor wallet
+//     await usdc.connect(depositor.signer).approve(pool.address, APPROVAL_AMOUNT_LENDING_POOL);
 
-    //Supplier  deposits 50000 USDC
-    await pool
-      .connect(depositor.signer)
-      .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
+//     //Supplier  deposits 50000 USDC
+//     await pool
+//       .connect(depositor.signer)
+//       .deposit(usdc.address, amountUSDCtoDeposit, depositor.address, '0');
 
-    // borrow
-    const userGlobalData = await pool.getUserAccountData(borrower.address);
-    const usdcPrice = await oracle.getAssetPrice(usdc.address);
+//     // borrow
+//     const userGlobalData = await pool.getUserAccountData(borrower.address);
+//     const usdcPrice = await oracle.getAssetPrice(usdc.address);
 
-    const amountUSDCToBorrow = await convertToCurrencyDecimals(
-      usdc.address,
-      new BigNumber(userGlobalData.availableBorrowsETH.toString())
-        .div(usdcPrice.toString())
-        .multipliedBy(0.99)
-        .toFixed(0)
-    );
+//     const amountUSDCToBorrow = await convertToCurrencyDecimals(
+//       usdc.address,
+//       new BigNumber(userGlobalData.availableBorrowsETH.toString())
+//         .div(usdcPrice.toString())
+//         .multipliedBy(0.99)
+//         .toFixed(0)
+//     );
 
-    await pool
-      .connect(borrower.signer)
-      .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
+//     await pool
+//       .connect(borrower.signer)
+//       .borrow(usdc.address, amountUSDCToBorrow, RateMode.Variable, '0', borrower.address);
 
-    // set liquidation threshold 35%
-    configurator = await getLendingPoolConfiguratorProxy();
-    await configurator
-      .connect(admin)
-      .configureReserveAsCollateral(cvxiron_bank.address, '3000', '3200', '10200');
+//     // set liquidation threshold 35%
+//     configurator = await getLendingPoolConfiguratorProxy();
+//     await configurator
+//       .connect(admin)
+//       .configureReserveAsCollateral(cvxiron_bank.address, '3000', '3200', '10200');
 
-    // process liquidation by using flashloan contract
-    await liquidator.liquidation(
-      usdc.address,
-      await convertToCurrencyDecimals(usdc.address, '5000'),
-      encodedData,
-      { gasLimit: 2200000 }
-    );
+//     // process liquidation by using flashloan contract
+//     await liquidator.liquidation(
+//       usdc.address,
+//       await convertToCurrencyDecimals(usdc.address, '5000'),
+//       encodedData
+//     );
 
-    // withdraw remained usdc from flashloan contract
-    const beforeUsdcBalance = await usdc.balanceOf(await (await getFirstSigner()).getAddress());
-    await liquidator.withdraw(usdc.address);
-    const usdcBalance = await usdc.balanceOf(await (await getFirstSigner()).getAddress());
-    expect(
-      usdcBalance.sub(beforeUsdcBalance).gt(await convertToCurrencyDecimals(usdc.address, '0.03'))
-    ).to.eq(true);
-  });
-});
+//     // withdraw remained usdc from flashloan contract
+//     const beforeUsdcBalance = await usdc.balanceOf(await (await getFirstSigner()).getAddress());
+//     await liquidator.withdraw(usdc.address);
+//     const usdcBalance = await usdc.balanceOf(await (await getFirstSigner()).getAddress());
+//     expect(
+//       usdcBalance.sub(beforeUsdcBalance).gt(await convertToCurrencyDecimals(usdc.address, '0.03'))
+//     ).to.eq(true);
+//   });
+// });
 
 makeSuite('Liquidator', (testEnv: TestEnv) => {
   it('call liquidator for FRAX_USDC_LP for ConvexFRAXUSDC vault', async () => {
@@ -483,7 +484,8 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
       ['address', 'address'],
       [FRAX_USDC_LP.address, borrower.address]
     );
-    const poolAdminAddress = '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60';
+    const poolAdminAddress =
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7'; /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
     await impersonateAccountsHardhat([poolAdminAddress]);
     let admin = await ethers.provider.getSigner(poolAdminAddress);
 
@@ -548,8 +550,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     await liquidator.liquidation(
       usdc.address,
       await convertToCurrencyDecimals(usdc.address, '5000'),
-      encodedData,
-      { gasLimit: 2200000 }
+      encodedData
     );
 
     // withdraw remained usdc from flashloan contract

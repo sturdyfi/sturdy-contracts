@@ -4,6 +4,7 @@ import {
   deploySturdyIncentivesController,
   deploySturdyToken,
   deployVariableYieldDistributionImpl,
+  deployYieldDistributorAdapter,
 } from '../../helpers/contracts-deployments';
 import { ConfigNames } from '../../helpers/configuration';
 import { exit } from 'process';
@@ -36,6 +37,12 @@ task('full:deploy-incentives-impl', 'Incentives controller implementation deploy
       console.log(
         `- Variable Yield Distributor Impl address ${variableYieldDistributorImpl.address}`
       );
+
+      const yieldDistributorAdapter = await deployYieldDistributorAdapter(
+        [EMISSION_EXECUTOR],
+        verify
+      );
+      console.log(`- Yield Distributor Adapter address ${yieldDistributorAdapter.address}`);
     } catch (err) {
       console.error(err);
       exit(1);

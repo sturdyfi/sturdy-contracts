@@ -33,21 +33,21 @@ task(`full:deploy-yield-manager`, `Deploys the ${CONTRACT_NAME} contract`)
     // Set Exchange Token as USDC
     await yieldManager.setExchangeToken(getParamPerNetwork(poolConfig.ReserveAssets, network).USDC);
 
-    // Register SNX oracle
-    const sturdyOracle = await getSturdyOracle();
-    await waitForTx(
-      await sturdyOracle.setAssetSources(
-        [getParamPerNetwork(SNX, network)],
-        [getParamPerNetwork(ChainlinkAggregator, network).SNX]
-      )
-    );
+    // // Register SNX oracle
+    // const sturdyOracle = await getSturdyOracle();
+    // await waitForTx(
+    //   await sturdyOracle.setAssetSources(
+    //     [getParamPerNetwork(SNX, network)],
+    //     [getParamPerNetwork(ChainlinkAggregator, network).SNX]
+    //   )
+    // );
 
     // Register reward asset(for now CRV & CVX & BAL & WETH & SNX)
     await yieldManager.registerAsset(getParamPerNetwork(CRV, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(CVX, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(WETH, network), 0);
     await yieldManager.registerAsset(getParamPerNetwork(BAL, network), 1);
-    await yieldManager.registerAsset(getParamPerNetwork(SNX, network), 0);
+    // await yieldManager.registerAsset(getParamPerNetwork(SNX, network), 0);
     // await yieldManager.registerAsset(getParamPerNetwork(AURA, network));
 
     // Set curve pool for swapping USDC -> DAI via curve

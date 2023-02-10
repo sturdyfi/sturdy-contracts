@@ -99,18 +99,19 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxtusd_fraxbp, vaultWhitelist, convexTUSDFRAXBPVault, users } =
+    const { helpersContract, cvxtusd_fraxbp, vaultWhitelist, convexTUSDFRAXBPVault, users, owner } =
       testEnv;
     tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
     ).ltv.toString();
 
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexTUSDFRAXBPVault.address,
-      tusdfraxbpLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, users[0].address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, users[0].address);
   });
   describe('leavePosition - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
@@ -123,6 +124,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexTUSDFRAXBPVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -170,10 +172,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
@@ -196,10 +197,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await vaultWhitelist.removeAddressFromWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .removeAddressFromWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
@@ -212,10 +212,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
             0
           )
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -242,6 +241,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexTUSDFRAXBPVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -287,10 +287,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
@@ -313,10 +312,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await vaultWhitelist.removeAddressFromWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .removeAddressFromWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
@@ -329,10 +327,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
             0
           )
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -359,6 +356,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexTUSDFRAXBPVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -404,10 +402,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
@@ -430,10 +427,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await vaultWhitelist.removeAddressFromWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .removeAddressFromWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
@@ -446,10 +442,9 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
             0
           )
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(
-        convexTUSDFRAXBPVault.address,
-        borrower.address
-      );
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -478,16 +473,16 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxtusd_fraxbp, vaultWhitelist, convexTUSDFRAXBPVault } = testEnv;
+    const { helpersContract, cvxtusd_fraxbp, vaultWhitelist, convexTUSDFRAXBPVault, owner } =
+      testEnv;
     tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
     ltv = (
       await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
     ).ltv.toString();
 
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexTUSDFRAXBPVault.address,
-      tusdfraxbpLevSwap.address
-    );
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
   });
   describe('leavePosition - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {

@@ -117,14 +117,16 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxiron_bank, vaultWhitelist, convexIronBankVault, users } = testEnv;
+    const { helpersContract, cvxiron_bank, vaultWhitelist, convexIronBankVault, users, owner } =
+      testEnv;
     ironbankLevSwap = await getCollateralLevSwapper(testEnv, cvxiron_bank.address);
     ltv = (await helpersContract.getReserveConfigurationData(cvxiron_bank.address)).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexIronBankVault.address,
-      ironbankLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(convexIronBankVault.address, users[0].address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexIronBankVault.address, ironbankLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexIronBankVault.address, users[0].address);
   });
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
@@ -189,6 +191,7 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexIronBankVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -233,7 +236,9 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexIronBankVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexIronBankVault.address, borrower.address);
       await ironbankLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
@@ -270,6 +275,7 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexIronBankVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -312,7 +318,9 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexIronBankVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexIronBankVault.address, borrower.address);
       await ironbankLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
@@ -349,6 +357,7 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexIronBankVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -391,7 +400,9 @@ makeSuite('IRONBANK Leverage Swap', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexIronBankVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexIronBankVault.address, borrower.address);
       await ironbankLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);

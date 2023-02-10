@@ -231,13 +231,13 @@
       ]
     },
     {
-      "description": "User 1 deposits 1 stETH on behalf of user 2, user 2 tries to borrow 2000 USDC",
+      "description": "User 1 deposits 3 stETH on behalf of user 2, user 2 tries to borrow 2000 USDC",
       "actions": [
         {
           "name": "mint",
           "args": {
             "reserve": "stETH",
-            "amount": "1",
+            "amount": "3",
             "user": "1"
           },
           "expected": "success"
@@ -254,7 +254,7 @@
           "name": "depositCollateral",
           "args": {
             "reserve": "stETH",
-            "amount": "1",
+            "amount": "3",
             "user": "1",
             "onBehalfOf": "1"
           },
@@ -264,7 +264,7 @@
           "name": "borrow",
           "args": {
             "reserve": "USDC",
-            "amount": "1000",
+            "amount": "2000",
             "borrowRateMode": "variable",
             "user": "1"
           },

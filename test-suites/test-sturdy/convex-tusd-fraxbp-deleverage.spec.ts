@@ -118,11 +118,11 @@
 //       await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
 //     ).ltv.toString();
 
-//     await vaultWhitelist.addAddressToWhitelistContract(
+//     await vaultWhitelist.connect(owner.signer).addAddressToWhitelistContract(
 //       convexTUSDFRAXBPVault.address,
 //       tusdfraxbpLevSwap.address
 //     );
-//     await vaultWhitelist.addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, users[0].address);
+//     await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, users[0].address);
 //   });
 //   describe('leavePosition(): Prerequisite checker', () => {
 //     it('should be reverted if try to use zero amount', async () => {
@@ -223,7 +223,7 @@
 //           .connect(borrower.signer)
 //           .enterPosition(principalAmount, iterations, ltv, usdt.address)
 //       ).to.be.revertedWith('118');
-//       await vaultWhitelist.addAddressToWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -248,7 +248,7 @@
 //         .connect(borrower.signer)
 //         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-//       await vaultWhitelist.removeAddressFromWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).removeAddressFromWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -257,7 +257,7 @@
 //           .connect(borrower.signer)
 //           .leavePosition(principalAmount, '100', '10', usdt.address, aCVXTUSD_FRAXBP.address)
 //       ).to.be.revertedWith('118');
-//       await vaultWhitelist.addAddressToWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -325,7 +325,7 @@
 //           .connect(borrower.signer)
 //           .enterPosition(principalAmount, iterations, ltv, usdc.address)
 //       ).to.be.revertedWith('118');
-//       await vaultWhitelist.addAddressToWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -350,7 +350,7 @@
 //         .connect(borrower.signer)
 //         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-//       await vaultWhitelist.removeAddressFromWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).removeAddressFromWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -359,7 +359,7 @@
 //           .connect(borrower.signer)
 //           .leavePosition(principalAmount, '100', '10', usdc.address, aCVXTUSD_FRAXBP.address)
 //       ).to.be.revertedWith('118');
-//       await vaultWhitelist.addAddressToWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -427,7 +427,7 @@
 //           .connect(borrower.signer)
 //           .enterPosition(principalAmount, iterations, ltv, dai.address)
 //       ).to.be.revertedWith('118');
-//       await vaultWhitelist.addAddressToWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -452,7 +452,7 @@
 //         .connect(borrower.signer)
 //         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
-//       await vaultWhitelist.removeAddressFromWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).removeAddressFromWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -461,7 +461,7 @@
 //           .connect(borrower.signer)
 //           .leavePosition(principalAmount, '100', '10', dai.address, aCVXTUSD_FRAXBP.address)
 //       ).to.be.revertedWith('118');
-//       await vaultWhitelist.addAddressToWhitelistUser(
+//       await vaultWhitelist.connect(owner.signer).addAddressToWhitelistUser(
 //         convexTUSDFRAXBPVault.address,
 //         borrower.address
 //       );
@@ -492,7 +492,7 @@
 //       await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
 //     ).ltv.toString();
 
-//     await vaultWhitelist.addAddressToWhitelistContract(
+//     await vaultWhitelist.connect(owner.signer).addAddressToWhitelistContract(
 //       convexTUSDFRAXBPVault.address,
 //       tusdfraxbpLevSwap.address
 //     );
@@ -1084,7 +1084,7 @@
 //       await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
 //     ).ltv.toString();
 
-//     await vaultWhitelist.addAddressToWhitelistContract(
+//     await vaultWhitelist.connect(owner.signer).addAddressToWhitelistContract(
 //       convexTUSDFRAXBPVault.address,
 //       tusdfraxbpLevSwap.address
 //     );

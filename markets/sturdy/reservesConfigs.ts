@@ -70,7 +70,7 @@ export const strategySTETH: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyYVRETH_WSTETH: IReserveParams = {
@@ -84,7 +84,7 @@ export const strategyYVRETH_WSTETH: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXRETH_WSTETH: IReserveParams = {
@@ -98,7 +98,7 @@ export const strategyCVXRETH_WSTETH: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXFRAX_3CRV: IReserveParams = {
@@ -112,7 +112,7 @@ export const strategyCVXFRAX_3CRV: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXSTECRV: IReserveParams = {
@@ -126,7 +126,7 @@ export const strategyCVXSTECRV: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXDOLA_3CRV: IReserveParams = {
@@ -140,7 +140,7 @@ export const strategyCVXDOLA_3CRV: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXMIM_3CRV: IReserveParams = {
@@ -154,7 +154,7 @@ export const strategyCVXMIM_3CRV: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXDAI_USDC_USDT_SUSD: IReserveParams = {
@@ -168,7 +168,7 @@ export const strategyCVXDAI_USDC_USDT_SUSD: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXHBTC_WBTC: IReserveParams = {
@@ -182,7 +182,7 @@ export const strategyCVXHBTC_WBTC: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXIRON_BANK: IReserveParams = {
@@ -196,7 +196,7 @@ export const strategyCVXIRON_BANK: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXFRAX_USDC: IReserveParams = {
@@ -210,7 +210,7 @@ export const strategyCVXFRAX_USDC: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyAURADAI_USDC_USDT: IReserveParams = {
@@ -224,7 +224,7 @@ export const strategyAURADAI_USDC_USDT: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };
 
 export const strategyCVXTUSD_FRAXBP: IReserveParams = {
@@ -238,5 +238,5 @@ export const strategyCVXTUSD_FRAXBP: IReserveParams = {
   aTokenImpl: eContractid.ATokenForCollateral,
   reserveFactor: '0',
   collateralEnabled: true,
-  emissionPerSecond: '10',
+  emissionPerSecond: '0',
   };

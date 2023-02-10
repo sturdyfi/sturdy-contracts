@@ -14,7 +14,7 @@ import {
   eNetwork,
   IFantomConfiguration,
 } from './types';
-import { MintableERC20 } from '../types';
+import { MintableERC20, YieldDistributorAdapter__factory } from '../types';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
@@ -47,7 +47,7 @@ import {
   getUniswapAdapterAddress,
   getCurveswapAdapterAddress,
   getStableYieldDistributionImpl,
-  getFXSStableYieldDistribution,
+  getLDOStableYieldDistribution,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
   getConvexHBTCWBTCVault,
@@ -311,21 +311,28 @@ export const deploySturdyLibraries = async (
   // libPath example: contracts/libraries/logic/GenericLogic.sol
   // libName example: GenericLogic
   return {
-    ['contracts/protocol/libraries/logic/ValidationLogic.sol:ValidationLogic']: validationLogic.address,
+    ['contracts/protocol/libraries/logic/ValidationLogic.sol:ValidationLogic']:
+      validationLogic.address,
     ['contracts/protocol/libraries/logic/ReserveLogic.sol:ReserveLogic']: reserveLogic.address,
   };
 };
 
 export const deployLendingPoolImpl = async (verify?: boolean) => {
   const libraries = await deploySturdyLibraries(verify);
-  const lendingPoolImpl = await new LendingPool__factory(libraries, await getFirstSigner()).deploy();
+  const lendingPoolImpl = await new LendingPool__factory(
+    libraries,
+    await getFirstSigner()
+  ).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
   return lendingPoolImpl;
 };
 
 export const deployLendingPool = async (verify?: boolean) => {
   const libraries = await deploySturdyLibraries(verify);
-  const lendingPoolImpl = await new LendingPool__factory(libraries, await getFirstSigner()).deploy();
+  const lendingPoolImpl = await new LendingPool__factory(
+    libraries,
+    await getFirstSigner()
+  ).deploy();
   await insertContractAddressInDb(eContractid.LendingPoolImpl, lendingPoolImpl.address);
   return withSaveAndVerify(lendingPoolImpl, eContractid.LendingPoolImpl, [], verify);
 };
@@ -582,7 +589,7 @@ export const deployMintableDelegationERC20 = async (
     verify
   );
 export const deployDefaultReserveInterestRateStrategy = async (
-  args: [tEthereumAddress, string, string, string, string, string, string, string, string],
+  args: [tEthereumAddress, string, string, string, string, string, string, string],
   verify: boolean
 ) =>
   withSaveAndVerify(
@@ -893,7 +900,8 @@ export const deployLidoVaultLibraries = async (
   const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
 
   return {
-    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']: curveswapAdapter.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']:
+      curveswapAdapter.address,
   };
 };
 
@@ -969,7 +977,8 @@ export const deployYearnRETHWstETHVaultLibraries = async (
   const curveswapAdapter = await deployCurveswapAdapterLibrary(verify);
 
   return {
-    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']: curveswapAdapter.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']:
+      curveswapAdapter.address,
   };
 };
 
@@ -2183,22 +2192,41 @@ export const deployStableYieldDistributionImpl = async (args: [string], verify?:
   return impl;
 };
 
-export const deployFXSStableYieldDistribution = async () => {
+export const deployLDOStableYieldDistribution = async () => {
   const stableYieldDistributionImpl = await getStableYieldDistributionImpl();
   const addressesProvider = await getLendingPoolAddressesProvider();
   await waitForTx(
     await addressesProvider.setAddressAsProxy(
-      DRE.ethers.utils.formatBytes32String('FXS_YIELD_DISTRIBUTOR'),
+      DRE.ethers.utils.formatBytes32String('LDO_STABLE_YIELD_DISTRIBUTOR'),
       stableYieldDistributionImpl.address
     )
   );
 
   const proxyAddress = await addressesProvider.getAddress(
-    DRE.ethers.utils.formatBytes32String('FXS_YIELD_DISTRIBUTOR')
+    DRE.ethers.utils.formatBytes32String('LDO_STABLE_YIELD_DISTRIBUTOR')
   );
-  await insertContractAddressInDb(eContractid.FXSStableYieldDistribution, proxyAddress);
+  await insertContractAddressInDb(eContractid.LDOStableYieldDistribution, proxyAddress);
 
-  return await getFXSStableYieldDistribution();
+  return await getLDOStableYieldDistribution();
+};
+
+export const deployYieldDistributorAdapter = async (args: [string], verify?: boolean) => {
+  const impl = await withSaveAndVerify(
+    await new YieldDistributorAdapter__factory(await getFirstSigner()).deploy(...args),
+    eContractid.YieldDistributorAdapter,
+    args,
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(
+    await addressesProvider.setAddress(
+      DRE.ethers.utils.formatBytes32String('YIELD_DISTRIBUTOR_ADAPTER'),
+      impl.address
+    )
+  );
+
+  return impl;
 };
 
 export const deployVariableYieldDistributionImpl = async (args: [string], verify?: boolean) => {
@@ -2550,9 +2578,11 @@ export const deploySwapAdapterLibraries = async (
   const balancerswapAdapter = await deployBalancerswapAdapterLibrary(verify);
 
   return {
-    ['contracts/protocol/libraries/swap/BalancerswapAdapter.sol:BalancerswapAdapter']: balancerswapAdapter.address,
+    ['contracts/protocol/libraries/swap/BalancerswapAdapter.sol:BalancerswapAdapter']:
+      balancerswapAdapter.address,
     ['contracts/protocol/libraries/swap/UniswapAdapter.sol:UniswapAdapter']: uniswapAdapter.address,
-    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']: curveswapAdapter.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']:
+      curveswapAdapter.address,
   };
 };
 

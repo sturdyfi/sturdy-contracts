@@ -99,14 +99,16 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxfrax_3crv, vaultWhitelist, convexFRAX3CRVVault, users } = testEnv;
+    const { helpersContract, cvxfrax_3crv, vaultWhitelist, convexFRAX3CRVVault, users, owner } =
+      testEnv;
     frax3crvLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_3crv.address);
     ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_3crv.address)).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexFRAX3CRVVault.address,
-      frax3crvLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, users[0].address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexFRAX3CRVVault.address, frax3crvLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexFRAX3CRVVault.address, users[0].address);
   });
   describe('leavePosition - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
@@ -119,6 +121,7 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexFRAX3CRVVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -163,7 +166,9 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
       await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
@@ -212,6 +217,7 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexFRAX3CRVVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -254,7 +260,9 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
       await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
@@ -303,6 +311,7 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexFRAX3CRVVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -345,7 +354,9 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
       await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
@@ -396,14 +407,16 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, cvxfrax_3crv, vaultWhitelist, convexFRAX3CRVVault, users } = testEnv;
+    const { helpersContract, cvxfrax_3crv, vaultWhitelist, convexFRAX3CRVVault, users, owner } =
+      testEnv;
     frax3crvLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_3crv.address);
     ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_3crv.address)).ltv.toString();
-    await vaultWhitelist.addAddressToWhitelistContract(
-      convexFRAX3CRVVault.address,
-      frax3crvLevSwap.address
-    );
-    await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, users[0].address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexFRAX3CRVVault.address, frax3crvLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexFRAX3CRVVault.address, users[0].address);
   });
   describe('leavePosition - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {
@@ -416,6 +429,7 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexFRAX3CRVVault,
+        owner,
       } = testEnv;
 
       const depositor = users[0];
@@ -460,7 +474,9 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
       await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
@@ -623,6 +639,7 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexFRAX3CRVVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
@@ -665,7 +682,9 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
       await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
@@ -828,6 +847,7 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
         helpersContract,
         vaultWhitelist,
         convexFRAX3CRVVault,
+        owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
@@ -870,7 +890,9 @@ makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
       ).to.be.revertedWith('118');
-      await vaultWhitelist.addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
       await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);

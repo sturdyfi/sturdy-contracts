@@ -93,6 +93,7 @@ export interface SignerWithAddress {
 }
 export interface TestEnv {
   deployer: SignerWithAddress;
+  owner: SignerWithAddress;
   emergencyUser: SignerWithAddress;
   users: SignerWithAddress[];
   pool: LendingPool;
@@ -184,6 +185,7 @@ const setBuidlerevmSnapshotId = (id: string) => {
 
 const testEnv: TestEnv = {
   deployer: {} as SignerWithAddress,
+  owner: {} as SignerWithAddress,
   emergencyUser: {} as SignerWithAddress,
   users: [] as SignerWithAddress[],
   pool: {} as LendingPool,
@@ -325,18 +327,18 @@ export async function initializeMakeSuite() {
     await _deployer.sendTransaction({ value: parseEther('90000'), to: emergencyAddress });
   }
 
-  // if (network == 'main') {
-  //   const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
-  //   const ethers = (DRE as any).ethers;
-  //   await impersonateAccountsHardhat([deployerAddress]);
-  //   let signer = await ethers.provider.getSigner(deployerAddress);
-  //   deployer = {
-  //     address: deployerAddress,
-  //     signer: signer,
-  //   };
+  if (network == 'main') {
+    const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
+    const ethers = (DRE as any).ethers;
+    await impersonateAccountsHardhat([deployerAddress]);
+    let signer = await ethers.provider.getSigner(deployerAddress);
+    testEnv.owner = {
+      address: deployerAddress,
+      signer: signer,
+    };
 
-  //   await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
-  // }
+    await _deployer.sendTransaction({ value: parseEther('90000'), to: deployerAddress });
+  }
 
   for (const signer of restSigners) {
     testEnv.users.push({
@@ -382,7 +384,7 @@ export async function initializeMakeSuite() {
   testEnv.addressesProvider = await getLendingPoolAddressesProvider();
   testEnv.oracle = await getPriceOracle(await testEnv.addressesProvider.getPriceOracle());
   testEnv.aprProvider = await getSturdyAPRDataProvider();
-  testEnv.vaultWhitelist = await getVaultWhitelist();
+  testEnv.vaultWhitelist = await getVaultWhitelist('0x88eE44794bAf865E3b0b192d1F9f0AC3Daf1EA0E');
 
   if (process.env.FORK) {
     testEnv.registry = await getLendingPoolAddressesProviderRegistry(
@@ -568,12 +570,12 @@ const revertHead = async () => {
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
-    before(async () => {
-      if (DRE.network.name != 'goerli') await setSnapshot();
-    });
+    // before(async () => {
+    //   if (DRE.network.name != 'goerli') await setSnapshot();
+    // });
     tests(testEnv);
-    after(async () => {
-      if (DRE.network.name != 'goerli') await revertHead();
-    });
+    // after(async () => {
+    //   if (DRE.network.name != 'goerli') await revertHead();
+    // });
   });
 }

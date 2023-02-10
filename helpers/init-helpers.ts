@@ -10,13 +10,14 @@ import { chunk, DRE, getDb, waitForTx } from './misc-utils';
 import {
   getAToken,
   getATokensAndRatesHelper,
-  getFXSStableYieldDistribution,
+  getLDOStableYieldDistribution,
   getLendingPool,
   getLendingPoolAddressesProvider,
   getLendingPoolConfiguratorProxy,
   getStableAndVariableTokensHelper,
   getSturdyIncentivesController,
   getVariableYieldDistribution,
+  getYieldDistributorAdapter,
 } from './contracts-getters';
 import { rawInsertContractAddressInDb } from './contracts-helpers';
 import { BigNumber, BigNumberish, Signer } from 'ethers';
@@ -114,7 +115,6 @@ export const initReservesByHelper = async (
     string,
     string,
     string,
-    string,
     string
   ];
   let rateStrategies: Record<string, typeof strategyRates> = {};
@@ -182,7 +182,6 @@ export const initReservesByHelper = async (
         stableRateSlope1,
         stableRateSlope2,
         capacity,
-        yieldDistributor[symbol] || ZERO_ADDRESS,
       ];
       strategyAddresses[strategy.name] = (
         await deployDefaultReserveInterestRateStrategy(rateStrategies[strategy.name], verify)
@@ -262,24 +261,27 @@ export const initReservesByHelper = async (
 
       tokensForIncentive = tokensForIncentive.concat([
         response.aTokenAddress,
-        response.variableDebtTokenAddress,
+        // response.variableDebtTokenAddress,
       ]);
       emissionsPerSecond = emissionsPerSecond.concat([
         emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
-        emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
+        // emissionPerSeconds[chunkIndex * initChunks + tokenIndex],
       ]);
     }
   }
 
   await incentives.configureAssets(tokensForIncentive, emissionsPerSecond);
 
+  const yieldDistributorAdapter = await getYieldDistributorAdapter();
   if (tokenAddresses['cvxFRAX_3CRV']) {
-    //FXSStableYieldDistributor config
+    //LDO StableYieldDistributor config
     let response = await pool.getReserveData(tokenAddresses.cvxFRAX_3CRV);
-    const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
-    await FXSStableYieldDistributor.configureAssets(
-      [response.aTokenAddress],
-      [reservesParams['cvxFRAX_3CRV'].emissionPerSecond]
+    const LDOStableYieldDistributor = await getLDOStableYieldDistribution();
+    await LDOStableYieldDistributor.configureAssets([response.aTokenAddress], [10]);
+
+    await yieldDistributorAdapter.addStableYieldDistributor(
+      tokenAddresses.cvxFRAX_3CRV,
+      LDOStableYieldDistributor.address
     );
 
     //CRV VariableYieldDistributor config
@@ -288,6 +290,11 @@ export const initReservesByHelper = async (
     await VariableYieldDistributor.registerAsset(
       response.aTokenAddress,
       yieldAddresses['cvxFRAX_3CRV']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxFRAX_3CRV,
+      VariableYieldDistributor.address
     );
   }
 
@@ -299,6 +306,11 @@ export const initReservesByHelper = async (
       response.aTokenAddress,
       yieldAddresses['cvxIRON_BANK']
     );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxIRON_BANK,
+      VariableYieldDistributor.address
+    );
   }
 
   if (tokenAddresses['cvxFRAX_USDC']) {
@@ -308,6 +320,11 @@ export const initReservesByHelper = async (
     await VariableYieldDistributor.registerAsset(
       response.aTokenAddress,
       yieldAddresses['cvxFRAX_USDC']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxFRAX_USDC,
+      VariableYieldDistributor.address
     );
   }
 
@@ -319,6 +336,11 @@ export const initReservesByHelper = async (
       response.aTokenAddress,
       yieldAddresses['cvxMIM_3CRV']
     );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxMIM_3CRV,
+      VariableYieldDistributor.address
+    );
   }
 
   if (tokenAddresses['cvxDAI_USDC_USDT_SUSD']) {
@@ -328,6 +350,11 @@ export const initReservesByHelper = async (
     await VariableYieldDistributor.registerAsset(
       response.aTokenAddress,
       yieldAddresses['cvxDAI_USDC_USDT_SUSD']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxDAI_USDC_USDT_SUSD,
+      VariableYieldDistributor.address
     );
   }
 
@@ -339,6 +366,11 @@ export const initReservesByHelper = async (
       response.aTokenAddress,
       yieldAddresses['auraDAI_USDC_USDT']
     );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.auraDAI_USDC_USDT,
+      VariableYieldDistributor.address
+    );
   }
 
   if (tokenAddresses['cvxTUSD_FRAXBP']) {
@@ -348,6 +380,11 @@ export const initReservesByHelper = async (
     await VariableYieldDistributor.registerAsset(
       response.aTokenAddress,
       yieldAddresses['cvxTUSD_FRAXBP']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.cvxTUSD_FRAXBP,
+      VariableYieldDistributor.address
     );
   }
 

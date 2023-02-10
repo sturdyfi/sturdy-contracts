@@ -38,7 +38,6 @@ makeSuite('Interest rate strategy tests', (testEnv: TestEnv) => {
         rateStrategyStableTwo.stableRateSlope1,
         rateStrategyStableTwo.stableRateSlope2,
         rateStrategyStableTwo.capacity,
-        ZERO_ADDRESS,
       ],
       false
     );

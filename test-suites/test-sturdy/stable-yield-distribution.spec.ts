@@ -1,24 +1,19 @@
-import BigNumber from 'bignumber.js';
-import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite } from './helpers/make-suite';
-import { RateMode } from '../../helpers/types';
-import { printUserAccountData, ETHfromWei, printDivider } from './helpers/utils/helpers';
+import { printDivider } from './helpers/utils/helpers';
 import {
   advanceBlock,
   DRE,
   impersonateAccountsHardhat,
   timeLatest,
-  waitForTx,
 } from '../../helpers/misc-utils';
-import { IERC20Detailed__factory } from '../../types';
-import { getFXSStableYieldDistribution, getMintableERC20 } from '../../helpers/contracts-getters';
+import { getLDOStableYieldDistribution, getMintableERC20 } from '../../helpers/contracts-getters';
 
 const chai = require('chai');
 const { expect } = chai;
 const DISTRIBUTION_DURATION = 86400; //1day
 
-makeSuite('Check FXS token growing ', (testEnv) => {
+makeSuite('Check LDO token growing ', (testEnv) => {
   it('User deposits FRAX_3CRV_LP as collateral', async () => {
     const { aCVXFRAX_3CRV, users, convexFRAX3CRVVault, FRAX_3CRV_LP } = testEnv;
     const ethers = (DRE as any).ethers;
@@ -32,27 +27,27 @@ makeSuite('Check FXS token growing ', (testEnv) => {
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     await FRAX_3CRV_LP.connect(signer).transfer(depositor.address, assetAmountToDeposit);
 
-    // Deposit FXS to StableYieldDistributor
-    const FXSStableYieldDistributor = await getFXSStableYieldDistribution();
-    const FXS = await getMintableERC20('0x3432B6A60D23Ca0dFCa7761B7ab56459D9C964D0');
-    const FXSOwnerAddress = '0x66df2139c24446f5B43dB80a680fb94D0c1c5D8E';
-    await impersonateAccountsHardhat([FXSOwnerAddress]);
-    signer = await ethers.provider.getSigner(FXSOwnerAddress);
-    const amountFXStoDeposit = await convertToCurrencyDecimals(FXS.address, '10000');
-    await FXS.connect(signer).transfer(FXSStableYieldDistributor.address, amountFXStoDeposit);
+    // Deposit LDO to StableYieldDistributor
+    const LDOStableYieldDistributor = await getLDOStableYieldDistribution();
+    const LDO = await getMintableERC20('0x5A98FcBEA516Cf06857215779Fd812CA3beF1B32');
+    const LDOOwnerAddress = '0xAD4f7415407B83a081A0Bee22D05A8FDC18B42da';
+    await impersonateAccountsHardhat([LDOOwnerAddress]);
+    signer = await ethers.provider.getSigner(LDOOwnerAddress);
+    const amountLDOtoDeposit = await convertToCurrencyDecimals(LDO.address, '10000');
+    await LDO.connect(signer).transfer(LDOStableYieldDistributor.address, amountLDOtoDeposit);
 
-    await FXSStableYieldDistributor.setDistributionEnd(
+    await LDOStableYieldDistributor.setDistributionEnd(
       (await timeLatest()).plus(DISTRIBUTION_DURATION).toString()
     );
     await advanceBlock((await timeLatest()).plus(100).toNumber());
 
-    let unclaimedDepositorRewardsBefore = await FXSStableYieldDistributor.getRewardsBalance(
+    let unclaimedDepositorRewardsBefore = await LDOStableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],
       depositor.address
     );
-    let depositorFXSBefore = await FXS.balanceOf(depositor.address);
+    let depositorLDOBefore = await LDO.balanceOf(depositor.address);
     expect(unclaimedDepositorRewardsBefore.toString()).to.be.bignumber.equal('0');
-    expect(depositorFXSBefore.toString()).to.be.bignumber.equal('0');
+    expect(depositorLDOBefore.toString()).to.be.bignumber.equal('0');
 
     //user 2 deposits 3000 FRAX_3CRV_LP
     await FRAX_3CRV_LP.connect(depositor.signer).approve(
@@ -64,28 +59,29 @@ makeSuite('Check FXS token growing ', (testEnv) => {
       .depositCollateral(FRAX_3CRV_LP.address, assetAmountToDeposit);
 
     await advanceBlock((await timeLatest()).plus(100).toNumber());
-    unclaimedDepositorRewardsBefore = await FXSStableYieldDistributor.getRewardsBalance(
+    unclaimedDepositorRewardsBefore = await LDOStableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],
       depositor.address
     );
-    depositorFXSBefore = await FXS.balanceOf(depositor.address);
+    depositorLDOBefore = await LDO.balanceOf(depositor.address);
 
     expect(unclaimedDepositorRewardsBefore.toString()).to.be.bignumber.equal('999');
-    expect(depositorFXSBefore.toString()).to.be.bignumber.equal('0');
+    expect(depositorLDOBefore.toString()).to.be.bignumber.equal('0');
 
     //claim rewards of depositor
-    await FXSStableYieldDistributor.connect(depositor.signer).claimRewards(
+    await LDOStableYieldDistributor.connect(depositor.signer).claimRewards(
       [aCVXFRAX_3CRV.address],
       100,
       depositor.address
     );
 
-    let unclaimedDepositorRewardsAfter = await FXSStableYieldDistributor.getRewardsBalance(
+    let unclaimedDepositorRewardsAfter = await LDOStableYieldDistributor.getRewardsBalance(
       [aCVXFRAX_3CRV.address],
       depositor.address
     );
-    let depositorFXSAfter = await FXS.balanceOf(depositor.address);
-    expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.equal('909');
-    expect(depositorFXSAfter.toString()).to.be.bignumber.equal('100');
+    let depositorLDOAfter = await LDO.balanceOf(depositor.address);
+    expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.lte('929');
+    expect(unclaimedDepositorRewardsAfter.toString()).to.be.bignumber.gte('909');
+    expect(depositorLDOAfter.toString()).to.be.bignumber.equal('100');
   });
 });

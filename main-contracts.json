@@ -135,11 +135,11 @@
   },
   "StakedTokenIncentivesControllerImpl": {
     "main": {
-      "address": "0x1753A500D370f2a14419d8614A4b24EE6f127855",
+      "address": "0x4CfA9DDeC7A7C381fc3bd438C5A3CF568a633A3D",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x1753A500D370f2a14419d8614A4b24EE6f127855",
+      "address": "0x4CfA9DDeC7A7C381fc3bd438C5A3CF568a633A3D",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -363,11 +363,11 @@
   },
   "UiIncentiveDataProvider": {
     "main": {
-      "address": "0x46c05BB4205BfC2E063EaB565Fde488561a0a281",
+      "address": "0x1452268C504dEc241062C09E601C0726DA724E55",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x46c05BB4205BfC2E063EaB565Fde488561a0a281",
+      "address": "0x1452268C504dEc241062C09E601C0726DA724E55",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -796,6 +796,16 @@
     },
     "localhost": {
       "address": "0x822802f970CCd9aEB13d0368A2409804d28E1253",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "YieldDistributorAdapter": {
+    "main": {
+      "address": "0xf093E07033efA4eD8167f33A5034AF8E049212F7",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xf093E07033efA4eD8167f33A5034AF8E049212F7",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

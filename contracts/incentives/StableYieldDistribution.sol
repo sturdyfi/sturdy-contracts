@@ -74,11 +74,10 @@ contract StableYieldDistribution is VersionedInitializable {
     _addressProvider = _provider;
   }
 
-  function configureAssets(address[] calldata _assets, uint256[] calldata _emissionsPerSecond)
-    external
-    payable
-    onlyEmissionManager
-  {
+  function configureAssets(
+    address[] calldata _assets,
+    uint256[] calldata _emissionsPerSecond
+  ) external payable onlyEmissionManager {
     uint256 length = _assets.length;
     require(length == _emissionsPerSecond.length, Errors.YD_INVALID_CONFIGURATION);
 
@@ -105,6 +104,8 @@ contract StableYieldDistribution is VersionedInitializable {
     uint256 totalSupply,
     uint256 userBalance
   ) external payable onlyIncentiveController {
+    if (assets[asset].emissionPerSecond == 0) return;
+
     uint256 accruedRewards = _updateUserAssetInternal(user, asset, userBalance, totalSupply);
     if (accruedRewards != 0) {
       _usersUnclaimedRewards[user] += accruedRewards;
@@ -112,11 +113,10 @@ contract StableYieldDistribution is VersionedInitializable {
     }
   }
 
-  function getRewardsBalance(address[] calldata _assets, address _user)
-    external
-    view
-    returns (uint256)
-  {
+  function getRewardsBalance(
+    address[] calldata _assets,
+    address _user
+  ) external view returns (uint256) {
     uint256 unclaimedRewards = _usersUnclaimedRewards[_user];
     uint256 length = _assets.length;
     DistributionTypes.UserStakeInput[] memory userState = new DistributionTypes.UserStakeInput[](
@@ -161,15 +161,7 @@ contract StableYieldDistribution is VersionedInitializable {
     return assets[asset].users[user];
   }
 
-  function getAssetData(address asset)
-    public
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  function getAssetData(address asset) public view returns (uint256, uint256, uint256) {
     return (
       assets[asset].index,
       assets[asset].emissionPerSecond,
@@ -241,9 +233,9 @@ contract StableYieldDistribution is VersionedInitializable {
    * @dev Configure the assets for a specific emission
    * @param assetsConfigInput The array of each asset configuration
    **/
-  function _configureAssets(DistributionTypes.AssetConfigInput[] memory assetsConfigInput)
-    internal
-  {
+  function _configureAssets(
+    DistributionTypes.AssetConfigInput[] memory assetsConfigInput
+  ) internal {
     uint256 length = assetsConfigInput.length;
     for (uint256 i; i < length; ++i) {
       AssetData storage assetConfig = assets[assetsConfigInput[i].underlyingAsset];
@@ -341,10 +333,10 @@ contract StableYieldDistribution is VersionedInitializable {
    * @param stakes List of structs of the user data related with his stake
    * @return The accrued rewards for the user until the moment
    **/
-  function _claimRewards(address user, DistributionTypes.UserStakeInput[] memory stakes)
-    internal
-    returns (uint256)
-  {
+  function _claimRewards(
+    address user,
+    DistributionTypes.UserStakeInput[] memory stakes
+  ) internal returns (uint256) {
     uint256 accruedRewards;
     uint256 length = stakes.length;
     for (uint256 i; i < length; ++i) {
@@ -367,11 +359,10 @@ contract StableYieldDistribution is VersionedInitializable {
    * @param stakes List of structs of the user data related with his stake
    * @return The accrued rewards for the user until the moment
    **/
-  function _getUnclaimedRewards(address user, DistributionTypes.UserStakeInput[] memory stakes)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getUnclaimedRewards(
+    address user,
+    DistributionTypes.UserStakeInput[] memory stakes
+  ) internal view returns (uint256) {
     uint256 accruedRewards;
     uint256 length = stakes.length;
     for (uint256 i; i < length; ++i) {
@@ -403,7 +394,7 @@ contract StableYieldDistribution is VersionedInitializable {
     uint256 reserveIndex,
     uint256 userIndex
   ) internal pure returns (uint256) {
-    return (principalUserBalance * (reserveIndex - userIndex)) / 10**uint256(PRECISION);
+    return (principalUserBalance * (reserveIndex - userIndex)) / 10 ** uint256(PRECISION);
   }
 
   /**
@@ -435,6 +426,6 @@ contract StableYieldDistribution is VersionedInitializable {
       : block.timestamp;
     uint256 timeDelta = currentTimestamp - lastUpdateTimestamp;
     return
-      ((emissionPerSecond * timeDelta * (10**uint256(PRECISION))) / totalBalance) + currentIndex;
+      ((emissionPerSecond * timeDelta * (10 ** uint256(PRECISION))) / totalBalance) + currentIndex;
   }
 }

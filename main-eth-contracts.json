@@ -209,11 +209,11 @@
   },
   "StakedTokenIncentivesControllerImpl": {
     "main": {
-      "address": "0x1753A500D370f2a14419d8614A4b24EE6f127855",
+      "address": "0x4CfA9DDeC7A7C381fc3bd438C5A3CF568a633A3D",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x1753A500D370f2a14419d8614A4b24EE6f127855",
+      "address": "0x4CfA9DDeC7A7C381fc3bd438C5A3CF568a633A3D",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -383,11 +383,11 @@
   },
   "UiIncentiveDataProvider": {
     "main": {
-      "address": "0x54F3e84B15eD59152A0fa5561Ef1d9591090ae4c",
+      "address": "0xa04AFaa36bcb455eC5F27118201c9056F934E869",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x54F3e84B15eD59152A0fa5561Ef1d9591090ae4c",
+      "address": "0xa04AFaa36bcb455eC5F27118201c9056F934E869",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -482,6 +482,34 @@
     },
     "localhost": {
       "address": "0xE27F1a136C0114ADed15b24b576aD7F71483dCCa",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "StableYieldDistributionImpl": {
+    "main": {
+      "address": "0x8E72369cc1c38d8BdaD868Cb05A6db230B469d56",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x8E72369cc1c38d8BdaD868Cb05A6db230B469d56",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "LDOStableYieldDistribution": {
+    "main": {
+      "address": "0xcB7aECAB327d0B2B76DB455C132C625B216baCE8"
+    },
+    "localhost": {
+      "address": "0xcB7aECAB327d0B2B76DB455C132C625B216baCE8"
+    }
+  },
+  "YieldDistributorAdapter": {
+    "main": {
+      "address": "0x9eE4530EE122E82c700Ef355CC9b8F11079AE636",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x9eE4530EE122E82c700Ef355CC9b8F11079AE636",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

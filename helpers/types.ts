@@ -47,7 +47,7 @@ export enum eContractid {
   SturdyTokenImpl = 'SturdyTokenImpl',
   SturdyToken = 'SturdyToken',
   StableYieldDistributionImpl = 'StableYieldDistributionImpl',
-  LDOStableYieldDistribution = 'FXSStableYieldDistribution',
+  LDOStableYieldDistribution = 'LDOStableYieldDistribution',
   VariableYieldDistributionImpl = 'VariableYieldDistributionImpl',
   VariableYieldDistribution = 'VariableYieldDistribution',
   YieldDistributorAdapter = 'YieldDistributorAdapter',

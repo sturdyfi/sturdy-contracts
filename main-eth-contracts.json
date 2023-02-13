@@ -41,10 +41,10 @@
   },
   "LendingPoolImpl": {
     "main": {
-      "address": "0x6B75a3B072369BEe8f873477266Ac168Beb73dAb"
+      "address": "0x46beA99d977F269399fB3A4637077bB35F075516"
     },
     "localhost": {
-      "address": "0x6B75a3B072369BEe8f873477266Ac168Beb73dAb"
+      "address": "0x46beA99d977F269399fB3A4637077bB35F075516"
     }
   },
   "LendingPool": {

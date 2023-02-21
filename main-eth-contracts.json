@@ -311,11 +311,11 @@
   },
   "DefaultReserveInterestRateStrategy": {
     "main": {
-      "address": "0x28a85bFf61E6Cc98EbB8474957e9ba58Fc96dC7a",
+      "address": "0x6514B71fcC83c5a125D91D5239891a0d1b2194dD",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x28a85bFf61E6Cc98EbB8474957e9ba58Fc96dC7a",
+      "address": "0x6514B71fcC83c5a125D91D5239891a0d1b2194dD",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

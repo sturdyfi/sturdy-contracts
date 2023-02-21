@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { parseEther } from 'ethers/lib/utils';
 import { task } from 'hardhat/config';
-import { oneRay, ZERO_ADDRESS } from '../../helpers/constants';
+import { oneEther, oneRay, ZERO_ADDRESS } from '../../helpers/constants';
 import { deployDefaultReserveInterestRateStrategy } from '../../helpers/contracts-deployments';
 import {
   getAToken,
@@ -43,14 +43,13 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     // const addressProvider = await getLendingPoolAddressesProvider();
     // await deployDefaultReserveInterestRateStrategy([
     //     addressProvider.address,
-    //     new BigNumber(0.9).multipliedBy(oneRay).toFixed(),
-    //     '0',
-    //     '0',
-    //     new BigNumber(0.4).multipliedBy(oneRay).toFixed(),
+    //     new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
     //     '0',
     //     '0',
     //     '0',
-    //     ZERO_ADDRESS,
+    //     '0',
+    //     '0',
+    //     new BigNumber(500).multipliedBy(oneEther).toFixed(),
     //   ],
     //   verify
     // );

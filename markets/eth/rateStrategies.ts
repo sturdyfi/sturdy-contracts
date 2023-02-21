@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { oneRay } from '../../helpers/constants';
+import { oneEther, oneRay } from '../../helpers/constants';
 import { IInterestRateStrategyParams } from '../../helpers/types';
 
 // WETH
@@ -23,7 +23,7 @@ export const rateStrategyCVXETH_STETH: IInterestRateStrategyParams = {
   variableRateSlope2: '0',
   stableRateSlope1: '0',
   stableRateSlope2: '0',
-  capacity: '0',
+  capacity: new BigNumber(500).multipliedBy(oneEther).toFixed(),
 }
 
 // auraWSTETH_WETH

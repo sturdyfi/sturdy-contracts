@@ -49,7 +49,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     //     '0',
     //     '0',
     //     '0',
-    //     new BigNumber(500).multipliedBy(oneEther).toFixed(),
+    //     new BigNumber(1000).multipliedBy(oneEther).toFixed(),
     //   ],
     //   verify
     // );

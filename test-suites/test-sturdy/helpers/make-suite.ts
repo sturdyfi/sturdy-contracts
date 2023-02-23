@@ -570,12 +570,12 @@ const revertHead = async () => {
 
 export function makeSuite(name: string, tests: (testEnv: TestEnv) => void) {
   describe(name, () => {
-    // before(async () => {
-    //   if (DRE.network.name != 'goerli') await setSnapshot();
-    // });
+    before(async () => {
+      if (DRE.network.name != 'goerli') await setSnapshot();
+    });
     tests(testEnv);
-    // after(async () => {
-    //   if (DRE.network.name != 'goerli') await revertHead();
-    // });
+    after(async () => {
+      if (DRE.network.name != 'goerli') await revertHead();
+    });
   });
 }

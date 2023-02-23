@@ -106,7 +106,7 @@ const depositToLendingPool = async (
 makeSuite('IRONBANK Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '200';
-  const slippage = 200;
+  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)

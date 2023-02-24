@@ -38,11 +38,11 @@ export const NETWORKS_RPC_URL: iParamsPerNetwork<string> = {
 };
 
 export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
-  [eEthereumNetwork.main]: 70 * GWEI,
+  [eEthereumNetwork.main]: 40 * GWEI,
   [eEthereumNetwork.tenderly]: 0.01 * GWEI,
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
-  [eEthereumNetwork.main]: 15534233,
+  [eEthereumNetwork.main]: 16697825, //15534233,
   [eEthereumNetwork.tenderly]: 12406069,
 };

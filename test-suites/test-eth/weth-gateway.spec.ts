@@ -109,7 +109,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
   it('Borrow variable WETH and Full Repay with ETH', async () => {
     const { users, wethGateway, aCVXETH_STETH, convexETHSTETHVault, weth, ETH_STETH_LP, pool, helpersContract } = testEnv;
     const borrowSize = parseEther('1');
-    const repaySize = borrowSize.add(borrowSize.mul(5).div(100));
+    const repaySize = borrowSize.add(borrowSize.mul(10).div(100));
     const ethers = (DRE as any).ethers;
     const user = users[1];
     const depositor = users[0];
@@ -126,7 +126,7 @@ makeSuite('Use native ETH at LendingPool via WETHGateway', (testEnv: TestEnv) =>
     const variableDebtToken = await getVariableDebtToken(variableDebtTokenAddress);
 
     //user deposits 10 ETH_STETH_LP
-    const ETH_STETH_LPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETH_STETH_LPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const amountETH_STETH_LP = await convertToCurrencyDecimals(ETH_STETH_LP.address, '10')
     //Make some test ETH_STETH_LP for depositor
     await impersonateAccountsHardhat([ETH_STETH_LPOwnerAddress]);

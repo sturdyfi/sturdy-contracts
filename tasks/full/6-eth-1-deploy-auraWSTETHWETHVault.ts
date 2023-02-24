@@ -39,7 +39,7 @@ task(`full:eth:deploy-aura-wsteth-weth-vault`, `Deploys the ${CONTRACT_NAME} con
     const configurator = await getLendingPoolConfiguratorProxy();
     await configurator.registerVault(vault.address);
     await vault.setTreasuryInfo(treasuryAddress, '1000'); //10% fee
-    await vault.setConfiguration(getParamPerNetwork(BAL_WSTETH_WETH_LP, network), 3); // set balancer lp token & aura pool id
+    await vault.setConfiguration(getParamPerNetwork(BAL_WSTETH_WETH_LP, network), 29); // set balancer lp token & aura pool id
     await vault.setIncentiveRatio('7500');
 
     const internalAssetAddress = await vault.getInternalAsset();

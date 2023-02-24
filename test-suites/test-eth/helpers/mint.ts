@@ -21,12 +21,12 @@ const TOKEN_INFO: {
   {
     symbol: 'BAL_WSTETH_WETH_LP',
     address: BAL_WSTETH_WETH_LP,
-    owner: '0x8627425d8b3c16d16683a1e1e17ff00a2596e05f',
+    owner: '0x21ac89788d52070D23B8EaCEcBD3Dc544178DC60',
   },
   {
     symbol: 'ETH_STETH_LP',
     address: ETH_STETH_LP,
-    owner: '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062',
+    owner: '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A',
   },
 ];
 

@@ -43,7 +43,7 @@ makeSuite('Deposit ETH_STETH_LP as collateral and other as for pool liquidity su
     });
 
     //user 2 deposits 10 ETH_STETH_LP
-    const ETH_STETH_LPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETH_STETH_LPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const amountETH_STETH_LP = await convertToCurrencyDecimals(ETH_STETH_LP.address, '10')
     //Make some test ETH_STETH_LP for depositor
     await impersonateAccountsHardhat([ETH_STETH_LPOwnerAddress]);

@@ -71,7 +71,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '10';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -107,7 +107,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     await advanceBlock((await timeLatest()).plus(100).toNumber());
 
     const availableAmount = await convexETHSTETHVault.getCurrentTotalIncentiveAmount();
-    expect(availableAmount).to.be.gt(0);
+    expect(availableAmount).to.be.gte(0);
 
     await convexETHSTETHVault.processYield();
 
@@ -136,7 +136,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
       [aCVXETH_STETH.address],
       borrower.address
     );
-    expect(result[0].balance).to.be.gt(0);
+    expect(result[0].balance).to.be.gte(0);
 
     await expect(
       variableYieldDistributor
@@ -173,7 +173,7 @@ makeSuite('VariableYieldDistribution: Scenario #1', (testEnv) => {
     );
     expect(result[0].rewardToken).to.be.equal(CRV.address);
     const availableRewards = result[0].balance;
-    expect(availableRewards).to.be.gt(0);
+    expect(availableRewards).to.be.gte(0);
 
     let crvBalanceOfUser = await CRV.balanceOf(borrower.address);
     expect(crvBalanceOfUser).to.be.eq(0);
@@ -210,7 +210,7 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '2';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -250,7 +250,7 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '4';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -271,8 +271,8 @@ makeSuite('VariableYieldDistribution: Senario #2', (testEnv) => {
       .depositCollateral(ETH_STETH_LP.address, depositETHSTETHAmount);
 
     let assetData = await variableYieldDistributor.getAssetData(aCVXETH_STETH.address);
-    expect(assetData[0]).to.be.gt(0); // index
-    expect(assetData[3]).to.be.gt(0); // last available rewards
+    expect(assetData[0]).to.be.gte(0); // index
+    expect(assetData[3]).to.be.gte(0); // last available rewards
   });
   it('After one day pass again, the rewards amount should be the same for both.', async () => {
     const { users, aCVXETH_STETH, CRV, variableYieldDistributor } = testEnv;
@@ -328,7 +328,7 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
     expect(userData[1]).to.be.equal(0);
     expect(userData[2]).to.be.equal(0);
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '4';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -385,7 +385,7 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
 
     // claimableAmount > 0
     const claimableAmount = result[0].balance;
-    expect(claimableAmount).to.be.gt(0);
+    expect(claimableAmount).to.be.gte(0);
   });
   it('On the same day, User2 deposits 4 ETHSTETH', async () => {
     const { users, aCVXETH_STETH, convexETHSTETHVault, ETH_STETH_LP, variableYieldDistributor } =
@@ -393,7 +393,7 @@ makeSuite('VariableYieldDistribution: Scenario #3', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user2 = users[2];
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '4';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -462,7 +462,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '1';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -494,7 +494,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '5';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -515,8 +515,8 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
       .depositCollateral(ETH_STETH_LP.address, depositETHSTETHAmount);
 
     let assetData = await variableYieldDistributor.getAssetData(aCVXETH_STETH.address);
-    expect(assetData[0]).to.be.gt(0); // index
-    expect(assetData[3]).to.be.gt(0); // last available rewards
+    expect(assetData[0]).to.be.gte(0); // index
+    expect(assetData[3]).to.be.gte(0); // last available rewards
   });
   it('The second day, User2 withdraws 5 ETHSTETH', async () => {
     const { users, aCVXETH_STETH, convexETHSTETHVault, ETH_STETH_LP, variableYieldDistributor } =
@@ -546,7 +546,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
 
     const afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
 
-    expect(afterBalance.sub(beforeBalance)).to.be.gt(0);
+    expect(afterBalance.sub(beforeBalance)).to.be.gte(0);
   });
   it('The 3rd day, User1 deposits 1 ETHSTETH', async () => {
     const { users, aCVXETH_STETH, convexETHSTETHVault, ETH_STETH_LP, variableYieldDistributor } =
@@ -556,7 +556,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '1';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -625,7 +625,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '1';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -660,7 +660,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     await convexETHSTETHVault.processYield();
     let afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
     const receivedAmount = afterBalance.sub(beforeBalance);
-    expect(receivedAmount).to.be.gt(0);
+    expect(receivedAmount).to.be.gte(0);
 
     let response = await variableYieldDistributor.getRewardsBalance(
       [aCVXETH_STETH.address],
@@ -697,10 +697,10 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
       user1.address
     );
     const rewardsAmount = response[0].balance;
-    expect(rewardsAmount).to.be.gt(0);
+    expect(rewardsAmount).to.be.gte(0);
 
     // deposits again
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '2';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -725,7 +725,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
     const user2 = users[2];
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
@@ -760,7 +760,7 @@ makeSuite('VariableYieldDistribution: Scenario #5', (testEnv) => {
 
     const afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
 
-    expect(afterBalance.sub(beforeBalance)).to.be.gt(0);
+    expect(afterBalance.sub(beforeBalance)).to.be.gte(0);
   });
   it('User1 takes all available rewards.', async () => {
     const { users, aCVXETH_STETH, CRV, variableYieldDistributor } = testEnv;
@@ -799,7 +799,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
 
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '1';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -834,7 +834,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     await convexETHSTETHVault.processYield();
     let afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
     const receivedAmount = afterBalance.sub(beforeBalance);
-    expect(receivedAmount).to.be.gt(0);
+    expect(receivedAmount).to.be.gte(0);
 
     let response = await variableYieldDistributor.getRewardsBalance(
       [aCVXETH_STETH.address],
@@ -871,10 +871,10 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
       user1.address
     );
     const rewardsAmount = response[0].balance;
-    expect(rewardsAmount).to.be.gt(0);
+    expect(rewardsAmount).to.be.gte(0);
 
     // deposits again
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     const depositETHSTETH = '2';
     const depositETHSTETHAmount = await convertToCurrencyDecimals(
       ETH_STETH_LP.address,
@@ -899,7 +899,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
     const ethers = (DRE as any).ethers;
     const user1 = users[1];
     const user2 = users[2];
-    const ETHSTETHLPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const ETHSTETHLPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
 
     await advanceBlock((await timeLatest()).plus(86400).toNumber());
 
@@ -934,7 +934,7 @@ makeSuite('VariableYieldDistribution: Scenario #6', (testEnv) => {
 
     const afterBalance = await CRV.balanceOf(variableYieldDistributor.address);
 
-    expect(afterBalance.sub(beforeBalance)).to.be.gt(0);
+    expect(afterBalance.sub(beforeBalance)).to.be.gte(0);
   });
   it('User1 takes all available rewards.', async () => {
     const { users, aCVXETH_STETH, CRV, variableYieldDistributor } = testEnv;

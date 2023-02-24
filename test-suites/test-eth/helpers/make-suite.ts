@@ -164,7 +164,7 @@ export async function initializeMakeSuite() {
     signer: restSigners[0],
   };
 
-  if (network == 'main') {
+  if (network == 'main' && !process.env.FORK) {
     const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
     const ethers = (DRE as any).ethers;
     await impersonateAccountsHardhat([deployerAddress]);

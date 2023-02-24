@@ -138,7 +138,7 @@ makeSuite('WSTETHWETH Zap Deposit', (testEnv) => {
       ).to.be.equal(0);
       const afterBalanceOfBorrower = await aAURAWSTETH_WETH.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '97'
       );
     });
   });

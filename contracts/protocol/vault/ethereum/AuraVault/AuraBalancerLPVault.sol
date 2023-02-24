@@ -29,7 +29,7 @@ contract AuraBalancerLPVault is IncentiveVault {
   using PercentageMath for uint256;
 
   IConvexBooster internal constant AURA_BOOSTER =
-    IConvexBooster(0x7818A1DA7BD1E64c199029E86Ba244a9798eEE10);
+    IConvexBooster(0xA57b8d98dAE62B26Ec3bcC4a365338157060B234);
   address internal balancerLPToken;
   address internal internalAssetToken;
   uint256 internal auraPoolId;
@@ -43,6 +43,12 @@ contract AuraBalancerLPVault is IncentiveVault {
    * @param _internalToken The address of internal asset
    */
   event SetParameters(address _balancerLpToken, uint256 _auraPoolId, address _internalToken);
+
+  /**
+   * @dev Emitted on updatePoolId()
+   * @param _auraPoolId The aura pool Id
+   */
+  event UpdatePoolId(uint256 _auraPoolId);
 
   /**
    * @dev The function to set parameters related to aura/balancer
@@ -64,6 +70,17 @@ contract AuraBalancerLPVault is IncentiveVault {
     internalAssetToken = address(_internalToken);
 
     emit SetParameters(_lpToken, _poolId, internalAssetToken);
+  }
+
+  /**
+   * @dev The function to update pool id related to aura/balancer
+   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * @param _poolId  The aura pool Id for Balancer LP Token
+   */
+  function updatePoolId(uint256 _poolId) external payable onlyAdmin {
+    auraPoolId = _poolId;
+
+    emit UpdatePoolId(_poolId);
   }
 
   /**

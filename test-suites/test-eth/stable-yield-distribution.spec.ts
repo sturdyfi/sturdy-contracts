@@ -114,7 +114,7 @@ makeSuite('Check LDO token not growing ', (testEnv) => {
 
     // Prepare ETH_STETH_LP
     assetAmountToDeposit = await convertToCurrencyDecimals(ETH_STETH_LP.address, '2');
-    const LPOwnerAddress = '0x43378368D84D4bA00D1C8E97EC2E6016A82fC062';
+    const LPOwnerAddress = '0x82a7E64cdCaEdc0220D0a4eB49fDc2Fe8230087A';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     signer = await ethers.provider.getSigner(LPOwnerAddress);
     await ETH_STETH_LP.connect(signer).transfer(borrower.address, assetAmountToDeposit);

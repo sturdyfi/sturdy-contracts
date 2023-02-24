@@ -273,11 +273,11 @@
   },
   "AuraWSTETHWETHVaultImpl": {
     "main": {
-      "address": "0x3A3016E1f903482094d94e414Dd4BF01aD2bE0B1",
+      "address": "0x613b833AA11092F990d2149902212C32AA7E2056",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x3A3016E1f903482094d94e414Dd4BF01aD2bE0B1",
+      "address": "0x613b833AA11092F990d2149902212C32AA7E2056",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

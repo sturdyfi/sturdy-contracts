@@ -32,7 +32,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     revert('Fallback not allowed');
   }
 
-  constructor() public {}
+  constructor() {}
 
   function authorizeLendingPool(address lendingPool) external onlyOwner {
     WETH.approve(lendingPool, type(uint256).max);
@@ -60,11 +60,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param amount amount of aWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
    */
-  function withdrawETH(
-    address lendingPool,
-    uint256 amount,
-    address to
-  ) external override {
+  function withdrawETH(address lendingPool, uint256 amount, address to) external override {
     IAToken aWETH = IAToken(ILendingPool(lendingPool).getReserveData(address(WETH)).aTokenAddress);
     uint256 userBalance = aWETH.balanceOf(msg.sender);
     uint256 amountToWithdraw = amount;
@@ -154,11 +150,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @param to recipient of the transfer
    * @param amount amount to send
    */
-  function emergencyTokenTransfer(
-    address token,
-    address to,
-    uint256 amount
-  ) external onlyOwner {
+  function emergencyTokenTransfer(address token, address to, uint256 amount) external onlyOwner {
     IERC20(token).transfer(to, amount);
   }
 

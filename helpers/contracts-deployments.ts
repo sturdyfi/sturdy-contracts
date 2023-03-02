@@ -67,6 +67,8 @@ import {
   ConvexCurveLPVault2__factory,
   WETHGateway__factory,
   YieldDistributorAdapter__factory,
+  ERC4626Vault__factory,
+  ERC4626Router__factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -979,5 +981,25 @@ export const deploySturdyAPRDataProvider = async (args: [tEthereumAddress], veri
     await new SturdyAPRDataProvider__factory(await getFirstSigner()).deploy(...args),
     eContractid.SturdyAPRDataProvider,
     args,
+    verify
+  );
+
+export const deployERC4626Vault = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  assetSymbol: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ERC4626Vault__factory(await getFirstSigner()).deploy(...args),
+    eContractid.ERC4626Vault + assetSymbol.toUpperCase(),
+    args,
+    verify
+  );
+
+export const deployERC4626Router = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ERC4626Router__factory(await getFirstSigner()).deploy(),
+    eContractid.ERC4626Router,
+    [],
     verify
   );

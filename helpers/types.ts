@@ -90,6 +90,8 @@ export enum eContractid {
   ETHSTETHLevSwap = 'ETHSTETHLevSwap',
   AURAWSTETHWETHLevSwap = 'AURAWSTETHWETHLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
+  ERC4626Vault = 'ERC4626Vault',
+  ERC4626Router = 'ERC4626Router',
 }
 
 /*

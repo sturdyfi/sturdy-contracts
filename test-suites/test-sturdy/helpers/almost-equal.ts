@@ -1,4 +1,6 @@
 import BigNumber from 'bignumber.js';
+import { BigNumberish } from 'ethers';
+import { parseUnits } from 'ethers/lib/utils';
 
 function almostEqualAssertion(this: any, expected: any, actual: any, message: string): any {
   this.assert(
@@ -29,3 +31,20 @@ export function almostEqual() {
     });
   };
 }
+
+export const isSimilar = (a: BigNumberish, b: BigNumberish, decimals: number): boolean => {
+  const A = new BigNumber(a.toString());
+  const B = new BigNumber(b.toString());
+  const Bplus1 = new BigNumber(b.toString()).plus(parseUnits('1', decimals).toString());
+  const Bminus1 = new BigNumber(b.toString()).minus(parseUnits('1', decimals).toString());
+
+  // a == b
+  if (A.eq(B)) return true;
+  // b - 1 < a < b
+  if (A.gt(Bminus1) && A.lt(B)) return true;
+  // b < a < b + 1
+  if (A.gt(B) && A.lt(Bplus1)) return true;
+
+  console.log('A is ' + A.toString() + ' B is ' + B.toString());
+  return false;
+};

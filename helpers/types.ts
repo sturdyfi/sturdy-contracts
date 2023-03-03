@@ -199,6 +199,8 @@ export enum eContractid {
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
   VaultWhitelist = 'VaultWhitelist',
+  ERC4626Vault = 'ERC4626Vault',
+  ERC4626Router = 'ERC4626Router',
 }
 
 /*

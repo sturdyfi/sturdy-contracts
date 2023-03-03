@@ -76,6 +76,8 @@ import {
   ConvexCurveLPVault2__factory,
   StaticAToken__factory,
   YieldDistributorAdapter__factory,
+  ERC4626Vault__factory,
+  ERC4626Router__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -1151,6 +1153,26 @@ export const getVaultWhitelist = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.VaultWhitelist}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getERC4626Vault = async (assetSymbol: string, address?: tEthereumAddress) =>
+  await ERC4626Vault__factory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${eContractid.ERC4626Vault + assetSymbol.toUpperCase()}.${DRE.network.name}`)
+          .value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getERC4626Router = async (address?: tEthereumAddress) =>
+  await ERC4626Router__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.ERC4626Router}.${DRE.network.name}`).value()
       ).address,
     await getFirstSigner()
   );

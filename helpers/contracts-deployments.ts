@@ -14,7 +14,12 @@ import {
   eNetwork,
   IFantomConfiguration,
 } from './types';
-import { MintableERC20, YieldDistributorAdapter__factory } from '../types';
+import {
+  ERC4626Router__factory,
+  ERC4626Vault__factory,
+  MintableERC20,
+  YieldDistributorAdapter__factory,
+} from '../types';
 import { MockContract } from 'ethereum-waffle';
 import { ConfigNames, getReservesConfigByPool, loadPoolConfig } from './configuration';
 import {
@@ -2799,3 +2804,23 @@ export const deployStaticAToken = async (
 
   return { proxy: proxy.address, implementation: staticATokenImplementation.address };
 };
+
+export const deployERC4626Vault = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  assetSymbol: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new ERC4626Vault__factory(await getFirstSigner()).deploy(...args),
+    eContractid.ERC4626Vault + assetSymbol.toUpperCase(),
+    args,
+    verify
+  );
+
+export const deployERC4626Router = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new ERC4626Router__factory(await getFirstSigner()).deploy(),
+    eContractid.ERC4626Router,
+    [],
+    verify
+  );

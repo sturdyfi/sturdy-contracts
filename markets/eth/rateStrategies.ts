@@ -37,3 +37,15 @@ export const rateStrategyAURAWSTETH_WETH: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
   capacity: '0',
 }
+
+// auraRETH_WETH
+export const rateStrategyAURARETH_WETH: IInterestRateStrategyParams = {
+  name: "rateStrategyAURARETH_WETH",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}

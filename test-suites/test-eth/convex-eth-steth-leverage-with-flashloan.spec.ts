@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { ethers, BigNumberish } from 'ethers';
-import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
+import { BigNumberish } from 'ethers';
 import { oneEther } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
@@ -15,7 +14,6 @@ import { mint } from './helpers/mint';
 
 const chai = require('chai');
 const { expect } = chai;
-const { parseEther } = ethers.utils;
 
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;

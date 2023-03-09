@@ -343,6 +343,24 @@ export const getAuraWSTETHWETHVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getAuraRETHWETHVaultImpl = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVault__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraRETHWETHVaultImpl}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getAuraRETHWETHVault = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVault__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraRETHWETHVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getWalletProvider = async (address?: tEthereumAddress) =>
   await WalletBalanceProvider__factory.connect(
     address ||

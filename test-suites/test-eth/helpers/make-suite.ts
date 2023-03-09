@@ -23,6 +23,7 @@ import {
   getAuraWSTETHWETHVault,
   getSturdyOracle,
   getWETHGateway,
+  getAuraRETHWETHVault,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
 import { LendingPool, WETHGateway } from '../../../types';
@@ -75,6 +76,7 @@ export interface TestEnv {
   pool: LendingPool;
   convexETHSTETHVault: ConvexCurveLPVault2;
   auraWSTETHWETHVault: AuraBalancerLPVault;
+  auraRETHWETHVault: AuraBalancerLPVault;
   incentiveController: StakedTokenIncentivesController;
   configurator: LendingPoolConfigurator;
   oracle: SturdyOracle;
@@ -83,10 +85,13 @@ export interface TestEnv {
   aWeth: AToken;
   aCVXETH_STETH: AToken;
   aAURAWSTETH_WETH: AToken;
+  aAURARETH_WETH: AToken;
   ETH_STETH_LP: MintableERC20;
   BAL_WSTETH_WETH_LP: MintableERC20;
+  BAL_RETH_WETH_LP: MintableERC20;
   cvxeth_steth: SturdyInternalAsset;
   aurawsteth_weth: SturdyInternalAsset;
+  aurareth_weth: SturdyInternalAsset;
   addressesProvider: LendingPoolAddressesProvider;
   registry: LendingPoolAddressesProviderRegistry;
   registryOwnerSigner: Signer;
@@ -114,6 +119,7 @@ const testEnv: TestEnv = {
   pool: {} as LendingPool,
   convexETHSTETHVault: {} as ConvexCurveLPVault2,
   auraWSTETHWETHVault: {} as AuraBalancerLPVault,
+  auraRETHWETHVault: {} as AuraBalancerLPVault,
   incentiveController: {} as StakedTokenIncentivesController,
   configurator: {} as LendingPoolConfigurator,
   helpersContract: {} as SturdyProtocolDataProvider,
@@ -122,10 +128,13 @@ const testEnv: TestEnv = {
   aWeth: {} as AToken,
   aCVXETH_STETH: {} as AToken,
   aAURAWSTETH_WETH: {} as AToken,
+  aAURARETH_WETH: {} as AToken,
   ETH_STETH_LP: {} as MintableERC20,
   BAL_WSTETH_WETH_LP: {} as MintableERC20,
+  BAL_RETH_WETH_LP: {} as MintableERC20,
   cvxeth_steth: {} as SturdyInternalAsset,
   aurawsteth_weth: {} as SturdyInternalAsset,
+  aurareth_weth: {} as SturdyInternalAsset,
   addressesProvider: {} as LendingPoolAddressesProvider,
   registry: {} as LendingPoolAddressesProviderRegistry,
   yieldManager: {} as YieldManager,
@@ -147,6 +156,7 @@ export async function initializeMakeSuite() {
   const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>DRE.network.name;
   const EthStEthLPAddress = getParamPerNetwork(poolConfig.ETH_STETH_LP, network);
   const BalWstethWethLPAddress = getParamPerNetwork(poolConfig.BAL_WSTETH_WETH_LP, network);
+  const BalRethWethLPAddress = getParamPerNetwork(poolConfig.BAL_RETH_WETH_LP, network);
   const crvAddress = getParamPerNetwork(poolConfig.CRV, network);
   const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
   const ldoAddress = getParamPerNetwork(poolConfig.LDO, network);
@@ -189,12 +199,14 @@ export async function initializeMakeSuite() {
 
   testEnv.convexETHSTETHVault = await getConvexETHSTETHVault();
   testEnv.auraWSTETHWETHVault = await getAuraWSTETHWETHVault();
+  testEnv.auraRETHWETHVault = await getAuraRETHWETHVault();
   
   testEnv.incentiveController = await getSturdyIncentivesController();
   // testEnv.liquidator = await getETHLiquidator();
 
   const cvxethstethAddress = await testEnv.convexETHSTETHVault.getInternalAsset();
   const aurawstethwethAddress = await testEnv.auraWSTETHWETHVault.getInternalAsset();
+  const aurarethwethAddress = await testEnv.auraRETHWETHVault.getInternalAsset();
 
   testEnv.yieldManager = await getYieldManager();
   testEnv.levSwapManager = await getLeverageSwapManager();
@@ -231,6 +243,9 @@ export async function initializeMakeSuite() {
   const aAURAWSTETH_WETHAddress = allTokens.find(
     (aToken) => aToken.symbol === 'sauraWSTETH_WETH'
   )?.tokenAddress;
+  const aAURARETH_WETHAddress = allTokens.find(
+    (aToken) => aToken.symbol === 'sauraRETH_WETH'
+  )?.tokenAddress;
 
   const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
 
@@ -239,7 +254,8 @@ export async function initializeMakeSuite() {
   if (
     !aWethAddress ||
     !aCVXETH_STETHAddress ||
-    !aAURAWSTETH_WETHAddress
+    !aAURAWSTETH_WETHAddress ||
+    !aAURARETH_WETHAddress
   ) {
     process.exit(1);
   }
@@ -250,11 +266,13 @@ export async function initializeMakeSuite() {
   testEnv.aWeth = await getAToken(aWethAddress);
   testEnv.aCVXETH_STETH = await getAToken(aCVXETH_STETHAddress);
   testEnv.aAURAWSTETH_WETH = await getAToken(aAURAWSTETH_WETHAddress);
+  testEnv.aAURARETH_WETH = await getAToken(aAURARETH_WETHAddress);
 
   testEnv.weth = await getMintableERC20(wethAddress);
   testEnv.wethGateway = await getWETHGateway();
   testEnv.ETH_STETH_LP = await getMintableERC20(EthStEthLPAddress);
   testEnv.BAL_WSTETH_WETH_LP = await getMintableERC20(BalWstethWethLPAddress);
+  testEnv.BAL_RETH_WETH_LP = await getMintableERC20(BalRethWethLPAddress);
 
   testEnv.CRV = IERC20Detailed__factory.connect(crvAddress, deployer.signer);
   testEnv.CVX = IERC20Detailed__factory.connect(cvxAddress, deployer.signer);
@@ -263,6 +281,7 @@ export async function initializeMakeSuite() {
   testEnv.AURA = IERC20Detailed__factory.connect(auraAddress, deployer.signer);
   testEnv.cvxeth_steth = SturdyInternalAsset__factory.connect(cvxethstethAddress, deployer.signer);
   testEnv.aurawsteth_weth = SturdyInternalAsset__factory.connect(aurawstethwethAddress, deployer.signer);
+  testEnv.aurareth_weth = SturdyInternalAsset__factory.connect(aurarethwethAddress, deployer.signer);
 }
 
 const setSnapshot = async () => {

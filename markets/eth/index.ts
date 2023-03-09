@@ -2,6 +2,7 @@ import { IEthConfiguration, eEthereumNetwork } from '../../helpers/types';
 
 import { CommonsConfig } from './commons';
 import {
+  strategyAURARETH_WETH,
   strategyAURAWSTETH_WETH,
   strategyCVXETH_STETH,
   strategyWETH,
@@ -19,17 +20,20 @@ export const EthConfig: IEthConfiguration = {
     WETH: strategyWETH,
     cvxETH_STETH: strategyCVXETH_STETH,
     auraWSTETH_WETH: strategyAURAWSTETH_WETH,
+    auraRETH_WETH: strategyAURARETH_WETH,
   },
   ReserveAssets: {
     [eEthereumNetwork.main]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
       cvxETH_STETH: '0x901247D08BEbFD449526Da92941B35D756873Bcd',
       auraWSTETH_WETH: '0x10aA9eea35A3102Cc47d4d93Bc0BA9aE45557746',
+      auraRETH_WETH: '',
     },
     [eEthereumNetwork.tenderly]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
       cvxETH_STETH: '0x901247D08BEbFD449526Da92941B35D756873Bcd',
       auraWSTETH_WETH: '0x10aA9eea35A3102Cc47d4d93Bc0BA9aE45557746',
+      auraRETH_WETH: '',
     },
   },
   CRV: {
@@ -59,6 +63,10 @@ export const EthConfig: IEthConfiguration = {
   BAL_WSTETH_WETH_LP: {
     [eEthereumNetwork.main]: '0x32296969Ef14EB0c6d29669C550D4a0449130230',
     [eEthereumNetwork.tenderly]: '0x32296969Ef14EB0c6d29669C550D4a0449130230',
+  },
+  BAL_RETH_WETH_LP: {
+    [eEthereumNetwork.main]: '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276',
+    [eEthereumNetwork.tenderly]: '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276',
   },
   UniswapRouter: {
     [eEthereumNetwork.main]: '0xE592427A0AEce92De3Edee1F18E0157C05861564',

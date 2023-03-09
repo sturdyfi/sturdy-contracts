@@ -14,10 +14,10 @@ import { exit } from 'process';
 import {
   getSturdyProtocolDataProvider,
   getLendingPoolAddressesProvider,
-  getVariableYieldDistribution,
   getConvexETHSTETHVault,
   getAuraWSTETHWETHVault,
   getSturdyIncentivesController,
+  getAuraRETHWETHVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -36,7 +36,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         ReserveAssets,
         ReservesConfig,
         LendingPoolCollateralManager,
-        IncentivesController,
       } = poolConfig as ICommonConfiguration;
 
       const reserveAssets = getParamPerNetwork(ReserveAssets, network);
@@ -56,11 +55,7 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
       const yieldAddresses = {
         cvxETH_STETH: (await getConvexETHSTETHVault()).address,
         auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
-      };
-
-      const yieldDistributor = {
-        cvxETH_STETH: (await getVariableYieldDistribution()).address,
-        auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
+        auraRETH_WETH: (await getAuraRETHWETHVault()).address,
       };
 
       await initReservesByHelper(
@@ -70,10 +65,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         StableDebtTokenNamePrefix,
         VariableDebtTokenNamePrefix,
         SymbolPrefix,
-        admin,
         treasuryAddress,
         yieldAddresses,
-        yieldDistributor,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);

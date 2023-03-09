@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { BigNumberish } from 'ethers';
-import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
-import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
+import { oneEther } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';

@@ -1,5 +1,5 @@
-/**
- * @dev test for AuraWSTETHWETHVault functions
+/**onlyAdmin
+ * @dev test for AuraRETHWETHVault functions
  */
 
 import { expect } from 'chai';
@@ -27,78 +27,78 @@ const prepareCollateralForUser = async (
   user: SignerWithAddress,
   amount: BigNumberish
 ) => {
-  const { BAL_WSTETH_WETH_LP } = testEnv;
+  const { BAL_RETH_WETH_LP } = testEnv;
   const ethers = (DRE as any).ethers;
 
-  const LPOwnerAddress = '0x21ac89788d52070D23B8EaCEcBD3Dc544178DC60';
+  const LPOwnerAddress = '0x5f98718e4e0EFcb7B5551E2B2584E6781ceAd867';
   await impersonateAccountsHardhat([LPOwnerAddress]);
   const signer = await ethers.provider.getSigner(LPOwnerAddress);
 
   //transfer to borrower
-  await BAL_WSTETH_WETH_LP.connect(signer).transfer(user.address, amount);
+  await BAL_RETH_WETH_LP.connect(signer).transfer(user.address, amount);
 };
 
-makeSuite('AuraWSTETHWETHVault - Deposit & Withdraw', (testEnv: TestEnv) => {
+makeSuite('AuraRETHWETHVault - Deposit & Withdraw', (testEnv: TestEnv) => {
   it('should be reverted if try to use an invalid token as collateral', async () => {
-    const { auraWSTETHWETHVault } = testEnv;
-    await expect(auraWSTETHWETHVault.depositCollateral(ZERO_ADDRESS, 0)).to.be.revertedWith('82');
+    const { auraRETHWETHVault } = testEnv;
+    await expect(auraRETHWETHVault.depositCollateral(ZERO_ADDRESS, 0)).to.be.revertedWith('82');
   });
-  it('should be reverted if try to use any of coin other than WSTETH-WETH as collateral', async () => {
-    const { weth, auraWSTETHWETHVault } = testEnv;
+  it('should be reverted if try to use any of coin other than RETH-WETH as collateral', async () => {
+    const { weth, auraRETHWETHVault } = testEnv;
     // TODO @bshevchenko: use Error const instead of 82
-    await expect(auraWSTETHWETHVault.depositCollateral(weth.address, 1000)).to.be.revertedWith(
+    await expect(auraRETHWETHVault.depositCollateral(weth.address, 1000)).to.be.revertedWith(
       '82'
     );
   });
-  it('deposit WSTETH-WETH for collateral', async () => {
-    const { auraWSTETHWETHVault, deployer, aurawsteth_weth, aAURAWSTETH_WETH, BAL_WSTETH_WETH_LP } = testEnv;
+  it('deposit RETH-WETH for collateral', async () => {
+    const { auraRETHWETHVault, deployer, aurareth_weth, aAURARETH_WETH, BAL_RETH_WETH_LP } = testEnv;
 
-    // Prepare some BAL_WSTETH_WETH_LP for depositor
+    // Prepare some BAL_RETH_WETH_LP for depositor
     const assetAmountToDeposit = await convertToCurrencyDecimals(
-      BAL_WSTETH_WETH_LP.address,
+      BAL_RETH_WETH_LP.address,
       DEPOSIT_AMOUNT
     );
     await prepareCollateralForUser(testEnv, deployer, assetAmountToDeposit);
 
     // allow token transfer to this vault
-    await BAL_WSTETH_WETH_LP.connect(deployer.signer).approve(
-      auraWSTETHWETHVault.address,
+    await BAL_RETH_WETH_LP.connect(deployer.signer).approve(
+      auraRETHWETHVault.address,
       assetAmountToDeposit
     );
 
     // deposit collateral
-    await auraWSTETHWETHVault
+    await auraRETHWETHVault
       .connect(deployer.signer)
-      .depositCollateral(BAL_WSTETH_WETH_LP.address, assetAmountToDeposit);
+      .depositCollateral(BAL_RETH_WETH_LP.address, assetAmountToDeposit);
 
-    expect(await BAL_WSTETH_WETH_LP.balanceOf(deployer.address)).to.be.equal(0);
-    expect(await aurawsteth_weth.balanceOf(auraWSTETHWETHVault.address)).to.be.equal(0);
-    expect(await aAURAWSTETH_WETH.balanceOf(auraWSTETHWETHVault.address)).to.be.equal(0);
-    expect(await aAURAWSTETH_WETH.balanceOf(deployer.address)).to.be.gte(assetAmountToDeposit);
+    expect(await BAL_RETH_WETH_LP.balanceOf(deployer.address)).to.be.equal(0);
+    expect(await aurareth_weth.balanceOf(auraRETHWETHVault.address)).to.be.equal(0);
+    expect(await aAURARETH_WETH.balanceOf(auraRETHWETHVault.address)).to.be.equal(0);
+    expect(await aAURARETH_WETH.balanceOf(deployer.address)).to.be.gte(assetAmountToDeposit);
   });
 
-  it('transferring aAURAWSTETH_WETH should be success after deposit BAL_WSTETH_WETH_LP', async () => {
-    const { aAURAWSTETH_WETH, deployer, users } = testEnv;
+  it('transferring aAURARETH_WETH should be success after deposit BAL_RETH_WETH_LP', async () => {
+    const { aAURARETH_WETH, deployer, users } = testEnv;
     await expect(
-      aAURAWSTETH_WETH
+      aAURARETH_WETH
         .connect(deployer.signer)
         .transfer(
           users[0].address,
-          await convertToCurrencyDecimals(aAURAWSTETH_WETH.address, TRANSFER_ATOKEN_AMOUNT)
+          await convertToCurrencyDecimals(aAURARETH_WETH.address, TRANSFER_ATOKEN_AMOUNT)
         )
     ).to.not.be.reverted;
   });
 
   it('withdraw from collateral should be failed if user has not enough balance', async () => {
-    const { deployer, auraWSTETHWETHVault, BAL_WSTETH_WETH_LP } = testEnv;
+    const { deployer, auraRETHWETHVault, BAL_RETH_WETH_LP } = testEnv;
 
     const amountAssetToWithdraw = await convertToCurrencyDecimals(
-      BAL_WSTETH_WETH_LP.address,
+      BAL_RETH_WETH_LP.address,
       DEPOSIT_AMOUNT
     );
     await expect(
-      auraWSTETHWETHVault.withdrawCollateral(
-        BAL_WSTETH_WETH_LP.address,
+      auraRETHWETHVault.withdrawCollateral(
+        BAL_RETH_WETH_LP.address,
         amountAssetToWithdraw,
         9900,
         deployer.address
@@ -107,46 +107,46 @@ makeSuite('AuraWSTETHWETHVault - Deposit & Withdraw', (testEnv: TestEnv) => {
   });
 
   it('withdraw from collateral', async () => {
-    const { deployer, aurawsteth_weth, auraWSTETHWETHVault, BAL_WSTETH_WETH_LP } = testEnv;
-    const dola3crvBalanceOfPool = await aurawsteth_weth.balanceOf(auraWSTETHWETHVault.address);
-    const beforeBalanceOfUser = await BAL_WSTETH_WETH_LP.balanceOf(deployer.address);
+    const { deployer, aurareth_weth, auraRETHWETHVault, BAL_RETH_WETH_LP } = testEnv;
+    const dola3crvBalanceOfPool = await aurareth_weth.balanceOf(auraRETHWETHVault.address);
+    const beforeBalanceOfUser = await BAL_RETH_WETH_LP.balanceOf(deployer.address);
     // withdraw
     const amountAssetToWithdraw = await convertToCurrencyDecimals(
-      BAL_WSTETH_WETH_LP.address,
+      BAL_RETH_WETH_LP.address,
       WITHDRAW_AMOUNT
     );
-    await auraWSTETHWETHVault
+    await auraRETHWETHVault
       .connect(deployer.signer)
-      .withdrawCollateral(BAL_WSTETH_WETH_LP.address, amountAssetToWithdraw, 9900, deployer.address);
+      .withdrawCollateral(BAL_RETH_WETH_LP.address, amountAssetToWithdraw, 9900, deployer.address);
 
-    const afterBalanceOfUser = await BAL_WSTETH_WETH_LP.balanceOf(deployer.address);
+    const afterBalanceOfUser = await BAL_RETH_WETH_LP.balanceOf(deployer.address);
 
     expect(dola3crvBalanceOfPool).to.be.equal(0);
     expect(afterBalanceOfUser.sub(beforeBalanceOfUser)).to.be.gte(
-      await convertToCurrencyDecimals(BAL_WSTETH_WETH_LP.address, WITHDRAW_AMOUNT)
+      await convertToCurrencyDecimals(BAL_RETH_WETH_LP.address, WITHDRAW_AMOUNT)
     );
-    expect(await BAL_WSTETH_WETH_LP.balanceOf(auraWSTETHWETHVault.address)).to.be.equal(0);
+    expect(await BAL_RETH_WETH_LP.balanceOf(auraRETHWETHVault.address)).to.be.equal(0);
   });
 });
 
-makeSuite('AuraWSTETHWETHVault - Process Yield', (testEnv: TestEnv) => {
+makeSuite('AuraRETHWETHVault - Process Yield', (testEnv: TestEnv) => {
   it('send yield to YieldManager', async () => {
-    const { auraWSTETHWETHVault, users, BAL_WSTETH_WETH_LP, BAL, AURA, yieldManager } = testEnv;
+    const { auraRETHWETHVault, users, BAL_RETH_WETH_LP, BAL, AURA, yieldManager } = testEnv;
     const borrower = users[1];
 
-    // borrower provides WSTETHWETH
+    // borrower provides RETHWETH
     const assetAmountToDeposit = await convertToCurrencyDecimals(
-      BAL_WSTETH_WETH_LP.address,
+      BAL_RETH_WETH_LP.address,
       DEPOSIT_AMOUNT
     );
     await prepareCollateralForUser(testEnv, borrower, assetAmountToDeposit);
-    await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(
-      auraWSTETHWETHVault.address,
+    await BAL_RETH_WETH_LP.connect(borrower.signer).approve(
+      auraRETHWETHVault.address,
       APPROVAL_AMOUNT_LENDING_POOL
     );
-    await auraWSTETHWETHVault
+    await auraRETHWETHVault
       .connect(borrower.signer)
-      .depositCollateral(BAL_WSTETH_WETH_LP.address, assetAmountToDeposit);
+      .depositCollateral(BAL_RETH_WETH_LP.address, assetAmountToDeposit);
     const beforeBalanceOfBAL = await BAL.balanceOf(yieldManager.address);
     const beforeBalanceOfAURA = await AURA.balanceOf(yieldManager.address);
 
@@ -154,7 +154,7 @@ makeSuite('AuraWSTETHWETHVault - Process Yield', (testEnv: TestEnv) => {
     await advanceBlock((await timeLatest()).plus(AURA_YIELD_PERIOD).toNumber());
 
     // process yield, so all yield should be sent to YieldManager
-    await auraWSTETHWETHVault.processYield();
+    await auraRETHWETHVault.processYield();
 
     const afterBalanceOfBAL = await BAL.balanceOf(yieldManager.address);
     const afterBalanceOfAURA = await AURA.balanceOf(yieldManager.address);

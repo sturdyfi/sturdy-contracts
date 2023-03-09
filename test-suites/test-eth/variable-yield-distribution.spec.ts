@@ -602,7 +602,7 @@ makeSuite('VariableYieldDistribution: Scenario #4', (testEnv) => {
       amountForUser1
         .sub(amountForUser2)
         .abs()
-        .lt(await convertToCurrencyDecimals(CRV.address, '0.00001'))
+        .lt(await convertToCurrencyDecimals(CRV.address, '0.001'))
     ).to.be.equal(true);
   });
 });

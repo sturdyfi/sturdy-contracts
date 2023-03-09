@@ -36,6 +36,7 @@ export enum eContractid {
   SturdyOracle = 'SturdyOracle',
   ETHSTETHOracle = 'ETHSTETHOracle',
   BALWSTETHWETHOracle = 'BALWSTETHWETHOracle',
+  BALRETHWETHOracle = 'BALRETHWETHOracle',
   AURAOracle = 'AURAOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
@@ -71,6 +72,8 @@ export enum eContractid {
   ConvexETHSTETHVault = 'ConvexETHSTETHVault',
   AuraWSTETHWETHVaultImpl = 'AuraWSTETHWETHVaultImpl',
   AuraWSTETHWETHVault = 'AuraWSTETHWETHVault',
+  AuraRETHWETHVaultImpl = 'AuraRETHWETHVaultImpl',
+  AuraRETHWETHVault = 'AuraRETHWETHVault',
   CollateralAdapter = 'CollateralAdapter',
   CollateralAdapterImpl = 'CollateralAdapterImpl',
   ETHLiquidator = 'ETHLiquidator',
@@ -89,6 +92,7 @@ export enum eContractid {
   LeverageSwapManager = 'LeverageSwapManager',
   ETHSTETHLevSwap = 'ETHSTETHLevSwap',
   AURAWSTETHWETHLevSwap = 'AURAWSTETHWETHLevSwap',
+  AURARETHWETHLevSwap = 'AURARETHWETHLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
   ERC4626Vault = 'ERC4626Vault',
   ERC4626Router = 'ERC4626Router',
@@ -209,6 +213,7 @@ export interface iAssetBase<T> {
   // mainnet-eth
   cvxETH_STETH: T;
   auraWSTETH_WETH: T;
+  auraRETH_WETH: T;
 }
 
 export type iAssetsWithoutETH<T> = Omit<iAssetBase<T>, 'ETH'>;
@@ -217,7 +222,7 @@ export type iAssetsWithoutUSD<T> = Omit<iAssetBase<T>, 'USD'>;
 
 export type iEthPoolAssets<T> = Pick<
   iAssetsWithoutUSD<T>,
-  'WETH' | 'cvxETH_STETH' | 'auraWSTETH_WETH'
+  'WETH' | 'cvxETH_STETH' | 'auraWSTETH_WETH' | 'auraRETH_WETH'
 >;
 
 export type iMultiPoolsAssets<T> = iAssetCommon<T> | iEthPoolAssets<T>;
@@ -230,6 +235,7 @@ export enum TokenContractId {
   // mainnet-eth
   cvxETH_STETH = 'cvxETH_STETH',
   auraWSTETH_WETH = 'auraWSTETH_WETH',
+  auraRETH_WETH = 'auraRETH_WETH',
 }
 
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
@@ -360,6 +366,7 @@ export interface IEthConfiguration extends ICommonConfiguration {
   LDO: iParamsPerNetwork<tEthereumAddress>;
   ETH_STETH_LP: iParamsPerNetwork<tEthereumAddress>;
   BAL_WSTETH_WETH_LP: iParamsPerNetwork<tEthereumAddress>;
+  BAL_RETH_WETH_LP: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;
   CurveswapAddressProvider: iParamsPerNetwork<tEthereumAddress>;
 }

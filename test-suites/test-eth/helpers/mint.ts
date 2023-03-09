@@ -6,6 +6,7 @@ import { SignerWithAddress } from './make-suite';
 const WETH = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 
 const BAL_WSTETH_WETH_LP = '0x32296969Ef14EB0c6d29669C550D4a0449130230';
+const BAL_RETH_WETH_LP = '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276';
 const ETH_STETH_LP = '0x06325440D014e39736583c165C2963BA99fAf14E';
 
 const TOKEN_INFO: {
@@ -22,6 +23,11 @@ const TOKEN_INFO: {
     symbol: 'BAL_WSTETH_WETH_LP',
     address: BAL_WSTETH_WETH_LP,
     owner: '0x21ac89788d52070D23B8EaCEcBD3Dc544178DC60',
+  },
+  {
+    symbol: 'BAL_RETH_WETH_LP',
+    address: BAL_RETH_WETH_LP,
+    owner: '0x5f98718e4e0EFcb7B5551E2B2584E6781ceAd867',
   },
   {
     symbol: 'ETH_STETH_LP',

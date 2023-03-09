@@ -4,11 +4,13 @@ import {
   getLendingPoolAddressesProvider,
   getConvexETHSTETHVault,
   getAuraWSTETHWETHVault,
+  getAuraRETHWETHVault,
 } from '../../helpers/contracts-getters';
 import {
   deployLeverageSwapManager,
   deployETHSTETHLevSwap,
   deployAURAWSTETHWETHLevSwap,
+  deployAURARETHWETHLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, IEthConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -26,7 +28,8 @@ task(`full:eth:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} cont
     }
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ETH_STETH_LP, BAL_WSTETH_WETH_LP, ReserveAssets } = poolConfig as IEthConfiguration;
+    const { ETH_STETH_LP, BAL_WSTETH_WETH_LP, BAL_RETH_WETH_LP, ReserveAssets } =
+      poolConfig as IEthConfiguration;
 
     const addressProvider = await getLendingPoolAddressesProvider();
 
@@ -61,6 +64,23 @@ task(`full:eth:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} cont
       aurawstethwethLevSwap.address
     );
     console.log('AURAWSTETHWETHLevSwap: %s', aurawstethwethLevSwap.address);
+
+    // deploy & register AURARETHWETHLevSwap
+    const aurarethwethVault = await getAuraRETHWETHVault();
+    const aurarethwethLevSwap = await deployAURARETHWETHLevSwap(
+      [
+        getParamPerNetwork(BAL_RETH_WETH_LP, network),
+        aurarethwethVault.address,
+        addressProvider.address,
+      ],
+      verify
+    );
+
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).auraRETH_WETH,
+      aurarethwethLevSwap.address
+    );
+    console.log('AURARETHWETHLevSwap: %s', aurarethwethLevSwap.address);
 
     console.log(`${CONTRACT_NAME}.address`, leverageManager.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

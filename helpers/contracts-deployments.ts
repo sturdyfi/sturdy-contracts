@@ -28,6 +28,7 @@ import {
   getBalancerswapAdapterAddress,
   getConvexETHSTETHVault,
   getAuraWSTETHWETHVault,
+  getAuraRETHWETHVault,
 } from './contracts-getters';
 import {
   SturdyProtocolDataProvider__factory,
@@ -69,6 +70,8 @@ import {
   YieldDistributorAdapter__factory,
   ERC4626Vault__factory,
   ERC4626Router__factory,
+  BALRETHWETHOracle__factory,
+  AURARETHWETHLevSwap__factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -278,6 +281,14 @@ export const deployBALWSTETHWETHOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BALWSTETHWETHOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BALWSTETHWETHOracle,
+    [],
+    verify
+  );
+
+export const deployBALRETHWETHOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALRETHWETHOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.BALRETHWETHOracle,
     [],
     verify
   );
@@ -593,6 +604,31 @@ export const deployAuraWSTETHWETHVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.AuraWSTETHWETHVault, proxyAddress);
 
   return await getAuraWSTETHWETHVault();
+};
+
+export const deployAuraRETHWETHVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraRETHWETHVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_RETH_WETH_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_RETH_WETH_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraRETHWETHVault, proxyAddress);
+
+  return await getAuraRETHWETHVault();
 };
 
 export const deploySturdyIncentivesControllerImpl = async (
@@ -972,6 +1008,17 @@ export const deployAURAWSTETHWETHLevSwap = async (
   withSaveAndVerify(
     await new AURAWSTETHWETHLevSwap__factory(await getFirstSigner()).deploy(...args),
     eContractid.AURAWSTETHWETHLevSwap,
+    args,
+    verify
+  );
+
+export const deployAURARETHWETHLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new AURARETHWETHLevSwap__factory(await getFirstSigner()).deploy(...args),
+    eContractid.AURARETHWETHLevSwap,
     args,
     verify
   );

@@ -43,6 +43,6 @@ export const NETWORKS_DEFAULT_GAS: iParamsPerNetwork<number> = {
 };
 
 export const BLOCK_TO_FORK: iParamsPerNetwork<number | undefined> = {
-  [eEthereumNetwork.main]: 16697825, //15534233,
+  [eEthereumNetwork.main]: 16727777, //16697825, //15534233,
   [eEthereumNetwork.tenderly]: 12406069,
 };

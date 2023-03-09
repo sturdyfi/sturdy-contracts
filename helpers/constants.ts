@@ -69,4 +69,5 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   cvxTUSD_FRAXBP: oneEther.multipliedBy('18.5478562').toFixed(),
   cvxETH_STETH: oneEther.toFixed(),
   auraWSTETH_WETH: oneEther.toFixed(),
+  auraRETH_WETH: oneEther.toFixed(),
 };

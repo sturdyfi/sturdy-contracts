@@ -158,11 +158,11 @@ contract AuraBalancerLPVault is IncentiveVault {
 
   /**
    * @dev The function to transfer extra incentive token to YieldManager
-   * - Caller is only PoolAdmin which is set on LendingPoolAddressesProvider contract
+   * - Caller is anyone
    * @param _offset extraRewards start offset.
    * @param _count extraRewards count
    */
-  function processExtraYield(uint256 _offset, uint256 _count) external payable onlyAdmin {
+  function processExtraYield(uint256 _offset, uint256 _count) external {
     address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
 

@@ -1,7 +1,11 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import { deployCollateralAdapter } from '../../helpers/contracts-deployments';
-import { getConvexETHSTETHVault, getAuraWSTETHWETHVault } from '../../helpers/contracts-getters';
+import {
+  getConvexETHSTETHVault,
+  getAuraWSTETHWETHVault,
+  getAuraRETHWETHVault,
+} from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
 import { waitForTx } from '../../helpers/misc-utils';
 import {
@@ -34,11 +38,16 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
         (poolConfig as IEthConfiguration).BAL_WSTETH_WETH_LP,
         network
       ),
+      auraRETH_WETH: getParamPerNetwork(
+        (poolConfig as IEthConfiguration).BAL_RETH_WETH_LP,
+        network
+      ),
     };
 
     const acceptableVaults = {
       cvxETH_STETH: (await getConvexETHSTETHVault()).address,
       auraWSTETH_WETH: (await getAuraWSTETHWETHVault()).address,
+      auraRETH_WETH: (await getAuraRETHWETHVault()).address,
     };
 
     const reserves = Object.entries(ReservesConfig).filter(

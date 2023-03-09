@@ -10,7 +10,6 @@ import {
   getProxy,
   getStableDebtToken,
   getVariableDebtToken,
-  getVariableYieldDistribution,
 } from '../../helpers/contracts-getters';
 import { getParamPerNetwork, verifyContract } from '../../helpers/contracts-helpers';
 import { eContractid, eNetwork, ICommonConfiguration, IReserveParams } from '../../helpers/types';
@@ -23,7 +22,6 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
     const network = localDRE.network.name as eNetwork;
     const poolConfig = loadPoolConfig(pool);
     const { ReserveAssets, ReservesConfig } = poolConfig as ICommonConfiguration;
-    const treasuryAddress = await getTreasuryAddress(poolConfig);
 
     const addressesProvider = await getLendingPoolAddressesProvider();
     const lendingPoolProxy = LendingPool__factory.connect(
@@ -36,10 +34,6 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
       await getFirstSigner()
     );
 
-    const yieldDistributor = {
-      cvxETH_STETH: (await getVariableYieldDistribution()).address,
-      auraWSTETH_WETH: (await getVariableYieldDistribution()).address,
-    };
     const configs = Object.entries(ReservesConfig) as [string, IReserveParams][];
     for (const entry of Object.entries(getParamPerNetwork(ReserveAssets, network))) {
       const [token, tokenAddress] = entry;
@@ -105,7 +99,6 @@ task('verify:tokens', 'Deploy oracles for dev enviroment')
           stableRateSlope1,
           stableRateSlope2,
           capacity,
-          yieldDistributor[token] || ZERO_ADDRESS,
         ]
       );
 

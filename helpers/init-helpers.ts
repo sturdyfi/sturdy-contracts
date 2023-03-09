@@ -61,10 +61,8 @@ export const initReservesByHelper = async (
   stableDebtTokenNamePrefix: string,
   variableDebtTokenNamePrefix: string,
   symbolPrefix: string,
-  admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
   yieldAddresses: Object, // TODO @bshevchenko: refactor
-  yieldDistributor: Object, // TODO @bshevchenko: refactor
   verify: boolean
 ): Promise<BigNumber> => {
   let gasUsage = BigNumber.from('0');
@@ -237,7 +235,6 @@ export const initReservesByHelper = async (
 
   const configurator = await getLendingPoolConfiguratorProxy();
   const pool = await getLendingPool();
-  //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
   console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
   console.log(`----------chunkedSymbols---------------`, chunkedSymbols);
@@ -311,6 +308,21 @@ export const initReservesByHelper = async (
 
     await yieldDistributorAdapter.setVariableYieldDistributor(
       tokenAddresses.auraWSTETH_WETH,
+      VariableYieldDistributor.address
+    );
+  }
+
+  if (tokenAddresses['auraRETH_WETH']) {
+    //BAL VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.auraRETH_WETH);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['auraRETH_WETH']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.auraRETH_WETH,
       VariableYieldDistributor.address
     );
   }

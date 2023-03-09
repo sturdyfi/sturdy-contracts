@@ -70,7 +70,7 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
-makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
+makeSuite('RETHWETH Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
   const slippage = 100;
@@ -80,18 +80,18 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let wstethwethLevSwap = {} as GeneralLevSwap;
+  let rethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, aurawsteth_weth } = testEnv;
-    wstethwethLevSwap = await getCollateralLevSwapper(testEnv, aurawsteth_weth.address);
-    ltv = (await helpersContract.getReserveConfigurationData(aurawsteth_weth.address)).ltv.toString();
+    const { helpersContract, aurareth_weth } = testEnv;
+    rethwethLevSwap = await getCollateralLevSwapper(testEnv, aurareth_weth.address);
+    ltv = (await helpersContract.getReserveConfigurationData(aurareth_weth.address)).ltv.toString();
   });
   describe('configuration', () => {
     it('WETH should be available for borrowing.', async () => {
       const { weth } = testEnv;
-      const coins = (await wstethwethLevSwap.getAvailableBorrowingAssets()).map((coin) =>
+      const coins = (await rethwethLevSwap.getAvailableBorrowingAssets()).map((coin) =>
         coin.toUpperCase()
       );
       expect(coins.length).to.be.equal(1);
@@ -104,7 +104,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const principalAmount = 0;
       const stableCoin = weth.address;
       await expect(
-        wstethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
+        rethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('113');
     });
     it('should be reverted if try to use invalid stable coin', async () => {
@@ -112,16 +112,16 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const principalAmount = 10;
       const stableCoin = aWeth.address;
       await expect(
-        wstethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
+        rethwethLevSwap.enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('114');
     });
     it('should be reverted when collateral is not enough', async () => {
-      const { users, weth, BAL_WSTETH_WETH_LP } = testEnv;
+      const { users, weth, BAL_RETH_WETH_LP } = testEnv;
       const borrower = users[1];
-      const principalAmount = await convertToCurrencyDecimals(BAL_WSTETH_WETH_LP.address, '1000');
+      const principalAmount = await convertToCurrencyDecimals(BAL_RETH_WETH_LP.address, '1000');
       const stableCoin = weth.address;
       await expect(
-        wstethwethLevSwap
+        rethwethLevSwap
           .connect(borrower.signer)
           .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
       ).to.be.revertedWith('115');
@@ -129,17 +129,17 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   });
   describe('enterPosition():', async () => {
     it('WETH as borrowing asset', async () => {
-      const { users, weth, BAL_WSTETH_WETH_LP, pool, helpersContract } = testEnv;
+      const { users, weth, BAL_RETH_WETH_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_WSTETH_WETH_LP.address, LPAmount)
+        await convertToCurrencyDecimals(BAL_RETH_WETH_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_WSTETH_WETH_LP.address,
+          BAL_RETH_WETH_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -152,8 +152,8 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower);
-      await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(wstethwethLevSwap.address, principalAmount);
+      await mint('BAL_RETH_WETH_LP', principalAmount, borrower);
+      await BAL_RETH_WETH_LP.connect(borrower.signer).approve(rethwethLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const wethDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(weth.address))
@@ -161,19 +161,19 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(wethDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(wstethwethLevSwap.address, amountToDelegate);
+        .approveDelegation(rethwethLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await wstethwethLevSwap
+      await rethwethLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
-      const collateralETHAmount = await calcETHAmount(testEnv, BAL_WSTETH_WETH_LP.address, LPAmount);
+      const collateralETHAmount = await calcETHAmount(testEnv, BAL_RETH_WETH_LP.address, LPAmount);
 
       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
       console.log('Expected Leverage: ', leverage / 10000 + 1);
@@ -196,16 +196,16 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       );
     });
     it('WETH as borrowing asset', async () => {
-      const { users, weth, BAL_WSTETH_WETH_LP, pool, helpersContract } = testEnv;
+      const { users, weth, BAL_RETH_WETH_LP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_WSTETH_WETH_LP.address, LPAmount)
+        await convertToCurrencyDecimals(BAL_RETH_WETH_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_WSTETH_WETH_LP.address,
+          BAL_RETH_WETH_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -217,8 +217,8 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower);
-      await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(wstethwethLevSwap.address, principalAmount);
+      await mint('BAL_RETH_WETH_LP', principalAmount, borrower);
+      await BAL_RETH_WETH_LP.connect(borrower.signer).approve(rethwethLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const wethDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(weth.address))
@@ -226,19 +226,19 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(wethDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(wstethwethLevSwap.address, amountToDelegate);
+        .approveDelegation(rethwethLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await wstethwethLevSwap
+      await rethwethLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
-      const collateralETHAmount = await calcETHAmount(testEnv, BAL_WSTETH_WETH_LP.address, LPAmount);
+      const collateralETHAmount = await calcETHAmount(testEnv, BAL_RETH_WETH_LP.address, LPAmount);
 
       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
       console.log('Expected Leverage: ', leverage / 10000 + 1);
@@ -261,16 +261,16 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       );
     });
     it('WETH as borrowing asset', async () => {
-      const { users, weth, BAL_WSTETH_WETH_LP, pool, helpersContract } = testEnv;
+      const { users, weth, BAL_RETH_WETH_LP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_WSTETH_WETH_LP.address, LPAmount)
+        await convertToCurrencyDecimals(BAL_RETH_WETH_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_WSTETH_WETH_LP.address,
+          BAL_RETH_WETH_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -282,8 +282,8 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       await depositToLendingPool(weth, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_WSTETH_WETH_LP', principalAmount, borrower);
-      await BAL_WSTETH_WETH_LP.connect(borrower.signer).approve(wstethwethLevSwap.address, principalAmount);
+      await mint('BAL_RETH_WETH_LP', principalAmount, borrower);
+      await BAL_RETH_WETH_LP.connect(borrower.signer).approve(rethwethLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const wethDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(weth.address))
@@ -291,19 +291,19 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(wethDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(wstethwethLevSwap.address, amountToDelegate);
+        .approveDelegation(rethwethLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
-      await wstethwethLevSwap
+      await rethwethLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage, weth.address, 0);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
-      const collateralETHAmount = await calcETHAmount(testEnv, BAL_WSTETH_WETH_LP.address, LPAmount);
+      const collateralETHAmount = await calcETHAmount(testEnv, BAL_RETH_WETH_LP.address, LPAmount);
 
       expect(userGlobalDataAfter.totalCollateralETH.toString()).to.be.bignumber.gt('0');
       console.log('Expected Leverage: ', leverage / 10000 + 1);
@@ -328,10 +328,10 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   });
   describe('repay():', async () => {
     it('WETH', async () => {
-      const { users, weth, BAL_WSTETH_WETH_LP, pool, helpersContract } = testEnv;
+      const { users, weth, BAL_RETH_WETH_LP, pool, helpersContract } = testEnv;
       const borrower = users[1];
 
-      let balance = await BAL_WSTETH_WETH_LP.balanceOf(borrower.address);
+      let balance = await BAL_RETH_WETH_LP.balanceOf(borrower.address);
       expect(balance).to.be.bignumber.equal('0');
 
       // calculate borrowed amount
@@ -354,13 +354,13 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
   });
   describe('liquidation:', async () => {
     it('WETH', async () => {
-      const { users, weth, BAL_WSTETH_WETH_LP, pool, helpersContract, aAURAWSTETH_WETH, aurawsteth_weth } =
+      const { users, weth, BAL_RETH_WETH_LP, pool, helpersContract, aAURARETH_WETH, aurareth_weth } =
         testEnv;
       const borrower = users[3];
       const liquidator = users[4];
 
       // check aToken balance for liquidator, borrower
-      const borrowerAtokenBalance = await aAURAWSTETH_WETH.balanceOf(borrower.address);
+      const borrowerAtokenBalance = await aAURARETH_WETH.balanceOf(borrower.address);
       expect(borrowerAtokenBalance).to.be.bignumber.gt('0');
 
       // check debt
@@ -375,7 +375,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
       // drop liquidation threshold
       const configurator = await getLendingPoolConfiguratorProxy();
       await configurator.configureReserveAsCollateral(
-        aurawsteth_weth.address,
+        aurareth_weth.address,
         '3000',
         '3200',
         '10200'
@@ -397,7 +397,7 @@ makeSuite('WSTETHWETH Leverage Swap', (testEnv) => {
         pool
           .connect(liquidator.signer)
           .liquidationCall(
-            BAL_WSTETH_WETH_LP.address,
+            BAL_RETH_WETH_LP.address,
             weth.address,
             borrower.address,
             amountToLiquidate,

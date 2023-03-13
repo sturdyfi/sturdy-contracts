@@ -589,6 +589,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   SNX: iParamsPerNetwork<tEthereumAddress>;
   TUSD: iParamsPerNetwork<tEthereumAddress>;
   AURA: iParamsPerNetwork<tEthereumAddress>;
+  FRAX: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

@@ -198,6 +198,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.tenderly]: '0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF',
     [eEthereumNetwork.goerli]: '',
   },
+  FRAX: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+    [eEthereumNetwork.tenderly]: '0x853d955aCEf822Db058eb8505911ED77F175b99e',
+    [eEthereumNetwork.goerli]: '',
+  },
   RETH_WSTETH_LP: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',

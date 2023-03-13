@@ -172,6 +172,8 @@ export interface TestEnv {
   CVX: IERC20Detailed;
   BAL: IERC20Detailed;
   AURA: IERC20Detailed;
+  TUSD: IERC20Detailed;
+  FRAX: IERC20Detailed;
   variableYieldDistributor: VariableYieldDistribution;
   levSwapManager: LeverageSwapManager;
   aprProvider: SturdyAPRDataProvider;
@@ -263,6 +265,8 @@ const testEnv: TestEnv = {
   CVX: {} as IERC20Detailed,
   BAL: {} as IERC20Detailed,
   AURA: {} as IERC20Detailed,
+  TUSD: {} as IERC20Detailed,
+  FRAX: {} as IERC20Detailed,
   variableYieldDistributor: {} as VariableYieldDistribution,
   levSwapManager: {} as LeverageSwapManager,
   aprProvider: {} as SturdyAPRDataProvider,
@@ -284,6 +288,8 @@ export async function initializeMakeSuite() {
   const cvxAddress = getParamPerNetwork(poolConfig.CVX, network);
   const balAddress = getParamPerNetwork(poolConfig.BAL, network);
   const auraAddress = getParamPerNetwork(poolConfig.AURA, network);
+  const tusdAddress = getParamPerNetwork(poolConfig.TUSD, network);
+  const fraxAddress = getParamPerNetwork(poolConfig.FRAX, network);
   const Mim3CrvLPAddress = getParamPerNetwork(poolConfig.MIM_3CRV_LP, network);
   const DaiUsdcUsdtSusdLPAddress = getParamPerNetwork(poolConfig.DAI_USDC_USDT_SUSD_LP, network);
   // const HBTCWBTCLPAddress = getParamPerNetwork(poolConfig.HBTC_WBTC_LP, network);
@@ -524,6 +530,8 @@ export async function initializeMakeSuite() {
   testEnv.CVX = IERC20Detailed__factory.connect(cvxAddress, deployer.signer);
   testEnv.BAL = IERC20Detailed__factory.connect(balAddress, deployer.signer);
   testEnv.AURA = IERC20Detailed__factory.connect(auraAddress, deployer.signer);
+  testEnv.TUSD = IERC20Detailed__factory.connect(tusdAddress, deployer.signer);
+  testEnv.FRAX = IERC20Detailed__factory.connect(fraxAddress, deployer.signer);
   // testEnv.yvreth_wsteth = IERC20Detailed__factory.connect(yvrethwstethAddress, deployer.signer);
   // testEnv.cvxreth_wsteth = SturdyInternalAsset__factory.connect(
   //   cvxrethwstethAddress,

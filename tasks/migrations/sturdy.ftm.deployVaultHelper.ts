@@ -30,10 +30,14 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     const [_deployer] = await getEthersSigners();
     await _deployer.sendTransaction({
       value: parseEther('90000'),
-      to: '0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60',
+      to: '0xb4124ceb3451635dacedd11767f004d8a28c6ee7' /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/,
     });
-    await impersonateAccountsHardhat(['0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60']);
-    let signer = await ethers.provider.getSigner('0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'); //Owner
+    await impersonateAccountsHardhat([
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7' /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/,
+    ]);
+    let signer = await ethers.provider.getSigner(
+      '0xb4124ceb3451635dacedd11767f004d8a28c6ee7' /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
+    ); //Owner
 
     // // transfer owner to vaule helper contract for deploying new vault
     // await waitForTx(await addressProvider.connect(signer).transferOwnership(vaultHelper.address));

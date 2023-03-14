@@ -798,9 +798,8 @@ export const deployCollateralAdapter = async (verify?: boolean) => {
 };
 
 export const deployETHLiquidator = async (args: [string], verify?: boolean) => {
-  const libraries = await deploySwapAdapterLibraries(verify);
   const liquidator = await withSaveAndVerify(
-    await new ETHLiquidator__factory(libraries, await getFirstSigner()).deploy(...args),
+    await new ETHLiquidator__factory(await getFirstSigner()).deploy(...args),
     eContractid.ETHLiquidator,
     args,
     verify

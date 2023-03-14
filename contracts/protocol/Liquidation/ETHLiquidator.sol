@@ -101,12 +101,15 @@ contract ETHLiquidator is IFlashLoanReceiver, IFlashLoanRecipient, Ownable {
   address private constant FRAX_USDC_POOL_ADDRESS = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
   address private constant POOL_3CRV_ADDRESS = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
   address private constant TUSD_FRAXBP_LP_ADDRESS = 0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893;
+  address private constant STETH_ETH_POOL_ADDRESS = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
 
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
   address private constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
   address private constant TUSD = 0x0000000000085d4780B73119b644AE5ecd22b376;
+  address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  address private constant STETH = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
 
   ILendingPoolAddressesProvider private immutable PROVIDER;
   address private immutable LENDING_POOL;
@@ -260,7 +263,7 @@ contract ETHLiquidator is IFlashLoanReceiver, IFlashLoanRecipient, Ownable {
     );
     uint256 collateralAmount = IERC20(collateralAsset).balanceOf(address(this));
 
-    if (collateralAsset == PROVIDER.getAddress('LIDO')) {
+    if (collateralAsset == STETH) {
       _convertLIDO(asset, collateralAmount, slippage);
     } else if (collateralAsset == FRAX_3CRV_LP_ADDRESS) {
       _convertFRAX_3CRV(asset, collateralAmount);
@@ -281,21 +284,20 @@ contract ETHLiquidator is IFlashLoanReceiver, IFlashLoanRecipient, Ownable {
     // Exchange stETH -> ETH via Curve
     uint256 receivedETHAmount = CurveswapAdapter.swapExactTokensForTokens(
       PROVIDER,
-      PROVIDER.getAddress('STETH_ETH_POOL'),
-      PROVIDER.getAddress('LIDO'),
+      STETH_ETH_POOL_ADDRESS,
+      STETH,
       ETH,
       collateralAmount,
       slippage
     );
 
     // ETH -> WETH
-    address weth = PROVIDER.getAddress('WETH');
-    IWETH(weth).deposit{value: receivedETHAmount}();
+    IWETH(WETH).deposit{value: receivedETHAmount}();
 
     // WETH -> asset
     UniswapAdapter.Path memory path;
     path.tokens = new address[](2);
-    path.tokens[0] = weth;
+    path.tokens[0] = WETH;
     path.tokens[1] = asset;
 
     path.fees = new uint256[](1);
@@ -303,7 +305,7 @@ contract ETHLiquidator is IFlashLoanReceiver, IFlashLoanRecipient, Ownable {
 
     UniswapAdapter.swapExactTokensForTokens(
       PROVIDER,
-      weth,
+      WETH,
       asset,
       receivedETHAmount,
       path,

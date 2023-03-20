@@ -18,6 +18,7 @@ import {
   strategyCVXFRAX_USDC,
   strategyAURADAI_USDC_USDT,
   strategyCVXTUSD_FRAXBP,
+  strategyAURABB_A_USD,
 } from './reservesConfigs';
 
 // ----------------
@@ -45,6 +46,7 @@ export const SturdyConfig: ISturdyConfiguration = {
     cvxFRAX_USDC: strategyCVXFRAX_USDC,
     auraDAI_USDC_USDT: strategyAURADAI_USDC_USDT,
     cvxTUSD_FRAXBP: strategyCVXTUSD_FRAXBP,
+    auraBB_A_USD: strategyAURABB_A_USD,
   },
   ReserveAssets: {
     [eEthereumNetwork.buidlerevm]: {},
@@ -77,6 +79,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
       auraDAI_USDC_USDT: '',
       cvxTUSD_FRAXBP: '0xEB74FbFbd9d3b190940384867bc984890b96D202',
+      auraBB_A_USD: '',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -95,6 +98,7 @@ export const SturdyConfig: ISturdyConfiguration = {
       cvxFRAX_USDC: '0x27403B2756E9c2f436FB13e0B188Dd231F1da170',
       auraDAI_USDC_USDT: '',
       cvxTUSD_FRAXBP: '0xEB74FbFbd9d3b190940384867bc984890b96D202',
+      auraBB_A_USD: '',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '0x3c189008333eeDA351Df6C601cf6Da7C1BC4Df1A',
@@ -340,6 +344,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.ropsten]: '',
     [eEthereumNetwork.main]: '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893',
     [eEthereumNetwork.tenderly]: '0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC',
+    [eEthereumNetwork.goerli]: '',
+  },
+  BAL_BB_A_USD_LP: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0xA13a9247ea42D743238089903570127DdA72fE44',
+    [eEthereumNetwork.tenderly]: '0xA13a9247ea42D743238089903570127DdA72fE44',
     [eEthereumNetwork.goerli]: '',
   },
   YearnRETHWstETHVault: {

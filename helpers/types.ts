@@ -74,6 +74,8 @@ export enum eContractid {
   FRAXUSDCOracle = 'FRAXUSDCOracle',
   BALDAIUSDCUSDTOracle = 'BALDAIUSDCUSDTOracle',
   TUSDFRAXBPOracle = 'TUSDFRAXBPOracle',
+  BALBBAUSDOracle = 'BALBBAUSDOracle',
+  AURAOracle = 'AURAOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
   InitializableImmutableAdminUpgradeabilityProxy = 'InitializableImmutableAdminUpgradeabilityProxy',
@@ -138,6 +140,8 @@ export enum eContractid {
   AuraDAIUSDCUSDTVault = 'AuraDAIUSDCUSDTVault',
   ConvexTUSDFRAXBPVaultImpl = 'ConvexTUSDFRAXBPVaultImpl',
   ConvexTUSDFRAXBPVault = 'ConvexTUSDFRAXBPVault',
+  AuraBBAUSDVaultImpl = 'AuraBBAUSDVaultImpl',
+  AuraBBAUSDVault = 'AuraBBAUSDVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -332,6 +336,7 @@ export interface iAssetBase<T> {
   cvxFRAX_USDC: T;
   auraDAI_USDC_USDT: T;
   cvxTUSD_FRAXBP: T;
+  auraBB_A_USD: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -369,6 +374,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'cvxFRAX_USDC'
   | 'auraDAI_USDC_USDT'
   | 'cvxTUSD_FRAXBP'
+  | 'auraBB_A_USD'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -415,6 +421,7 @@ export enum TokenContractId {
   cvxFRAX_USDC = 'cvxFRAX_USDC',
   auraDAI_USDC_USDT = 'auraDAI_USDC_USDT',
   cvxTUSD_FRAXBP = 'cvxTUSD_FRAXBP',
+  auraBB_A_USD = 'auraBB_A_USD',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -583,6 +590,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   FRAX_USDC_LP: iParamsPerNetwork<tEthereumAddress>;
   BAL_DAI_USDC_USDT_LP: iParamsPerNetwork<tEthereumAddress>;
   TUSD_FRAXBP_LP: iParamsPerNetwork<tEthereumAddress>;
+  BAL_BB_A_USD_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   BAL: iParamsPerNetwork<tEthereumAddress>;

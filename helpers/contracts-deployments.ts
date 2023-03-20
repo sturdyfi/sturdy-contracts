@@ -15,6 +15,8 @@ import {
   IFantomConfiguration,
 } from './types';
 import {
+  AURAOracle__factory,
+  BALBBAUSDOracle__factory,
   ERC4626Router__factory,
   ERC4626Vault__factory,
   MintableERC20,
@@ -67,6 +69,7 @@ import {
   getAuraDAIUSDCUSDTVault,
   getBalancerswapAdapterAddress,
   getConvexTUSDFRAXBPVault,
+  getAuraBBAUSDVault,
 } from './contracts-getters';
 import {
   SturdyProtocolDataProvider__factory,
@@ -533,6 +536,22 @@ export const deployTUSDFRAXBPCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new TUSDFRAXBPOracle__factory(await getFirstSigner()).deploy(),
     eContractid.TUSDFRAXBPOracle,
+    [],
+    verify
+  );
+
+export const deployBALBBAUSDOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALBBAUSDOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.BALBBAUSDOracle,
+    [],
+    verify
+  );
+
+export const deployAURAOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new AURAOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.AURAOracle,
     [],
     verify
   );
@@ -1448,6 +1467,31 @@ export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexTUSDFRAXBPVault, proxyAddress);
 
   return await getConvexTUSDFRAXBPVault();
+};
+
+export const deployAuraBBAUSDVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraBBAUSDVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_BB_A_USD_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_BB_A_USD_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraBBAUSDVault, proxyAddress);
+
+  return await getAuraBBAUSDVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>

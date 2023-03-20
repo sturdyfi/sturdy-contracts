@@ -64,10 +64,8 @@ export const initReservesByHelper = async (
   stableDebtTokenNamePrefix: string,
   variableDebtTokenNamePrefix: string,
   symbolPrefix: string,
-  admin: tEthereumAddress,
   treasuryAddress: tEthereumAddress,
   yieldAddresses: Object, // TODO @bshevchenko: refactor
-  yieldDistributor: Object, // TODO @bshevchenko: refactor
   verify: boolean
 ): Promise<BigNumber> => {
   let gasUsage = BigNumber.from('0');
@@ -384,6 +382,21 @@ export const initReservesByHelper = async (
 
     await yieldDistributorAdapter.setVariableYieldDistributor(
       tokenAddresses.cvxTUSD_FRAXBP,
+      VariableYieldDistributor.address
+    );
+  }
+
+  if (tokenAddresses['auraBB_A_USD']) {
+    //BAL VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.auraBB_A_USD);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['auraBB_A_USD']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.auraBB_A_USD,
       VariableYieldDistributor.address
     );
   }

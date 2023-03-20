@@ -36,7 +36,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
 
   uint256 private constant USE_VARIABLE_DEBT = 2;
 
-  address private constant AAVE_LENDING_POOL_ADDRESS = 0x7937D4799803FbBe595ed57278Bc4cA21f3bFfCB;
+  address private constant AAVE_LENDING_POOL_ADDRESS = 0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2;
 
   address internal constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
 
@@ -64,11 +64,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
    * @param _vault The deployed vault address
    * @param _provider The deployed AddressProvider
    */
-  constructor(
-    address _asset,
-    address _vault,
-    address _provider
-  ) {
+  constructor(address _asset, address _vault, address _provider) {
     require(
       _asset != address(0) && _provider != address(0) && _vault != address(0),
       Errors.LS_INVALID_CONFIGURATION
@@ -236,7 +232,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
     amounts[0] = Math.min(_repayAmount, debtAmount);
 
     bytes memory params = abi.encode(
-      false, /*leavePosition*/
+      false /*leavePosition*/,
       _slippage,
       _requiredAmount,
       msg.sender,
@@ -335,7 +331,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
 
     uint256 withdrawalAmount = Math.min(
       IERC20(_sAsset).balanceOf(_user),
-      (withdrawalAmountETH * (10**DECIMALS)) / _getAssetPrice(COLLATERAL)
+      (withdrawalAmountETH * (10 ** DECIMALS)) / _getAssetPrice(COLLATERAL)
     );
 
     require(withdrawalAmount >= _requiredAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
@@ -356,27 +352,18 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
     IGeneralVault(VAULT).withdrawCollateral(COLLATERAL, _amount, _slippage, address(this));
   }
 
-  function _getDebtAmount(address _variableDebtTokenAddress, address _user)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getDebtAmount(
+    address _variableDebtTokenAddress,
+    address _user
+  ) internal view returns (uint256) {
     return IERC20(_variableDebtTokenAddress).balanceOf(_user);
   }
 
-  function _borrow(
-    address _borrowingAsset,
-    uint256 _amount,
-    address borrower
-  ) internal {
+  function _borrow(address _borrowingAsset, uint256 _amount, address borrower) internal {
     LENDING_POOL.borrow(_borrowingAsset, _amount, USE_VARIABLE_DEBT, 0, borrower);
   }
 
-  function _repay(
-    address _borrowingAsset,
-    uint256 _amount,
-    address borrower
-  ) internal {
+  function _repay(address _borrowingAsset, uint256 _amount, address borrower) internal {
     IERC20(_borrowingAsset).safeApprove(address(LENDING_POOL), 0);
     IERC20(_borrowingAsset).safeApprove(address(LENDING_POOL), _amount);
 
@@ -389,11 +376,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
     require(paybackAmount > 0, Errors.LS_REPAY_FAILED);
   }
 
-  function _swapTo(
-    address,
-    uint256,
-    uint256
-  ) internal virtual returns (uint256);
+  function _swapTo(address, uint256, uint256) internal virtual returns (uint256);
 
   function _swapFrom(address, uint256) internal virtual returns (uint256);
 
@@ -478,8 +461,8 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
     uint256 borrowAssetDecimals = IERC20Detailed(_borrowAsset).decimals();
 
     uint256[] memory amounts = new uint256[](1);
-    amounts[0] = ((((_principal * _getAssetPrice(COLLATERAL)) / 10**DECIMALS) *
-      10**borrowAssetDecimals) / _getAssetPrice(_borrowAsset)).percentMul(_leverage).percentMul(
+    amounts[0] = ((((_principal * _getAssetPrice(COLLATERAL)) / 10 ** DECIMALS) *
+      10 ** borrowAssetDecimals) / _getAssetPrice(_borrowAsset)).percentMul(_leverage).percentMul(
         PercentageMath.PERCENTAGE_FACTOR + _slippage
       );
 
@@ -487,7 +470,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
       PercentageMath.PERCENTAGE_FACTOR + _leverage
     );
     bytes memory params = abi.encode(
-      true, /*enterPosition*/
+      true /*enterPosition*/,
       _slippage,
       minCollateralAmount,
       _user,

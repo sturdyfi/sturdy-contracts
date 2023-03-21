@@ -16,6 +16,11 @@ library CurveswapAdapter {
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
 
+  struct Path {
+    address[9] routes;
+    uint256[3][4] swapParams;
+  }
+
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
   function swapExactTokensForTokens(
@@ -61,6 +66,50 @@ library CurveswapAdapter {
     return receivedAmount;
   }
 
+  function swapExactTokensForTokens(
+    ILendingPoolAddressesProvider addressesProvider,
+    address assetToSwapFrom,
+    address assetToSwapTo,
+    uint256 amountToSwap,
+    Path calldata path,
+    uint256 slippage // 2% = 200
+  ) external returns (uint256) {
+    uint256 minAmountOut = _getMinAmount(
+      addressesProvider,
+      assetToSwapFrom,
+      assetToSwapTo,
+      amountToSwap,
+      slippage
+    );
+
+    // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
+    address curveAddressProvider = addressesProvider.getAddress('CURVE_ADDRESS_PROVIDER');
+    address curveExchange = ICurveAddressProvider(curveAddressProvider).get_address(2);
+
+    IERC20(assetToSwapFrom).safeApprove(address(curveExchange), 0);
+    IERC20(assetToSwapFrom).safeApprove(address(curveExchange), amountToSwap);
+
+    address[4] memory pools;
+    uint256 receivedAmount = ICurveExchange(curveExchange).exchange_multiple(
+      path.routes,
+      path.swapParams,
+      amountToSwap,
+      minAmountOut,
+      pools,
+      address(this)
+    );
+
+    require(receivedAmount != 0, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
+    uint256 balanceOfAsset;
+    if (assetToSwapTo == ETH) {
+      balanceOfAsset = address(this).balance;
+    } else {
+      balanceOfAsset = IERC20(assetToSwapTo).balanceOf(address(this));
+    }
+    require(balanceOfAsset >= receivedAmount, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
+    return receivedAmount;
+  }
+
   function _getDecimals(address asset) internal view returns (uint256) {
     if (asset == ETH) {
       return 18;
@@ -68,11 +117,10 @@ library CurveswapAdapter {
     return IERC20Detailed(asset).decimals();
   }
 
-  function _getPrice(ILendingPoolAddressesProvider addressesProvider, address asset)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getPrice(
+    ILendingPoolAddressesProvider addressesProvider,
+    address asset
+  ) internal view returns (uint256) {
     if (asset == ETH) {
       return 1e18;
     }
@@ -92,8 +140,8 @@ library CurveswapAdapter {
     uint256 fromAssetPrice = _getPrice(addressesProvider, assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(addressesProvider, assetToSwapTo);
 
-    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10**toAssetDecimals) /
-      (toAssetPrice * 10**fromAssetDecimals)).percentMul(
+    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10 ** toAssetDecimals) /
+      (toAssetPrice * 10 ** fromAssetDecimals)).percentMul(
         PercentageMath.PERCENTAGE_FACTOR - slippage
       );
 

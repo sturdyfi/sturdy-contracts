@@ -25,14 +25,14 @@ interface ICurvePool {
 contract TUSDFRAXBPLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
-  ICurvePool internal constant TUSDFRAXBP = ICurvePool(0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893);
-  ICurvePool internal constant FRAXUSDC = ICurvePool(0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2);
+  ICurvePool private constant TUSDFRAXBP = ICurvePool(0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893);
+  ICurvePool private constant FRAXUSDC = ICurvePool(0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2);
 
-  address internal constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-  address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-  address internal constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-  address internal constant TUSD = 0x0000000000085d4780B73119b644AE5ecd22b376;
-  address internal constant FRAXUSDCLP = 0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC;
+  address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+  address private constant TUSD = 0x0000000000085d4780B73119b644AE5ecd22b376;
+  address private constant FRAXUSDCLP = 0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC;
 
   address private constant TUSD3CRV = 0xEcd5e75AFb02eFa118AF914515D6521aaBd189F1;
 

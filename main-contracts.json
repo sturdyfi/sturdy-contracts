@@ -721,11 +721,11 @@
   },
   "TUSDFRAXBPLevSwap": {
     "main": {
-      "address": "0xaaCb05194c7864519116493C5d42353D2b658ecF",
+      "address": "0x33a256455A6793061A27247279C64285E427e6cA",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xaaCb05194c7864519116493C5d42353D2b658ecF",
+      "address": "0x33a256455A6793061A27247279C64285E427e6cA",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

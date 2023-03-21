@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {UniswapAdapter} from '../../libraries/swap/UniswapAdapter.sol';
+import {CurveswapAdapter} from '../../libraries/swap/CurveswapAdapter.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 interface ICurvePool {
@@ -34,6 +34,8 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
   address internal constant TUSD = 0x0000000000085d4780B73119b644AE5ecd22b376;
   address internal constant FRAXUSDCLP = 0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC;
 
+  address private constant TUSD3CRV = 0xEcd5e75AFb02eFa118AF914515D6521aaBd189F1;
+
   constructor(
     address _asset,
     address _vault,
@@ -57,47 +59,31 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     uint256 _slippage,
     uint256 _collateralAmount
   ) internal returns (uint256) {
-    UniswapAdapter.Path memory path;
-
-    path.tokens = new address[](3);
-    path.tokens[0] = TUSD;
-    path.tokens[1] = USDC;
-    path.tokens[2] = _stableAsset;
-
-    path.fees = new uint256[](2);
-    path.fees[0] = 100; //0.01%
-    path.fees[1] = 100; //0.01%
-
-    uint256 amountTo = UniswapAdapter.swapExactTokensForTokens(
-      PROVIDER,
-      TUSD,
-      _stableAsset,
-      _tusd_amount,
-      path,
-      _slippage
-    );
-    require(
-      amountTo >= _getMinAmount(COLLATERAL, _stableAsset, _collateralAmount, _slippage),
-      Errors.LS_SUPPLY_NOT_ALLOWED
-    );
-
-    return amountTo;
+    return
+      CurveswapAdapter.swapExactTokensForTokens(
+        PROVIDER,
+        TUSD3CRV,
+        TUSD,
+        _stableAsset,
+        _tusd_amount,
+        _slippage
+      );
   }
 
-  function _swapToTUSD(address _stableAsset, uint256 _amount) internal returns (uint256) {
-    UniswapAdapter.Path memory path;
-
-    path.tokens = new address[](3);
-    path.tokens[0] = _stableAsset;
-    path.tokens[1] = USDC;
-    path.tokens[2] = TUSD;
-
-    path.fees = new uint256[](2);
-    path.fees[0] = 100; //0.01%
-    path.fees[1] = 100; //0.01%
-
+  function _swapToTUSD(
+    address _stableAsset,
+    uint256 _amount,
+    uint256 _slippage
+  ) internal returns (uint256) {
     return
-      UniswapAdapter.swapExactTokensForTokens(PROVIDER, _stableAsset, TUSD, _amount, path, 500);
+      CurveswapAdapter.swapExactTokensForTokens(
+        PROVIDER,
+        TUSD3CRV,
+        _stableAsset,
+        TUSD,
+        _amount,
+        _slippage
+      );
   }
 
   function _swapToFRAXBP(uint256 _amount) internal returns (uint256) {
@@ -127,7 +113,7 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
 
       amountsAdded[1] = amountTo;
     } else {
-      amountTo = _swapToTUSD(_stableAsset, _amount);
+      amountTo = _swapToTUSD(_stableAsset, _amount, _slippage);
 
       IERC20(TUSD).safeApprove(address(TUSDFRAXBP), 0);
       IERC20(TUSD).safeApprove(address(TUSDFRAXBP), amountTo);

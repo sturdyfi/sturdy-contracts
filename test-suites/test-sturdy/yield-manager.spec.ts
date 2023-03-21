@@ -186,7 +186,7 @@ const simulateYieldInConvexTUSDFRAXBPVault = async (testEnv: TestEnv) => {
   const { convexTUSDFRAXBPVault, users, TUSD_FRAXBP_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const TUSDFRAXBPLPOwnerAddress = '0x5180db0237291A6449DdA9ed33aD90a38787621c';
+  const TUSDFRAXBPLPOwnerAddress = '0x566cdC415fDF629a47e365B5FDfAdCE51a2F8752';
   const depositTUSDFRAXBP = '1552';
   const depositTUSDFRAXBPAmount = await convertToCurrencyDecimals(
     TUSD_FRAXBP_LP.address,

@@ -744,7 +744,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some TUSD_FRAXBP_LP token
-    const LPOwnerAddress = '0x5180db0237291A6449DdA9ed33aD90a38787621c';
+    const LPOwnerAddress = '0x566cdC415fDF629a47e365B5FDfAdCE51a2F8752';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, '1000');

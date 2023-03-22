@@ -201,6 +201,8 @@ export enum eContractid {
   FRAXUSDCLevSwap = 'FRAXUSDCLevSwap',
   IRONBANKLevSwap = 'IRONBANKLevSwap',
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
+  TUSDFRAXBPLevSwap2 = 'TUSDFRAXBPLevSwap2',
+  AURABBAUSDLevSwap = 'AURABBAUSDLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
   VaultWhitelist = 'VaultWhitelist',
   ERC4626Vault = 'ERC4626Vault',

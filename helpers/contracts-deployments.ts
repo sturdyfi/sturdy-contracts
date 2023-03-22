@@ -15,11 +15,13 @@ import {
   IFantomConfiguration,
 } from './types';
 import {
+  AURABBAUSDLevSwap__factory,
   AURAOracle__factory,
   BALBBAUSDOracle__factory,
   ERC4626Router__factory,
   ERC4626Vault__factory,
   MintableERC20,
+  TUSDFRAXBPLevSwap2__factory,
   YieldDistributorAdapter__factory,
 } from '../types';
 import { MockContract } from 'ethereum-waffle';
@@ -2777,6 +2779,38 @@ export const deployTUSDFRAXBPLevSwap = async (
   const levSwap = await withSaveAndVerify(
     await new TUSDFRAXBPLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.TUSDFRAXBPLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployTUSDFRAXBPLevSwap2 = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new TUSDFRAXBPLevSwap2__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.TUSDFRAXBPLevSwap2,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployAURABBAUSDLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new AURABBAUSDLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.AURABBAUSDLevSwap,
     args,
     verify
   );

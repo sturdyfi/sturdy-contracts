@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 
 import {GeneralLevSwap2} from '../GeneralLevSwap2.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {IGeneralLevSwap2} from '../../../interfaces/IGeneralLevSwap2.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
@@ -22,7 +22,7 @@ interface ICurvePool {
   ) external returns (uint256);
 }
 
-contract TUSDFRAXBPLevSwap is GeneralLevSwap2 {
+contract TUSDFRAXBPLevSwap2 is GeneralLevSwap2 {
   using SafeERC20 for IERC20;
 
   ICurvePool private constant TUSDFRAXBP = ICurvePool(0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893);
@@ -57,10 +57,10 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap2 {
   function _processSwap(
     uint256 _amount,
     uint256 _slippage,
-    IGeneralLevSwap.SwapPath memory _path,
+    IGeneralLevSwap2.MultipSwapPath memory _path,
     bool _isFrom
   ) internal override returns (uint256) {
-    if (_path.swapType > IGeneralLevSwap.SwapType.NONE) {
+    if (_path.swapType > IGeneralLevSwap2.SwapType.NO_SWAP) {
       return _swapByPath(_amount, _slippage, _path);
     }
 
@@ -68,7 +68,7 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap2 {
       // TUSDFRAXBP -> borrowing asset
       int256 coinIndex;
 
-      if (_path.swapInOutToken[1] == FRAXUSDCLP) {
+      if (_path.swapTo == FRAXUSDCLP) {
         coinIndex = 1;
       }
 
@@ -77,11 +77,11 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap2 {
     }
 
     // borrowing asset -> TUSDFRAXBP
-    require(_path.swapInOutToken[1] == COLLATERAL, Errors.LS_INVALID_CONFIGURATION);
+    require(_path.swapTo == COLLATERAL, Errors.LS_INVALID_CONFIGURATION);
 
     uint256[2] memory amountsAdded;
     uint256 coinIndex;
-    address from = _path.swapInOutToken[0];
+    address from = _path.swapFrom;
 
     // FRAXUSDC/TUSD -> TUSDFRAXBP
     IERC20(from).safeApprove(address(TUSDFRAXBP), 0);

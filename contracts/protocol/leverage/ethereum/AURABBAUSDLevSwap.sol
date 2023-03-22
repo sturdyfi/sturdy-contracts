@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {GeneralLevSwap2} from '../GeneralLevSwap2.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {IGeneralLevSwap2} from '../../../interfaces/IGeneralLevSwap2.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
 contract AURABBAUSDLevSwap is GeneralLevSwap2 {
@@ -36,7 +36,7 @@ contract AURABBAUSDLevSwap is GeneralLevSwap2 {
   function _processSwap(
     uint256 _amount,
     uint256 _slippage,
-    IGeneralLevSwap.SwapPath memory _path,
+    IGeneralLevSwap2.MultipSwapPath memory _path,
     bool
   ) internal override returns (uint256) {
     return _swapByPath(_amount, _slippage, _path);

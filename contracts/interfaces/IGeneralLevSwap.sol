@@ -1,49 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 
-import {UniswapAdapter} from '../protocol/libraries/swap/UniswapAdapter.sol';
-import {BalancerswapAdapter} from '../protocol/libraries/swap/BalancerswapAdapter.sol';
-import {CurveswapAdapter} from '../protocol/libraries/swap/CurveswapAdapter.sol';
-
 interface IGeneralLevSwap {
   enum FlashLoanType {
     AAVE,
     BALANCER
-  }
-
-  enum SwapType {
-    NONE,
-    UNISWAP,
-    BALANCER,
-    CURVE
-  }
-
-  struct SwapPath {
-    UniswapAdapter.Path u_path;
-    BalancerswapAdapter.Path b_path;
-    CurveswapAdapter.Path c_path;
-    SwapType swapType;
-    address[2] swapInOutToken;
-  }
-
-  struct FlashLoanParams {
-    bool isEnterPosition;
-    uint256 slippage;
-    uint256 minCollateralAmount;
-    address user;
-    address sAsset;
-    SwapPath[] paths;
-    SwapPath[] reversePaths;
-  }
-
-  struct LeverageParams {
-    address user;
-    uint256 principal;
-    uint256 leverage;
-    uint256 slippage;
-    address borrowAsset;
-    FlashLoanType flashLoanType;
-    SwapPath[] paths;
   }
 
   function enterPositionWithFlashloan(

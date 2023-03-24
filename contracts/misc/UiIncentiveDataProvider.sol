@@ -231,13 +231,19 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         ISturdyIncentivesController aTokenIncentiveController
       ) {
         if (address(aTokenIncentiveController) != address(0)) {
-          address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
+          address[] memory assets = new address[](1);
+          assets[0] = baseData.aTokenAddress;
+          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController.getRewardsBalance(
+            assets,
+            user
+          );
+
           aUserIncentiveData.tokenincentivesUserIndex = aTokenIncentiveController.getUserAssetData(
             user,
             baseData.aTokenAddress
           );
-          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController
-            .getUserUnclaimedRewards(user);
+
+          address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
           aUserIncentiveData.tokenAddress = baseData.aTokenAddress;
           aUserIncentiveData.rewardTokenAddress = aRewardToken;
           aUserIncentiveData.incentiveControllerAddress = address(aTokenIncentiveController);
@@ -253,13 +259,19 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         ISturdyIncentivesController vTokenIncentiveController
       ) {
         if (address(vTokenIncentiveController) != address(0)) {
-          address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
+          address[] memory assets = new address[](1);
+          assets[0] = baseData.variableDebtTokenAddress;
+          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController.getRewardsBalance(
+            assets,
+            user
+          );
+
           vUserIncentiveData.tokenincentivesUserIndex = vTokenIncentiveController.getUserAssetData(
             user,
             baseData.variableDebtTokenAddress
           );
-          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController
-            .getUserUnclaimedRewards(user);
+
+          address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
           vUserIncentiveData.tokenAddress = baseData.variableDebtTokenAddress;
           vUserIncentiveData.rewardTokenAddress = vRewardToken;
           vUserIncentiveData.incentiveControllerAddress = address(vTokenIncentiveController);

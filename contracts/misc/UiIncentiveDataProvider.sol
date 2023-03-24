@@ -67,8 +67,6 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             uint256 aEmissionPerSecond,
             uint256 aIncentivesLastUpdateTimestamp
           ) {
-            uint8 decimal;
-            if (aRewardToken != address(0)) decimal = IERC20Detailed(aRewardToken).decimals();
             reserveIncentiveData.aIncentiveData = IncentiveData(
               aEmissionPerSecond,
               aIncentivesLastUpdateTimestamp,
@@ -77,7 +75,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
               baseData.aTokenAddress,
               aRewardToken,
               address(aTokenIncentiveController),
-              decimal,
+              IERC20Detailed(aRewardToken).decimals(),
               aTokenIncentiveController.PRECISION()
             );
           } catch (bytes memory /*lowLevelData*/) {}
@@ -96,8 +94,6 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             uint256 sEmissionPerSecond,
             uint256 sIncentivesLastUpdateTimestamp
           ) {
-            uint8 decimal;
-            if (sRewardToken != address(0)) decimal = IERC20Detailed(sRewardToken).decimals();
             reserveIncentiveData.sIncentiveData = IncentiveData(
               sEmissionPerSecond,
               sIncentivesLastUpdateTimestamp,
@@ -106,7 +102,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
               baseData.stableDebtTokenAddress,
               sRewardToken,
               address(sTokenIncentiveController),
-              decimal,
+              IERC20Detailed(sRewardToken).decimals(),
               sTokenIncentiveController.PRECISION()
             );
           } catch (bytes memory /*lowLevelData*/) {}
@@ -126,8 +122,6 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
             uint256 vEmissionPerSecond,
             uint256 vIncentivesLastUpdateTimestamp
           ) {
-            uint8 decimal;
-            if (vRewardToken != address(0)) decimal = IERC20Detailed(vRewardToken).decimals();
             reserveIncentiveData.vIncentiveData = IncentiveData(
               vEmissionPerSecond,
               vIncentivesLastUpdateTimestamp,
@@ -136,7 +130,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
               baseData.variableDebtTokenAddress,
               vRewardToken,
               address(vTokenIncentiveController),
-              decimal,
+              IERC20Detailed(vRewardToken).decimals(),
               vTokenIncentiveController.PRECISION()
             );
           } catch (bytes memory /*lowLevelData*/) {}
@@ -236,18 +230,23 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         ISturdyIncentivesController aTokenIncentiveController
       ) {
         if (address(aTokenIncentiveController) != address(0)) {
-          address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
+          address[] memory assets = new address[](1);
+          assets[0] = baseData.aTokenAddress;
+          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController.getRewardsBalance(
+            assets,
+            user
+          );
+
           aUserIncentiveData.tokenincentivesUserIndex = aTokenIncentiveController.getUserAssetData(
             user,
             baseData.aTokenAddress
           );
-          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController
-            .getUserUnclaimedRewards(user);
+
+          address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
           aUserIncentiveData.tokenAddress = baseData.aTokenAddress;
           aUserIncentiveData.rewardTokenAddress = aRewardToken;
           aUserIncentiveData.incentiveControllerAddress = address(aTokenIncentiveController);
-          if (aRewardToken != address(0))
-            aUserIncentiveData.rewardTokenDecimals = IERC20Detailed(aRewardToken).decimals();
+          aUserIncentiveData.rewardTokenDecimals = IERC20Detailed(aRewardToken).decimals();
         }
       } catch (bytes memory /*lowLevelData*/) {}
 
@@ -259,18 +258,23 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         ISturdyIncentivesController vTokenIncentiveController
       ) {
         if (address(vTokenIncentiveController) != address(0)) {
-          address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
+          address[] memory assets = new address[](1);
+          assets[0] = baseData.variableDebtTokenAddress;
+          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController.getRewardsBalance(
+            assets,
+            user
+          );
+
           vUserIncentiveData.tokenincentivesUserIndex = vTokenIncentiveController.getUserAssetData(
             user,
             baseData.variableDebtTokenAddress
           );
-          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController
-            .getUserUnclaimedRewards(user);
+
+          address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
           vUserIncentiveData.tokenAddress = baseData.variableDebtTokenAddress;
           vUserIncentiveData.rewardTokenAddress = vRewardToken;
           vUserIncentiveData.incentiveControllerAddress = address(vTokenIncentiveController);
-          if (vRewardToken != address(0))
-            vUserIncentiveData.rewardTokenDecimals = IERC20Detailed(vRewardToken).decimals();
+          vUserIncentiveData.rewardTokenDecimals = IERC20Detailed(vRewardToken).decimals();
         }
       } catch (bytes memory /*lowLevelData*/) {}
 
@@ -292,8 +296,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
           sUserIncentiveData.tokenAddress = baseData.stableDebtTokenAddress;
           sUserIncentiveData.rewardTokenAddress = sRewardToken;
           sUserIncentiveData.incentiveControllerAddress = address(sTokenIncentiveController);
-          if (sRewardToken != address(0))
-            sUserIncentiveData.rewardTokenDecimals = IERC20Detailed(sRewardToken).decimals();
+          sUserIncentiveData.rewardTokenDecimals = IERC20Detailed(sRewardToken).decimals();
         }
       } catch (bytes memory /*lowLevelData*/) {}
 

@@ -363,11 +363,11 @@
   },
   "UiIncentiveDataProvider": {
     "main": {
-      "address": "0xe7a16FdF133D14D4E77726BB487f93048EC14CE1",
+      "address": "0xf62B771940105dfB095d0BC5F12a6Dc47Aaf9142",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xe7a16FdF133D14D4E77726BB487f93048EC14CE1",
+      "address": "0xf62B771940105dfB095d0BC5F12a6Dc47Aaf9142",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

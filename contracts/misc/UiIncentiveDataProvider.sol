@@ -233,10 +233,12 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         if (address(aTokenIncentiveController) != address(0)) {
           address[] memory assets = new address[](1);
           assets[0] = baseData.aTokenAddress;
-          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController.getRewardsBalance(
+          aUserIncentiveData.rewardsBalance = aTokenIncentiveController.getRewardsBalance(
             assets,
             user
           );
+          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController
+            .getUserUnclaimedRewards(user);
 
           aUserIncentiveData.tokenincentivesUserIndex = aTokenIncentiveController.getUserAssetData(
             user,
@@ -261,10 +263,12 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         if (address(vTokenIncentiveController) != address(0)) {
           address[] memory assets = new address[](1);
           assets[0] = baseData.variableDebtTokenAddress;
-          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController.getRewardsBalance(
+          vUserIncentiveData.rewardsBalance = vTokenIncentiveController.getRewardsBalance(
             assets,
             user
           );
+          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController
+            .getUserUnclaimedRewards(user);
 
           vUserIncentiveData.tokenincentivesUserIndex = vTokenIncentiveController.getUserAssetData(
             user,
@@ -345,8 +349,10 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
       .getUserAssetData(user, asset);
     address[] memory assets = new address[](1);
     assets[0] = asset;
-    rewardUserData.userUnclaimedRewards = IStableYieldDistribution(yieldDistributor)
-      .getRewardsBalance(assets, user);
+    rewardUserData.rewardsBalance = IStableYieldDistribution(yieldDistributor).getRewardsBalance(
+      assets,
+      user
+    );
     rewardUserData.tokenAddress = asset;
     rewardUserData.rewardTokenAddress = rewardToken;
     rewardUserData.distributorAddress = yieldDistributor;
@@ -364,7 +370,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
     assets[0] = asset;
     AggregatedRewardsData[] memory rewardData = IVariableYieldDistribution(yieldDistributor)
       .getRewardsBalance(assets, user);
-    rewardUserData.userUnclaimedRewards = rewardData[0].balance;
+    rewardUserData.rewardsBalance = rewardData[0].balance;
     rewardUserData.tokenAddress = asset;
     rewardUserData.rewardTokenAddress = rewardData[0].rewardToken;
     rewardUserData.distributorAddress = yieldDistributor;

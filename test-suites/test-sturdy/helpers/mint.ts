@@ -22,17 +22,17 @@ const TOKEN_INFO: {
   {
     symbol: 'DAI',
     address: DAI,
-    owner: '0x5d38b4e4783e34e2301a2a36c39a03c45798c4dd',
+    owner: '0x28C6c06298d514Db089934071355E5743bf21d60',
   },
   {
     symbol: 'USDC',
     address: USDC,
-    owner: '0x72a53cdbbcc1b9efa39c834a540550e23463aacb',
+    owner: '0x28C6c06298d514Db089934071355E5743bf21d60',
   },
   {
     symbol: 'USDT',
     address: USDT,
-    owner: '0x5a52e96bacdabb82fd05763e25335261b270efcb',
+    owner: '0x28C6c06298d514Db089934071355E5743bf21d60',
   },
   {
     symbol: 'FRAX_3CRV_LP',

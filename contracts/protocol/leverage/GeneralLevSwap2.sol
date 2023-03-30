@@ -88,7 +88,7 @@ abstract contract GeneralLevSwap2 is IFlashLoanReceiver, IFlashLoanRecipient, Re
     return new address[](0);
   }
 
-  function _getAssetPrice(address _asset) internal view returns (uint256) {
+  function _getAssetPrice(address _asset) internal view virtual returns (uint256) {
     return ORACLE.getAssetPrice(_asset);
   }
 

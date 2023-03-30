@@ -20,16 +20,19 @@ interface ICurvePool {
     int128 i,
     uint256 _min_amount
   ) external returns (uint256);
+
+  function balances(uint256 _id) external view returns (uint256);
 }
 
 contract TUSDFRAXBPLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
-  ICurvePool private constant TUSDFRAXBP = ICurvePool(0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893);
-  ICurvePool private constant FRAXUSDC = ICurvePool(0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2);
+  address private constant TUSDFRAXBP = 0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893;
+  address private constant FRAXUSDC = 0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2;
 
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address private constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
   address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
   address private constant TUSD = 0x0000000000085d4780B73119b644AE5ecd22b376;
   address private constant FRAXUSDCLP = 0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC;
@@ -87,12 +90,12 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
   }
 
   function _swapToFRAXBP(uint256 _amount) internal returns (uint256) {
-    IERC20(USDC).safeApprove(address(FRAXUSDC), 0);
-    IERC20(USDC).safeApprove(address(FRAXUSDC), _amount);
+    IERC20(USDC).safeApprove(FRAXUSDC, 0);
+    IERC20(USDC).safeApprove(FRAXUSDC, _amount);
 
     uint256[2] memory amountsAdded;
     amountsAdded[1] = _amount;
-    FRAXUSDC.add_liquidity(amountsAdded, 0);
+    ICurvePool(FRAXUSDC).add_liquidity(amountsAdded, 0);
     return IERC20(FRAXUSDCLP).balanceOf(address(this));
   }
 
@@ -108,20 +111,20 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     if (_stableAsset == USDC) {
       amountTo = _swapToFRAXBP(_amount);
 
-      IERC20(FRAXUSDCLP).safeApprove(address(TUSDFRAXBP), 0);
-      IERC20(FRAXUSDCLP).safeApprove(address(TUSDFRAXBP), amountTo);
+      IERC20(FRAXUSDCLP).safeApprove(TUSDFRAXBP, 0);
+      IERC20(FRAXUSDCLP).safeApprove(TUSDFRAXBP, amountTo);
 
       amountsAdded[1] = amountTo;
     } else {
       amountTo = _swapToTUSD(_stableAsset, _amount, _slippage);
 
-      IERC20(TUSD).safeApprove(address(TUSDFRAXBP), 0);
-      IERC20(TUSD).safeApprove(address(TUSDFRAXBP), amountTo);
+      IERC20(TUSD).safeApprove(TUSDFRAXBP, 0);
+      IERC20(TUSD).safeApprove(TUSDFRAXBP, amountTo);
 
       amountsAdded[0] = amountTo;
     }
 
-    TUSDFRAXBP.add_liquidity(amountsAdded, 0);
+    ICurvePool(TUSDFRAXBP).add_liquidity(amountsAdded, 0);
 
     amountTo = IERC20(COLLATERAL).balanceOf(address(this));
     require(
@@ -138,13 +141,17 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     uint256 _collateralAmount
   ) internal returns (uint256) {
     int256 coinIndex = 1;
-    uint256 minAmount = FRAXUSDC.calc_withdraw_one_coin(_amount, int128(coinIndex));
+    uint256 minAmount = ICurvePool(FRAXUSDC).calc_withdraw_one_coin(_amount, int128(coinIndex));
     require(
       minAmount >= _getMinAmount(COLLATERAL, USDC, _collateralAmount, _slippage),
       Errors.LS_SUPPLY_NOT_ALLOWED
     );
 
-    uint256 usdcAmount = FRAXUSDC.remove_liquidity_one_coin(_amount, int128(coinIndex), minAmount);
+    uint256 usdcAmount = ICurvePool(FRAXUSDC).remove_liquidity_one_coin(
+      _amount,
+      int128(coinIndex),
+      minAmount
+    );
 
     return usdcAmount;
   }
@@ -158,8 +165,11 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     }
 
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    uint256 minAmount = TUSDFRAXBP.calc_withdraw_one_coin(collateralAmount, int128(coinIndex));
-    uint256 amountOut = TUSDFRAXBP.remove_liquidity_one_coin(
+    uint256 minAmount = ICurvePool(TUSDFRAXBP).calc_withdraw_one_coin(
+      collateralAmount,
+      int128(coinIndex)
+    );
+    uint256 amountOut = ICurvePool(TUSDFRAXBP).remove_liquidity_one_coin(
       collateralAmount,
       int128(coinIndex),
       minAmount
@@ -170,5 +180,29 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
     }
 
     return _swapFromTUSD(_stableAsset, amountOut, _slippage, collateralAmount);
+  }
+
+  function _getFRAXUSDCPrice() internal view returns (uint256) {
+    return
+      (((ICurvePool(FRAXUSDC).balances(0) * _getAssetPrice(FRAX)) /
+        1e18 +
+        (ICurvePool(FRAXUSDC).balances(1) * _getAssetPrice(USDC)) /
+        1e6) * 1e18) / IERC20(FRAXUSDCLP).totalSupply();
+  }
+
+  function _getTUSDFRAXBPPrice() internal view returns (uint256) {
+    return
+      (ICurvePool(TUSDFRAXBP).balances(0) *
+        _getAssetPrice(TUSD) +
+        ICurvePool(TUSDFRAXBP).balances(1) *
+        _getFRAXUSDCPrice()) / IERC20(TUSDFRAXBP).totalSupply();
+  }
+
+  function _getAssetPrice(address _asset) internal view override returns (uint256) {
+    if (_asset == FRAXUSDCLP) return _getFRAXUSDCPrice();
+
+    if (_asset == TUSDFRAXBP) return _getTUSDFRAXBPPrice();
+
+    return super._getAssetPrice(_asset);
   }
 }

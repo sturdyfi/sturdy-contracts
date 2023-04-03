@@ -224,7 +224,7 @@
 
 //       const afterBalanceOfBorrower = await MIM_3CRV_LP.balanceOf(borrower.address);
 //       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-//         '99'
+//         '97'
 //       );
 //     });
 //     it('USDC as borrowing asset', async () => {
@@ -292,7 +292,7 @@
 
 //       const afterBalanceOfBorrower = await MIM_3CRV_LP.balanceOf(borrower.address);
 //       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-//         '99'
+//         '97'
 //       );
 //     });
 //     it('DAI as borrowing asset', async () => {
@@ -360,7 +360,7 @@
 
 //       const afterBalanceOfBorrower = await MIM_3CRV_LP.balanceOf(borrower.address);
 //       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-//         '99'
+//         '97'
 //       );
 //     });
 //   });
@@ -459,7 +459,7 @@
 //           .mul('100')
 //           .div((Number(principalAmount) / 10).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -492,7 +492,7 @@
 //           .mul('100')
 //           .div(((Number(principalAmount) / 10) * 3).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -525,7 +525,7 @@
 //           .mul('100')
 //           .div(((Number(principalAmount) / 10) * 6).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -554,7 +554,7 @@
 //       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
 //       afterBalanceOfBorrower = await MIM_3CRV_LP.balanceOf(borrower.address);
 //       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-//         '99'
+//         '97'
 //       );
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
@@ -645,7 +645,7 @@
 //           .mul('100')
 //           .div((Number(principalAmount) / 10).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -678,7 +678,7 @@
 //           .mul('100')
 //           .div(((Number(principalAmount) / 10) * 3).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -711,7 +711,7 @@
 //           .mul('100')
 //           .div(((Number(principalAmount) / 10) * 6).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -740,7 +740,7 @@
 //       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
 //       afterBalanceOfBorrower = await MIM_3CRV_LP.balanceOf(borrower.address);
 //       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-//         '99'
+//         '97'
 //       );
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
@@ -831,7 +831,7 @@
 //           .mul('100')
 //           .div((Number(principalAmount) / 10).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -864,7 +864,7 @@
 //           .mul('100')
 //           .div(((Number(principalAmount) / 10) * 3).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -897,7 +897,7 @@
 //           .mul('100')
 //           .div(((Number(principalAmount) / 10) * 6).toFixed())
 //           .toString()
-//       ).to.be.bignumber.gte('99');
+//       ).to.be.bignumber.gte('97');
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),
 //         INVALID_HF
@@ -926,7 +926,7 @@
 //       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
 //       afterBalanceOfBorrower = await MIM_3CRV_LP.balanceOf(borrower.address);
 //       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-//         '99'
+//         '97'
 //       );
 //       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
 //         oneEther.toFixed(0),

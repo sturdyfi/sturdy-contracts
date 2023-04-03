@@ -107,6 +107,7 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
   ) internal override returns (uint256) {
     uint256 amountTo;
     uint256[2] memory amountsAdded;
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
 
     if (_stableAsset == USDC) {
       amountTo = _swapToFRAXBP(_amount);
@@ -128,7 +129,7 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
 
     amountTo = IERC20(COLLATERAL).balanceOf(address(this));
     require(
-      amountTo >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
+      amountTo - collateralAmount >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
       Errors.LS_SUPPLY_NOT_ALLOWED
     );
 
@@ -195,7 +196,7 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
       (ICurvePool(TUSDFRAXBP).balances(0) *
         _getAssetPrice(TUSD) +
         ICurvePool(TUSDFRAXBP).balances(1) *
-        _getFRAXUSDCPrice()) / IERC20(TUSDFRAXBP).totalSupply();
+        _getAssetPrice(FRAXUSDCLP)) / IERC20(TUSDFRAXBP).totalSupply();
   }
 
   function _getAssetPrice(address _asset) internal view override returns (uint256) {
@@ -203,6 +204,6 @@ contract TUSDFRAXBPLevSwap is GeneralLevSwap {
 
     if (_asset == TUSDFRAXBP) return _getTUSDFRAXBPPrice();
 
-    return super._getAssetPrice(_asset);
+    return ORACLE.getAssetPrice(_asset);
   }
 }

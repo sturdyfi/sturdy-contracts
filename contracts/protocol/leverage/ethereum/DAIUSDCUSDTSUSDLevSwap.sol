@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
-
+import 'hardhat/console.sol';
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -14,19 +14,24 @@ interface ICurvePool {
 
   function add_liquidity(uint256[4] memory amounts, uint256 _min_mint_amount) external;
 
-  function remove_liquidity_imbalance(uint256[4] calldata amounts, uint256 max_burn_amount)
-    external;
+  function remove_liquidity_imbalance(
+    uint256[4] calldata amounts,
+    uint256 max_burn_amount
+  ) external;
+
+  function balances(int128 _id) external view returns (uint256);
 }
 
 contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  ICurvePool public constant POOL = ICurvePool(0xA5407eAE9Ba41422680e2e00537571bcC53efBfD);
+  address private constant POOL = 0xA5407eAE9Ba41422680e2e00537571bcC53efBfD;
 
-  address internal constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-  address internal constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-  address internal constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+  address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+  address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+  address private constant SUSD = 0x57Ab1ec28D129707052df4dF418D58a2D46d5f51;
 
   constructor(
     address _asset,
@@ -57,19 +62,24 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     uint256 _amount,
     uint256 _slippage
   ) internal override returns (uint256) {
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+
     // stable coin -> DAIUSDCUSDTSUSD
-    IERC20(_stableAsset).safeApprove(address(POOL), 0);
-    IERC20(_stableAsset).safeApprove(address(POOL), _amount);
+    IERC20(_stableAsset).safeApprove(POOL, 0);
+    IERC20(_stableAsset).safeApprove(POOL, _amount);
 
     uint256 coinIndex = _getCoinIndex(_stableAsset);
     uint256[4] memory amountsAdded;
     amountsAdded[coinIndex] = _amount;
 
-    POOL.add_liquidity(amountsAdded, 0);
+    ICurvePool(POOL).add_liquidity(amountsAdded, 0);
 
     uint256 amountTo = IERC20(COLLATERAL).balanceOf(address(this));
+    console.log(_amount);
+    console.log(amountTo - collateralAmount);
+    console.log(_getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage));
     require(
-      amountTo >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
+      amountTo - collateralAmount >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
       Errors.LS_SUPPLY_NOT_ALLOWED
     );
 
@@ -86,8 +96,26 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     amounts[coinIndex] = _getMinAmount(COLLATERAL, _stableAsset, collateralAmount, _slippage);
 
     // Withdraw a single asset from the pool
-    POOL.remove_liquidity_imbalance(amounts, collateralAmount);
+    ICurvePool(POOL).remove_liquidity_imbalance(amounts, collateralAmount);
 
     return IERC20(_stableAsset).balanceOf(address(this));
+  }
+
+  function _getLPPrice() internal view returns (uint256) {
+    return
+      (((ICurvePool(POOL).balances(0) * _getAssetPrice(DAI)) /
+        1e18 +
+        (ICurvePool(POOL).balances(1) * _getAssetPrice(USDC)) /
+        1e6 +
+        (ICurvePool(POOL).balances(2) * _getAssetPrice(USDT)) /
+        1e6 +
+        (ICurvePool(POOL).balances(3) * _getAssetPrice(SUSD)) /
+        1e18) * 1e18) / IERC20(COLLATERAL).totalSupply();
+  }
+
+  function _getAssetPrice(address _asset) internal view override returns (uint256) {
+    if (_asset == COLLATERAL) return _getLPPrice();
+
+    return ORACLE.getAssetPrice(_asset);
   }
 }

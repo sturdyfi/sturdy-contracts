@@ -122,7 +122,7 @@ library Errors {
   string internal constant VT_WITHDRAW_AMOUNT_MISMATCH = '96'; // not performed withdraw 100%
   string internal constant VT_SWAP_MISMATCH_RETURNED_AMOUNT = '97'; //Returned amount is not enough
   string internal constant CALLER_NOT_YIELD_PROCESSOR = '98'; // 'The caller must be the pool admin'
-  string internal constant VT_EXTRA_REWARDS_INDEX_INVALID = '99'; // Invalid extraRewards index
+  string internal constant VT_EXTRA_REWARDS_INDEX_INVALID = '97'; // Invalid extraRewards index
   string internal constant VT_SWAP_PATH_LENGTH_INVALID = '100'; // Invalid token or fee length
   string internal constant VT_SWAP_PATH_TOKEN_INVALID = '101'; // Invalid token information
   string internal constant CLAIMER_UNAUTHORIZED = '102'; // 'The claimer is not authorized'

@@ -196,9 +196,12 @@ export enum eContractid {
   LeverageSwapManagerImpl = 'LeverageSwapManagerImpl',
   LeverageSwapManager = 'LeverageSwapManager',
   FRAX3CRVLevSwap = 'FRAX3CRVLevSwap',
+  FRAX3CRVLevSwap2 = 'FRAX3CRVLevSwap2',
   DAIUSDCUSDTSUSDLevSwap = 'DAIUSDCUSDTSUSDLevSwap',
+  DAIUSDCUSDTSUSDLevSwap2 = 'DAIUSDCUSDTSUSDLevSwap2',
   MIM3CRVLevSwap = 'MIM3CRVLevSwap',
   FRAXUSDCLevSwap = 'FRAXUSDCLevSwap',
+  FRAXUSDCLevSwap2 = 'FRAXUSDCLevSwap2',
   IRONBANKLevSwap = 'IRONBANKLevSwap',
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
   TUSDFRAXBPLevSwap2 = 'TUSDFRAXBPLevSwap2',
@@ -598,6 +601,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   BAL: iParamsPerNetwork<tEthereumAddress>;
   SNX: iParamsPerNetwork<tEthereumAddress>;
   TUSD: iParamsPerNetwork<tEthereumAddress>;
+  SUSD: iParamsPerNetwork<tEthereumAddress>;
   AURA: iParamsPerNetwork<tEthereumAddress>;
   FRAX: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;

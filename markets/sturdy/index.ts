@@ -190,6 +190,18 @@ export const SturdyConfig: ISturdyConfiguration = {
     [eEthereumNetwork.tenderly]: '0x0000000000085d4780B73119b644AE5ecd22b376',
     [eEthereumNetwork.goerli]: '',
   },
+  SUSD: {
+    [eEthereumNetwork.coverage]: '',
+    [eEthereumNetwork.hardhat]: '',
+    [eEthereumNetwork.geth]: '',
+    [eEthereumNetwork.localhost]: '',
+    [eEthereumNetwork.buidlerevm]: '',
+    [eEthereumNetwork.kovan]: '',
+    [eEthereumNetwork.ropsten]: '',
+    [eEthereumNetwork.main]: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
+    [eEthereumNetwork.tenderly]: '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51',
+    [eEthereumNetwork.goerli]: '',
+  },
   AURA: {
     [eEthereumNetwork.coverage]: '',
     [eEthereumNetwork.hardhat]: '',

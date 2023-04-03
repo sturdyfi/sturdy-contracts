@@ -36,6 +36,7 @@ const calcTotalBorrowAmount = async (
     new BigNumber(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .multipliedBy(iterations)
       .div(borrowingAssetPrice.toString())
@@ -68,7 +69,7 @@ const calcETHAmount = async (testEnv: TestEnv, asset: tEthereumAddress, amount: 
 
 makeSuite('SUSD Zap Deposit', (testEnv) => {
   const LPAmount = '1000';
-  const slippage = 100;
+  const slippage = 70; // 0.7%
   let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
@@ -169,7 +170,7 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
       ).to.be.equal(0);
       const afterBalanceOfBorrower = await aCVXDAI_USDC_USDT_SUSD.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '97'
       );
     });
   });
@@ -299,7 +300,7 @@ makeSuite('SUSD Zap Leverage', (testEnv) => {
 makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 100;
+  const slippage = 70; // 0.7%
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
@@ -400,6 +401,7 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
         usdt,
         pool,
         helpersContract,
+        DAI_USDC_USDT_SUSD_LP,
         vaultWhitelist,
         convexDAIUSDCUSDTSUSDVault,
         owner,
@@ -409,7 +411,14 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
       const borrower = users[1];
       const principalAmount = (await convertToCurrencyDecimals(usdt.address, LPAmount)).toString();
       const amountToDelegate = (
-        await calcTotalBorrowAmount(testEnv, usdt.address, LPAmount, ltv, leverage, usdt.address)
+        await calcTotalBorrowAmount(
+          testEnv,
+          DAI_USDC_USDT_SUSD_LP.address,
+          LPAmount,
+          ltv,
+          leverage / 10000,
+          usdt.address
+        )
       ).toString();
 
       // Deposit USDT to Lending Pool

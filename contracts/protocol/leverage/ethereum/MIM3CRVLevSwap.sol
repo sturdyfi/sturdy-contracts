@@ -119,4 +119,8 @@ contract MIM3CRVLevSwap is GeneralLevSwap {
 
     return IERC20(_stableAsset).balanceOf(address(this));
   }
+
+  function _getAssetPrice(address _asset) internal view override returns (uint256) {
+    return ORACLE.getAssetPrice(_asset);
+  }
 }

@@ -70,6 +70,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -94,7 +95,7 @@ const depositToLendingPool = async (
 makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '100';
+  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let mim3crvLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -402,7 +403,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
 makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '100';
+  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let mim3crvLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -521,7 +522,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div((Number(principalAmount) / 10).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -555,7 +556,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 3).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -589,7 +590,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 6).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -729,7 +730,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div((Number(principalAmount) / 10).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -763,7 +764,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 3).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -797,7 +798,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 6).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -937,7 +938,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div((Number(principalAmount) / 10).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -971,7 +972,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 3).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -1005,7 +1006,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 6).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF

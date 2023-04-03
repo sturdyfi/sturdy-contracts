@@ -18,8 +18,11 @@ import {
   AURABBAUSDLevSwap__factory,
   AURAOracle__factory,
   BALBBAUSDOracle__factory,
+  DAIUSDCUSDTSUSDLevSwap2__factory,
   ERC4626Router__factory,
   ERC4626Vault__factory,
+  FRAX3CRVLevSwap2__factory,
+  FRAXUSDCLevSwap2__factory,
   MintableERC20,
   TUSDFRAXBPLevSwap2__factory,
   YieldDistributorAdapter__factory,
@@ -2721,6 +2724,22 @@ export const deployFRAX3CRVLevSwap = async (
     verify
   );
 
+export const deployFRAX3CRVLevSwap2 = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new FRAX3CRVLevSwap2__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.FRAX3CRVLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
 export const deployDAIUSDCUSDTSUSDLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
@@ -2731,6 +2750,22 @@ export const deployDAIUSDCUSDTSUSDLevSwap = async (
     args,
     verify
   );
+
+export const deployDAIUSDCUSDTSUSDLevSwap2 = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new DAIUSDCUSDTSUSDLevSwap2__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.DAIUSDCUSDTSUSDLevSwap2,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
 
 export const deployMIM3CRVLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
@@ -2763,6 +2798,22 @@ export const deployFRAXUSDCLevSwap = async (
   const levSwap = await withSaveAndVerify(
     await new FRAXUSDCLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.FRAXUSDCLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployFRAXUSDCLevSwap2 = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapterLibraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new FRAXUSDCLevSwap2__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.FRAXUSDCLevSwap2,
     args,
     verify
   );

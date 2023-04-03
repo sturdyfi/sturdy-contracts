@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
-
+import 'hardhat/console.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -89,9 +89,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
     return new address[](0);
   }
 
-  function _getAssetPrice(address _asset) internal view virtual returns (uint256) {
-    return ORACLE.getAssetPrice(_asset);
-  }
+  function _getAssetPrice(address _asset) internal view virtual returns (uint256);
 
   /**
    * This function is called after your contract has received the flash loaned amount
@@ -290,6 +288,8 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
   ) internal {
     //swap stable coin to collateral
     uint256 collateralAmount = _swapTo(_stableAsset, _borrowedAmount, _slippage);
+    console.log('4', _minAmount);
+    console.log('5', collateralAmount);
     require(collateralAmount >= _minAmount, Errors.LS_SUPPLY_FAILED);
 
     //deposit collateral
@@ -335,7 +335,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
 
     uint256 withdrawalAmount = Math.min(
       IERC20(_sAsset).balanceOf(_user),
-      (withdrawalAmountETH * (10 ** DECIMALS)) / _getAssetPrice(COLLATERAL)
+      (withdrawalAmountETH * (10 ** DECIMALS)) / ORACLE.getAssetPrice(COLLATERAL)
     );
 
     require(withdrawalAmount >= _requiredAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
@@ -472,8 +472,8 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
 
     uint256[] memory amounts = new uint256[](1);
     amounts[0] = ((((_principal * _getAssetPrice(COLLATERAL)) / 10 ** DECIMALS) *
-      10 ** borrowAssetDecimals) / _getAssetPrice(_borrowAsset)).percentMul(_leverage).percentMul(
-        PercentageMath.PERCENTAGE_FACTOR + _slippage
+      10 ** borrowAssetDecimals) / _getAssetPrice(_borrowAsset)).percentMul(_leverage).percentDiv(
+        PercentageMath.PERCENTAGE_FACTOR - _slippage
       );
 
     uint256 minCollateralAmount = _principal.percentMul(

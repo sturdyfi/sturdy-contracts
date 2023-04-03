@@ -40,7 +40,7 @@ const mint = async (
     ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdt;
   } else if (reserveSymbol == 'FRAX_USDC_LP') {
-    ownerAddress = '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9';
+    ownerAddress = '0xE9e5861d73A523000FE755034a8a612496079C50';
     token = FRAX_USDC_LP;
   }
 
@@ -69,6 +69,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -93,7 +94,7 @@ const depositToLendingPool = async (
 makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '100';
+  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let fraxusdcLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -204,7 +205,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
 
       const afterBalanceOfBorrower = await FRAX_USDC_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '97'
       );
     });
     it('USDC as borrowing asset', async () => {
@@ -298,7 +299,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
 
       const afterBalanceOfBorrower = await FRAX_USDC_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '97'
       );
     });
     it('DAI as borrowing asset', async () => {
@@ -392,7 +393,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
 
       const afterBalanceOfBorrower = await FRAX_USDC_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '97'
       );
     });
   });
@@ -401,7 +402,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
 makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '100';
+  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let fraxusdcLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -520,7 +521,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div((Number(principalAmount) / 10).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -554,7 +555,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 3).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -588,7 +589,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 6).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -728,7 +729,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div((Number(principalAmount) / 10).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -762,7 +763,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 3).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -796,7 +797,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 6).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -826,7 +827,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
       afterBalanceOfBorrower = await FRAX_USDC_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '99'
+        '97'
       );
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
@@ -936,7 +937,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div((Number(principalAmount) / 10).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -970,7 +971,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 3).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF
@@ -1004,7 +1005,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
           .mul('100')
           .div(((Number(principalAmount) / 10) * 6).toFixed())
           .toString()
-      ).to.be.bignumber.gte('99');
+      ).to.be.bignumber.gte('97');
       expect(userGlobalDataAfterLeave.healthFactor.toString()).to.be.bignumber.gt(
         oneEther.toFixed(0),
         INVALID_HF

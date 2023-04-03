@@ -353,6 +353,8 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
       assets,
       user
     );
+    rewardUserData.userUnclaimedRewards = IStableYieldDistribution(yieldDistributor)
+      .getUserUnclaimedRewards(user);
     rewardUserData.tokenAddress = asset;
     rewardUserData.rewardTokenAddress = rewardToken;
     rewardUserData.distributorAddress = yieldDistributor;

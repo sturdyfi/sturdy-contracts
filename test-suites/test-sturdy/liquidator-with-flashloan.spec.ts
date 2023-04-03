@@ -384,7 +384,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some DAI_USDC_USDT_SUSD_LP token
-    const LPOwnerAddress = '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42';
+    const LPOwnerAddress = '0x9E51BE7071F086d3A1fD5Dc0016177473619b237';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, '1000');
@@ -611,7 +611,7 @@ makeSuite('Liquidator', (testEnv: TestEnv) => {
     const liquidator = await deployETHLiquidator([addressesProvider.address]);
 
     // Prepare some FRAX_USDC_LP token
-    const LPOwnerAddress = '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9';
+    const LPOwnerAddress = '0xE9e5861d73A523000FE755034a8a612496079C50';
     await impersonateAccountsHardhat([LPOwnerAddress]);
     let signer = await ethers.provider.getSigner(LPOwnerAddress);
     const LP_AMOUNT = await convertToCurrencyDecimals(FRAX_USDC_LP.address, '3000');

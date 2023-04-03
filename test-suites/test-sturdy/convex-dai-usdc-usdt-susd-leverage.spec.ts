@@ -43,7 +43,7 @@
 //     ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 //     token = usdt;
 //   } else if (reserveSymbol == 'DAI_USDC_USDT_SUSD_LP') {
-//     ownerAddress = '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42';
+//     ownerAddress = '0x9E51BE7071F086d3A1fD5Dc0016177473619b237';
 //     token = DAI_USDC_USDT_SUSD_LP;
 //   }
 

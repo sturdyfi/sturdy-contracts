@@ -43,7 +43,7 @@
 //     ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
 //     token = usdt;
 //   } else if (reserveSymbol == 'FRAX_USDC_LP') {
-//     ownerAddress = '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9';
+//     ownerAddress = '0xE9e5861d73A523000FE755034a8a612496079C50';
 //     token = FRAX_USDC_LP;
 //   }
 

@@ -72,15 +72,12 @@ library CurveswapAdapter {
     address assetToSwapTo,
     uint256 amountToSwap,
     Path calldata path,
-    uint256 slippage // 2% = 200
+    uint256 slippage, // 2% = 200
+    uint256 minAmount
   ) external returns (uint256) {
-    uint256 minAmountOut = _getMinAmount(
-      addressesProvider,
-      assetToSwapFrom,
-      assetToSwapTo,
-      amountToSwap,
-      slippage
-    );
+    uint256 minAmountOut = minAmount != 0
+      ? minAmount
+      : _getMinAmount(addressesProvider, assetToSwapFrom, assetToSwapTo, amountToSwap, slippage);
 
     // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     address curveAddressProvider = addressesProvider.getAddress('CURVE_ADDRESS_PROVIDER');

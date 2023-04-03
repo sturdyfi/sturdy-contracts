@@ -225,6 +225,7 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       FRAX: '0x14d04Fff8D21bd62987a5cE9ce543d2F1edF5D3E',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
+      SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       AURA: '',
     },
     [eEthereumNetwork.tenderly]: {
@@ -252,6 +253,7 @@ export const CommonsConfig: ICommonConfiguration = {
       SNX: '0x79291A9d692Df95334B1a0B3B4AE6bC606782f8c',
       FRAX: '0x14d04Fff8D21bd62987a5cE9ce543d2F1edF5D3E',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
+      SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       AURA: '',
     },
     [eEthereumNetwork.goerli]: {

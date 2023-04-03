@@ -45,7 +45,7 @@ const mint = async (
     ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdt;
   } else if (reserveSymbol == 'DAI_USDC_USDT_SUSD_LP') {
-    ownerAddress = '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42';
+    ownerAddress = '0x9E51BE7071F086d3A1fD5Dc0016177473619b237';
     token = DAI_USDC_USDT_SUSD_LP;
   }
 
@@ -74,6 +74,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -106,7 +107,7 @@ const depositToLendingPool = async (
 makeSuite('SUSD Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 100;
+  const slippage = 70; // 0.7%
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)

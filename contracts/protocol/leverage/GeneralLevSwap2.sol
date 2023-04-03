@@ -88,9 +88,7 @@ abstract contract GeneralLevSwap2 is IFlashLoanReceiver, IFlashLoanRecipient, Re
     return new address[](0);
   }
 
-  function _getAssetPrice(address _asset) internal view virtual returns (uint256) {
-    return ORACLE.getAssetPrice(_asset);
-  }
+  function _getAssetPrice(address _asset) internal view virtual returns (uint256);
 
   /**
    * This function is called after your contract has received the flash loaned amount
@@ -356,7 +354,7 @@ abstract contract GeneralLevSwap2 is IFlashLoanReceiver, IFlashLoanRecipient, Re
 
     uint256 withdrawalAmount = Math.min(
       IERC20(_params.sAsset).balanceOf(_params.user),
-      (withdrawalAmountETH * (10 ** DECIMALS)) / _getAssetPrice(COLLATERAL)
+      (withdrawalAmountETH * (10 ** DECIMALS)) / ORACLE.getAssetPrice(COLLATERAL)
     );
 
     require(withdrawalAmount >= _params.minCollateralAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
@@ -525,7 +523,7 @@ abstract contract GeneralLevSwap2 is IFlashLoanReceiver, IFlashLoanRecipient, Re
     amounts[0] = ((((_params.principal * _getAssetPrice(COLLATERAL)) / 10 ** DECIMALS) *
       10 ** borrowAssetDecimals) / _getAssetPrice(_params.borrowAsset))
       .percentMul(_params.leverage)
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR + _params.slippage);
+      .percentDiv(PercentageMath.PERCENTAGE_FACTOR - _params.slippage);
 
     if (_params.flashLoanType == IGeneralLevSwap2.FlashLoanType.AAVE) {
       // 0 means revert the transaction if not validated
@@ -615,6 +613,7 @@ abstract contract GeneralLevSwap2 is IFlashLoanReceiver, IFlashLoanRecipient, Re
   function _swapByPath(
     uint256 _fromAmount,
     uint256 _slippage,
+    uint256 _minAmount,
     IGeneralLevSwap2.MultipSwapPath memory _path
   ) internal returns (uint256) {
     uint256 poolCount = _path.poolCount;
@@ -674,7 +673,8 @@ abstract contract GeneralLevSwap2 is IFlashLoanReceiver, IFlashLoanRecipient, Re
         _path.swapTo,
         _fromAmount,
         CurveswapAdapter.Path(_path.routes, _path.routeParams),
-        _slippage
+        _slippage,
+        _minAmount
       );
   }
 

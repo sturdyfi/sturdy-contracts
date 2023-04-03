@@ -5,8 +5,9 @@ import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20, IGeneralLevSwap2, IGeneralLevSwap2__factory } from '../../types';
+import { FRAX3CRVLevSwap2, MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
+import { deployFRAX3CRVLevSwap2 } from '../../helpers/contracts-deployments';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -19,20 +20,15 @@ const MultiSwapPathInitData = {
   swapFrom: ZERO_ADDRESS,
   swapTo: ZERO_ADDRESS,
 };
-
-const BB_A_USDT = '0x2F4eb100552ef93840d5aDC30560E5513DFfFACb';
-const BB_A_USDT_POOLID = '0x2f4eb100552ef93840d5adc30560e5513dfffacb000000000000000000000334';
-const BB_A_USDC = '0x82698aeCc9E28e9Bb27608Bd52cF57f704BD1B83';
-const BB_A_USDC_POOLID = '0x82698aecc9e28e9bb27608bd52cf57f704bd1b83000000000000000000000336';
-const BB_A_DAI = '0xae37D54Ae477268B9997d4161B96b8200755935c';
-const BB_A_DAI_POOLID = '0xae37d54ae477268b9997d4161b96b8200755935c000000000000000000000337';
-const BB_A_USD = '0xA13a9247ea42D743238089903570127DdA72fE44';
-const BB_A_USD_POOLID = '0xa13a9247ea42d743238089903570127dda72fe4400000000000000000000035d';
+const THREE_CRV_LP = '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490';
 
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
-  const { levSwapManager, deployer } = testEnv;
-  const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
+  const { FRAX_3CRV_LP, convexFRAX3CRVVault, addressesProvider } = testEnv;
+  return await deployFRAX3CRVLevSwap2([
+    FRAX_3CRV_LP.address,
+    convexFRAX3CRVVault.address,
+    addressesProvider.address,
+  ]);
 };
 
 const mint = async (
@@ -41,7 +37,7 @@ const mint = async (
   user: SignerWithAddress,
   testEnv: TestEnv
 ) => {
-  const { usdc, dai, usdt, BAL_BB_A_USD_LP } = testEnv;
+  const { usdc, dai, usdt, FRAX_3CRV_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   let ownerAddress;
   let token;
@@ -55,9 +51,9 @@ const mint = async (
   } else if (reserveSymbol == 'USDT') {
     ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdt;
-  } else if (reserveSymbol == 'BAL_BB_A_USD_LP') {
-    ownerAddress = '0x43b650399F2E4D6f03503f44042fabA8F7D73470';
-    token = BAL_BB_A_USD_LP;
+  } else if (reserveSymbol == 'FRAX_3CRV_LP') {
+    ownerAddress = '0x005fb56Fe0401a4017e6f046272dA922BBf8dF06';
+    token = FRAX_3CRV_LP;
   }
 
   await impersonateAccountsHardhat([ownerAddress]);
@@ -85,6 +81,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -106,51 +103,49 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
-makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
+makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let aurabbausdLevSwap = {} as IGeneralLevSwap2;
+  let frax3crvLevSwap = {} as FRAX3CRVLevSwap2;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, aurabb_a_usd, vaultWhitelist, auraBBAUSDVault, users, owner } =
+    const { helpersContract, cvxfrax_3crv, vaultWhitelist, convexFRAX3CRVVault, users, owner } =
       testEnv;
-    aurabbausdLevSwap = await getCollateralLevSwapper(testEnv, aurabb_a_usd.address);
-    ltv = (await helpersContract.getReserveConfigurationData(aurabb_a_usd.address)).ltv.toString();
-
+    frax3crvLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_3crv.address);
+    ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_3crv.address)).ltv.toString();
     await vaultWhitelist
       .connect(owner.signer)
-      .addAddressToWhitelistContract(auraBBAUSDVault.address, aurabbausdLevSwap.address);
+      .addAddressToWhitelistContract(convexFRAX3CRVVault.address, frax3crvLevSwap.address);
     await vaultWhitelist
       .connect(owner.signer)
-      .addAddressToWhitelistUser(auraBBAUSDVault.address, users[0].address);
+      .addAddressToWhitelistUser(convexFRAX3CRVVault.address, users[0].address);
   });
   describe('leavePosition - full amount:', async () => {
     it('USDT as borrowing asset', async () => {
       const {
         users,
         usdt,
-        TUSD,
-        aAURABB_A_USD,
-        BAL_BB_A_USD_LP,
+        aCVXFRAX_3CRV,
+        FRAX_3CRV_LP,
         pool,
         helpersContract,
         vaultWhitelist,
-        auraBBAUSDVault,
+        convexFRAX3CRVVault,
         owner,
       } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_BB_A_USD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_BB_A_USD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -163,11 +158,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_BB_A_USD_LP', principalAmount, borrower, testEnv);
-      await BAL_BB_A_USD_LP.connect(borrower.signer).approve(
-        aurabbausdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(frax3crvLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
@@ -175,7 +167,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(aurabbausdLevSwap.address, amountToDelegate);
+        .approveDelegation(frax3crvLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
@@ -187,54 +179,64 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           {
             routes: [
               usdt.address,
-              ZERO_ADDRESS,
-              BB_A_USDT,
-              ZERO_ADDRESS,
-              BB_A_USD,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+              THREE_CRV_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USDT_POOLID, 0, 0],
-              [BB_A_USD_POOLID, 0, 0],
+              [2, 0, 8 /*3-coin-pool add_liquidity*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdt.address,
-            swapTo: BB_A_USD,
+            swapTo: THREE_CRV_LP,
           },
-          MultiSwapPathInitData,
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: THREE_CRV_LP,
+            swapTo: FRAX_3CRV_LP.address,
+          },
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_3CRV_LP.address,
+            swapTo: THREE_CRV_LP,
+          },
+          {
             routes: [
-              BB_A_USD,
-              ZERO_ADDRESS,
-              BB_A_USDT,
-              ZERO_ADDRESS,
+              THREE_CRV_LP,
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
               usdt.address,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USD_POOLID, 0, 0],
-              [BB_A_USDT_POOLID, 0, 0],
+              [0, 2, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
-            swapFrom: BB_A_USD,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: THREE_CRV_LP,
             swapTo: usdt.address,
           },
           MultiSwapPathInitData,
-          MultiSwapPathInitData,
         ] as any,
-        pathLength: 1,
+        pathLength: 2,
       };
       await expect(
-        aurabbausdLevSwap
+        frax3crvLevSwap
           .connect(borrower.signer)
           .enterPositionWithFlashloan(
             principalAmount,
@@ -247,8 +249,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
-        .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await aurabbausdLevSwap
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(
           principalAmount,
@@ -268,73 +270,53 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      const balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await vaultWhitelist
-        .connect(owner.signer)
-        .removeAddressFromWhitelistUser(auraBBAUSDVault.address, borrower.address);
-
-      await expect(
-        aurabbausdLevSwap
-          .connect(borrower.signer)
-          .withdrawWithFlashloan(
-            repayAmount.toString(),
-            principalAmount,
-            slippage2,
-            usdt.address,
-            aAURABB_A_USD.address,
-            0,
-            swapInfo
-          )
-      ).to.be.revertedWith('118');
-      await vaultWhitelist
-        .connect(owner.signer)
-        .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
-          repayAmount.toString(),
+          repayAmount,
           principalAmount,
           slippage2,
           usdt.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
-      const afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '98'
+        '97'
       );
     });
     it('USDC as borrowing asset', async () => {
       const {
         users,
         usdc,
-        BAL_BB_A_USD_LP,
-        aAURABB_A_USD,
+        FRAX_3CRV_LP,
+        aCVXFRAX_3CRV,
         pool,
         helpersContract,
         vaultWhitelist,
-        auraBBAUSDVault,
+        convexFRAX3CRVVault,
         owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_BB_A_USD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_BB_A_USD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -346,11 +328,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_BB_A_USD_LP', principalAmount, borrower, testEnv);
-      await BAL_BB_A_USD_LP.connect(borrower.signer).approve(
-        aurabbausdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(frax3crvLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdcDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
@@ -358,7 +337,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(aurabbausdLevSwap.address, amountToDelegate);
+        .approveDelegation(frax3crvLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
@@ -370,54 +349,64 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           {
             routes: [
               usdc.address,
-              ZERO_ADDRESS,
-              BB_A_USDC,
-              ZERO_ADDRESS,
-              BB_A_USD,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+              THREE_CRV_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USDC_POOLID, 0, 0],
-              [BB_A_USD_POOLID, 0, 0],
+              [1, 0, 8 /*3-coin-pool add_liquidity*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdc.address,
-            swapTo: BB_A_USD,
+            swapTo: THREE_CRV_LP,
           },
-          MultiSwapPathInitData,
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: THREE_CRV_LP,
+            swapTo: FRAX_3CRV_LP.address,
+          },
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_3CRV_LP.address,
+            swapTo: THREE_CRV_LP,
+          },
+          {
             routes: [
-              BB_A_USD,
-              ZERO_ADDRESS,
-              BB_A_USDC,
-              ZERO_ADDRESS,
+              THREE_CRV_LP,
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
               usdc.address,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USD_POOLID, 0, 0],
-              [BB_A_USDC_POOLID, 0, 0],
+              [0, 1, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
-            swapFrom: BB_A_USD,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: THREE_CRV_LP,
             swapTo: usdc.address,
           },
           MultiSwapPathInitData,
-          MultiSwapPathInitData,
         ] as any,
-        pathLength: 1,
+        pathLength: 2,
       };
       await expect(
-        aurabbausdLevSwap
+        frax3crvLevSwap
           .connect(borrower.signer)
           .enterPositionWithFlashloan(
             principalAmount,
@@ -430,8 +419,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
-        .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await aurabbausdLevSwap
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(
           principalAmount,
@@ -451,73 +440,53 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      const balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await vaultWhitelist
-        .connect(owner.signer)
-        .removeAddressFromWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await expect(
-        aurabbausdLevSwap
-          .connect(borrower.signer)
-          .withdrawWithFlashloan(
-            repayAmount.toString(),
-            principalAmount,
-            slippage2,
-            usdc.address,
-            aAURABB_A_USD.address,
-            0,
-            swapInfo
-          )
-      ).to.be.revertedWith('118');
-      await vaultWhitelist
-        .connect(owner.signer)
-        .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
-          repayAmount.toString(),
+          repayAmount,
           principalAmount,
           slippage2,
           usdc.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
-      const afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '98'
+        '97'
       );
     });
     it('DAI as borrowing asset', async () => {
       const {
         users,
         dai,
-        TUSD,
-        BAL_BB_A_USD_LP,
-        aAURABB_A_USD,
+        FRAX_3CRV_LP,
+        aCVXFRAX_3CRV,
         pool,
         helpersContract,
         vaultWhitelist,
-        auraBBAUSDVault,
+        convexFRAX3CRVVault,
         owner,
       } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_BB_A_USD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_BB_A_USD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -529,11 +498,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_BB_A_USD_LP', principalAmount, borrower, testEnv);
-      await BAL_BB_A_USD_LP.connect(borrower.signer).approve(
-        aurabbausdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(frax3crvLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const daiDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
@@ -541,7 +507,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(aurabbausdLevSwap.address, amountToDelegate);
+        .approveDelegation(frax3crvLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
@@ -553,54 +519,64 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           {
             routes: [
               dai.address,
-              ZERO_ADDRESS,
-              BB_A_DAI,
-              ZERO_ADDRESS,
-              BB_A_USD,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+              THREE_CRV_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_DAI_POOLID, 0, 0],
-              [BB_A_USD_POOLID, 0, 0],
+              [0, 0, 8 /*3-coin-pool add_liquidity*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: dai.address,
-            swapTo: BB_A_USD,
+            swapTo: THREE_CRV_LP,
           },
-          MultiSwapPathInitData,
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: THREE_CRV_LP,
+            swapTo: FRAX_3CRV_LP.address,
+          },
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_3CRV_LP.address,
+            swapTo: THREE_CRV_LP,
+          },
+          {
             routes: [
-              BB_A_USD,
-              ZERO_ADDRESS,
-              BB_A_DAI,
-              ZERO_ADDRESS,
+              THREE_CRV_LP,
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
               dai.address,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USD_POOLID, 0, 0],
-              [BB_A_DAI_POOLID, 0, 0],
+              [0, 0, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
-            swapFrom: BB_A_USD,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: THREE_CRV_LP,
             swapTo: dai.address,
           },
           MultiSwapPathInitData,
-          MultiSwapPathInitData,
         ] as any,
-        pathLength: 1,
+        pathLength: 2,
       };
       await expect(
-        aurabbausdLevSwap
+        frax3crvLevSwap
           .connect(borrower.signer)
           .enterPositionWithFlashloan(
             principalAmount,
@@ -613,8 +589,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
-        .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await aurabbausdLevSwap
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
 
@@ -627,84 +603,78 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         INVALID_HF
       );
 
-      const beforeBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
-      const balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      const balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await vaultWhitelist
-        .connect(owner.signer)
-        .removeAddressFromWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await expect(
-        aurabbausdLevSwap
-          .connect(borrower.signer)
-          .withdrawWithFlashloan(
-            repayAmount.toString(),
-            principalAmount,
-            slippage2,
-            dai.address,
-            aAURABB_A_USD.address,
-            0,
-            swapInfo
-          )
-      ).to.be.revertedWith('118');
-      await vaultWhitelist
-        .connect(owner.signer)
-        .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
-          repayAmount.toString(),
+          repayAmount,
           principalAmount,
           slippage2,
           dai.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
-      const afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
-        '98'
+        '97'
       );
     });
   });
 });
 
-makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
+makeSuite('FRAX3CRV Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let aurabbausdLevSwap = {} as IGeneralLevSwap2;
+  let frax3crvLevSwap = {} as FRAX3CRVLevSwap2;
   let ltv = '';
 
   before(async () => {
-    const { helpersContract, aurabb_a_usd, vaultWhitelist, auraBBAUSDVault, owner } = testEnv;
-    aurabbausdLevSwap = await getCollateralLevSwapper(testEnv, aurabb_a_usd.address);
-    ltv = (await helpersContract.getReserveConfigurationData(aurabb_a_usd.address)).ltv.toString();
-
+    const { helpersContract, cvxfrax_3crv, vaultWhitelist, convexFRAX3CRVVault, users, owner } =
+      testEnv;
+    frax3crvLevSwap = await getCollateralLevSwapper(testEnv, cvxfrax_3crv.address);
+    ltv = (await helpersContract.getReserveConfigurationData(cvxfrax_3crv.address)).ltv.toString();
     await vaultWhitelist
       .connect(owner.signer)
-      .addAddressToWhitelistContract(auraBBAUSDVault.address, aurabbausdLevSwap.address);
+      .addAddressToWhitelistContract(convexFRAX3CRVVault.address, frax3crvLevSwap.address);
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistUser(convexFRAX3CRVVault.address, users[0].address);
   });
   describe('leavePosition - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, TUSD, aAURABB_A_USD, BAL_BB_A_USD_LP, pool, helpersContract } = testEnv;
+      const {
+        users,
+        usdt,
+        aCVXFRAX_3CRV,
+        FRAX_3CRV_LP,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexFRAX3CRVVault,
+        owner,
+      } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_BB_A_USD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_BB_A_USD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -717,11 +687,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdt, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_BB_A_USD_LP', principalAmount, borrower, testEnv);
-      await BAL_BB_A_USD_LP.connect(borrower.signer).approve(
-        aurabbausdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(frax3crvLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdtDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdt.address))
@@ -729,7 +696,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdtDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(aurabbausdLevSwap.address, amountToDelegate);
+        .approveDelegation(frax3crvLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
@@ -741,53 +708,78 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           {
             routes: [
               usdt.address,
-              ZERO_ADDRESS,
-              BB_A_USDT,
-              ZERO_ADDRESS,
-              BB_A_USD,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+              THREE_CRV_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USDT_POOLID, 0, 0],
-              [BB_A_USD_POOLID, 0, 0],
+              [2, 0, 8 /*3-coin-pool add_liquidity*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdt.address,
-            swapTo: BB_A_USD,
+            swapTo: THREE_CRV_LP,
           },
-          MultiSwapPathInitData,
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: THREE_CRV_LP,
+            swapTo: FRAX_3CRV_LP.address,
+          },
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_3CRV_LP.address,
+            swapTo: THREE_CRV_LP,
+          },
+          {
             routes: [
-              BB_A_USD,
-              ZERO_ADDRESS,
-              BB_A_USDT,
-              ZERO_ADDRESS,
+              THREE_CRV_LP,
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
               usdt.address,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USD_POOLID, 0, 0],
-              [BB_A_USDT_POOLID, 0, 0],
+              [0, 2, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
-            swapFrom: BB_A_USD,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: THREE_CRV_LP,
             swapTo: usdt.address,
           },
           MultiSwapPathInitData,
-          MultiSwapPathInitData,
         ] as any,
-        pathLength: 1,
+        pathLength: 2,
       };
-      await aurabbausdLevSwap
+      await expect(
+        frax3crvLevSwap
+          .connect(borrower.signer)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdt.address,
+            0,
+            swapInfo
+          )
+      ).to.be.revertedWith('118');
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(
           principalAmount,
@@ -809,30 +801,30 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
 
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      let balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
           slippage2,
           usdt.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -849,25 +841,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
           slippage2,
           usdt.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -884,25 +876,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
           slippage2,
           usdt.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -919,25 +911,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
           slippage2,
           usdt.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '98'
       );
@@ -951,16 +943,26 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
     });
     it('USDC as borrowing asset', async () => {
-      const { users, usdc, BAL_BB_A_USD_LP, aAURABB_A_USD, pool, helpersContract } = testEnv;
+      const {
+        users,
+        usdc,
+        FRAX_3CRV_LP,
+        aCVXFRAX_3CRV,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexFRAX3CRVVault,
+        owner,
+      } = testEnv;
       const depositor = users[0];
       const borrower = users[2];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_BB_A_USD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_BB_A_USD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -972,11 +974,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(usdc, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_BB_A_USD_LP', principalAmount, borrower, testEnv);
-      await BAL_BB_A_USD_LP.connect(borrower.signer).approve(
-        aurabbausdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(frax3crvLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const usdcDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
@@ -984,7 +983,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(aurabbausdLevSwap.address, amountToDelegate);
+        .approveDelegation(frax3crvLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
@@ -996,53 +995,78 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           {
             routes: [
               usdc.address,
-              ZERO_ADDRESS,
-              BB_A_USDC,
-              ZERO_ADDRESS,
-              BB_A_USD,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+              THREE_CRV_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USDC_POOLID, 0, 0],
-              [BB_A_USD_POOLID, 0, 0],
+              [1, 0, 8 /*3-coin-pool add_liquidity*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdc.address,
-            swapTo: BB_A_USD,
+            swapTo: THREE_CRV_LP,
           },
-          MultiSwapPathInitData,
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: THREE_CRV_LP,
+            swapTo: FRAX_3CRV_LP.address,
+          },
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_3CRV_LP.address,
+            swapTo: THREE_CRV_LP,
+          },
+          {
             routes: [
-              BB_A_USD,
-              ZERO_ADDRESS,
-              BB_A_USDC,
-              ZERO_ADDRESS,
+              THREE_CRV_LP,
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
               usdc.address,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USD_POOLID, 0, 0],
-              [BB_A_USDC_POOLID, 0, 0],
+              [0, 1, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
-            swapFrom: BB_A_USD,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: THREE_CRV_LP,
             swapTo: usdc.address,
           },
           MultiSwapPathInitData,
-          MultiSwapPathInitData,
         ] as any,
-        pathLength: 1,
+        pathLength: 2,
       };
-      await aurabbausdLevSwap
+      await expect(
+        frax3crvLevSwap
+          .connect(borrower.signer)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdc.address,
+            0,
+            swapInfo
+          )
+      ).to.be.revertedWith('118');
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(
           principalAmount,
@@ -1064,30 +1088,30 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
 
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      let balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
           slippage2,
           usdc.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -1104,25 +1128,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
           slippage2,
           usdc.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -1139,25 +1163,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
           slippage2,
           usdc.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -1174,25 +1198,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
           slippage2,
           usdc.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '98'
       );
@@ -1206,16 +1230,26 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, TUSD, BAL_BB_A_USD_LP, aAURABB_A_USD, pool, helpersContract } = testEnv;
+      const {
+        users,
+        dai,
+        FRAX_3CRV_LP,
+        aCVXFRAX_3CRV,
+        pool,
+        helpersContract,
+        vaultWhitelist,
+        convexFRAX3CRVVault,
+        owner,
+      } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
-        await convertToCurrencyDecimals(BAL_BB_A_USD_LP.address, LPAmount)
+        await convertToCurrencyDecimals(FRAX_3CRV_LP.address, LPAmount)
       ).toString();
       const amountToDelegate = (
         await calcTotalBorrowAmount(
           testEnv,
-          BAL_BB_A_USD_LP.address,
+          FRAX_3CRV_LP.address,
           LPAmount,
           ltv,
           leverage,
@@ -1227,11 +1261,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await depositToLendingPool(dai, depositor, amountToDelegate, testEnv);
 
       // Prepare Collateral
-      await mint('BAL_BB_A_USD_LP', principalAmount, borrower, testEnv);
-      await BAL_BB_A_USD_LP.connect(borrower.signer).approve(
-        aurabbausdLevSwap.address,
-        principalAmount
-      );
+      await mint('FRAX_3CRV_LP', principalAmount, borrower, testEnv);
+      await FRAX_3CRV_LP.connect(borrower.signer).approve(frax3crvLevSwap.address, principalAmount);
 
       // approve delegate borrow
       const daiDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(dai.address))
@@ -1239,7 +1270,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const varDebtToken = await getVariableDebtToken(daiDebtTokenAddress);
       await varDebtToken
         .connect(borrower.signer)
-        .approveDelegation(aurabbausdLevSwap.address, amountToDelegate);
+        .approveDelegation(frax3crvLevSwap.address, amountToDelegate);
 
       const userGlobalDataBefore = await pool.getUserAccountData(borrower.address);
       expect(userGlobalDataBefore.totalCollateralETH.toString()).to.be.bignumber.equal('0');
@@ -1251,53 +1282,78 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           {
             routes: [
               dai.address,
-              ZERO_ADDRESS,
-              BB_A_DAI,
-              ZERO_ADDRESS,
-              BB_A_USD,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
+              THREE_CRV_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_DAI_POOLID, 0, 0],
-              [BB_A_USD_POOLID, 0, 0],
+              [0, 0, 8 /*3-coin-pool add_liquidity*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: dai.address,
-            swapTo: BB_A_USD,
+            swapTo: THREE_CRV_LP,
           },
-          MultiSwapPathInitData,
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: THREE_CRV_LP,
+            swapTo: FRAX_3CRV_LP.address,
+          },
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_3CRV_LP.address,
+            swapTo: THREE_CRV_LP,
+          },
+          {
             routes: [
-              BB_A_USD,
-              ZERO_ADDRESS,
-              BB_A_DAI,
-              ZERO_ADDRESS,
+              THREE_CRV_LP,
+              '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7',
               dai.address,
-              ...new Array(4).fill(ZERO_ADDRESS),
+              ...new Array(6).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [BB_A_USD_POOLID, 0, 0],
-              [BB_A_DAI_POOLID, 0, 0],
+              [0, 0, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
-            swapType: 3, // balancer
-            poolCount: 2,
-            swapFrom: BB_A_USD,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: THREE_CRV_LP,
             swapTo: dai.address,
           },
           MultiSwapPathInitData,
-          MultiSwapPathInitData,
         ] as any,
-        pathLength: 1,
+        pathLength: 2,
       };
-      await aurabbausdLevSwap
+      await expect(
+        frax3crvLevSwap
+          .connect(borrower.signer)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            dai.address,
+            0,
+            swapInfo
+          )
+      ).to.be.revertedWith('118');
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistUser(convexFRAX3CRVVault.address, borrower.address);
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
 
@@ -1312,30 +1368,30 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
 
       console.log('enterPosition HealthFactor: ', userGlobalDataAfterEnter.healthFactor.toString());
 
-      const beforeBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      const beforeBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(beforeBalanceOfBorrower.toString()).to.be.bignumber.eq('0');
 
       //de-leverage 10% amount
-      let balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      let balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
           slippage2,
           dai.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      let afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      let afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -1352,25 +1408,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 20% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
           slippage2,
           dai.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -1387,25 +1443,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 30% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
           slippage2,
           dai.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(
         afterBalanceOfBorrower
           .mul('100')
@@ -1422,25 +1478,25 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       );
 
       //de-leverage 40% amount
-      balanceInSturdy = await aAURABB_A_USD.balanceOf(borrower.address);
-      await aAURABB_A_USD
+      balanceInSturdy = await aCVXFRAX_3CRV.balanceOf(borrower.address);
+      await aCVXFRAX_3CRV
         .connect(borrower.signer)
-        .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
+        .approve(frax3crvLevSwap.address, balanceInSturdy.mul(2));
 
-      await aurabbausdLevSwap
+      await frax3crvLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
           slippage2,
           dai.address,
-          aAURABB_A_USD.address,
+          aCVXFRAX_3CRV.address,
           0,
           swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
-      afterBalanceOfBorrower = await BAL_BB_A_USD_LP.balanceOf(borrower.address);
+      afterBalanceOfBorrower = await FRAX_3CRV_LP.balanceOf(borrower.address);
       expect(afterBalanceOfBorrower.mul('100').div(principalAmount).toString()).to.be.bignumber.gte(
         '98'
       );

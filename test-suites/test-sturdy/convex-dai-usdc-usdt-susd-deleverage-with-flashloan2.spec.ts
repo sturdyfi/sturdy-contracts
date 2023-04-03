@@ -5,18 +5,29 @@ import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20 } from '../../types';
+import { DAIUSDCUSDTSUSDLevSwap2, MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
+import { deployDAIUSDCUSDTSUSDLevSwap2 } from '../../helpers/contracts-deployments';
 
 const chai = require('chai');
 const { expect } = chai;
 
+const MultiSwapPathInitData = {
+  routes: new Array(9).fill(ZERO_ADDRESS),
+  routeParams: new Array(4).fill([0, 0, 0]) as any,
+  swapType: 0, //NONE
+  poolCount: 0,
+  swapFrom: ZERO_ADDRESS,
+  swapTo: ZERO_ADDRESS,
+};
+
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
-  const { levSwapManager, deployer } = testEnv;
-  const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  const { DAI_USDC_USDT_SUSD_LP, convexDAIUSDCUSDTSUSDVault, addressesProvider } = testEnv;
+  return await deployDAIUSDCUSDTSUSDLevSwap2([
+    DAI_USDC_USDT_SUSD_LP.address,
+    convexDAIUSDCUSDTSUSDVault.address,
+    addressesProvider.address,
+  ]);
 };
 
 const mint = async (
@@ -96,7 +107,7 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let susdLevSwap = {} as IGeneralLevSwap;
+  let susdLevSwap = {} as DAIUSDCUSDTSUSDLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -173,17 +184,58 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdt.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdt.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdt.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage2,
+          usdt.address,
+          0,
+          swapInfo
+        );
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -212,7 +264,8 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
           slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -271,17 +324,58 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdc.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdc.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdc.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage2,
+          usdc.address,
+          0,
+          swapInfo
+        );
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -310,7 +404,8 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
           slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -369,17 +464,51 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: dai.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: dai.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            dai.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -408,7 +537,8 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
           slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -424,7 +554,7 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let susdLevSwap = {} as IGeneralLevSwap;
+  let susdLevSwap = {} as DAIUSDCUSDTSUSDLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -501,17 +631,58 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdt.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdt.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdt.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage2,
+          usdt.address,
+          0,
+          swapInfo
+        );
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -540,7 +711,8 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
           slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          1
+          1,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -599,17 +771,58 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdc.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdc.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdc.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage2,
+          usdc.address,
+          0,
+          swapInfo
+        );
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -638,7 +851,8 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
           slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          1
+          1,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -697,17 +911,51 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: dai.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: dai.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            dai.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -736,7 +984,8 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
           slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          1
+          1,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -752,7 +1001,7 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let susdLevSwap = {} as IGeneralLevSwap;
+  let susdLevSwap = {} as DAIUSDCUSDTSUSDLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -829,17 +1078,58 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdt.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdt.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdt.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage2,
+          usdt.address,
+          0,
+          swapInfo
+        );
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -870,7 +1160,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -904,7 +1195,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -938,7 +1230,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -972,7 +1265,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1040,17 +1334,58 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdc.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdc.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            usdc.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(
+          principalAmount,
+          leverage,
+          slippage2,
+          usdc.address,
+          0,
+          swapInfo
+        );
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1081,7 +1416,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1115,7 +1451,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1149,7 +1486,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1183,7 +1521,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1251,17 +1590,51 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: dai.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: dai.address,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(
+            principalAmount,
+            leverage,
+            slippage2,
+            dai.address,
+            0,
+            swapInfo
+          )
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1292,7 +1665,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1326,7 +1700,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1360,7 +1735,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1394,7 +1770,8 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
           slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);

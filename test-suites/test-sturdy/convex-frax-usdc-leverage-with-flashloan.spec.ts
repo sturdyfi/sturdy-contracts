@@ -45,7 +45,7 @@ const mint = async (
     ownerAddress = '0x28C6c06298d514Db089934071355E5743bf21d60';
     token = usdt;
   } else if (reserveSymbol == 'FRAX_USDC_LP') {
-    ownerAddress = '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9';
+    ownerAddress = '0xE9e5861d73A523000FE755034a8a612496079C50';
     token = FRAX_USDC_LP;
   }
 
@@ -74,6 +74,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -106,7 +107,7 @@ const depositToLendingPool = async (
 makeSuite('FRAXUSDC Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 100;
+  const slippage = 70; // 0.7%
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)

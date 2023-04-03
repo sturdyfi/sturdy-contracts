@@ -39,6 +39,10 @@ contract AURABBAUSDLevSwap is GeneralLevSwap2 {
     IGeneralLevSwap2.MultipSwapPath memory _path,
     bool
   ) internal override returns (uint256) {
-    return _swapByPath(_amount, _slippage, _path);
+    return _swapByPath(_amount, _slippage, 0, _path);
+  }
+
+  function _getAssetPrice(address _asset) internal view override returns (uint256) {
+    return ORACLE.getAssetPrice(_asset);
   }
 }

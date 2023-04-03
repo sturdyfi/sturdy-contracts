@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
-import 'hardhat/console.sol';
+
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
@@ -75,9 +75,6 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     ICurvePool(POOL).add_liquidity(amountsAdded, 0);
 
     uint256 amountTo = IERC20(COLLATERAL).balanceOf(address(this));
-    console.log(_amount);
-    console.log(amountTo - collateralAmount);
-    console.log(_getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage));
     require(
       amountTo - collateralAmount >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
       Errors.LS_SUPPLY_NOT_ALLOWED

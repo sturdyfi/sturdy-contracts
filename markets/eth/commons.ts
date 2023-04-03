@@ -100,6 +100,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BAL: '0xC1438AA3823A6Ba0C159CfA8D98dF5A994bA120b',
       AURA: '', //'0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
       LDO: '0x4e844125952d32acdf339be976c98e22f6f318db',
+      STETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
     },
     [eEthereumNetwork.tenderly]: {
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
@@ -111,6 +112,7 @@ export const CommonsConfig: ICommonConfiguration = {
       BAL: '0xC1438AA3823A6Ba0C159CfA8D98dF5A994bA120b',
       AURA: '0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
       LDO: '0x4e844125952d32acdf339be976c98e22f6f318db',
+      STETH: '0x86392dC19c0b719886221c78AB11eb8Cf5c52812',
     },
   },
   ReserveAssets: {

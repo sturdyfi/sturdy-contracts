@@ -42,6 +42,7 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
   ) internal override returns (uint256) {
     require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
 
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
     uint256[] memory initBalances = new uint256[](2);
     initBalances[1] = _amount;
 
@@ -65,21 +66,21 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
 
     // join pool
     IBalancerVault(BALANCER_VAULT).joinPool(POOLID, address(this), address(this), request);
-    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    uint256 amountTo = IERC20(COLLATERAL).balanceOf(address(this));
     require(
-      collateralAmount >= _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
+      amountTo - collateralAmount >=
+        _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
       Errors.LS_SUPPLY_NOT_ALLOWED
     );
 
-    return collateralAmount;
+    return amountTo;
   }
 
   /// WSTETHWETH -> borrowing asset
-  function _swapFrom(address _borrowingAsset, uint256 _slippage)
-    internal
-    override
-    returns (uint256)
-  {
+  function _swapFrom(
+    address _borrowingAsset,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
 
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
@@ -106,15 +107,7 @@ contract AURAWSTETHWETHLevSwap is GeneralLevSwap {
     return IERC20(WETH).balanceOf(address(this));
   }
 
-  function _getMinAmount(
-    uint256 _amountToSwap,
-    uint256 _slippage,
-    uint256 _fromAssetPrice,
-    uint256 _toAssetPrice
-  ) internal view returns (uint256) {
-    return
-      ((_amountToSwap * _fromAssetPrice) / _toAssetPrice).percentMul(
-        PercentageMath.PERCENTAGE_FACTOR - _slippage
-      );
+  function _getAssetPrice(address _asset) internal view override returns (uint256) {
+    return ORACLE.getAssetPrice(_asset);
   }
 }

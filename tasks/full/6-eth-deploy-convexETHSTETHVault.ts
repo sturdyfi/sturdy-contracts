@@ -31,6 +31,7 @@ task(`full:eth:deploy-convex-eth-steth-vault`, `Deploys the ${CONTRACT_NAME} con
       ETH_STETH_LP,
       CRV,
       CVX,
+      STETH,
     } = poolConfig as IEthConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -61,14 +62,16 @@ task(`full:eth:deploy-convex-eth-steth-vault`, `Deploys the ${CONTRACT_NAME} con
           getParamPerNetwork(ETH_STETH_LP, network),
           getParamPerNetwork(CRV, network),
           getParamPerNetwork(CVX, network),
+          getParamPerNetwork(STETH, network),
         ],
         [
           ETHSTETHOracleAddress,
           ETHSTETHOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).CRV,
           getParamPerNetwork(ChainlinkAggregator, network).CVX,
+          getParamPerNetwork(ChainlinkAggregator, network).STETH,
         ],
-        [true, false, false, false]
+        [true, false, false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

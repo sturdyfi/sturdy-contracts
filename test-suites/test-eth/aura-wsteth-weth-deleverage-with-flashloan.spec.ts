@@ -37,6 +37,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5)    //make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -61,7 +62,7 @@ const depositToLendingPool = async (
 makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage = 100;
+  const slippage = 50;    //0.5%
   const leverage = 36000;
   let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';
@@ -154,7 +155,7 @@ makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
 makeSuite('WSTETHWETH Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '2';
-  const slippage = 100;
+  const slippage = 50;    //0.5%
   const leverage = 36000;
   let wstethwethLevSwap = {} as GeneralLevSwap;
   let ltv = '';

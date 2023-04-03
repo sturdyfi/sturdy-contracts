@@ -20,15 +20,17 @@ interface ICurvePool {
     int128 i,
     uint256 _min_amount
   ) external returns (uint256);
+
+  function balances(uint256 _id) external view returns (uint256);
 }
 
 contract ETHSTETHLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
   using PercentageMath for uint256;
 
-  ICurvePool public constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
-
-  address internal constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+  address private constant ETHSTETH = 0xDC24316b9AE028F1497c275EB9192a3Ea0f67022;
+  address private constant STETH = 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84;
+  address private constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
   /**
    * @dev Receive ETH
@@ -55,38 +57,43 @@ contract ETHSTETHLevSwap is GeneralLevSwap {
     uint256 _slippage
   ) internal override returns (uint256) {
     require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
+    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
 
     // WETH -> ETH
     IWETH(WETH).withdraw(_amount);
 
     uint256[2] memory amountsAdded;
     amountsAdded[0] = _amount;
-    ETHSTETH.add_liquidity{value: _amount}(amountsAdded, 0);
-    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    ICurvePool(ETHSTETH).add_liquidity{value: _amount}(amountsAdded, 0);
+    uint256 amountTo = IERC20(COLLATERAL).balanceOf(address(this));
     require(
-      collateralAmount >= _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
+      amountTo - collateralAmount >=
+        _getMinAmount(_amount, _slippage, 1e18, _getAssetPrice(COLLATERAL)),
       Errors.LS_SUPPLY_NOT_ALLOWED
     );
 
-    return collateralAmount;
+    return amountTo;
   }
 
   /// ETHSTETH -> borrowing asset
-  function _swapFrom(address _borrowingAsset, uint256 _slippage)
-    internal
-    override
-    returns (uint256)
-  {
+  function _swapFrom(
+    address _borrowingAsset,
+    uint256 _slippage
+  ) internal override returns (uint256) {
     require(_borrowingAsset == WETH, Errors.LS_INVALID_CONFIGURATION);
 
     uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    uint256 minAmount = ETHSTETH.calc_withdraw_one_coin(collateralAmount, 0);
+    uint256 minAmount = ICurvePool(ETHSTETH).calc_withdraw_one_coin(collateralAmount, 0);
     require(
       minAmount >= _getMinAmount(collateralAmount, _slippage, _getAssetPrice(COLLATERAL), 1e18),
       Errors.LS_SUPPLY_NOT_ALLOWED
     );
 
-    uint256 ethAmount = ETHSTETH.remove_liquidity_one_coin(collateralAmount, 0, minAmount);
+    uint256 ethAmount = ICurvePool(ETHSTETH).remove_liquidity_one_coin(
+      collateralAmount,
+      0,
+      minAmount
+    );
 
     // ETH -> WETH
     IWETH(WETH).deposit{value: ethAmount}();
@@ -94,15 +101,17 @@ contract ETHSTETHLevSwap is GeneralLevSwap {
     return ethAmount;
   }
 
-  function _getMinAmount(
-    uint256 _amountToSwap,
-    uint256 _slippage,
-    uint256 _fromAssetPrice,
-    uint256 _toAssetPrice
-  ) internal view returns (uint256) {
+  function _getLPPrice() internal view returns (uint256) {
     return
-      ((_amountToSwap * _fromAssetPrice) / _toAssetPrice).percentMul(
-        PercentageMath.PERCENTAGE_FACTOR - _slippage
-      );
+      (ICurvePool(ETHSTETH).balances(0) *
+        1e18 +
+        ICurvePool(ETHSTETH).balances(1) *
+        _getAssetPrice(STETH)) / IERC20(COLLATERAL).totalSupply();
+  }
+
+  function _getAssetPrice(address _asset) internal view override returns (uint256) {
+    if (_asset == COLLATERAL) return _getLPPrice();
+
+    return ORACLE.getAssetPrice(_asset);
   }
 }

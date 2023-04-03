@@ -85,9 +85,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
     return new address[](0);
   }
 
-  function _getAssetPrice(address _asset) internal view returns (uint256) {
-    return ORACLE.getAssetPrice(_asset);
-  }
+  function _getAssetPrice(address _asset) internal view virtual returns (uint256);
 
   /**
    * This function is called after your contract has received the flash loaned amount
@@ -331,7 +329,7 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
 
     uint256 withdrawalAmount = Math.min(
       IERC20(_sAsset).balanceOf(_user),
-      (withdrawalAmountETH * (10 ** DECIMALS)) / _getAssetPrice(COLLATERAL)
+      (withdrawalAmountETH * (10 ** DECIMALS)) / ORACLE.getAssetPrice(COLLATERAL)
     );
 
     require(withdrawalAmount >= _requiredAmount, Errors.LS_SUPPLY_NOT_ALLOWED);
@@ -462,8 +460,8 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
 
     uint256[] memory amounts = new uint256[](1);
     amounts[0] = ((((_principal * _getAssetPrice(COLLATERAL)) / 10 ** DECIMALS) *
-      10 ** borrowAssetDecimals) / _getAssetPrice(_borrowAsset)).percentMul(_leverage).percentMul(
-        PercentageMath.PERCENTAGE_FACTOR + _slippage
+      10 ** borrowAssetDecimals) / _getAssetPrice(_borrowAsset)).percentMul(_leverage).percentDiv(
+        PercentageMath.PERCENTAGE_FACTOR - _slippage
       );
 
     uint256 minCollateralAmount = _principal.percentMul(
@@ -500,5 +498,17 @@ abstract contract GeneralLevSwap is IFlashLoanReceiver, IFlashLoanRecipient, Ree
       _balancerFlashLoanLock = 2;
       IBalancerVault(BALANCER_VAULT).flashLoan(address(this), assets, amounts, params);
     }
+  }
+
+  function _getMinAmount(
+    uint256 _amountToSwap,
+    uint256 _slippage,
+    uint256 _fromAssetPrice,
+    uint256 _toAssetPrice
+  ) internal view returns (uint256) {
+    return
+      ((_amountToSwap * _fromAssetPrice) / _toAssetPrice).percentMul(
+        PercentageMath.PERCENTAGE_FACTOR - _slippage
+      );
   }
 }

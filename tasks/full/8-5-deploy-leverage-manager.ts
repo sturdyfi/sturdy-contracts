@@ -15,9 +15,7 @@ import {
   deployLeverageSwapManager,
   deployFRAX3CRVLevSwap,
   deployDAIUSDCUSDTSUSDLevSwap,
-  deployMIM3CRVLevSwap,
   deployFRAXUSDCLevSwap,
-  deployIRONBANKLevSwap,
   deployTUSDFRAXBPLevSwap,
   deployAURABBAUSDLevSwap,
 } from '../../helpers/contracts-deployments';
@@ -108,47 +106,47 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
     );
     console.log('FRAXUSDCLevSwap: %s', fraxusdcLevSwap.address);
 
-    // deploy & register IRONBANKLevSwap
-    const ironbankVault = await getConvexIronBankVault();
-    const ironbankLevSwap = await deployIRONBANKLevSwap(
-      [getParamPerNetwork(IRON_BANK_LP, network), ironbankVault.address, addressProvider.address],
-      verify
-    );
-    let IronBankOracleAddress = await sturdyOracle.getSourceOfAsset(
-      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK
-    );
-    await waitForTx(
-      await sturdyOracle.setAssetSources(
-        [getParamPerNetwork(IRON_BANK_LP, network)],
-        [IronBankOracleAddress]
-      )
-    );
-    await leverageManager.registerLevSwapper(
-      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
-      ironbankLevSwap.address
-    );
-    console.log('IRONBANKLevSwap: %s', ironbankLevSwap.address);
+    // // deploy & register IRONBANKLevSwap
+    // const ironbankVault = await getConvexIronBankVault();
+    // const ironbankLevSwap = await deployIRONBANKLevSwap(
+    //   [getParamPerNetwork(IRON_BANK_LP, network), ironbankVault.address, addressProvider.address],
+    //   verify
+    // );
+    // let IronBankOracleAddress = await sturdyOracle.getSourceOfAsset(
+    //   getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK
+    // );
+    // await waitForTx(
+    //   await sturdyOracle.setAssetSources(
+    //     [getParamPerNetwork(IRON_BANK_LP, network)],
+    //     [IronBankOracleAddress]
+    //   )
+    // );
+    // await leverageManager.registerLevSwapper(
+    //   getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
+    //   ironbankLevSwap.address
+    // );
+    // console.log('IRONBANKLevSwap: %s', ironbankLevSwap.address);
 
-    // deploy & register MIM3CRVLevSwap
-    const mim3crvVault = await getConvexMIM3CRVVault();
-    const mim3crvLevSwap = await deployMIM3CRVLevSwap(
-      [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
-      verify
-    );
-    let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
-      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
-    );
-    await waitForTx(
-      await sturdyOracle.setAssetSources(
-        [getParamPerNetwork(MIM_3CRV_LP, network)],
-        [MIM3CRVOracleAddress]
-      )
-    );
-    await leverageManager.registerLevSwapper(
-      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
-      mim3crvLevSwap.address
-    );
-    console.log('MIM3CRVLevSwap: %s', mim3crvLevSwap.address);
+    // // deploy & register MIM3CRVLevSwap
+    // const mim3crvVault = await getConvexMIM3CRVVault();
+    // const mim3crvLevSwap = await deployMIM3CRVLevSwap(
+    //   [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
+    //   verify
+    // );
+    // let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
+    //   getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
+    // );
+    // await waitForTx(
+    //   await sturdyOracle.setAssetSources(
+    //     [getParamPerNetwork(MIM_3CRV_LP, network)],
+    //     [MIM3CRVOracleAddress]
+    //   )
+    // );
+    // await leverageManager.registerLevSwapper(
+    //   getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
+    //   mim3crvLevSwap.address
+    // );
+    // console.log('MIM3CRVLevSwap: %s', mim3crvLevSwap.address);
 
     // deploy & register TUSDFRAXBPLevSwap
     const tusdfraxbpVault = await getConvexTUSDFRAXBPVault();

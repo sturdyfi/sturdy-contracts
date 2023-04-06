@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -194,7 +194,7 @@ contract SturdyAPRDataProvider is Ownable {
     uint256 convexLPYieldInPrice = ((crvAPYInPrice.percentMul(
       PercentageMath.PERCENTAGE_FACTOR - STURDY_FEE - incentiveFee
     ) + cvxAPYInPrice.percentMul(PercentageMath.PERCENTAGE_FACTOR - STURDY_FEE)) *
-      convexLPCollateral) / 10**decimals;
+      convexLPCollateral) / 10 ** decimals;
 
     return convexLPYieldInPrice * 1e18;
   }
@@ -228,11 +228,10 @@ contract SturdyAPRDataProvider is Ownable {
    * @param _stakeContract - convex LP pool's crvRewards address
    * @param _poolAddress - convex LP pool address
    */
-  function _convexCRVCVXAPYInPrice(address _stakeContract, address _poolAddress)
-    internal
-    view
-    returns (uint256, uint256)
-  {
+  function _convexCRVCVXAPYInPrice(
+    address _stakeContract,
+    address _poolAddress
+  ) internal view returns (uint256, uint256) {
     uint256 virtualPrice = ICurvePool(_poolAddress).get_virtual_price(); //decimal 18
     uint256 rate = IConvexBaseRewardPool(_stakeContract).rewardRate(); //decimal 18
     uint256 supply = IConvexBaseRewardPool(_stakeContract).totalSupply(); //decimal 18
@@ -247,11 +246,10 @@ contract SturdyAPRDataProvider is Ownable {
     ); //crv/cvx decimal 18
   }
 
-  function _getTotalLiquidity(address _asset, bool _inPrice)
-    internal
-    view
-    returns (uint256 totalLiquidity)
-  {
+  function _getTotalLiquidity(
+    address _asset,
+    bool _inPrice
+  ) internal view returns (uint256 totalLiquidity) {
     uint8 decimals = IERC20Detailed(_asset).decimals();
     (
       uint256 availbleLiquidity,
@@ -267,7 +265,7 @@ contract SturdyAPRDataProvider is Ownable {
     ) = DATA_PROVIDER.getReserveData(_asset);
     totalLiquidity = (totalLiquidity + availbleLiquidity + totalStableDebt + totalVariableDebt);
     if (_inPrice) {
-      totalLiquidity = (totalLiquidity * ORACLE.getAssetPrice(_asset)) / 10**decimals;
+      totalLiquidity = (totalLiquidity * ORACLE.getAssetPrice(_asset)) / 10 ** decimals;
     }
   }
 

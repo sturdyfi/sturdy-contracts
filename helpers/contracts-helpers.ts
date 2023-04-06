@@ -190,7 +190,7 @@ export const convertToCurrencyDecimals = async (tokenAddress: tEthereumAddress, 
   const token = await getIErc20Detailed(tokenAddress);
   let decimals = (await token.decimals()).toString();
 
-  return ethers.utils.parseUnits(amount, decimals);
+  return ethers.utils.parseUnits(new BigNumber(amount).toFixed(Number(decimals)), decimals);
 };
 
 export const convertToCurrencyUnits = async (tokenAddress: string, amount: string) => {

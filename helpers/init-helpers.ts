@@ -296,20 +296,20 @@ export const initReservesByHelper = async (
     );
   }
 
-  if (tokenAddresses['cvxIRON_BANK']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxIRON_BANK);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxIRON_BANK']
-    );
+  // if (tokenAddresses['cvxIRON_BANK']) {
+  //   //CRV VariableYieldDistributor config
+  //   const response = await pool.getReserveData(tokenAddresses.cvxIRON_BANK);
+  //   const VariableYieldDistributor = await getVariableYieldDistribution();
+  //   await VariableYieldDistributor.registerAsset(
+  //     response.aTokenAddress,
+  //     yieldAddresses['cvxIRON_BANK']
+  //   );
 
-    await yieldDistributorAdapter.setVariableYieldDistributor(
-      tokenAddresses.cvxIRON_BANK,
-      VariableYieldDistributor.address
-    );
-  }
+  //   await yieldDistributorAdapter.setVariableYieldDistributor(
+  //     tokenAddresses.cvxIRON_BANK,
+  //     VariableYieldDistributor.address
+  //   );
+  // }
 
   if (tokenAddresses['cvxFRAX_USDC']) {
     //CRV VariableYieldDistributor config
@@ -326,20 +326,20 @@ export const initReservesByHelper = async (
     );
   }
 
-  if (tokenAddresses['cvxMIM_3CRV']) {
-    //CRV VariableYieldDistributor config
-    const response = await pool.getReserveData(tokenAddresses.cvxMIM_3CRV);
-    const VariableYieldDistributor = await getVariableYieldDistribution();
-    await VariableYieldDistributor.registerAsset(
-      response.aTokenAddress,
-      yieldAddresses['cvxMIM_3CRV']
-    );
+  // if (tokenAddresses['cvxMIM_3CRV']) {
+  //   //CRV VariableYieldDistributor config
+  //   const response = await pool.getReserveData(tokenAddresses.cvxMIM_3CRV);
+  //   const VariableYieldDistributor = await getVariableYieldDistribution();
+  //   await VariableYieldDistributor.registerAsset(
+  //     response.aTokenAddress,
+  //     yieldAddresses['cvxMIM_3CRV']
+  //   );
 
-    await yieldDistributorAdapter.setVariableYieldDistributor(
-      tokenAddresses.cvxMIM_3CRV,
-      VariableYieldDistributor.address
-    );
-  }
+  //   await yieldDistributorAdapter.setVariableYieldDistributor(
+  //     tokenAddresses.cvxMIM_3CRV,
+  //     VariableYieldDistributor.address
+  //   );
+  // }
 
   if (tokenAddresses['cvxDAI_USDC_USDT_SUSD']) {
     //CRV VariableYieldDistributor config

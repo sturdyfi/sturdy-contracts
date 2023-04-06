@@ -78,10 +78,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             //   (poolConfig as ISturdyConfiguration).DOLA_3CRV_LP,
             //   network
             // ),
-            cvxMIM_3CRV: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).MIM_3CRV_LP,
-              network
-            ),
+            // cvxMIM_3CRV: getParamPerNetwork(
+            //   (poolConfig as ISturdyConfiguration).MIM_3CRV_LP,
+            //   network
+            // ),
             cvxDAI_USDC_USDT_SUSD: getParamPerNetwork(
               (poolConfig as ISturdyConfiguration).DAI_USDC_USDT_SUSD_LP,
               network
@@ -90,10 +90,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             //   (poolConfig as ISturdyConfiguration).HBTC_WBTC_LP,
             //   network
             // ),
-            cvxIRON_BANK: getParamPerNetwork(
-              (poolConfig as ISturdyConfiguration).IRON_BANK_LP,
-              network
-            ),
+            // cvxIRON_BANK: getParamPerNetwork(
+            //   (poolConfig as ISturdyConfiguration).IRON_BANK_LP,
+            //   network
+            // ),
             cvxFRAX_USDC: getParamPerNetwork(
               (poolConfig as ISturdyConfiguration).FRAX_USDC_LP,
               network
@@ -148,10 +148,10 @@ task(`full:deploy-collateral-adapter`, `Deploys the ${CONTRACT_NAME} contract`)
             cvxFRAX_3CRV: (await getConvexFRAX3CRVVault()).address,
             // cvxSTECRV: (await getConvexSTETHVault()).address,
             // cvxDOLA_3CRV: (await getConvexDOLA3CRVVault()).address,
-            cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
+            // cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
             cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
             // cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
-            cvxIRON_BANK: (await getConvexIronBankVault()).address,
+            // cvxIRON_BANK: (await getConvexIronBankVault()).address,
             cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
             // auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
             cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,

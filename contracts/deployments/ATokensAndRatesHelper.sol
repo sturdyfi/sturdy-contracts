@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -14,11 +14,9 @@ contract ATokensAndRatesHelper is Ownable {
     poolConfigurator = _poolConfigurator;
   }
 
-  function configureReserves(IATokensAndRatesHelper.ConfigureReserveInput[] calldata inputParams)
-    external
-    payable
-    onlyOwner
-  {
+  function configureReserves(
+    IATokensAndRatesHelper.ConfigureReserveInput[] calldata inputParams
+  ) external payable onlyOwner {
     LendingPoolConfigurator configurator = LendingPoolConfigurator(poolConfigurator);
     uint256 length = inputParams.length;
     for (uint256 i; i < length; ++i) {

@@ -1,155 +1,85 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
 import {GeneralLevSwap} from '../GeneralLevSwap.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
+import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
-
-interface ICurvePool {
-  function coins(int128) external view returns (address);
-
-  function calc_withdraw_one_coin(uint256 _burn_amount, int128 i) external view returns (uint256);
-
-  function add_liquidity(uint256[2] memory amounts, uint256 _min_mint_amount) external;
-
-  function add_liquidity(uint256[3] memory amounts, uint256 _min_mint_amount) external;
-
-  function remove_liquidity_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    uint256 _min_received,
-    address _receiver
-  ) external returns (uint256);
-
-  function remove_liquidity_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    uint256 _min_received
-  ) external;
-
-  function balances(uint256 _id) external view returns (uint256);
-}
 
 contract FRAX3CRVLevSwap is GeneralLevSwap {
   using SafeERC20 for IERC20;
 
   address private constant POOL = 0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B;
-  address private constant THREECRV = 0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7;
-
   address private constant THREECRV_TOKEN = 0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490; // 3crv
-
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
-  address private constant FRAX = 0x853d955aCEf822Db058eb8505911ED77F175b99e;
 
   constructor(
     address _asset,
     address _vault,
     address _provider
   ) GeneralLevSwap(_asset, _vault, _provider) {
-    ENABLED_STABLE_COINS[DAI] = true;
-    ENABLED_STABLE_COINS[USDC] = true;
-    ENABLED_STABLE_COINS[USDT] = true;
+    ENABLED_BORROW_ASSETS[DAI] = true;
+    ENABLED_BORROW_ASSETS[USDC] = true;
+    ENABLED_BORROW_ASSETS[USDT] = true;
   }
 
-  function getAvailableStableCoins() external pure override returns (address[] memory assets) {
+  function getAvailableBorrowAssets() external pure override returns (address[] memory assets) {
     assets = new address[](3);
     assets[0] = DAI;
     assets[1] = USDC;
     assets[2] = USDT;
   }
 
-  function _getCoinIndex(address _stableAsset) internal pure returns (uint256) {
-    if (_stableAsset == DAI) return 0;
-    if (_stableAsset == USDC) return 1;
-    require(_stableAsset == USDT, 'Invalid stable coin');
-    return 2;
-  }
-
-  function _swapTo(
-    address _stableAsset,
+  // FRAX3CRV <-> borrowing asset
+  function _processSwap(
     uint256 _amount,
-    uint256 _slippage
+    IGeneralLevSwap.MultipSwapPath memory _path,
+    bool _isFrom,
+    bool _checkOutAmount
   ) internal override returns (uint256) {
-    uint256 coinIndex = _getCoinIndex(_stableAsset);
-    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
+    if (_path.swapType > IGeneralLevSwap.SwapType.NO_SWAP) {
+      return _swapByPath(_amount, _path, _checkOutAmount);
+    }
 
-    // stable coin -> 3CRV
-    IERC20(_stableAsset).safeApprove(THREECRV, 0);
-    IERC20(_stableAsset).safeApprove(THREECRV, _amount);
+    uint256 outAmount = _checkOutAmount ? _path.outAmount : 0;
+    if (_isFrom) {
+      // FRAX3CRV -> 3CRV/FRAX
+      int256 coinIndex;
 
-    uint256[3] memory amountsAdded;
+      if (_path.swapTo == THREECRV_TOKEN) {
+        coinIndex = 1;
+      }
+
+      return
+        ICurvePool(POOL).remove_liquidity_one_coin(
+          _amount,
+          int128(coinIndex),
+          outAmount,
+          address(this)
+        );
+    }
+
+    // 3CRV/FRAX -> FRAX3CRV
+    require(_path.swapTo == COLLATERAL, Errors.LS_INVALID_CONFIGURATION);
+
+    uint256[2] memory amountsAdded;
+    uint256 coinIndex;
+    address from = _path.swapFrom;
+
+    IERC20(from).safeApprove(POOL, 0);
+    IERC20(from).safeApprove(POOL, _amount);
+
+    if (from == THREECRV_TOKEN) {
+      coinIndex = 1;
+    }
     amountsAdded[coinIndex] = _amount;
-    ICurvePool(THREECRV).add_liquidity(amountsAdded, 0);
-    uint256 amountTo = IERC20(THREECRV_TOKEN).balanceOf(address(this));
 
-    // 3CRV -> FRAX3CRV
-    IERC20(THREECRV_TOKEN).safeApprove(POOL, 0);
-    IERC20(THREECRV_TOKEN).safeApprove(POOL, amountTo);
-    ICurvePool(POOL).add_liquidity([0, amountTo], 0);
-    amountTo = IERC20(COLLATERAL).balanceOf(address(this));
-    require(
-      amountTo - collateralAmount >= _getMinAmount(_stableAsset, COLLATERAL, _amount, _slippage),
-      Errors.LS_SUPPLY_NOT_ALLOWED
-    );
-
-    return amountTo;
-  }
-
-  function _swapFrom(address _stableAsset, uint256 _slippage) internal override returns (uint256) {
-    // FRAX3CRV -> 3CRV
-    int256 coinIndex = 1;
-    uint256 collateralAmount = IERC20(COLLATERAL).balanceOf(address(this));
-    uint256 minAmount = ICurvePool(POOL).calc_withdraw_one_coin(
-      collateralAmount,
-      int128(coinIndex)
-    );
-    uint256 threeCRVAmount = ICurvePool(POOL).remove_liquidity_one_coin(
-      collateralAmount,
-      int128(coinIndex),
-      minAmount,
-      address(this)
-    );
-
-    // 3CRV -> stable coin
-    coinIndex = int256(_getCoinIndex(_stableAsset));
-    minAmount = ICurvePool(THREECRV).calc_withdraw_one_coin(threeCRVAmount, int128(coinIndex));
-    require(
-      minAmount >= _getMinAmount(COLLATERAL, _stableAsset, collateralAmount, _slippage),
-      Errors.LS_SUPPLY_NOT_ALLOWED
-    );
-
-    ICurvePool(THREECRV).remove_liquidity_one_coin(threeCRVAmount, int128(coinIndex), minAmount);
-
-    return IERC20(_stableAsset).balanceOf(address(this));
-  }
-
-  function _get3CRVPrice() internal view returns (uint256) {
-    return
-      (((ICurvePool(THREECRV).balances(0) * _getAssetPrice(DAI)) /
-        1e18 +
-        (ICurvePool(THREECRV).balances(1) * _getAssetPrice(USDC)) /
-        1e6 +
-        (ICurvePool(THREECRV).balances(2) * _getAssetPrice(USDT)) /
-        1e6) * 1e18) / IERC20(THREECRV_TOKEN).totalSupply();
-  }
-
-  function _getLPPrice() internal view returns (uint256) {
-    return
-      (ICurvePool(POOL).balances(0) *
-        _getAssetPrice(FRAX) +
-        ICurvePool(POOL).balances(1) *
-        _getAssetPrice(THREECRV_TOKEN)) / IERC20(COLLATERAL).totalSupply();
-  }
-
-  function _getAssetPrice(address _asset) internal view override returns (uint256) {
-    if (_asset == THREECRV_TOKEN) return _get3CRVPrice();
-
-    if (_asset == COLLATERAL) return _getLPPrice();
-
-    return ORACLE.getAssetPrice(_asset);
+    ICurvePool(POOL).add_liquidity(amountsAdded, outAmount);
+    return IERC20(COLLATERAL).balanceOf(address(this));
   }
 }

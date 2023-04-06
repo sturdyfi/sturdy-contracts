@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {DebtTokenBase} from './base/DebtTokenBase.sol';
@@ -264,15 +264,9 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return The new principal balance
    * @return The balance increase
    **/
-  function _calculateBalanceIncrease(address user)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  function _calculateBalanceIncrease(
+    address user
+  ) internal view returns (uint256, uint256, uint256) {
     uint256 previousPrincipalBalance = super.balanceOf(user);
 
     if (previousPrincipalBalance == 0) {
@@ -292,17 +286,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @return The average borrow rate
    * @return The last supply update timestamp
    **/
-  function getSupplyData()
-    public
-    view
-    override
-    returns (
-      uint256,
-      uint256,
-      uint256,
-      uint40
-    )
-  {
+  function getSupplyData() public view override returns (uint256, uint256, uint256, uint40) {
     uint256 avgRate = _avgStableRate;
     return (super.totalSupply(), _calcTotalSupply(avgRate), avgRate, _totalSupplyTimestamp);
   }
@@ -416,11 +400,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param amount The amount being minted
    * @param oldTotalSupply the total supply before the minting event
    **/
-  function _mint(
-    address account,
-    uint256 amount,
-    uint256 oldTotalSupply
-  ) internal {
+  function _mint(address account, uint256 amount, uint256 oldTotalSupply) internal {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance + amount;
 
@@ -435,11 +415,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
    * @param amount The amount being burned
    * @param oldTotalSupply The total supply before the burning event
    **/
-  function _burn(
-    address account,
-    uint256 amount,
-    uint256 oldTotalSupply
-  ) internal {
+  function _burn(address account, uint256 amount, uint256 oldTotalSupply) internal {
     uint256 oldAccountBalance = _balances[account];
     _balances[account] = oldAccountBalance - amount;
 

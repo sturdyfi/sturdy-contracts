@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -85,11 +85,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     return true;
   }
 
-  function liquidation(
-    address debtAsset,
-    uint256 debtToCover,
-    bytes calldata params
-  ) external {
+  function liquidation(address debtAsset, uint256 debtToCover, bytes calldata params) external {
     IAaveFlashLoan AAVE_LENDING_POOL = IAaveFlashLoan(
       _addressesProvider.getAddress('AAVE_LENDING_POOL')
     );
@@ -128,11 +124,7 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     }
   }
 
-  function _convertWFTM(
-    address collateralAsset,
-    address asset,
-    uint256 collateralAmount
-  ) internal {
+  function _convertWFTM(address collateralAsset, address asset, uint256 collateralAmount) internal {
     // WFTM -> FTM
     IWETH(collateralAsset).withdraw(collateralAmount);
 
@@ -142,8 +134,8 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = ((((collateralAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
-      oracle.getAssetPrice(asset)).percentMul(99_00);
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))) / 10 ** 18) *
+      10 ** assetDecimal) / oracle.getAssetPrice(asset)).percentMul(99_00);
 
     // Exchange FTM -> Asset via UniswapV2
     address[] memory path = new address[](2);
@@ -160,19 +152,15 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     );
   }
 
-  function _convertBOO(
-    address collateralAsset,
-    address asset,
-    uint256 collateralAmount
-  ) internal {
+  function _convertBOO(address collateralAsset, address asset, uint256 collateralAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = ((((collateralAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVBOO'))) / 10**18) * 10**assetDecimal) /
-      oracle.getAssetPrice(asset)).percentMul(98_00);
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVBOO'))) / 10 ** 18) *
+      10 ** assetDecimal) / oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange BOO -> Asset via UniswapV2
     address[] memory path = new address[](3);
@@ -207,8 +195,8 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = ((((collateralAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVSPELL'))) / 10**18) *
-      10**assetDecimal) / oracle.getAssetPrice(asset)).percentMul(98_00);
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVSPELL'))) / 10 ** 18) *
+      10 ** assetDecimal) / oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange SPELL -> Asset via UniswapV2
     address[] memory path = new address[](3);
@@ -232,19 +220,15 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     );
   }
 
-  function _convertCRV(
-    address collateralAsset,
-    address asset,
-    uint256 collateralAmount
-  ) internal {
+  function _convertCRV(address collateralAsset, address asset, uint256 collateralAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = ((((collateralAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVCRV'))) / 10**18) * 10**assetDecimal) /
-      oracle.getAssetPrice(asset)).percentMul(98_00);
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVCRV'))) / 10 ** 18) *
+      10 ** assetDecimal) / oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange CRV -> Asset via UniswapV2
     address[] memory path = new address[](3);
@@ -316,11 +300,10 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     );
   }
 
-  function _calcSwapMinAmount(uint256 beetsAmount, address collateralAsset)
-    internal
-    view
-    returns (uint256)
-  {
+  function _calcSwapMinAmount(
+    uint256 beetsAmount,
+    address collateralAsset
+  ) internal view returns (uint256) {
     uint256 assetDecimal = IERC20Detailed(_addressesProvider.getAddress('WFTM')).decimals();
     ICollateralAdapter collateralAdapter = ICollateralAdapter(
       _addressesProvider.getAddress('COLLATERAL_ADAPTER')
@@ -330,8 +313,8 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     // Calculate minAmount from price with 2% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = (beetsAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('BEETS'))) / 10**18;
-    minAmountFromPrice = ((minAmountFromPrice * 10**assetDecimal) /
+      oracle.getAssetPrice(_addressesProvider.getAddress('BEETS'))) / 10 ** 18;
+    minAmountFromPrice = ((minAmountFromPrice * 10 ** assetDecimal) /
       oracle.getAssetPrice(_addressesProvider.getAddress('YVWFTM'))).percentMul(98_00);
 
     // Substract pool's swap fee
@@ -339,13 +322,13 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
       .getPool(IYearnFBEETSVault(fBEETSVault).beethovenSwapPoolId());
     uint256 swapFee = IBalancerWeightedPool(swapPool).getSwapFeePercentage();
 
-    return (minAmountFromPrice * (10**18 - swapFee)) / 10**18;
+    return (minAmountFromPrice * (10 ** 18 - swapFee)) / 10 ** 18;
   }
 
-  function _swapBEETS2WFTM(uint256 beetsAmount, address collateralAsset)
-    internal
-    returns (uint256)
-  {
+  function _swapBEETS2WFTM(
+    uint256 beetsAmount,
+    address collateralAsset
+  ) internal returns (uint256) {
     IBalancerVault.SingleSwap memory singleSwap;
     IBalancerVault.FundManagement memory funds;
     ICollateralAdapter collateralAdapter = ICollateralAdapter(
@@ -405,19 +388,15 @@ contract FTMLiquidator is IFlashLoanReceiver, Ownable {
     _convertWFTM(WFTM, asset, wftmAmount);
   }
 
-  function _convertLINK(
-    address collateralAsset,
-    address asset,
-    uint256 collateralAmount
-  ) internal {
+  function _convertLINK(address collateralAsset, address asset, uint256 collateralAmount) internal {
     address uniswapRouter = _addressesProvider.getAddress('uniswapRouter');
 
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(asset).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(_addressesProvider.getPriceOracle());
     uint256 minAmountFromPrice = ((((collateralAmount *
-      oracle.getAssetPrice(_addressesProvider.getAddress('YVLINK'))) / 10**18) * 10**assetDecimal) /
-      oracle.getAssetPrice(asset)).percentMul(98_00);
+      oracle.getAssetPrice(_addressesProvider.getAddress('YVLINK'))) / 10 ** 18) *
+      10 ** assetDecimal) / oracle.getAssetPrice(asset)).percentMul(98_00);
 
     // Exchange LINK -> Asset via UniswapV2
     address[] memory path = new address[](3);

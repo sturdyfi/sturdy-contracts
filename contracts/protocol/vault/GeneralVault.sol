@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -176,7 +176,7 @@ abstract contract GeneralVault is VersionedInitializable {
         decimal = IERC20Detailed(_asset).decimals();
       }
 
-      _amount = (_amountToWithdraw * this.pricePerShare()) / 10**decimal;
+      _amount = (_amountToWithdraw * this.pricePerShare()) / 10 ** decimal;
     }
     require(
       withdrawAmount >= _amount.percentMul(PercentageMath.PERCENTAGE_FACTOR - _slippage),
@@ -194,10 +194,10 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    virtual
-    returns (uint256);
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external virtual returns (uint256);
 
   /**
    * @dev Get yield based on strategy and re-deposit
@@ -240,11 +240,7 @@ abstract contract GeneralVault is VersionedInitializable {
    * @param _amount Collateral external asset amount
    * @param _user The address of user
    */
-  function _deposit(
-    address _asset,
-    uint256 _amount,
-    address _user
-  ) internal {
+  function _deposit(address _asset, uint256 _amount, address _user) internal {
     // whitelist checking
     if (Address.isContract(msg.sender)) {
       require(
@@ -313,10 +309,10 @@ abstract contract GeneralVault is VersionedInitializable {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    virtual
-    returns (address, uint256);
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal virtual returns (address, uint256);
 
   /**
    * @dev Withdraw collateral internal asset from yield pool based on strategy and deliver collateral external asset
@@ -338,9 +334,8 @@ abstract contract GeneralVault is VersionedInitializable {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    virtual
-    returns (address, uint256);
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view virtual returns (address, uint256);
 }

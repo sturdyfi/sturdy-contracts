@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -10,11 +10,7 @@ import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
  * @author Sturdy
  */
 contract SturdyInternalAsset is ERC20, Ownable {
-  constructor(
-    string memory name,
-    string memory symbol,
-    uint8 decimals
-  ) ERC20(name, symbol) {
+  constructor(string memory name, string memory symbol, uint8 decimals) ERC20(name, symbol) {
     _setupDecimals(decimals);
   }
 

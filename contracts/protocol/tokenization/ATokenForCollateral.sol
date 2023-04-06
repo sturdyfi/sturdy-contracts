@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -133,7 +133,7 @@ contract ATokenForCollateral is
     uint256 share;
     uint256 decimal = decimals();
 
-    if (decimal < 18) share = amount.rayDiv(index) / 10**(18 - decimal);
+    if (decimal < 18) share = amount.rayDiv(index) / 10 ** (18 - decimal);
     else share = amount.rayDiv(index);
 
     require(share != 0, Errors.CT_INVALID_BURN_AMOUNT);
@@ -162,7 +162,7 @@ contract ATokenForCollateral is
     uint256 previousBalance = super.balanceOf(user);
     uint256 amount;
     uint256 decimal = decimals();
-    if (decimal < 18) amount = (share * 10**(18 - decimal)).rayMul(index);
+    if (decimal < 18) amount = (share * 10 ** (18 - decimal)).rayMul(index);
     else amount = share.rayMul(index);
 
     require(amount != 0, Errors.CT_INVALID_MINT_AMOUNT);
@@ -233,12 +233,9 @@ contract ATokenForCollateral is
    * @return The scaled balance of the user
    * @return The scaled balance and the scaled total supply
    **/
-  function getScaledUserBalanceAndSupply(address user)
-    external
-    view
-    override
-    returns (uint256, uint256)
-  {
+  function getScaledUserBalanceAndSupply(
+    address user
+  ) external view override returns (uint256, uint256) {
     return (super.balanceOf(user), super.totalSupply());
   }
 
@@ -298,13 +295,10 @@ contract ATokenForCollateral is
    * @param amount The amount getting transferred
    * @return The amount transferred
    **/
-  function transferUnderlyingTo(address target, uint256 amount)
-    external
-    payable
-    override
-    onlyLendingPool
-    returns (uint256)
-  {
+  function transferUnderlyingTo(
+    address target,
+    uint256 amount
+  ) external payable override onlyLendingPool returns (uint256) {
     IERC20(_underlyingAsset).safeTransfer(target, amount);
     return amount;
   }
@@ -362,12 +356,7 @@ contract ATokenForCollateral is
    * @param amount The amount getting transferred
    * @param validate `true` if the transfer needs to be validated
    **/
-  function _transfer(
-    address from,
-    address to,
-    uint256 amount,
-    bool validate
-  ) internal {
+  function _transfer(address from, address to, uint256 amount, bool validate) internal {
     address underlyingAsset = _underlyingAsset;
     ILendingPool pool = _pool;
 
@@ -391,11 +380,7 @@ contract ATokenForCollateral is
    * @param to The destination address
    * @param amount The amount getting transferred
    **/
-  function _transfer(
-    address from,
-    address to,
-    uint256 amount
-  ) internal override {
+  function _transfer(address from, address to, uint256 amount) internal override {
     _transfer(from, to, amount, true);
   }
 

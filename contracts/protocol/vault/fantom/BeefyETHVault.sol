@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -74,7 +74,7 @@ contract BeefyETHVault is GeneralVault {
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
 
     uint256 minAmountFromPrice = ((((_wethAmount *
-      oracle.getAssetPrice(provider.getAddress('MOOWETH'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('MOOWETH'))) / 10 ** 18) * 10 ** assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WETH -> _tokenOut via UniswapV2
@@ -114,11 +114,10 @@ contract BeefyETHVault is GeneralVault {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external override returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address WETH = provider.getAddress('WETH');
 
@@ -159,11 +158,10 @@ contract BeefyETHVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MOOWETH = provider.getAddress('MOOWETH');
     address WETH = provider.getAddress('WETH');
@@ -193,12 +191,10 @@ contract BeefyETHVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     require(_asset == provider.getAddress('WETH'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);

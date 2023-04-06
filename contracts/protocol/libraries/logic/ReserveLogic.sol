@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -53,11 +53,9 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return the normalized income. expressed in ray
    **/
-  function getNormalizedIncome(DataTypes.ReserveData storage reserve)
-    internal
-    view
-    returns (uint256)
-  {
+  function getNormalizedIncome(
+    DataTypes.ReserveData storage reserve
+  ) internal view returns (uint256) {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -80,11 +78,9 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return The normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(DataTypes.ReserveData storage reserve)
-    internal
-    view
-    returns (uint256)
-  {
+  function getNormalizedDebt(
+    DataTypes.ReserveData storage reserve
+  ) internal view returns (uint256) {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -385,11 +381,9 @@ library ReserveLogic {
    * @param reserve The reserve reserve to be updated
    * @return The index value from vault's pricePerShare
    **/
-  function getIndexFromPricePerShare(DataTypes.ReserveData storage reserve)
-    internal
-    view
-    returns (uint128)
-  {
+  function getIndexFromPricePerShare(
+    DataTypes.ReserveData storage reserve
+  ) internal view returns (uint128) {
     return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 
@@ -398,11 +392,9 @@ library ReserveLogic {
    * @param reserve The reserve reserve to be updated
    * @return The index value from vault's pricePerShare
    **/
-  function getIndexFromPricePerShareMemory(DataTypes.ReserveData memory reserve)
-    internal
-    view
-    returns (uint128)
-  {
+  function getIndexFromPricePerShareMemory(
+    DataTypes.ReserveData memory reserve
+  ) internal view returns (uint128) {
     return uint128(IGeneralVault(reserve.yieldAddress).pricePerShare().wadToRay());
   }
 }

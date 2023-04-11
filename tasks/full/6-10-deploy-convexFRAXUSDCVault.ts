@@ -58,7 +58,7 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
         [
           FRAXUSDCOracleAddress,
           FRAXUSDCOracleAddress,
-          getParamPerNetwork(ChainlinkAggregator, network).TUSD,
+          getParamPerNetwork(ChainlinkAggregator, network).FRAX,
         ]
       )
     );

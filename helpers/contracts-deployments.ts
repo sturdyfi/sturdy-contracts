@@ -192,7 +192,7 @@ import { LendingPoolLibraryAddresses } from '../types/factories/protocol/lending
 import { YieldManagerLibraryAddresses } from '../types/factories/incentives/YieldManager__factory';
 import { LidoVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/LidoVault__factory';
 import { YearnRETHWstETHVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/YearnRETHWstETHVault__factory';
-import { DAIUSDCUSDTSUSDLevSwapLibraryAddresses } from '../types/factories/protocol/leverage/ethereum/DAIUSDCUSDTSUSDLevSwap.sol/DAIUSDCUSDTSUSDLevSwap__factory';
+import { DAIUSDCUSDTSUSDLevSwapLibraryAddresses } from '../types/factories/protocol/leverage/ethereum/DAIUSDCUSDTSUSDLevSwap__factory';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {

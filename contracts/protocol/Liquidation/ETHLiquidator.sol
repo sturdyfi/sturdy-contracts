@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -8,6 +8,7 @@ import {IFlashLoanRecipient} from '../../flashloan/interfaces/IFlashLoanRecipien
 import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
 import {ILendingPool} from '../../interfaces/ILendingPool.sol';
 import {IAaveFlashLoan} from '../../interfaces/IAaveFlashLoan.sol';
+import {ICurvePool} from '../../interfaces/ICurvePool.sol';
 import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 import {IWETH} from '../../misc/interfaces/IWETH.sol';
@@ -21,49 +22,6 @@ import {UniswapAdapter} from '../libraries/swap/UniswapAdapter.sol';
  * @notice ETHLiquidator
  * @author Sturdy
  **/
-
-interface ICurvePool {
-  function coins(uint256) external view returns (address);
-
-  function coins(int128) external view returns (address);
-
-  function calc_withdraw_one_coin(uint256 _burn_amount, int128 i) external view returns (uint256);
-
-  function calc_withdraw_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    bool _use_underlying
-  ) external view returns (uint256);
-
-  function remove_liquidity_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    uint256 _min_received,
-    address _receiver
-  ) external returns (uint256);
-
-  function remove_liquidity_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    uint256 _min_received
-  ) external;
-
-  function remove_liquidity_one_coin(
-    uint256 _burn_amount,
-    int128 i,
-    uint256 _min_received,
-    bool _use_underlying
-  ) external returns (uint256);
-
-  function remove_liquidity_imbalance(
-    uint256[4] calldata amounts,
-    uint256 max_burn_amount
-  ) external;
-
-  function exchange(int128 i, int128 j, uint256 dx, uint256 min_dy) external returns (uint256);
-
-  function get_virtual_price() external view returns (uint256 price);
-}
 
 interface IBaseCurvePool {
   function remove_liquidity_one_coin(

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -41,12 +41,5 @@ interface ISturdyDistributionManager {
    * @param asset The address of the reference asset of the distribution
    * @return The asset index, the emission per second and the last updated timestamp
    **/
-  function getAssetData(address asset)
-    external
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    );
+  function getAssetData(address asset) external view returns (uint256, uint256, uint256);
 }

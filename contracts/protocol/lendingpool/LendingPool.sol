@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -101,12 +101,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - Caller is only LendingPoolConfigurator
    * @param _vaultAddress The address of the Vault
    **/
-  function registerVault(address _vaultAddress)
-    external
-    payable
-    override
-    onlyLendingPoolConfigurator
-  {
+  function registerVault(
+    address _vaultAddress
+  ) external payable override onlyLendingPoolConfigurator {
     _availableVaults[_vaultAddress] = true;
   }
 
@@ -116,12 +113,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * - Caller is only LendingPoolConfigurator
    * @param _vaultAddress The address of the Vault
    **/
-  function unregisterVault(address _vaultAddress)
-    external
-    payable
-    override
-    onlyLendingPoolConfigurator
-  {
+  function unregisterVault(
+    address _vaultAddress
+  ) external payable override onlyLendingPoolConfigurator {
     _availableVaults[_vaultAddress] = false;
   }
 
@@ -232,12 +226,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset
    * @return The underlying asset balance and aToken's total balance
    **/
-  function getTotalBalanceOfAssetPair(address asset)
-    external
-    view
-    override
-    returns (uint256, uint256)
-  {
+  function getTotalBalanceOfAssetPair(
+    address asset
+  ) external view override returns (uint256, uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
     (, , , , bool isCollateral) = reserve.configuration.getFlags();
     address aToken = reserve.aTokenAddress;
@@ -253,7 +244,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       );
       uint256 decimal = IERC20Detailed(aToken).decimals();
       if (decimal < 18)
-        assetBalanceAcknowledgedByAToken = assetBalanceAcknowledgedByAToken / 10**(18 - decimal);
+        assetBalanceAcknowledgedByAToken = assetBalanceAcknowledgedByAToken / 10 ** (18 - decimal);
     }
 
     return (assetBalance, assetBalanceAcknowledgedByAToken);
@@ -268,12 +259,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     external
     view
     override
-    returns (
-      uint256,
-      uint256[] memory,
-      address[] memory,
-      uint256
-    )
+    returns (uint256, uint256[] memory, address[] memory, uint256)
   {
     uint256 totalVolume;
     uint256 reserveCount = _reservesCount;
@@ -286,7 +272,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       (bool isActive, bool isFrozen, bool isBorrowing, , ) = reserve.configuration.getFlags();
       if (isActive && !isFrozen && isBorrowing) {
         volumes[pos] = IERC20(reserve.aTokenAddress).totalSupply();
-        volumes[pos] = volumes[pos] / 10**reserve.configuration.getDecimals();
+        volumes[pos] = volumes[pos] / 10 ** reserve.configuration.getDecimals();
         assets[pos] = _reservesList[i];
         totalVolume += volumes[pos];
         pos += 1;
@@ -400,7 +386,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       IAToken(aToken).burn(from, to, amountToWithdraw, aTokenIndex);
       amountToWithdraw = amountToWithdraw.rayDiv(aTokenIndex);
       uint256 decimal = IERC20Detailed(aToken).decimals();
-      if (decimal < 18) amountToWithdraw = amountToWithdraw / 10**(18 - decimal);
+      if (decimal < 18) amountToWithdraw = amountToWithdraw / 10 ** (18 - decimal);
     } else {
       IAToken(aToken).burn(from, to, amountToWithdraw, reserve.liquidityIndex);
     }
@@ -530,11 +516,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset deposited
    * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
-    external
-    override
-    whenNotPaused
-  {
+  function setUserUseReserveAsCollateral(
+    address asset,
+    bool useAsCollateral
+  ) external override whenNotPaused {
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
@@ -602,12 +587,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @return The state of the reserve
    **/
-  function getReserveData(address asset)
-    external
-    view
-    override
-    returns (DataTypes.ReserveData memory)
-  {
+  function getReserveData(
+    address asset
+  ) external view override returns (DataTypes.ReserveData memory) {
     return _reserves[asset];
   }
 
@@ -621,7 +603,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @return ltv the loan to value of the user
    * @return healthFactor the current health factor of the user
    **/
-  function getUserAccountData(address user)
+  function getUserAccountData(
+    address user
+  )
     external
     view
     override
@@ -661,12 +645,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @return The configuration of the reserve
    **/
-  function getConfiguration(address asset)
-    external
-    view
-    override
-    returns (DataTypes.ReserveConfigurationMap memory)
-  {
+  function getConfiguration(
+    address asset
+  ) external view override returns (DataTypes.ReserveConfigurationMap memory) {
     return _reserves[asset].configuration;
   }
 
@@ -675,12 +656,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param user The user address
    * @return The configuration of the user
    **/
-  function getUserConfiguration(address user)
-    external
-    view
-    override
-    returns (DataTypes.UserConfigurationMap memory)
-  {
+  function getUserConfiguration(
+    address user
+  ) external view override returns (DataTypes.UserConfigurationMap memory) {
     return _usersConfig[user];
   }
 
@@ -689,13 +667,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @return The reserve's normalized income
    */
-  function getReserveNormalizedIncome(address asset)
-    external
-    view
-    virtual
-    override
-    returns (uint256)
-  {
+  function getReserveNormalizedIncome(
+    address asset
+  ) external view virtual override returns (uint256) {
     return _reserves[asset].getNormalizedIncome();
   }
 
@@ -704,12 +678,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @return The reserve normalized variable debt
    */
-  function getReserveNormalizedVariableDebt(address asset)
-    external
-    view
-    override
-    returns (uint256)
-  {
+  function getReserveNormalizedVariableDebt(
+    address asset
+  ) external view override returns (uint256) {
     return _reserves[asset].getNormalizedDebt();
   }
 
@@ -838,12 +809,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @param rateStrategyAddress The address of the interest rate strategy contract
    **/
-  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
-    external
-    payable
-    override
-    onlyLendingPoolConfigurator
-  {
+  function setReserveInterestRateStrategyAddress(
+    address asset,
+    address rateStrategyAddress
+  ) external payable override onlyLendingPoolConfigurator {
     _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
   }
 
@@ -853,12 +822,10 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param asset The address of the underlying asset of the reserve
    * @param configuration The new configuration bitmap
    **/
-  function setConfiguration(address asset, uint256 configuration)
-    external
-    payable
-    override
-    onlyLendingPoolConfigurator
-  {
+  function setConfiguration(
+    address asset,
+    uint256 configuration
+  ) external payable override onlyLendingPoolConfigurator {
     _reserves[asset].configuration.data = configuration;
   }
 
@@ -894,7 +861,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address oracle = _addressesProvider.getPriceOracle();
 
     uint256 amountInETH = (IPriceOracleGetter(oracle).getAssetPrice(vars.asset) * vars.amount) /
-      10**reserve.configuration.getDecimals();
+      10 ** reserve.configuration.getDecimals();
 
     ValidationLogic.validateBorrow(
       vars.asset,
@@ -991,11 +958,9 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
    * @param interestRateStrategyAddress The address of interest rate strategy contract
    * @return The availability of interest rate
    **/
-  function _isInterestRateNotAvailable(address interestRateStrategyAddress)
-    internal
-    view
-    returns (bool)
-  {
+  function _isInterestRateNotAvailable(
+    address interestRateStrategyAddress
+  ) internal view returns (bool) {
     return
       IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope1() == 0 &&
       IReserveInterestRateStrategy(interestRateStrategyAddress).variableRateSlope2() == 0 &&

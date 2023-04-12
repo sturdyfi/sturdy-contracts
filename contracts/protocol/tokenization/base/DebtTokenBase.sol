@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
@@ -47,12 +47,10 @@ abstract contract DebtTokenBase is
    * @param toUser The user to give allowance to
    * @return the current allowance of toUser
    **/
-  function borrowAllowance(address fromUser, address toUser)
-    external
-    view
-    override
-    returns (uint256)
-  {
+  function borrowAllowance(
+    address fromUser,
+    address toUser
+  ) external view override returns (uint256) {
     return _borrowAllowances[fromUser][toUser];
   }
 
@@ -77,13 +75,10 @@ abstract contract DebtTokenBase is
    * @param spender The address of token spender
    * @return No return because always revert
    **/
-  function allowance(address owner, address spender)
-    public
-    view
-    virtual
-    override
-    returns (uint256)
-  {
+  function allowance(
+    address owner,
+    address spender
+  ) public view virtual override returns (uint256) {
     owner;
     spender;
     revert('ALLOWANCE_NOT_SUPPORTED');
@@ -130,12 +125,10 @@ abstract contract DebtTokenBase is
    * @param spender The address of token spender
    * @param addedValue The increasing amount to spend token
    **/
-  function increaseAllowance(address spender, uint256 addedValue)
-    public
-    virtual
-    override
-    returns (bool)
-  {
+  function increaseAllowance(
+    address spender,
+    uint256 addedValue
+  ) public virtual override returns (bool) {
     spender;
     addedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
@@ -148,12 +141,10 @@ abstract contract DebtTokenBase is
    * @param spender The address of token spender
    * @param subtractedValue The decreasing amount to spend token
    **/
-  function decreaseAllowance(address spender, uint256 subtractedValue)
-    public
-    virtual
-    override
-    returns (bool)
-  {
+  function decreaseAllowance(
+    address spender,
+    uint256 subtractedValue
+  ) public virtual override returns (bool) {
     spender;
     subtractedValue;
     revert('ALLOWANCE_NOT_SUPPORTED');
@@ -165,11 +156,7 @@ abstract contract DebtTokenBase is
    * @param delegatee The address of user who is borrowing behalf of borrower
    * @param amount The decreasing allowed amount
    **/
-  function _decreaseBorrowAllowance(
-    address delegator,
-    address delegatee,
-    uint256 amount
-  ) internal {
+  function _decreaseBorrowAllowance(address delegator, address delegatee, uint256 amount) internal {
     uint256 newAllowance = _borrowAllowances[delegator][delegatee] - amount;
 
     _borrowAllowances[delegator][delegatee] = newAllowance;

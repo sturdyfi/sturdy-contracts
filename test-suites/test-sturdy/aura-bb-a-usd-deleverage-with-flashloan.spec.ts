@@ -2,24 +2,16 @@ import BigNumber from 'bignumber.js';
 import { BigNumberish } from 'ethers';
 import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
 import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
-import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals, convertToCurrencyUnits } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20, IGeneralLevSwap2, IGeneralLevSwap2__factory } from '../../types';
+import { MintableERC20, IGeneralLevSwap, IGeneralLevSwap__factory } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
 
 const chai = require('chai');
 const { expect } = chai;
 
-const MultiSwapPathInitData = {
-  routes: new Array(9).fill(ZERO_ADDRESS),
-  routeParams: new Array(4).fill([0, 0, 0]) as any,
-  swapType: 0, //NONE
-  poolCount: 0,
-  swapFrom: ZERO_ADDRESS,
-  swapTo: ZERO_ADDRESS,
-};
-
+const slippage = 0.006; //0.6%
 const BB_A_USDT = '0x2F4eb100552ef93840d5aDC30560E5513DFfFACb';
 const BB_A_USDT_POOLID = '0x2f4eb100552ef93840d5adc30560e5513dfffacb000000000000000000000334';
 const BB_A_USDC = '0x82698aeCc9E28e9Bb27608Bd52cF57f704BD1B83';
@@ -28,11 +20,21 @@ const BB_A_DAI = '0xae37D54Ae477268B9997d4161B96b8200755935c';
 const BB_A_DAI_POOLID = '0xae37d54ae477268b9997d4161b96b8200755935c000000000000000000000337';
 const BB_A_USD = '0xA13a9247ea42D743238089903570127DdA72fE44';
 const BB_A_USD_POOLID = '0xa13a9247ea42d743238089903570127dda72fe4400000000000000000000035d';
+const MultiSwapPathInitData = {
+  routes: new Array(9).fill(ZERO_ADDRESS),
+  routeParams: new Array(4).fill([0, 0, 0]) as any,
+  swapType: 0, //NONE
+  poolCount: 0,
+  swapFrom: ZERO_ADDRESS,
+  swapTo: ZERO_ADDRESS,
+  inAmount: '0',
+  outAmount: '0',
+};
 
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -106,12 +108,95 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
+const calcInAmount = async (
+  testEnv: TestEnv,
+  amount: BigNumberish,
+  leverage: BigNumberish,
+  borrowingAsset: tEthereumAddress
+) => {
+  const { oracle, BAL_BB_A_USD_LP } = testEnv;
+  const collateralPrice = await oracle.getAssetPrice(BAL_BB_A_USD_LP.address);
+  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
+
+  const intputAmount = await convertToCurrencyDecimals(
+    borrowingAsset,
+    new BigNumber(amount.toString())
+      .multipliedBy(leverage.toString())
+      .div(10000)
+      .multipliedBy(collateralPrice.toString())
+      .div(borrowingAssetPrice.toString())
+      .div(1 - 0.006) // flashloan fee + extra(swap loss) = 0.6%
+      .toFixed(0)
+  );
+
+  return intputAmount;
+};
+
+const calcMinAmountOut = async (
+  testEnv: TestEnv,
+  amount: BigNumberish,
+  fromAsset: tEthereumAddress,
+  toAsset: tEthereumAddress
+) => {
+  const { oracle } = testEnv;
+  const fromAssetPrice = await oracle.getAssetPrice(fromAsset);
+  const toAssetPrice = await oracle.getAssetPrice(toAsset);
+
+  return await convertToCurrencyDecimals(
+    toAsset,
+    new BigNumber(await convertToCurrencyUnits(fromAsset, amount.toString()))
+      .multipliedBy(fromAssetPrice.toString())
+      .dividedBy(toAssetPrice.toString())
+      .multipliedBy(1 - slippage) // swap loss
+      .toFixed(0)
+  );
+};
+
+const calcWithdrawalAmount = async (
+  testEnv: TestEnv,
+  totalCollateralETH: BigNumberish,
+  totalDebtETH: BigNumberish,
+  repayAmount: BigNumberish,
+  currentLiquidationThreshold: BigNumberish,
+  assetLiquidationThreshold: BigNumberish,
+  collateralAmount: BigNumberish,
+  collateral: tEthereumAddress,
+  borrowingAsset: tEthereumAddress
+) => {
+  const { oracle } = testEnv;
+  const collateralPrice = await oracle.getAssetPrice(collateral);
+  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
+  const repayAmountETH = new BigNumber(
+    await convertToCurrencyUnits(borrowingAsset, repayAmount.toString())
+  ).multipliedBy(borrowingAssetPrice.toString());
+  const withdrawalAmountETH = new BigNumber(totalCollateralETH.toString())
+    .multipliedBy(currentLiquidationThreshold.toString())
+    .dividedBy(10000)
+    .minus(totalDebtETH.toString())
+    .plus(repayAmountETH.toFixed(0))
+    .multipliedBy(10000)
+    .dividedBy(assetLiquidationThreshold.toString())
+    .dp(0, 1); //round down with decimal 0
+
+  return BigNumber.min(
+    collateralAmount.toString(),
+    (
+      await convertToCurrencyDecimals(
+        collateral,
+        withdrawalAmountETH
+          .dividedBy(collateralPrice.toString())
+          .dp(18, 1) //round down with decimal 0
+          .toFixed(18)
+      )
+    ).toString()
+  );
+};
+
 makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let aurabbausdLevSwap = {} as IGeneralLevSwap2;
+  let aurabbausdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
@@ -132,7 +217,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       const {
         users,
         usdt,
-        TUSD,
         aAURABB_A_USD,
         BAL_BB_A_USD_LP,
         pool,
@@ -182,6 +266,10 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, inAmount, usdt.address, BB_A_USD)).toString()
+      );
       const swapInfo = {
         paths: [
           {
@@ -203,6 +291,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: usdt.address,
             swapTo: BB_A_USD,
+            inAmount,
+            outAmount: expectOutAmount.toFixed(0),
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -227,6 +317,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: BB_A_USD,
             swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -236,28 +328,14 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await expect(
         aurabbausdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(
-            principalAmount,
-            leverage,
-            slippage2,
-            usdt.address,
-            0,
-            swapInfo
-          )
+          .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
       await aurabbausdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(
-          principalAmount,
-          leverage,
-          slippage2,
-          usdt.address,
-          0,
-          swapInfo
-        );
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -277,6 +355,24 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      const reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfter.totalCollateralETH,
+        userGlobalDataAfter.totalDebtETH,
+        repayAmount,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdt.address
+      );
+      const reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdt.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await vaultWhitelist
         .connect(owner.signer)
         .removeAddressFromWhitelistUser(auraBBAUSDVault.address, borrower.address);
@@ -287,7 +383,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage2,
             usdt.address,
             aAURABB_A_USD.address,
             0,
@@ -302,7 +397,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage2,
           usdt.address,
           aAURABB_A_USD.address,
           0,
@@ -365,6 +459,10 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, inAmount, usdc.address, BB_A_USD)).toString()
+      );
       const swapInfo = {
         paths: [
           {
@@ -386,6 +484,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: usdc.address,
             swapTo: BB_A_USD,
+            inAmount,
+            outAmount: expectOutAmount.toFixed(),
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -410,6 +510,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: BB_A_USD,
             swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -419,28 +521,14 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await expect(
         aurabbausdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(
-            principalAmount,
-            leverage,
-            slippage2,
-            usdc.address,
-            0,
-            swapInfo
-          )
+          .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
       await aurabbausdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(
-          principalAmount,
-          leverage,
-          slippage2,
-          usdc.address,
-          0,
-          swapInfo
-        );
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -460,6 +548,24 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      const reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfter.totalCollateralETH,
+        userGlobalDataAfter.totalDebtETH,
+        repayAmount,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdc.address
+      );
+      const reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdc.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await vaultWhitelist
         .connect(owner.signer)
         .removeAddressFromWhitelistUser(auraBBAUSDVault.address, borrower.address);
@@ -469,7 +575,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage2,
             usdc.address,
             aAURABB_A_USD.address,
             0,
@@ -484,7 +589,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage2,
           usdc.address,
           aAURABB_A_USD.address,
           0,
@@ -548,6 +652,10 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, inAmount, dai.address, BB_A_USD)).toString()
+      );
       const swapInfo = {
         paths: [
           {
@@ -569,6 +677,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: dai.address,
             swapTo: BB_A_USD,
+            inAmount,
+            outAmount: expectOutAmount.toFixed(0),
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -593,6 +703,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: BB_A_USD,
             swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -602,21 +714,14 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       await expect(
         aurabbausdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(
-            principalAmount,
-            leverage,
-            slippage2,
-            dai.address,
-            0,
-            swapInfo
-          )
+          .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(auraBBAUSDVault.address, borrower.address);
       await aurabbausdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -636,6 +741,24 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      const reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfter.totalCollateralETH,
+        userGlobalDataAfter.totalDebtETH,
+        repayAmount,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        dai.address
+      );
+      const reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, dai.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await vaultWhitelist
         .connect(owner.signer)
         .removeAddressFromWhitelistUser(auraBBAUSDVault.address, borrower.address);
@@ -645,7 +768,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage2,
             dai.address,
             aAURABB_A_USD.address,
             0,
@@ -660,7 +782,6 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage2,
           dai.address,
           aAURABB_A_USD.address,
           0,
@@ -680,7 +801,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let aurabbausdLevSwap = {} as IGeneralLevSwap2;
+  let aurabbausdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
 
   before(async () => {
@@ -736,6 +857,10 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, inAmount, usdt.address, BB_A_USD)).toString()
+      );
       const swapInfo = {
         paths: [
           {
@@ -757,6 +882,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: usdt.address,
             swapTo: BB_A_USD,
+            inAmount,
+            outAmount: expectOutAmount.toFixed(0),
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -781,6 +908,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: BB_A_USD,
             swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -789,14 +918,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       };
       await aurabbausdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(
-          principalAmount,
-          leverage,
-          slippage2,
-          usdt.address,
-          0,
-          swapInfo
-        );
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -819,12 +941,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterEnter.totalCollateralETH,
+        userGlobalDataAfterEnter.totalDebtETH,
+        repayAmount.div(10).toString(),
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdt.address
+      );
+      let reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdt.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           usdt.address,
           aAURABB_A_USD.address,
           0,
@@ -854,12 +993,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(2).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdt.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdt.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           usdt.address,
           aAURABB_A_USD.address,
           0,
@@ -889,12 +1045,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(3).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdt.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdt.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           usdt.address,
           aAURABB_A_USD.address,
           0,
@@ -924,12 +1097,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(4).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdt.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdt.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           usdt.address,
           aAURABB_A_USD.address,
           0,
@@ -991,6 +1181,10 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, inAmount, usdc.address, BB_A_USD)).toString()
+      );
       const swapInfo = {
         paths: [
           {
@@ -1012,6 +1206,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: usdc.address,
             swapTo: BB_A_USD,
+            inAmount,
+            outAmount: expectOutAmount.toFixed(),
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -1036,6 +1232,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: BB_A_USD,
             swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -1044,14 +1242,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       };
       await aurabbausdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(
-          principalAmount,
-          leverage,
-          slippage2,
-          usdc.address,
-          0,
-          swapInfo
-        );
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1074,12 +1265,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterEnter.totalCollateralETH,
+        userGlobalDataAfterEnter.totalDebtETH,
+        repayAmount.div(10).toString(),
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdc.address
+      );
+      let reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdc.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           usdc.address,
           aAURABB_A_USD.address,
           0,
@@ -1109,12 +1317,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(2).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdc.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdc.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           usdc.address,
           aAURABB_A_USD.address,
           0,
@@ -1144,12 +1369,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(3).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdc.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdc.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           usdc.address,
           aAURABB_A_USD.address,
           0,
@@ -1179,12 +1421,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(4).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        usdc.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, usdc.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           usdc.address,
           aAURABB_A_USD.address,
           0,
@@ -1246,6 +1505,10 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, inAmount, dai.address, BB_A_USD)).toString()
+      );
       const swapInfo = {
         paths: [
           {
@@ -1267,6 +1530,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: dai.address,
             swapTo: BB_A_USD,
+            inAmount,
+            outAmount: expectOutAmount.toFixed(0),
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -1291,6 +1556,8 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
             poolCount: 2,
             swapFrom: BB_A_USD,
             swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
           },
           MultiSwapPathInitData,
           MultiSwapPathInitData,
@@ -1299,7 +1566,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
       };
       await aurabbausdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0, swapInfo);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1322,12 +1589,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterEnter.totalCollateralETH,
+        userGlobalDataAfterEnter.totalDebtETH,
+        repayAmount.div(10).toString(),
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        dai.address
+      );
+      let reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, dai.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           dai.address,
           aAURABB_A_USD.address,
           0,
@@ -1357,12 +1641,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(2).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        dai.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, dai.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           dai.address,
           aAURABB_A_USD.address,
           0,
@@ -1392,12 +1693,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(3).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        dai.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, dai.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           dai.address,
           aAURABB_A_USD.address,
           0,
@@ -1427,12 +1745,29 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(aurabbausdLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(4).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        BAL_BB_A_USD_LP.address,
+        dai.address
+      );
+      reverseExpectOutAmount = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, reverseInAmount.toFixed(0), BB_A_USD, dai.address)
+        ).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount.toFixed(0);
       await aurabbausdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           dai.address,
           aAURABB_A_USD.address,
           0,

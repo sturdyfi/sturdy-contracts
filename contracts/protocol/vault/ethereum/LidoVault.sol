@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -100,11 +100,10 @@ contract LidoVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address LIDO = provider.getAddress('LIDO');
     require(LIDO != address(0), Errors.VT_INVALID_CONFIGURATION);
@@ -147,12 +146,10 @@ contract LidoVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     address LIDO = _addressesProvider.getAddress('LIDO');
     require(_asset == LIDO || _asset == address(0), Errors.VT_COLLATERAL_WITHDRAW_INVALID);
 
@@ -205,12 +202,10 @@ contract LidoVault is GeneralVault {
    * @param _amount The amount of collateral internal asset
    * @return revert
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    pure
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external pure override returns (uint256) {
     revert('NOT_SUPPORTED');
   }
 }

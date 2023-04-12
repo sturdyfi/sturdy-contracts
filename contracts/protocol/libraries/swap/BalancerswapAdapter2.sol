@@ -2,17 +2,12 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
-import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IBalancerVault} from '../../../interfaces/IBalancerVault.sol';
-import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
-import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
-library BalancerswapAdapter {
-  using PercentageMath for uint256;
+library BalancerswapAdapter2 {
   using SafeERC20 for IERC20;
 
   struct Path {
@@ -23,12 +18,11 @@ library BalancerswapAdapter {
   address constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
 
   function swapExactTokensForTokens(
-    ILendingPoolAddressesProvider addressesProvider,
     address assetToSwapFrom,
     address assetToSwapTo,
     uint256 amountToSwap,
     Path calldata path,
-    uint256 slippage // 2% = 200
+    uint256 minAmountOut
   ) external returns (uint256) {
     // Check path is valid
     uint256 length = path.tokens.length;
@@ -36,15 +30,6 @@ library BalancerswapAdapter {
     require(
       path.tokens[0] == assetToSwapFrom && path.tokens[length - 1] == assetToSwapTo,
       Errors.VT_SWAP_PATH_TOKEN_INVALID
-    );
-
-    // Calculate expected amount of the outbound asset
-    uint256 minAmountOut = _getMinAmount(
-      addressesProvider,
-      assetToSwapFrom,
-      assetToSwapTo,
-      amountToSwap,
-      slippage
     );
 
     // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
@@ -97,37 +82,5 @@ library BalancerswapAdapter {
     );
 
     return receivedPositveAmount;
-  }
-
-  function _getDecimals(address asset) internal view returns (uint256) {
-    return IERC20Detailed(asset).decimals();
-  }
-
-  function _getPrice(
-    ILendingPoolAddressesProvider addressesProvider,
-    address asset
-  ) internal view returns (uint256) {
-    return IPriceOracleGetter(addressesProvider.getPriceOracle()).getAssetPrice(asset);
-  }
-
-  function _getMinAmount(
-    ILendingPoolAddressesProvider addressesProvider,
-    address assetToSwapFrom,
-    address assetToSwapTo,
-    uint256 amountToSwap,
-    uint256 slippage
-  ) internal view returns (uint256) {
-    uint256 fromAssetDecimals = _getDecimals(assetToSwapFrom);
-    uint256 toAssetDecimals = _getDecimals(assetToSwapTo);
-
-    uint256 fromAssetPrice = _getPrice(addressesProvider, assetToSwapFrom);
-    uint256 toAssetPrice = _getPrice(addressesProvider, assetToSwapTo);
-
-    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10 ** toAssetDecimals) /
-      (toAssetPrice * 10 ** fromAssetDecimals)).percentMul(
-        PercentageMath.PERCENTAGE_FACTOR - slippage
-      );
-
-    return minAmountOut;
   }
 }

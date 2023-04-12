@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -36,12 +36,9 @@ contract DistributionManager is ISturdyDistributionManager {
   }
 
   /// @inheritdoc ISturdyDistributionManager
-  function setDistributionEnd(uint256 distributionEnd)
-    external
-    payable
-    override
-    onlyEmissionManager
-  {
+  function setDistributionEnd(
+    uint256 distributionEnd
+  ) external payable override onlyEmissionManager {
     _distributionEnd = distributionEnd;
     emit DistributionEndUpdated(distributionEnd);
   }
@@ -57,28 +54,17 @@ contract DistributionManager is ISturdyDistributionManager {
   }
 
   /// @inheritdoc ISturdyDistributionManager
-  function getUserAssetData(address user, address asset)
-    public
-    view
-    virtual
-    override
-    returns (uint256)
-  {
+  function getUserAssetData(
+    address user,
+    address asset
+  ) public view virtual override returns (uint256) {
     return assets[asset].users[user];
   }
 
   /// @inheritdoc ISturdyDistributionManager
-  function getAssetData(address asset)
-    public
-    view
-    virtual
-    override
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  function getAssetData(
+    address asset
+  ) public view virtual override returns (uint256, uint256, uint256) {
     return (
       assets[asset].index,
       assets[asset].emissionPerSecond,
@@ -90,9 +76,9 @@ contract DistributionManager is ISturdyDistributionManager {
    * @dev Configure the assets for a specific emission
    * @param assetsConfigInput The array of each asset configuration
    **/
-  function _configureAssets(DistributionTypes.AssetConfigInput[] memory assetsConfigInput)
-    internal
-  {
+  function _configureAssets(
+    DistributionTypes.AssetConfigInput[] memory assetsConfigInput
+  ) internal {
     uint256 length = assetsConfigInput.length;
     for (uint256 i; i < length; ++i) {
       AssetData storage assetConfig = assets[assetsConfigInput[i].underlyingAsset];
@@ -190,10 +176,10 @@ contract DistributionManager is ISturdyDistributionManager {
    * @param stakes List of structs of the user data related with his stake
    * @return The accrued rewards for the user until the moment
    **/
-  function _claimRewards(address user, DistributionTypes.UserStakeInput[] memory stakes)
-    internal
-    returns (uint256)
-  {
+  function _claimRewards(
+    address user,
+    DistributionTypes.UserStakeInput[] memory stakes
+  ) internal returns (uint256) {
     uint256 accruedRewards;
     uint256 length = stakes.length;
     for (uint256 i; i < length; ++i) {
@@ -216,11 +202,10 @@ contract DistributionManager is ISturdyDistributionManager {
    * @param stakes List of structs of the user data related with his stake
    * @return The accrued rewards for the user until the moment
    **/
-  function _getUnclaimedRewards(address user, DistributionTypes.UserStakeInput[] memory stakes)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getUnclaimedRewards(
+    address user,
+    DistributionTypes.UserStakeInput[] memory stakes
+  ) internal view returns (uint256) {
     uint256 accruedRewards;
     uint256 length = stakes.length;
     for (uint256 i; i < length; ++i) {
@@ -251,7 +236,7 @@ contract DistributionManager is ISturdyDistributionManager {
     uint256 reserveIndex,
     uint256 userIndex
   ) internal pure returns (uint256) {
-    return (principalUserBalance * (reserveIndex - userIndex)) / 10**uint256(_PRECISION);
+    return (principalUserBalance * (reserveIndex - userIndex)) / 10 ** uint256(_PRECISION);
   }
 
   /**
@@ -283,6 +268,6 @@ contract DistributionManager is ISturdyDistributionManager {
       : block.timestamp;
     uint256 timeDelta = currentTimestamp - lastUpdateTimestamp;
     return
-      ((emissionPerSecond * timeDelta * (10**uint256(_PRECISION))) / totalBalance) + currentIndex;
+      ((emissionPerSecond * timeDelta * (10 ** uint256(_PRECISION))) / totalBalance) + currentIndex;
   }
 }

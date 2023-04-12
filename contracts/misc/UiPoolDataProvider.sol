@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -34,16 +34,9 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     oracle = _oracle;
   }
 
-  function getInterestRateStrategySlopes(DefaultReserveInterestRateStrategy interestRateStrategy)
-    internal
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  function getInterestRateStrategySlopes(
+    DefaultReserveInterestRateStrategy interestRateStrategy
+  ) internal view returns (uint256, uint256, uint256, uint256) {
     return (
       interestRateStrategy.variableRateSlope1(),
       interestRateStrategy.variableRateSlope2(),
@@ -52,26 +45,16 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     );
   }
 
-  function getReservesList(ILendingPoolAddressesProvider provider)
-    public
-    view
-    override
-    returns (address[] memory)
-  {
+  function getReservesList(
+    ILendingPoolAddressesProvider provider
+  ) public view override returns (address[] memory) {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     return lendingPool.getReservesList();
   }
 
-  function getSimpleReservesData(ILendingPoolAddressesProvider provider)
-    public
-    view
-    override
-    returns (
-      AggregatedReserveData[] memory,
-      uint256,
-      uint256
-    )
-  {
+  function getSimpleReservesData(
+    ILendingPoolAddressesProvider provider
+  ) public view override returns (AggregatedReserveData[] memory, uint256, uint256) {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
     uint256 length = reserves.length;
@@ -106,7 +89,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         uint256 pricePerShare = baseData.getIndexFromPricePerShareMemory();
         uint256 decimal = IERC20Detailed(reserveData.aTokenAddress).decimals();
         if (decimal < 18)
-          reserveData.availableLiquidity = (reserveData.availableLiquidity * (10**(18 - decimal)))
+          reserveData.availableLiquidity = (reserveData.availableLiquidity * (10 ** (18 - decimal)))
             .rayMul(pricePerShare);
         else reserveData.availableLiquidity = reserveData.availableLiquidity.rayMul(pricePerShare);
       }
@@ -180,12 +163,10 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     return (reservesData, oracle.getAssetPrice(MOCK_USD_ADDRESS), emissionEndTimestamp);
   }
 
-  function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
-    external
-    view
-    override
-    returns (UserReserveData[] memory, uint256)
-  {
+  function getUserReservesData(
+    ILendingPoolAddressesProvider provider,
+    address user
+  ) external view override returns (UserReserveData[] memory, uint256) {
     ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
     address[] memory reserves = lendingPool.getReservesList();
     uint256 length = reserves.length;
@@ -243,7 +224,10 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     return (userReservesData, userUnclaimedRewards);
   }
 
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
+  function getReservesData(
+    ILendingPoolAddressesProvider provider,
+    address user
+  )
     external
     view
     override
@@ -295,7 +279,7 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
         uint256 pricePerShare = baseData.getIndexFromPricePerShareMemory();
         uint256 decimal = IERC20Detailed(reserveData.aTokenAddress).decimals();
         if (decimal < 18)
-          reserveData.availableLiquidity = (reserveData.availableLiquidity * (10**(18 - decimal)))
+          reserveData.availableLiquidity = (reserveData.availableLiquidity * (10 ** (18 - decimal)))
             .rayMul(pricePerShare);
         else reserveData.availableLiquidity = reserveData.availableLiquidity.rayMul(pricePerShare);
       }
@@ -424,11 +408,10 @@ contract UiPoolDataProvider is IUiPoolDataProvider {
     );
   }
 
-  function getLevSwapAddress(ILendingPoolAddressesProvider provider, address underlyingAsset)
-    internal
-    view
-    returns (address levSwapper)
-  {
+  function getLevSwapAddress(
+    ILendingPoolAddressesProvider provider,
+    address underlyingAsset
+  ) internal view returns (address levSwapper) {
     address levSwapManagerAddress = provider.getAddress('LEVERAGE_SWAP_MANAGER');
     if (levSwapManagerAddress != address(0)) {
       ILeverageSwapManager levSwapManager = ILeverageSwapManager(levSwapManagerAddress);

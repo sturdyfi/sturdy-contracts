@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 interface ILido {
@@ -136,11 +136,7 @@ interface ILido {
   function getBeaconStat()
     external
     view
-    returns (
-      uint256 depositedValidators,
-      uint256 beaconValidators,
-      uint256 beaconBalance
-    );
+    returns (uint256 depositedValidators, uint256 beaconValidators, uint256 beaconBalance);
 
   function balanceOf(address _account) external view returns (uint256);
 

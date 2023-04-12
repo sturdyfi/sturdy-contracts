@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -123,11 +123,10 @@ contract YearnFBEETSVault is GeneralVault {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external override returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address fBEETS = provider.getAddress('fBEETS');
 
@@ -162,7 +161,7 @@ contract YearnFBEETSVault is GeneralVault {
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_wftmAmount *
-      oracle.getAssetPrice(provider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVWFTM'))) / 10 ** 18) * 10 ** assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange WFTM -> _tokenOut via UniswapV2
@@ -206,14 +205,14 @@ contract YearnFBEETSVault is GeneralVault {
     // Calculate minAmount from price with 2% slippage
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_beetsAmount *
-      oracle.getAssetPrice(provider.getAddress('BEETS'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('BEETS'))) / 10 ** 18) * 10 ** assetDecimal) /
       oracle.getAssetPrice(provider.getAddress('YVWFTM'))).percentMul(98_00);
 
     // Substract pool's swap fee
     (address swapPool, ) = getBeethovenVault().getPool(beethovenSwapPoolId);
     uint256 swapFee = IBalancerWeightedPool(swapPool).getSwapFeePercentage();
 
-    return (minAmountFromPrice * (10**18 - swapFee)) / 10**18;
+    return (minAmountFromPrice * (10 ** 18 - swapFee)) / 10 ** 18;
   }
 
   /**
@@ -321,11 +320,10 @@ contract YearnFBEETSVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVFBEETS = provider.getAddress('YVFBEETS');
     address fBEETS = provider.getAddress('fBEETS');
@@ -353,12 +351,10 @@ contract YearnFBEETSVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     require(_asset == provider.getAddress('fBEETS'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);

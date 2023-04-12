@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -74,11 +74,11 @@ contract BeefyMIM2CRVVault is GeneralVault {
    * @param _amount The amount of collateral external asset
    * @return amountUSDC - The amount of USDC
    */
-  function _withdrawFromLiquidityPool(address _poolAddress, uint256 _amount)
-    internal
-    returns (uint256 amountUSDC)
-  {
-    require(ICurvePool(_poolAddress).coins(2) == USDC, 'Invalid Pool Address');
+  function _withdrawFromLiquidityPool(
+    address _poolAddress,
+    uint256 _amount
+  ) internal returns (uint256 amountUSDC) {
+    require(ICurvePool(_poolAddress).coins(uint256(2)) == USDC, 'Invalid Pool Address');
 
     int128 _underlying_coin_index = 2; // USDC
 
@@ -112,7 +112,9 @@ contract BeefyMIM2CRVVault is GeneralVault {
       IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
 
       uint256 minAmountFromPrice = ((((_usdcAmount * oracle.getAssetPrice(USDC)) /
-        10**usdcDecimal) * 10**assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(95_00);
+        10 ** usdcDecimal) * 10 ** assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(
+          95_00
+        );
 
       // Exchange USDC -> _tokenOut via UniswapV2
       address[] memory path = new address[](3);
@@ -154,11 +156,10 @@ contract BeefyMIM2CRVVault is GeneralVault {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external override returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MIM2CRV = provider.getAddress('MIM_2CRV_LP');
 
@@ -199,11 +200,10 @@ contract BeefyMIM2CRVVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MOOMIM2CRV = provider.getAddress('MOOMIM2CRV');
     address MIM2CRV = provider.getAddress('MIM_2CRV_LP');
@@ -233,12 +233,10 @@ contract BeefyMIM2CRVVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     require(_asset == provider.getAddress('MIM_2CRV_LP'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {Ownable} from '../../dependencies/openzeppelin/contracts/Ownable.sol';
@@ -62,12 +62,10 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * @param id The id
    * @param implementationAddress The address of the new implementation
    */
-  function setAddressAsProxy(bytes32 id, address implementationAddress)
-    external
-    payable
-    override
-    onlyOwner
-  {
+  function setAddressAsProxy(
+    bytes32 id,
+    address implementationAddress
+  ) external payable override onlyOwner {
     _updateImpl(id, implementationAddress);
     emit AddressSet(id, implementationAddress, true);
   }
@@ -125,12 +123,9 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * - Caller is only owner which is multisig wallet
    * @param incentiveController The new IncentiveController implementation
    **/
-  function setIncentiveControllerImpl(address incentiveController)
-    external
-    payable
-    override
-    onlyOwner
-  {
+  function setIncentiveControllerImpl(
+    address incentiveController
+  ) external payable override onlyOwner {
     _updateImpl(INCENTIVE_CONTROLLER, incentiveController);
     emit IncentiveControllerUpdated(incentiveController);
   }
@@ -168,12 +163,9 @@ contract LendingPoolAddressesProvider is Ownable, ILendingPoolAddressesProvider 
    * - Caller is only owner which is multisig wallet
    * @param configurator The new LendingPoolConfigurator implementation
    **/
-  function setLendingPoolConfiguratorImpl(address configurator)
-    external
-    payable
-    override
-    onlyOwner
-  {
+  function setLendingPoolConfiguratorImpl(
+    address configurator
+  ) external payable override onlyOwner {
     _updateImpl(LENDING_POOL_CONFIGURATOR, configurator);
     emit LendingPoolConfiguratorUpdated(configurator);
   }

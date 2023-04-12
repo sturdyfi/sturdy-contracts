@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
@@ -44,7 +44,7 @@ contract MockyvWBTC is ERC20 {
     management = _management;
     rewards = _rewards;
     guardian = _guardian;
-    rewardRatio = 3 * 10**25; // 0.03 * ray() = 3%
+    rewardRatio = 3 * 10 ** 25; // 0.03 * ray() = 3%
     lastReport = block.timestamp;
     isIncreasing = true;
   }
@@ -72,11 +72,7 @@ contract MockyvWBTC is ERC20 {
     return shares;
   }
 
-  function withdraw(
-    uint256 maxShares,
-    address recipient,
-    uint256
-  ) external returns (uint256) {
+  function withdraw(uint256 maxShares, address recipient, uint256) external returns (uint256) {
     uint256 shares = maxShares;
     // require(maxLoss <= MAX_BPS);
 
@@ -96,15 +92,15 @@ contract MockyvWBTC is ERC20 {
 
   function pricePerShare() external view returns (uint256) {
     uint256 decimal = decimals();
-    return _shareValue(10**decimal);
+    return _shareValue(10 ** decimal);
   }
 
   function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {
     uint256 decimal = decimals();
     uint256 shares = 0;
     if (decimal < 18)
-      shares = amount.rayDiv(_shareValue(10**decimal).wadToRay()) / 10**(18 - decimal);
-    else shares = amount.rayDiv(_shareValue(10**decimal).wadToRay());
+      shares = amount.rayDiv(_shareValue(10 ** decimal).wadToRay()) / 10 ** (18 - decimal);
+    else shares = amount.rayDiv(_shareValue(10 ** decimal).wadToRay());
 
     require(shares != 0);
 

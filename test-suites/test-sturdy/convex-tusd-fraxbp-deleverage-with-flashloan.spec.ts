@@ -2,16 +2,37 @@ import BigNumber from 'bignumber.js';
 import { BigNumberish } from 'ethers';
 import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
 import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
-import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals, convertToCurrencyUnits } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20 } from '../../types';
+import {
+  ICurvePool__factory,
+  IGeneralLevSwap,
+  IGeneralLevSwap__factory,
+  MintableERC20,
+  MintableERC20__factory,
+  TUSDFRAXBPLevSwap,
+} from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
+
+const slippage = 0.0002; //0.02%
+const FRAX_USDC_LP = '0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC';
+const FRAX_USDC_POOL = '0xDcEF968d416a41Cdac0ED8702fAC8128A64241A2';
+const TUSDFRAXBP_POOL = '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893';
+const TUSD3CRV_POOL = '0xecd5e75afb02efa118af914515d6521aabd189f1';
+const MultiSwapPathInitData = {
+  routes: new Array(9).fill(ZERO_ADDRESS),
+  routeParams: new Array(4).fill([0, 0, 0]) as any,
+  swapType: 0, //NONE
+  poolCount: 0,
+  swapFrom: ZERO_ADDRESS,
+  swapTo: ZERO_ADDRESS,
+  inAmount: '0',
+  outAmount: '0',
+};
 
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
@@ -91,10 +112,135 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
+const calcFRAXUSDCPrice = async (testEnv: TestEnv) => {
+  const { deployer, oracle, FRAX, usdc } = testEnv;
+  const FRAXUSDCPool = ICurvePool__factory.connect(FRAX_USDC_POOL, deployer.signer);
+  const FRAXUSDCLP = MintableERC20__factory.connect(FRAX_USDC_LP, deployer.signer);
+  const fraxPrice = await oracle.getAssetPrice(FRAX.address);
+  const fraxTotalBalance = await FRAXUSDCPool['balances(uint256)'](0);
+  const usdcPrice = await oracle.getAssetPrice(usdc.address);
+  const usdcTotalBalance = await FRAXUSDCPool['balances(uint256)'](1);
+  const FRAXUSDCLpTotalSupply = await FRAXUSDCLP.totalSupply();
+
+  return new BigNumber(fraxPrice.toString())
+    .multipliedBy(fraxTotalBalance.toString())
+    .dividedBy(1e18)
+    .plus(
+      new BigNumber(usdcPrice.toString()).multipliedBy(usdcTotalBalance.toString()).dividedBy(1e6)
+    )
+    .multipliedBy(1e18)
+    .dividedBy(FRAXUSDCLpTotalSupply.toString());
+};
+
+const calcCollateralPrice = async (testEnv: TestEnv) => {
+  const { deployer, oracle, TUSD, TUSD_FRAXBP_LP } = testEnv;
+  const TUSDFRAXBPPool = ICurvePool__factory.connect(TUSDFRAXBP_POOL, deployer.signer);
+  const tusdPrice = await oracle.getAssetPrice(TUSD.address);
+  const tusdTotalBalance = await TUSDFRAXBPPool['balances(uint256)'](0);
+  const FRAXUSDCPrice = await calcFRAXUSDCPrice(testEnv);
+  const FRAXUSDCTotalBalance = await TUSDFRAXBPPool['balances(uint256)'](1);
+  const lpTotalSupply = await TUSD_FRAXBP_LP.totalSupply();
+
+  return new BigNumber(tusdPrice.toString())
+    .multipliedBy(tusdTotalBalance.toString())
+    .plus(new BigNumber(FRAXUSDCPrice.toString()).multipliedBy(FRAXUSDCTotalBalance.toString()))
+    .dividedBy(lpTotalSupply.toString());
+};
+
+const calcWithdrawalAmount = async (
+  testEnv: TestEnv,
+  totalCollateralETH: BigNumberish,
+  totalDebtETH: BigNumberish,
+  repayAmount: BigNumberish,
+  currentLiquidationThreshold: BigNumberish,
+  assetLiquidationThreshold: BigNumberish,
+  collateralAmount: BigNumberish,
+  collateral: tEthereumAddress,
+  borrowingAsset: tEthereumAddress
+) => {
+  const { oracle } = testEnv;
+  const collateralPrice = await oracle.getAssetPrice(collateral);
+  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
+  const repayAmountETH = new BigNumber(
+    await convertToCurrencyUnits(borrowingAsset, repayAmount.toString())
+  ).multipliedBy(borrowingAssetPrice.toString());
+  const withdrawalAmountETH = new BigNumber(totalCollateralETH.toString())
+    .multipliedBy(currentLiquidationThreshold.toString())
+    .dividedBy(10000)
+    .minus(totalDebtETH.toString())
+    .plus(repayAmountETH.toFixed(0))
+    .multipliedBy(10000)
+    .dividedBy(assetLiquidationThreshold.toString())
+    .dp(0, 1); //round down with decimal 0
+
+  return BigNumber.min(
+    collateralAmount.toString(),
+    (
+      await convertToCurrencyDecimals(
+        collateral,
+        withdrawalAmountETH
+          .dividedBy(collateralPrice.toString())
+          .dp(18, 1) //round down with decimal 0
+          .toFixed(18)
+      )
+    ).toString()
+  );
+};
+
+const calcInAmount = async (
+  testEnv: TestEnv,
+  amount: BigNumberish,
+  leverage: BigNumberish,
+  borrowingAsset: tEthereumAddress
+) => {
+  const { oracle } = testEnv;
+  const collateralPrice = await calcCollateralPrice(testEnv);
+  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
+
+  const intputAmount = await convertToCurrencyDecimals(
+    borrowingAsset,
+    new BigNumber(amount.toString())
+      .multipliedBy(leverage.toString())
+      .div(10000)
+      .multipliedBy(collateralPrice.toFixed(0))
+      .div(borrowingAssetPrice.toString())
+      .div(1 - 0.008) // flashloan fee + extra(swap loss) = 0.8%
+      .toFixed(0)
+  );
+
+  return intputAmount;
+};
+
+const calcMinAmountOut = async (
+  testEnv: TestEnv,
+  fromIndex: number,
+  toIndex: number,
+  amount: BigNumberish,
+  isDeposit: boolean,
+  isCalcTokenAmount: boolean,
+  isExchange: boolean,
+  pool: tEthereumAddress
+) => {
+  const { deployer } = testEnv;
+
+  const curvePool = ICurvePool__factory.connect(pool, deployer.signer);
+  if (isCalcTokenAmount) {
+    const amounts = new Array<BigNumberish>(2).fill('0');
+    amounts[fromIndex] = amount;
+
+    return await curvePool['calc_token_amount(uint256[2],bool)'](amounts as any, isDeposit);
+  }
+
+  if (isExchange) {
+    return await curvePool.get_dy_underlying(fromIndex, toIndex, amount);
+  }
+
+  return await curvePool['calc_withdraw_one_coin(uint256,int128)'](amount, toIndex);
+};
+
 makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '80'; //0.8%
   const leverage = 36000;
   let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -119,6 +265,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       const {
         users,
         usdt,
+        TUSD,
         aCVXTUSD_FRAXBP,
         TUSD_FRAXBP_LP,
         pool,
@@ -168,17 +315,96 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 3, 0, inAmount, false, false, true, TUSD3CRV_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            expectOutAmount1.toFixed(0),
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [usdt.address, TUSD3CRV_POOL, TUSD.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [3, 0, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
+            swapFrom: usdt.address,
+            swapTo: TUSD.address,
+            inAmount,
+            outAmount: expectOutAmount1.toFixed(0),
+          },
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: expectOutAmount1.toFixed(0),
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: TUSD.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          {
+            routes: [TUSD.address, TUSD3CRV_POOL, usdt.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [0, 3, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: TUSD.address,
+            swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 2,
+      };
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -198,19 +424,63 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      const reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfter.totalCollateralETH,
+        userGlobalDataAfter.totalDebtETH,
+        repayAmount.toString(),
+        userGlobalDataAfter.currentLiquidationThreshold,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdt.address
+      );
+      const reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            3,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await vaultWhitelist
         .connect(owner.signer)
         .removeAddressFromWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
+
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage2,
             usdt.address,
             aCVXTUSD_FRAXBP.address,
-            0
+            0,
+            swapInfo
           )
       ).to.be.revertedWith('118');
       await vaultWhitelist
@@ -221,10 +491,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage2,
           usdt.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
@@ -283,17 +553,106 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 1, 0, inAmount, true, true, false, FRAX_USDC_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            expectOutAmount1.toFixed(0),
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdc.address,
+              FRAX_USDC_POOL,
+              FRAX_USDC_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
+            swapFrom: usdc.address,
+            swapTo: FRAX_USDC_LP,
+            inAmount,
+            outAmount: expectOutAmount1.toFixed(0),
+          },
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_USDC_LP,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: expectOutAmount1.toFixed(0),
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: FRAX_USDC_LP,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          {
+            routes: [
+              FRAX_USDC_LP,
+              FRAX_USDC_POOL,
+              usdc.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: FRAX_USDC_LP,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 2,
+      };
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -313,6 +672,49 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      const reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfter.totalCollateralETH,
+        userGlobalDataAfter.totalDebtETH,
+        repayAmount.toString(),
+        userGlobalDataAfter.currentLiquidationThreshold,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdc.address
+      );
+      const reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await vaultWhitelist
         .connect(owner.signer)
         .removeAddressFromWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
@@ -322,10 +724,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage2,
             usdc.address,
             aCVXTUSD_FRAXBP.address,
-            0
+            0,
+            swapInfo
           )
       ).to.be.revertedWith('118');
       await vaultWhitelist
@@ -336,10 +738,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage2,
           usdc.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
@@ -351,6 +753,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       const {
         users,
         dai,
+        TUSD,
         TUSD_FRAXBP_LP,
         aCVXTUSD_FRAXBP,
         pool,
@@ -398,17 +801,96 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 1, 0, inAmount, false, false, true, TUSD3CRV_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            expectOutAmount1.toFixed(0),
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [dai.address, TUSD3CRV_POOL, TUSD.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [1, 0, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
+            swapFrom: dai.address,
+            swapTo: TUSD.address,
+            inAmount,
+            outAmount: expectOutAmount1.toFixed(0),
+          },
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: expectOutAmount1.toFixed(0),
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: TUSD.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          {
+            routes: [TUSD.address, TUSD3CRV_POOL, dai.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [0, 1, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: TUSD.address,
+            swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 2,
+      };
       await expect(
         tusdfraxbpLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -428,6 +910,49 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      const reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfter.totalCollateralETH,
+        userGlobalDataAfter.totalDebtETH,
+        repayAmount.toString(),
+        userGlobalDataAfter.currentLiquidationThreshold,
+        userGlobalDataAfter.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        dai.address
+      );
+      const reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await vaultWhitelist
         .connect(owner.signer)
         .removeAddressFromWhitelistUser(convexTUSDFRAXBPVault.address, borrower.address);
@@ -437,10 +962,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
           .withdrawWithFlashloan(
             repayAmount.toString(),
             principalAmount,
-            slippage2,
             dai.address,
             aCVXTUSD_FRAXBP.address,
-            0
+            0,
+            swapInfo
           )
       ).to.be.revertedWith('118');
       await vaultWhitelist
@@ -451,10 +976,10 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .withdrawWithFlashloan(
           repayAmount.toString(),
           principalAmount,
-          slippage2,
           dai.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await TUSD_FRAXBP_LP.balanceOf(borrower.address);
@@ -468,7 +993,6 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
 makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '80'; //0.8%
   const leverage = 36000;
   let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -487,7 +1011,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
   });
   describe('leavePosition - partial amount:', async () => {
     it('USDT as borrowing asset', async () => {
-      const { users, usdt, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
+      const { users, usdt, TUSD, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, pool, helpersContract } = testEnv;
 
       const depositor = users[0];
       const borrower = users[1];
@@ -529,9 +1053,88 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 3, 0, inAmount, false, false, true, TUSD3CRV_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            expectOutAmount1.toFixed(0),
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [usdt.address, TUSD3CRV_POOL, TUSD.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [3, 0, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
+            swapFrom: usdt.address,
+            swapTo: TUSD.address,
+            inAmount,
+            outAmount: expectOutAmount1.toFixed(0),
+          },
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: expectOutAmount1.toFixed(0),
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: TUSD.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          {
+            routes: [TUSD.address, TUSD3CRV_POOL, usdt.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [0, 3, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: TUSD.address,
+            swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 2,
+      };
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -554,15 +1157,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterEnter.totalCollateralETH,
+        userGlobalDataAfterEnter.totalDebtETH,
+        repayAmount.div(10).toString(),
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdt.address
+      );
+      let reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      let reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            3,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           usdt.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -588,15 +1234,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(2).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdt.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            3,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           usdt.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -622,15 +1311,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(3).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdt.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            3,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           usdt.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -656,15 +1388,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(4).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdt.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            3,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           usdt.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -722,9 +1497,98 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 1, 0, inAmount, true, true, false, FRAX_USDC_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            expectOutAmount1.toFixed(0),
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdc.address,
+              FRAX_USDC_POOL,
+              FRAX_USDC_LP,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
+            swapFrom: usdc.address,
+            swapTo: FRAX_USDC_LP,
+            inAmount,
+            outAmount: expectOutAmount1.toFixed(0),
+          },
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: FRAX_USDC_LP,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: expectOutAmount1.toFixed(0),
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: FRAX_USDC_LP,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          {
+            routes: [
+              FRAX_USDC_LP,
+              FRAX_USDC_POOL,
+              usdc.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: FRAX_USDC_LP,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 2,
+      };
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -747,15 +1611,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterEnter.totalCollateralETH,
+        userGlobalDataAfterEnter.totalDebtETH,
+        repayAmount.div(10).toString(),
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdc.address
+      );
+      let reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      let reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           usdc.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -781,15 +1688,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(2).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdc.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           usdc.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -815,15 +1765,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(3).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdc.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           usdc.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -849,15 +1842,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(4).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        usdc.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           usdc.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -875,7 +1911,7 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       );
     });
     it('DAI as borrowing asset', async () => {
-      const { users, dai, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
+      const { users, dai, TUSD, TUSD_FRAXBP_LP, aCVXTUSD_FRAXBP, pool, helpersContract } = testEnv;
       const depositor = users[0];
       const borrower = users[3];
       const principalAmount = (
@@ -915,9 +1951,88 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 1, 0, inAmount, false, false, true, TUSD3CRV_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            expectOutAmount1.toFixed(0),
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [dai.address, TUSD3CRV_POOL, TUSD.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [1, 0, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
+            swapFrom: dai.address,
+            swapTo: TUSD.address,
+            inAmount,
+            outAmount: expectOutAmount1.toFixed(0),
+          },
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: expectOutAmount1.toFixed(0),
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: TUSD.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          {
+            routes: [TUSD.address, TUSD3CRV_POOL, dai.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routeParams: [
+              [0, 1, 2 /*exchange_underlying*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 1,
+            swapFrom: TUSD.address,
+            swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 2,
+      };
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -940,15 +2055,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterEnter.totalCollateralETH,
+        userGlobalDataAfterEnter.totalDebtETH,
+        repayAmount.div(10).toString(),
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        userGlobalDataAfterEnter.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        dai.address
+      );
+      let reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      let reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           dai.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -974,15 +2132,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(2).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        dai.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           dai.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1008,15 +2209,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(3).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        dai.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           dai.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1042,15 +2286,58 @@ makeSuite('TUSDFRAXBP Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(tusdfraxbpLevSwap.address, balanceInSturdy.mul(2));
 
+      reverseInAmount = await calcWithdrawalAmount(
+        testEnv,
+        userGlobalDataAfterLeave.totalCollateralETH,
+        userGlobalDataAfterLeave.totalDebtETH,
+        repayAmount.div(10).mul(4).toString(),
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        userGlobalDataAfterLeave.currentLiquidationThreshold,
+        balanceInSturdy,
+        TUSD_FRAXBP_LP.address,
+        dai.address
+      );
+      reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            0,
+            reverseInAmount.toFixed(0),
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            false,
+            false,
+            true,
+            TUSD3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
+      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
       await tusdfraxbpLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           dai.address,
           aCVXTUSD_FRAXBP.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);

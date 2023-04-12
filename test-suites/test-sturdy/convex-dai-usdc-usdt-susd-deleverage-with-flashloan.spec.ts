@@ -5,13 +5,30 @@ import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20 } from '../../types';
+import {
+  ICurvePool__factory,
+  IGeneralLevSwap,
+  IGeneralLevSwap__factory,
+  MintableERC20,
+} from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
+
+const slippage = 0.0002; //0.02%
+const SUSD_POOL = '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD';
+const SUSD = '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51';
+const MultiSwapPathInitData = {
+  routes: new Array(9).fill(ZERO_ADDRESS),
+  routeParams: new Array(4).fill([0, 0, 0]) as any,
+  swapType: 0, //NONE
+  poolCount: 0,
+  swapFrom: ZERO_ADDRESS,
+  swapTo: ZERO_ADDRESS,
+  inAmount: '0',
+  outAmount: '0',
+};
 
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
@@ -78,6 +95,84 @@ const calcTotalBorrowAmount = async (
   return amountToBorrow;
 };
 
+const calcCollateralPrice = async (testEnv: TestEnv) => {
+  const { deployer, oracle, dai, usdc, usdt, DAI_USDC_USDT_SUSD_LP } = testEnv;
+
+  const curvePool = ICurvePool__factory.connect(SUSD_POOL, deployer.signer);
+  const daiPrice = await oracle.getAssetPrice(dai.address);
+  const daiTotalBalance = await curvePool['balances(int128)'](0);
+  const usdcPrice = await oracle.getAssetPrice(usdc.address);
+  const usdcTotalBalance = await curvePool['balances(int128)'](1);
+  const usdtPrice = await oracle.getAssetPrice(usdt.address);
+  const usdtTotalBalance = await curvePool['balances(int128)'](2);
+  const susdPrice = await oracle.getAssetPrice(SUSD);
+  const susdTotalBalance = await curvePool['balances(int128)'](3);
+  const lpTotalSupply = await DAI_USDC_USDT_SUSD_LP.totalSupply();
+
+  return new BigNumber(daiPrice.toString())
+    .multipliedBy(daiTotalBalance.toString())
+    .dividedBy(1e18)
+    .plus(
+      new BigNumber(usdcPrice.toString()).multipliedBy(usdcTotalBalance.toString()).dividedBy(1e6)
+    )
+    .plus(
+      new BigNumber(usdtPrice.toString()).multipliedBy(usdtTotalBalance.toString()).dividedBy(1e6)
+    )
+    .plus(
+      new BigNumber(susdPrice.toString()).multipliedBy(susdTotalBalance.toString()).dividedBy(1e18)
+    )
+    .multipliedBy(1e18)
+    .dividedBy(lpTotalSupply.toString());
+};
+
+const calcInAmount = async (
+  testEnv: TestEnv,
+  amount: BigNumberish,
+  leverage: BigNumberish,
+  borrowingAsset: tEthereumAddress
+) => {
+  const { oracle } = testEnv;
+  const collateralPrice = await calcCollateralPrice(testEnv);
+  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
+
+  const intputAmount = await convertToCurrencyDecimals(
+    borrowingAsset,
+    new BigNumber(amount.toString())
+      .multipliedBy(leverage.toString())
+      .div(10000)
+      .multipliedBy(collateralPrice.toFixed(0))
+      .div(borrowingAssetPrice.toString())
+      .div(1 - 0.006) // flashloan fee + extra(swap loss) = 0.6%
+      .toFixed(0)
+  );
+
+  return intputAmount;
+};
+
+const calcMinAmountOut = async (
+  testEnv: TestEnv,
+  fromIndex: number,
+  amount: BigNumberish,
+  poolCoinsLength: number,
+  isDeposit: boolean,
+  isCalcTokenAmount: boolean,
+  pool: tEthereumAddress
+) => {
+  const { deployer } = testEnv;
+
+  const curvePool = ICurvePool__factory.connect(pool, deployer.signer);
+  if (isCalcTokenAmount) {
+    const amounts = new Array<BigNumberish>(poolCoinsLength).fill('0');
+    amounts[fromIndex] = amount;
+
+    if (poolCoinsLength == 2)
+      return await curvePool['calc_token_amount(uint256[2],bool)'](amounts as any, isDeposit);
+    return await curvePool['calc_token_amount(uint256[4],bool)'](amounts as any, isDeposit);
+  }
+
+  return await curvePool['calc_withdraw_one_coin(uint256,int128)'](amount, fromIndex);
+};
+
 const depositToLendingPool = async (
   token: MintableERC20,
   user: SignerWithAddress,
@@ -94,7 +189,6 @@ const depositToLendingPool = async (
 makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -173,17 +267,52 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdt.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -203,16 +332,25 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-
+      const outAmount = new BigNumber(repayAmount.toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      const expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount,
           principalAmount,
-          slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -271,17 +409,52 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 1, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdc.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -301,16 +474,25 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-
+      const outAmount = new BigNumber(repayAmount.toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      const expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 1, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount,
           principalAmount,
-          slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -369,17 +551,52 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: dai.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -399,16 +616,25 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-
+      const outAmount = new BigNumber(repayAmount.toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      const expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount,
           principalAmount,
-          slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -422,7 +648,6 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
 makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -501,17 +726,52 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdt.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -531,16 +791,25 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-
+      const outAmount = new BigNumber(repayAmount.toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      const expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount,
           principalAmount,
-          slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          1
+          1,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -599,17 +868,52 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 1, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdc.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -629,16 +933,25 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-
+      const outAmount = new BigNumber(repayAmount.toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      const expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 1, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount,
           principalAmount,
-          slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          1
+          1,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -697,17 +1010,52 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: dai.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
 
@@ -727,16 +1075,25 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
-
+      const outAmount = new BigNumber(repayAmount.toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      const expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount,
           principalAmount,
-          slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          1
+          1,
+          swapInfo
         );
 
       const afterBalanceOfBorrower = await DAI_USDC_USDT_SUSD_LP.balanceOf(borrower.address);
@@ -750,7 +1107,6 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
 makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage2 = '70'; //0.7%
   const leverage = 36000;
   let susdLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -829,17 +1185,52 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdt.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdt.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -862,15 +1253,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let outAmount = new BigNumber(repayAmount.div(10).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      let expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -896,15 +1297,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(2).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -930,15 +1341,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(3).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -964,15 +1385,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(4).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           usdt.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1040,17 +1471,52 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 1, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: usdc.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, usdc.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1073,15 +1539,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let outAmount = new BigNumber(repayAmount.div(10).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      let expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1107,15 +1583,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(2).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1141,15 +1627,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(3).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1175,15 +1671,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(4).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           usdc.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1251,17 +1757,52 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, inAmount, 4, true, true, SUSD_POOL)).toString()
+      );
+      const swapInfo = {
+        paths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: dai.address,
+            swapTo: DAI_USDC_USDT_SUSD_LP.address,
+            inAmount,
+            outAmount: expectOutAmount.multipliedBy(1 - slippage).toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: new Array(9).fill(ZERO_ADDRESS),
+            routeParams: new Array(4).fill([0, 0, 0]) as any,
+            swapType: 1, //NO_SWAP: Join/Exit pool
+            poolCount: 0,
+            swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+            swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         susdLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexDAIUSDCUSDTSUSDVault.address, borrower.address);
       await susdLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage2, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfterEnter = await pool.getUserAccountData(borrower.address);
 
@@ -1284,15 +1825,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
       const repayAmount = await varDebtToken.balanceOf(borrower.address);
+      let outAmount = new BigNumber(repayAmount.div(10).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      let expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).toString(),
           (Number(principalAmount) / 10).toFixed(),
-          slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       let userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1318,15 +1869,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(2).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(2).toString(),
           ((Number(principalAmount) / 10) * 2).toFixed(),
-          slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1352,15 +1913,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(3).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(3).toString(),
           ((Number(principalAmount) / 10) * 3).toFixed(),
-          slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);
@@ -1386,15 +1957,25 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
         .connect(borrower.signer)
         .approve(susdLevSwap.address, balanceInSturdy.mul(2));
 
+      outAmount = new BigNumber(repayAmount.div(10).mul(4).toString())
+        .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+        .plus(0.5)
+        .dp(0, 1) //round down with decimal 0
+        .toFixed(0);
+      expectInAmount = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, outAmount, 4, false, true, SUSD_POOL)).toString()
+      );
+      swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+      swapInfo.reversePaths[0].outAmount = outAmount;
       await susdLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
           repayAmount.div(10).mul(4).toString(),
           ((Number(principalAmount) / 10) * 4).toFixed(),
-          slippage2,
           dai.address,
           aCVXDAI_USDC_USDT_SUSD.address,
-          0
+          0,
+          swapInfo
         );
 
       userGlobalDataAfterLeave = await pool.getUserAccountData(borrower.address);

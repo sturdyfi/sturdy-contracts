@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -84,11 +84,10 @@ contract TombFtmBeefyVault is GeneralVault {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external override returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address TOMB_FTM_LP = provider.getAddress('TOMB_FTM_LP');
     address MOO_TOMB_FTM = provider.getAddress('mooTombTOMB-FTM');
@@ -114,10 +113,10 @@ contract TombFtmBeefyVault is GeneralVault {
    * @return amountToken - The amount of TOMB
    * @return amountFTM - The amount of FTM
    */
-  function _withdrawLiquidityPool(address _poolAddress, uint256 _amount)
-    internal
-    returns (uint256 amountToken, uint256 amountFTM)
-  {
+  function _withdrawLiquidityPool(
+    address _poolAddress,
+    uint256 _amount
+  ) internal returns (uint256 amountToken, uint256 amountFTM) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address uniswapRouter = provider.getAddress('uniswapRouter');
 
@@ -158,8 +157,8 @@ contract TombFtmBeefyVault is GeneralVault {
     // Calculate minAmount from price with 2% slippage
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
-    uint256 minAmountFromPrice = ((((_tombAmount * oracle.getAssetPrice(TOMB)) / 10**18) *
-      10**assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
+    uint256 minAmountFromPrice = ((((_tombAmount * oracle.getAssetPrice(TOMB)) / 10 ** 18) *
+      10 ** assetDecimal) / oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange TOMB -> _tokenOut via UniswapV2
     address[] memory path = new address[](3);
@@ -206,7 +205,7 @@ contract TombFtmBeefyVault is GeneralVault {
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_ftmAmount *
-      oracle.getAssetPrice(provider.getAddress('YVWFTM'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVWFTM'))) / 10 ** 18) * 10 ** assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(99_00);
 
     // Exchange FTM -> _tokenOut via UniswapV2
@@ -253,11 +252,10 @@ contract TombFtmBeefyVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address MOO_TOMB_FTM = provider.getAddress('mooTombTOMB-FTM');
     address TOMB_FTM_LP = provider.getAddress('TOMB_FTM_LP');
@@ -287,12 +285,10 @@ contract TombFtmBeefyVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     require(_asset == provider.getAddress('TOMB_FTM_LP'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);

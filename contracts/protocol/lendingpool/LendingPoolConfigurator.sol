@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -86,12 +86,9 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * - Caller is only poolAdmin
    * @param input The init data of reserve
    **/
-  function batchInitReserve(InitReserveInput[] calldata input)
-    external
-    payable
-    override
-    onlyPoolAdmin
-  {
+  function batchInitReserve(
+    InitReserveInput[] calldata input
+  ) external payable override onlyPoolAdmin {
     ILendingPool cachedPool = pool;
     uint256 length = input.length;
     for (uint256 i; i < length; ++i) {
@@ -208,11 +205,9 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * - Caller is only poolAdmin
    * @param input The init data to update the stable debt implementation
    **/
-  function updateStableDebtToken(UpdateDebtTokenInput calldata input)
-    external
-    payable
-    onlyPoolAdmin
-  {
+  function updateStableDebtToken(
+    UpdateDebtTokenInput calldata input
+  ) external payable onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
@@ -248,11 +243,9 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * - Caller is only poolAdmin
    * @param input The init data to update the variable debt implementation
    **/
-  function updateVariableDebtToken(UpdateDebtTokenInput calldata input)
-    external
-    payable
-    onlyPoolAdmin
-  {
+  function updateVariableDebtToken(
+    UpdateDebtTokenInput calldata input
+  ) external payable onlyPoolAdmin {
     ILendingPool cachedPool = pool;
 
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
@@ -291,11 +284,10 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
-    external
-    payable
-    onlyPoolAdmin
-  {
+  function enableBorrowingOnReserve(
+    address asset,
+    bool stableBorrowRateEnabled
+  ) external payable onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
     (, , , , bool isCollateral) = currentConfig.getFlagsMemory();
     require(!isCollateral, Errors.LPC_INVALID_CONFIGURATION);
@@ -328,11 +320,10 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param collateralEnabled True
    **/
-  function enableCollateralOnReserve(address asset, bool collateralEnabled)
-    external
-    payable
-    onlyPoolAdmin
-  {
+  function enableCollateralOnReserve(
+    address asset,
+    bool collateralEnabled
+  ) external payable onlyPoolAdmin {
     DataTypes.ReserveConfigurationMap memory currentConfig = pool.getConfiguration(asset);
     (, , bool isBorrowing, , ) = currentConfig.getFlagsMemory();
     require(!isBorrowing, Errors.LPC_INVALID_CONFIGURATION);
@@ -532,11 +523,10 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param asset The address of the underlying asset of the reserve
    * @param rateStrategyAddress The new address of the interest strategy contract
    **/
-  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
-    external
-    payable
-    onlyPoolAdmin
-  {
+  function setReserveInterestRateStrategyAddress(
+    address asset,
+    address rateStrategyAddress
+  ) external payable onlyPoolAdmin {
     pool.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(asset, rateStrategyAddress);
   }
@@ -555,10 +545,10 @@ contract LendingPoolConfigurator is VersionedInitializable, ILendingPoolConfigur
    * @param implementation The address of the aToken/StableDebtToken/VariableDebtToken implementation
    * @param initParams The init data
    **/
-  function _initTokenWithProxy(address implementation, bytes memory initParams)
-    internal
-    returns (address)
-  {
+  function _initTokenWithProxy(
+    address implementation,
+    bytes memory initParams
+  ) internal returns (address) {
     InitializableImmutableAdminUpgradeabilityProxy proxy = new InitializableImmutableAdminUpgradeabilityProxy(
         address(this)
       );

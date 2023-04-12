@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {ERC20} from '../../dependencies/openzeppelin/contracts/ERC20.sol';
@@ -39,7 +39,7 @@ contract MockMooBASEDMIMATIC is ERC20 {
     management = _management;
     rewards = _rewards;
     guardian = _guardian;
-    rewardRatio = 10**25; // 0.01 * ray() = 1%
+    rewardRatio = 10 ** 25; // 0.01 * ray() = 1%
     lastReport = block.timestamp;
     isIncreasing = true;
   }
@@ -67,11 +67,7 @@ contract MockMooBASEDMIMATIC is ERC20 {
     return shares;
   }
 
-  function withdraw(
-    uint256 maxShares,
-    address recipient,
-    uint256
-  ) external returns (uint256) {
+  function withdraw(uint256 maxShares, address recipient, uint256) external returns (uint256) {
     uint256 shares = maxShares;
     // require(maxLoss <= MAX_BPS);
 
@@ -91,12 +87,12 @@ contract MockMooBASEDMIMATIC is ERC20 {
 
   function getPricePerFullShare() external view returns (uint256) {
     uint256 decimal = decimals();
-    return _shareValue(10**decimal);
+    return _shareValue(10 ** decimal);
   }
 
   function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {
     uint256 decimal = decimals();
-    uint256 shares = amount.rayDiv(_shareValue(10**decimal).wadToRay());
+    uint256 shares = amount.rayDiv(_shareValue(10 ** decimal).wadToRay());
     require(shares != 0);
 
     _mint(to, shares);

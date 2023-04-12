@@ -57,8 +57,8 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     // console.log('6-5. Deploy Convex DOLA 3CRV vault');
     // await DRE.run('full:deploy-convex-dola-3crv-vault', { pool: POOL_NAME });
 
-    console.log('6-6. Deploy Convex MIM 3CRV vault');
-    await DRE.run('full:deploy-convex-mim-3crv-vault', { pool: POOL_NAME, verify });
+    // console.log('6-6. Deploy Convex MIM 3CRV vault');
+    // await DRE.run('full:deploy-convex-mim-3crv-vault', { pool: POOL_NAME, verify });
 
     console.log('6-7. Deploy Convex DAI USDC USDT SUSD vault');
     await DRE.run('full:deploy-convex-dai-usdc-usdt-susd-vault', { pool: POOL_NAME, verify });
@@ -66,8 +66,8 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     // console.log('6-8. Deploy Convex HBTC WBTC vault');
     // await DRE.run('full:deploy-convex-hbtc-wbtc-vault', { pool: POOL_NAME, verify });
 
-    console.log('6-9. Deploy Convex Iron Bank vault');
-    await DRE.run('full:deploy-convex-iron-bank-vault', { pool: POOL_NAME, verify });
+    // console.log('6-9. Deploy Convex Iron Bank vault');
+    // await DRE.run('full:deploy-convex-iron-bank-vault', { pool: POOL_NAME, verify });
 
     console.log('6-10. Deploy Convex FRAX USDC vault');
     await DRE.run('full:deploy-convex-frax-usdc-vault', { pool: POOL_NAME, verify });

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -62,11 +62,10 @@ contract YearnBOOVault is GeneralVault {
    * @param _amount The amount of collateral internal asset
    * @return The amount of collateral external asset
    */
-  function withdrawOnLiquidation(address _asset, uint256 _amount)
-    external
-    override
-    returns (uint256)
-  {
+  function withdrawOnLiquidation(
+    address _asset,
+    uint256 _amount
+  ) external override returns (uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address BOO = provider.getAddress('BOO');
 
@@ -101,7 +100,7 @@ contract YearnBOOVault is GeneralVault {
     uint256 assetDecimal = IERC20Detailed(_tokenOut).decimals();
     IPriceOracleGetter oracle = IPriceOracleGetter(provider.getPriceOracle());
     uint256 minAmountFromPrice = ((((_booAmount *
-      oracle.getAssetPrice(provider.getAddress('YVBOO'))) / 10**18) * 10**assetDecimal) /
+      oracle.getAssetPrice(provider.getAddress('YVBOO'))) / 10 ** 18) * 10 ** assetDecimal) /
       oracle.getAssetPrice(_tokenOut)).percentMul(98_00);
 
     // Exchange BOO -> _tokenOut via UniswapV2
@@ -156,11 +155,10 @@ contract YearnBOOVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The amount of collateral internal asset
    */
-  function _depositToYieldPool(address _asset, uint256 _amount)
-    internal
-    override
-    returns (address, uint256)
-  {
+  function _depositToYieldPool(
+    address _asset,
+    uint256 _amount
+  ) internal override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
     address YVBOO = provider.getAddress('YVBOO');
     address BOO = provider.getAddress('BOO');
@@ -188,12 +186,10 @@ contract YearnBOOVault is GeneralVault {
    * @return The address of collateral internal asset
    * @return The withdrawal amount of collateral internal asset
    */
-  function _getWithdrawalAmount(address _asset, uint256 _amount)
-    internal
-    view
-    override
-    returns (address, uint256)
-  {
+  function _getWithdrawalAmount(
+    address _asset,
+    uint256 _amount
+  ) internal view override returns (address, uint256) {
     ILendingPoolAddressesProvider provider = _addressesProvider;
 
     require(_asset == provider.getAddress('BOO'), Errors.VT_COLLATERAL_WITHDRAW_INVALID);

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
@@ -49,11 +49,7 @@ interface IVariableDebtToken is IScaledBalanceToken, IInitializableDebtToken {
    * @param user The user which debt is burnt
    * @param index The variable debt index of the reserve
    **/
-  function burn(
-    address user,
-    uint256 amount,
-    uint256 index
-  ) external payable;
+  function burn(address user, uint256 amount, uint256 index) external payable;
 
   /**
    * @dev Returns the address of the incentives controller contract

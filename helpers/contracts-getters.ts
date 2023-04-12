@@ -1124,6 +1124,21 @@ export const getBalancerswapAdapterAddress = async () => {
   return db?.address;
 };
 
+export const getUniswapAdapter2Address = async () => {
+  const db = await getDb().get(`${eContractid.UniswapAdapter2}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getCurveswapAdapter2Address = async () => {
+  const db = await getDb().get(`${eContractid.CurveswapAdapter2}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getBalancerswapAdapter2Address = async () => {
+  const db = await getDb().get(`${eContractid.BalancerswapAdapter2}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
 export const getLeverageSwapManager = async (address?: tEthereumAddress) =>
   await LeverageSwapManager__factory.connect(
     address ||

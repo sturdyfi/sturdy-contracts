@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -76,14 +76,15 @@ interface IUiPoolDataProvider {
     uint256 emissionEndTimestamp;
   }
 
-  function getReservesList(ILendingPoolAddressesProvider provider)
-    external
-    view
-    returns (address[] memory);
+  function getReservesList(
+    ILendingPoolAddressesProvider provider
+  ) external view returns (address[] memory);
 
   function incentivesController() external view returns (ISturdyIncentivesController);
 
-  function getSimpleReservesData(ILendingPoolAddressesProvider provider)
+  function getSimpleReservesData(
+    ILendingPoolAddressesProvider provider
+  )
     external
     view
     returns (
@@ -92,7 +93,10 @@ interface IUiPoolDataProvider {
       uint256 // emission end timestamp
     );
 
-  function getUserReservesData(ILendingPoolAddressesProvider provider, address user)
+  function getUserReservesData(
+    ILendingPoolAddressesProvider provider,
+    address user
+  )
     external
     view
     returns (
@@ -101,7 +105,10 @@ interface IUiPoolDataProvider {
     );
 
   // generic method with full data
-  function getReservesData(ILendingPoolAddressesProvider provider, address user)
+  function getReservesData(
+    ILendingPoolAddressesProvider provider,
+    address user
+  )
     external
     view
     returns (

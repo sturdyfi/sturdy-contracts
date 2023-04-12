@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -291,11 +291,10 @@ contract YieldManager is VersionedInitializable, Ownable {
   /**
    * @dev Get the list of asset and asset's yield amount
    **/
-  function _getAssetYields(uint256 _totalYieldAmount, ILendingPoolAddressesProvider provider)
-    internal
-    view
-    returns (AssetYield[] memory)
-  {
+  function _getAssetYields(
+    uint256 _totalYieldAmount,
+    ILendingPoolAddressesProvider provider
+  ) internal view returns (AssetYield[] memory) {
     // Get total borrowing asset volume and volumes and assets
     (
       uint256 totalVolume,

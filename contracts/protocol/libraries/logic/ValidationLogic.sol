@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -53,7 +53,9 @@ library ValidationLogic {
       if (isCollateral && reserve.yieldAddress != address(0)) {
         uint256 decimal = IERC20Detailed(reserve.aTokenAddress).decimals();
         if (decimal < 18)
-          depositAmount = (amount * 10**(18 - decimal)).rayMul(reserve.getIndexFromPricePerShare());
+          depositAmount = (amount * 10 ** (18 - decimal)).rayMul(
+            reserve.getIndexFromPricePerShare()
+          );
         else depositAmount = amount.rayMul(reserve.getIndexFromPricePerShare());
       }
 

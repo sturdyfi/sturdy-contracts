@@ -371,10 +371,10 @@ export async function initializeMakeSuite() {
   testEnv.convexFRAX3CRVVault = await getConvexFRAX3CRVVault();
   // testEnv.convexSTETHVault = await getConvexSTETHVault();
   // testEnv.convexDOLA3CRVVault = await getConvexDOLA3CRVVault();
-  testEnv.convexMIM3CRVVault = await getConvexMIM3CRVVault();
+  // testEnv.convexMIM3CRVVault = await getConvexMIM3CRVVault();
   testEnv.convexDAIUSDCUSDTSUSDVault = await getConvexDAIUSDCUSDTSUSDVault();
   // testEnv.convexHBTCWBTCVault = await getConvexHBTCWBTCVault();
-  testEnv.convexIronBankVault = await getConvexIronBankVault();
+  // testEnv.convexIronBankVault = await getConvexIronBankVault();
   testEnv.convexFRAXUSDCVault = await getConvexFRAXUSDCVault();
   // testEnv.auraDAIUSDCUSDTVault = await getAuraDAIUSDCUSDTVault();
   testEnv.convexTUSDFRAXBPVault = await getConvexTUSDFRAXBPVault();
@@ -383,10 +383,10 @@ export async function initializeMakeSuite() {
   const cvxfrax3crvAddress = await testEnv.convexFRAX3CRVVault.getInternalAsset();
   // const cvxstecrvAddress = await testEnv.convexSTETHVault.getInternalAsset();
   // const cvxdola3crvAddress = await testEnv.convexDOLA3CRVVault.getInternalAsset();
-  const cvxmim3crvAddress = await testEnv.convexMIM3CRVVault.getInternalAsset();
+  // const cvxmim3crvAddress = await testEnv.convexMIM3CRVVault.getInternalAsset();
   const cvxdaiusdcusdtsusdAddress = await testEnv.convexDAIUSDCUSDTSUSDVault.getInternalAsset();
   // const cvxhbtcwbtcAddress = await testEnv.convexHBTCWBTCVault.getInternalAsset();
-  const cvxironbankAddress = await testEnv.convexIronBankVault.getInternalAsset();
+  // const cvxironbankAddress = await testEnv.convexIronBankVault.getInternalAsset();
   const cvxfraxusdcAddress = await testEnv.convexFRAXUSDCVault.getInternalAsset();
   // const auradaiusdcusdtAddress = await testEnv.auraDAIUSDCUSDTVault.getInternalAsset();
   const cvxtusdfraxbpAddress = await testEnv.convexTUSDFRAXBPVault.getInternalAsset();
@@ -444,9 +444,9 @@ export async function initializeMakeSuite() {
   // const aCVXDOLA_3CRVAddress = allTokens.find(
   //   (aToken) => aToken.symbol === 'acvxDOLA_3CRV' || aToken.symbol === 'scvxDOLA_3CRV'
   // )?.tokenAddress;
-  const aCVXMIM_3CRVAddress = allTokens.find(
-    (aToken) => aToken.symbol === 'acvxMIM_3CRV' || aToken.symbol === 'scvxMIM_3CRV'
-  )?.tokenAddress;
+  // const aCVXMIM_3CRVAddress = allTokens.find(
+  //   (aToken) => aToken.symbol === 'acvxMIM_3CRV' || aToken.symbol === 'scvxMIM_3CRV'
+  // )?.tokenAddress;
   const aCVXDAI_USDC_USDT_SUSDAddress = allTokens.find(
     (aToken) =>
       aToken.symbol === 'acvxDAI_USDC_USDT_SUSD' || aToken.symbol === 'scvxDAI_USDC_USDT_SUSD'
@@ -454,9 +454,9 @@ export async function initializeMakeSuite() {
   // const aCVXHBTC_WBTCAddress = allTokens.find(
   //   (aToken) => aToken.symbol === 'acvxHBTC_WBTC' || aToken.symbol === 'scvxHBTC_WBTC'
   // )?.tokenAddress;
-  const aCVXIRON_BANKAddress = allTokens.find(
-    (aToken) => aToken.symbol === 'acvxIRON_BANK' || aToken.symbol === 'scvxIRON_BANK'
-  )?.tokenAddress;
+  // const aCVXIRON_BANKAddress = allTokens.find(
+  //   (aToken) => aToken.symbol === 'acvxIRON_BANK' || aToken.symbol === 'scvxIRON_BANK'
+  // )?.tokenAddress;
   const aCVXFRAX_USDCAddress = allTokens.find(
     (aToken) => aToken.symbol === 'acvxFRAX_USDC' || aToken.symbol === 'scvxFRAX_USDC'
   )?.tokenAddress;
@@ -490,10 +490,10 @@ export async function initializeMakeSuite() {
     !aCVXFRAX_3CRVAddress ||
     // !aCVXSTECRVAddress ||
     // !aCVXDOLA_3CRVAddress ||
-    !aCVXMIM_3CRVAddress ||
+    // !aCVXMIM_3CRVAddress ||
     !aCVXDAI_USDC_USDT_SUSDAddress ||
     // !aCVXHBTC_WBTCAddress ||
-    !aCVXIRON_BANKAddress ||
+    // !aCVXIRON_BANKAddress ||
     !aCVXFRAX_USDCAddress ||
     // !aAURADAI_USDC_USDTAddress ||
     !aCVXTUSD_FRAXBPAddress ||
@@ -513,10 +513,10 @@ export async function initializeMakeSuite() {
   testEnv.aCVXFRAX_3CRV = await getAToken(aCVXFRAX_3CRVAddress);
   // testEnv.aCVXSTECRV = await getAToken(aCVXSTECRVAddress);
   // testEnv.aCVXDOLA_3CRV = await getAToken(aCVXDOLA_3CRVAddress);
-  testEnv.aCVXMIM_3CRV = await getAToken(aCVXMIM_3CRVAddress);
+  // testEnv.aCVXMIM_3CRV = await getAToken(aCVXMIM_3CRVAddress);
   testEnv.aCVXDAI_USDC_USDT_SUSD = await getAToken(aCVXDAI_USDC_USDT_SUSDAddress);
   // testEnv.aCVXHBTC_WBTC = await getAToken(aCVXHBTC_WBTCAddress);
-  testEnv.aCVXIRON_BANK = await getAToken(aCVXIRON_BANKAddress);
+  // testEnv.aCVXIRON_BANK = await getAToken(aCVXIRON_BANKAddress);
   testEnv.aCVXFRAX_USDC = await getAToken(aCVXFRAX_USDCAddress);
   // testEnv.aAURADAI_USDC_USDT = await getAToken(aAURADAI_USDC_USDTAddress);
   testEnv.aCVXTUSD_FRAXBP = await getAToken(aCVXTUSD_FRAXBPAddress);
@@ -535,10 +535,10 @@ export async function initializeMakeSuite() {
   testEnv.FRAX_3CRV_LP = await getMintableERC20(Frax3CrvLPAddress);
   // testEnv.STECRV_LP = await getMintableERC20(SteCrvLPAddress);
   // testEnv.DOLA_3CRV_LP = await getMintableERC20(Dola3CRVLPAddress);
-  testEnv.MIM_3CRV_LP = await getMintableERC20(Mim3CrvLPAddress);
+  // testEnv.MIM_3CRV_LP = await getMintableERC20(Mim3CrvLPAddress);
   testEnv.DAI_USDC_USDT_SUSD_LP = await getMintableERC20(DaiUsdcUsdtSusdLPAddress);
   // testEnv.HBTC_WBTC_LP = await getMintableERC20(HBTCWBTCLPAddress);
-  testEnv.IRON_BANK_LP = await getMintableERC20(IronBankLPAddress);
+  // testEnv.IRON_BANK_LP = await getMintableERC20(IronBankLPAddress);
   testEnv.FRAX_USDC_LP = await getMintableERC20(FraxUsdcLPAddress);
   // testEnv.BAL_DAI_USDC_USDT_LP = await getMintableERC20(BalDaiUsdcUsdtLPAddress);
   testEnv.TUSD_FRAXBP_LP = await getMintableERC20(TusdFraxbpLPAddress);
@@ -558,13 +558,13 @@ export async function initializeMakeSuite() {
   testEnv.cvxfrax_3crv = SturdyInternalAsset__factory.connect(cvxfrax3crvAddress, deployer.signer);
   // testEnv.cvxstecrv = SturdyInternalAsset__factory.connect(cvxstecrvAddress, deployer.signer);
   // testEnv.cvxdola_3crv = SturdyInternalAsset__factory.connect(cvxdola3crvAddress, deployer.signer);
-  testEnv.cvxmim_3crv = SturdyInternalAsset__factory.connect(cvxmim3crvAddress, deployer.signer);
+  // testEnv.cvxmim_3crv = SturdyInternalAsset__factory.connect(cvxmim3crvAddress, deployer.signer);
   testEnv.cvxdai_usdc_usdt_susd = SturdyInternalAsset__factory.connect(
     cvxdaiusdcusdtsusdAddress,
     deployer.signer
   );
   // testEnv.cvxhbtc_wbtc = SturdyInternalAsset__factory.connect(cvxhbtcwbtcAddress, deployer.signer);
-  testEnv.cvxiron_bank = SturdyInternalAsset__factory.connect(cvxironbankAddress, deployer.signer);
+  // testEnv.cvxiron_bank = SturdyInternalAsset__factory.connect(cvxironbankAddress, deployer.signer);
   testEnv.cvxfrax_usdc = SturdyInternalAsset__factory.connect(cvxfraxusdcAddress, deployer.signer);
   // testEnv.auradai_usdc_usdt = SturdyInternalAsset__factory.connect(
   //   auradaiusdcusdtAddress,

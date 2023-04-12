@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
@@ -35,11 +35,10 @@ contract VaultWhitelist is Ownable {
    * @dev add users to the whitelist
    * @param users addresses
    */
-  function addAddressesToWhitelistUser(address vault, address[] calldata users)
-    external
-    payable
-    onlyOwner
-  {
+  function addAddressesToWhitelistUser(
+    address vault,
+    address[] calldata users
+  ) external payable onlyOwner {
     uint256 count;
     uint256 length = users.length;
 
@@ -70,11 +69,10 @@ contract VaultWhitelist is Ownable {
    * @dev remove users from the whitelist
    * @param users addresses
    */
-  function removeAddressesFromWhitelistUser(address vault, address[] calldata users)
-    external
-    payable
-    onlyOwner
-  {
+  function removeAddressesFromWhitelistUser(
+    address vault,
+    address[] calldata users
+  ) external payable onlyOwner {
     uint256 count;
     uint256 length = users.length;
 
@@ -104,11 +102,10 @@ contract VaultWhitelist is Ownable {
    * @dev remove a contract from the whitelist
    * @param sender address
    */
-  function removeAddressFromWhitelistContract(address vault, address sender)
-    external
-    payable
-    onlyOwner
-  {
+  function removeAddressFromWhitelistContract(
+    address vault,
+    address sender
+  ) external payable onlyOwner {
     if (whitelistContract[vault][sender]) {
       whitelistContract[vault][sender] = false;
     }

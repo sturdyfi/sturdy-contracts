@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 pragma abicoder v2;
@@ -57,11 +57,10 @@ contract WalletBalanceProvider {
    * @param tokens The list of tokens
    * @return And array with the concatenation of, for each user, his/her balances
    **/
-  function batchBalanceOf(address[] calldata users, address[] calldata tokens)
-    external
-    view
-    returns (uint256[] memory)
-  {
+  function batchBalanceOf(
+    address[] calldata users,
+    address[] calldata tokens
+  ) external view returns (uint256[] memory) {
     uint256 userLength = users.length;
     uint256 tokenLength = tokens.length;
 
@@ -79,11 +78,10 @@ contract WalletBalanceProvider {
   /**
     @dev provides balances of user wallet for all reserves available on the pool
     */
-  function getUserWalletBalances(address provider, address user)
-    external
-    view
-    returns (address[] memory, uint256[] memory)
-  {
+  function getUserWalletBalances(
+    address provider,
+    address user
+  ) external view returns (address[] memory, uint256[] memory) {
     ILendingPool pool = ILendingPool(ILendingPoolAddressesProvider(provider).getLendingPool());
     address[] memory reserves = pool.getReservesList();
     uint256 length = reserves.length;

@@ -1,11 +1,17 @@
 import { makeSuite } from './helpers/make-suite';
 import { mint } from './helpers/mint';
 import { deployERC4626Vault } from '../../helpers/contracts-deployments';
-import { ERC4626Vault } from '../../types';
+import { ERC4626Vault, ISTRDY, ISTRDY__factory } from '../../types';
 import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { BigNumber } from 'ethers';
 import { isSimilar } from './helpers/almost-equal';
+import {
+  DRE,
+  advanceBlock,
+  impersonateAccountsHardhat,
+  timeLatest,
+} from '../../helpers/misc-utils';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -15,9 +21,12 @@ makeSuite('ERC4626-USDC - Configuration', (testEnv) => {
 
   before(async () => {
     // deploy USDC ERC4626 contract
-    const { usdc, aUsdc, pool } = testEnv;
+    const { usdc, aUsdc, incentiveController, pool } = testEnv;
 
-    erc4626Vault = await deployERC4626Vault([usdc.address, aUsdc.address, pool.address], 'USDC');
+    erc4626Vault = await deployERC4626Vault(
+      [usdc.address, aUsdc.address, pool.address, incentiveController.address],
+      'USDC'
+    );
   });
 
   it('check decimals, symbol, name, asset, aToken', async () => {
@@ -143,11 +152,14 @@ makeSuite('ERC4626-USDC - Scenario Test', (testEnv) => {
 
   before(async () => {
     // deploy USDC ERC4626 contract
-    const { usdc, aUsdc, pool, users } = testEnv;
+    const { usdc, aUsdc, pool, incentiveController, users } = testEnv;
     const A = users[0];
     const B = users[1];
 
-    erc4626Vault = await deployERC4626Vault([usdc.address, aUsdc.address, pool.address], 'USDC');
+    erc4626Vault = await deployERC4626Vault(
+      [usdc.address, aUsdc.address, pool.address, incentiveController.address],
+      'USDC'
+    );
 
     // Prepare Enough USDC for A(alice) and B(bob)
     await mint('USDC', (await convertToCurrencyDecimals(usdc.address, '4000')).toString(), A);
@@ -625,9 +637,12 @@ makeSuite('ERC4626-USDT - Configuration', (testEnv) => {
 
   before(async () => {
     // deploy USDT ERC4626 contract
-    const { usdt, aUsdt, pool } = testEnv;
+    const { usdt, aUsdt, pool, incentiveController } = testEnv;
 
-    erc4626Vault = await deployERC4626Vault([usdt.address, aUsdt.address, pool.address], 'USDT');
+    erc4626Vault = await deployERC4626Vault(
+      [usdt.address, aUsdt.address, pool.address, incentiveController.address],
+      'USDT'
+    );
   });
 
   it('check decimals, symbol, name, asset, aToken', async () => {
@@ -753,11 +768,14 @@ makeSuite('ERC4626-USDT - Scenario Test', (testEnv) => {
 
   before(async () => {
     // deploy USDT ERC4626 contract
-    const { usdt, aUsdt, pool, users } = testEnv;
+    const { usdt, aUsdt, pool, incentiveController, users } = testEnv;
     const A = users[0];
     const B = users[1];
 
-    erc4626Vault = await deployERC4626Vault([usdt.address, aUsdt.address, pool.address], 'USDT');
+    erc4626Vault = await deployERC4626Vault(
+      [usdt.address, aUsdt.address, pool.address, incentiveController.address],
+      'USDT'
+    );
 
     // Prepare Enough USDT for A(alice) and B(bob)
     await mint('USDT', (await convertToCurrencyDecimals(usdt.address, '4000')).toString(), A);
@@ -1235,9 +1253,12 @@ makeSuite('ERC4626-DAI - Configuration', (testEnv) => {
 
   before(async () => {
     // deploy DAI ERC4626 contract
-    const { dai, aDai, pool } = testEnv;
+    const { dai, aDai, pool, incentiveController } = testEnv;
 
-    erc4626Vault = await deployERC4626Vault([dai.address, aDai.address, pool.address], 'DAI');
+    erc4626Vault = await deployERC4626Vault(
+      [dai.address, aDai.address, pool.address, incentiveController.address],
+      'DAI'
+    );
   });
 
   it('check decimals, symbol, name, asset, aToken', async () => {
@@ -1363,11 +1384,14 @@ makeSuite('ERC4626-DAI - Scenario Test', (testEnv) => {
 
   before(async () => {
     // deploy DAI ERC4626 contract
-    const { dai, aDai, pool, users } = testEnv;
+    const { dai, aDai, pool, incentiveController, users } = testEnv;
     const A = users[0];
     const B = users[1];
 
-    erc4626Vault = await deployERC4626Vault([dai.address, aDai.address, pool.address], 'DAI');
+    erc4626Vault = await deployERC4626Vault(
+      [dai.address, aDai.address, pool.address, incentiveController.address],
+      'DAI'
+    );
 
     // Prepare Enough DAI for A(alice) and B(bob)
     await mint('DAI', (await convertToCurrencyDecimals(dai.address, '4000')).toString(), A);
@@ -1837,5 +1861,99 @@ makeSuite('ERC4626-DAI - Scenario Test', (testEnv) => {
 
     // Sanity check
     expect(isSimilar(await dai.balanceOf(erc4626Vault.address), 0, shareDecimal)).to.be.eq(true);
+  });
+});
+
+const DISTRIBUTION_DURATION = 86400; //1day
+makeSuite('Check STRDY token growing ', (testEnv) => {
+  let erc4626Vault: ERC4626Vault;
+  let STRDY: ISTRDY;
+
+  before(async () => {
+    // deploy USDC ERC4626 contract
+    const { usdc, aUsdc, pool, incentiveController, deployer } = testEnv;
+
+    erc4626Vault = await deployERC4626Vault(
+      [usdc.address, aUsdc.address, pool.address, incentiveController.address],
+      'USDC'
+    );
+    STRDY = ISTRDY__factory.connect('0x59276455177429ae2af1cc62B77AE31B34EC3890', deployer.signer);
+  });
+
+  it('User deposits USDC via ERC4626 vault', async () => {
+    const { incentiveController, users, usdc, aUsdc } = testEnv;
+    const ethers = (DRE as any).ethers;
+    const A = users[0];
+    const B = users[1];
+
+    // Prepare Enough USDC for A(alice) and B(bob)
+    await mint('USDC', (await convertToCurrencyDecimals(usdc.address, '4000')).toString(), A);
+    await mint('USDC', (await convertToCurrencyDecimals(usdc.address, '7000')).toString(), B);
+
+    // Approve vault
+    await usdc
+      .connect(A.signer)
+      .approve(erc4626Vault.address, await convertToCurrencyDecimals(usdc.address, '4000'));
+
+    await usdc
+      .connect(B.signer)
+      .approve(erc4626Vault.address, await convertToCurrencyDecimals(usdc.address, '7000'));
+
+    // configure incentive controller
+    const deployerAddress = '0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc';
+    await impersonateAccountsHardhat([deployerAddress]);
+    let signer = await ethers.provider.getSigner(deployerAddress);
+    await STRDY.connect(signer).transfer(
+      incentiveController.address,
+      await convertToCurrencyDecimals(STRDY.address, '10000')
+    );
+    await STRDY.connect(signer).setRoleCapability(0, '0xa9059cbb', true);
+    await STRDY.connect(signer).setUserRole(incentiveController.address, 0, true);
+    await STRDY.connect(signer).setUserRole(erc4626Vault.address, 0, true);
+    await incentiveController.configureAssets([aUsdc.address], [10]);
+    await incentiveController.setDistributionEnd(
+      (await timeLatest()).plus(DISTRIBUTION_DURATION).toString()
+    );
+    await advanceBlock((await timeLatest()).plus(100).toNumber());
+
+    let unclaimedDepositorRewardsBeforeA = await erc4626Vault.getRewardsBalance(A.address);
+    expect(unclaimedDepositorRewardsBeforeA.toString()).to.be.bignumber.equal('0');
+    let unclaimedDepositorRewardsBeforeB = await erc4626Vault.getRewardsBalance(B.address);
+    expect(unclaimedDepositorRewardsBeforeB.toString()).to.be.bignumber.equal('0');
+
+    //A deposits 4000 USDC, B deposit 7000 USCD
+    await erc4626Vault
+      .connect(A.signer)
+      .deposit(await convertToCurrencyDecimals(usdc.address, '4000'), A.address);
+    await erc4626Vault
+      .connect(B.signer)
+      .deposit(await convertToCurrencyDecimals(usdc.address, '7000'), B.address);
+    await advanceBlock((await timeLatest()).plus(100).toNumber());
+
+    unclaimedDepositorRewardsBeforeA = await erc4626Vault.getRewardsBalance(A.address);
+    unclaimedDepositorRewardsBeforeB = await erc4626Vault.getRewardsBalance(B.address);
+    let claimedAmountA = await STRDY.balanceOf(A.address);
+    let claimedAmountB = await STRDY.balanceOf(B.address);
+    expect(unclaimedDepositorRewardsBeforeA.toString()).to.be.bignumber.lte('400');
+    expect(unclaimedDepositorRewardsBeforeA.toString()).to.be.bignumber.gte('350');
+    expect(unclaimedDepositorRewardsBeforeB.toString()).to.be.bignumber.lte('700');
+    expect(unclaimedDepositorRewardsBeforeB.toString()).to.be.bignumber.gte('600');
+    expect(claimedAmountA.toString()).to.be.bignumber.equal('0');
+    expect(claimedAmountB.toString()).to.be.bignumber.equal('0');
+
+    //claim rewards of depositor
+    await erc4626Vault.connect(A.signer).claimRewards(100, A.address);
+    await erc4626Vault.connect(B.signer).claimRewards(200, B.address);
+
+    let unclaimedDepositorRewardsAfterA = await erc4626Vault.getRewardsBalance(A.address);
+    let unclaimedDepositorRewardsAfterB = await erc4626Vault.getRewardsBalance(B.address);
+    claimedAmountA = await STRDY.balanceOf(A.address);
+    claimedAmountB = await STRDY.balanceOf(B.address);
+    expect(unclaimedDepositorRewardsAfterA.toString()).to.be.bignumber.lte('300');
+    expect(unclaimedDepositorRewardsAfterA.toString()).to.be.bignumber.gte('250');
+    expect(unclaimedDepositorRewardsAfterB.toString()).to.be.bignumber.lte('500');
+    expect(unclaimedDepositorRewardsAfterB.toString()).to.be.bignumber.gte('400');
+    expect(claimedAmountA.toString()).to.be.bignumber.equal('100');
+    expect(claimedAmountB.toString()).to.be.bignumber.equal('200');
   });
 });

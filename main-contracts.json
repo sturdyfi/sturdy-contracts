@@ -811,11 +811,11 @@
   },
   "ERC4626VaultUSDC": {
     "main": {
-      "address": "0x613Be7F69742b1406F75c317B7886F32CeA5635a",
+      "address": "0x8eA4b4C9bd07E2fa10dfA712B683F2461397cf19",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x613Be7F69742b1406F75c317B7886F32CeA5635a",
+      "address": "0x8eA4b4C9bd07E2fa10dfA712B683F2461397cf19",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },

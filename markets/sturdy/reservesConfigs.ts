@@ -146,9 +146,9 @@ export const strategyCVXDOLA_3CRV: IReserveParams = {
 
 export const strategyCVXMIM_3CRV: IReserveParams = {
   strategy: rateStrategyCVXMIM_3CRV,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '9300',
-  liquidationBonus: '10200',
+  baseLTVAsCollateral: '8300',
+  liquidationThreshold: '8500',
+  liquidationBonus: '10600',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',

@@ -30,7 +30,7 @@ import {
   deployConvexMIM3CRVVaultImpl,
   deployConvexTUSDFRAXBPVaultImpl,
   deployDefaultReserveInterestRateStrategy,
-  deployMIM3CRVPOracle,
+  deployMIM3CRVOracle,
   deployTombMiMaticBeefyVaultImpl,
   deployTombMiMaticLPOracle,
   deployYearnCRVVaultImpl,

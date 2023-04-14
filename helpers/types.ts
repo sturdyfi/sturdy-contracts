@@ -68,6 +68,7 @@ export enum eContractid {
   STECRVOracle = 'STECRVOracle',
   DOLA3CRVOracle = 'DOLA3CRVOracle',
   MIM3CRVOracle = 'MIM3CRVOracle',
+  MIMOracle = 'MIMOracle',
   DAIUSDCUSDTSUSDOracle = 'DAIUSDCUSDTSUSDOracle',
   HBTCWBTCOracle = 'HBTCWBTCOracle',
   IronBankOracle = 'IronBankOracle',
@@ -603,6 +604,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   SUSD: iParamsPerNetwork<tEthereumAddress>;
   AURA: iParamsPerNetwork<tEthereumAddress>;
   FRAX: iParamsPerNetwork<tEthereumAddress>;
+  MIM: iParamsPerNetwork<tEthereumAddress>;
   YearnRETHWstETHVault: iParamsPerNetwork<tEthereumAddress>;
   CurveswapLidoPool: iParamsPerNetwork<tEthereumAddress>;
   UniswapRouter: iParamsPerNetwork<tEthereumAddress>;

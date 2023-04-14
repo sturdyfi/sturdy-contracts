@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { BigNumberish } from 'ethers';
 import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS, oneEther } from '../../helpers/constants';
-import { convertToCurrencyDecimals, convertToCurrencyUnits } from '../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import {
   getVariableDebtToken,
@@ -134,46 +134,6 @@ const calcCollateralPrice = async (testEnv: TestEnv) => {
     )
     .multipliedBy(1e18)
     .dividedBy(lpTotalSupply.toString());
-};
-
-const calcWithdrawalAmount = async (
-  testEnv: TestEnv,
-  totalCollateralETH: BigNumberish,
-  totalDebtETH: BigNumberish,
-  repayAmount: BigNumberish,
-  currentLiquidationThreshold: BigNumberish,
-  assetLiquidationThreshold: BigNumberish,
-  collateralAmount: BigNumberish,
-  collateral: tEthereumAddress,
-  borrowingAsset: tEthereumAddress
-) => {
-  const { oracle } = testEnv;
-  const collateralPrice = await oracle.getAssetPrice(collateral);
-  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
-  const repayAmountETH = new BigNumber(
-    await convertToCurrencyUnits(borrowingAsset, repayAmount.toString())
-  ).multipliedBy(borrowingAssetPrice.toString());
-  const withdrawalAmountETH = new BigNumber(totalCollateralETH.toString())
-    .multipliedBy(currentLiquidationThreshold.toString())
-    .dividedBy(10000)
-    .minus(totalDebtETH.toString())
-    .plus(repayAmountETH.toFixed(0))
-    .multipliedBy(10000)
-    .dividedBy(assetLiquidationThreshold.toString())
-    .dp(0, 1); //round down with decimal 0
-
-  return BigNumber.min(
-    collateralAmount.toString(),
-    (
-      await convertToCurrencyDecimals(
-        collateral,
-        withdrawalAmountETH
-          .dividedBy(collateralPrice.toString())
-          .dp(18, 1) //round down with decimal 0
-          .toFixed(18)
-      )
-    ).toString()
-  );
 };
 
 const calcInAmount = async (

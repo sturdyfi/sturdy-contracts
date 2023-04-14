@@ -18,6 +18,7 @@ import {
   deployFRAXUSDCLevSwap,
   deployTUSDFRAXBPLevSwap,
   deployAURABBAUSDLevSwap,
+  deployMIM3CRVLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -127,26 +128,26 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
     // );
     // console.log('IRONBANKLevSwap: %s', ironbankLevSwap.address);
 
-    // // deploy & register MIM3CRVLevSwap
-    // const mim3crvVault = await getConvexMIM3CRVVault();
-    // const mim3crvLevSwap = await deployMIM3CRVLevSwap(
-    //   [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
-    //   verify
-    // );
-    // let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
-    //   getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
-    // );
-    // await waitForTx(
-    //   await sturdyOracle.setAssetSources(
-    //     [getParamPerNetwork(MIM_3CRV_LP, network)],
-    //     [MIM3CRVOracleAddress]
-    //   )
-    // );
-    // await leverageManager.registerLevSwapper(
-    //   getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
-    //   mim3crvLevSwap.address
-    // );
-    // console.log('MIM3CRVLevSwap: %s', mim3crvLevSwap.address);
+    // deploy & register MIM3CRVLevSwap
+    const mim3crvVault = await getConvexMIM3CRVVault();
+    const mim3crvLevSwap = await deployMIM3CRVLevSwap(
+      [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
+      verify
+    );
+    let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
+      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
+    );
+    await waitForTx(
+      await sturdyOracle.setAssetSources(
+        [getParamPerNetwork(MIM_3CRV_LP, network)],
+        [MIM3CRVOracleAddress]
+      )
+    );
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
+      mim3crvLevSwap.address
+    );
+    console.log('MIM3CRVLevSwap: %s', mim3crvLevSwap.address);
 
     // deploy & register TUSDFRAXBPLevSwap
     const tusdfraxbpVault = await getConvexTUSDFRAXBPVault();

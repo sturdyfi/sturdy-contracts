@@ -40,12 +40,12 @@ task(`full:deploy-sturdy-apr-data-provider`, `Deploys the ${CONTRACT_NAME} contr
       32,
       '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B' //convex LP pool address
     );
-    // //MIM_3CRV
-    // await aprProvider.registerConvexReserve(
-    //   getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
-    //   40,
-    //   '0x5a6A4D54456819380173272A5E8E9B9904BdF41B' //convex LP pool address
-    // );
+    //MIM_3CRV
+    await aprProvider.registerConvexReserve(
+      getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV,
+      40,
+      '0x5a6A4D54456819380173272A5E8E9B9904BdF41B' //convex LP pool address
+    );
     //DAI_USDC_USDT_SUSD
     await aprProvider.registerConvexReserve(
       getParamPerNetwork(ReserveAssets, network).cvxDAI_USDC_USDT_SUSD,

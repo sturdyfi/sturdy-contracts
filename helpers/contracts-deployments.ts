@@ -20,6 +20,8 @@ import {
   BALBBAUSDOracle__factory,
   ERC4626Router__factory,
   ERC4626Vault__factory,
+  MIM3CRVLevSwap__factory,
+  MIMOracle__factory,
   MintableERC20,
   YieldDistributorAdapter__factory,
 } from '../types';
@@ -487,7 +489,15 @@ export const deployDOLA3CRVOracle = async (verify?: boolean) =>
     verify
   );
 
-export const deployMIM3CRVPOracle = async (verify?: boolean) =>
+export const deployMIM3CRVOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new MIMOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.MIMOracle,
+    [],
+    verify
+  );
+
+export const deployMIMOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new MIM3CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.MIM3CRVOracle,
@@ -2826,16 +2836,21 @@ export const deployDAIUSDCUSDTSUSDLevSwap = async (
   return levSwap;
 };
 
-// export const deployMIM3CRVLevSwap = async (
-//   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
-//   verify?: boolean
-// ) =>
-//   withSaveAndVerify(
-//     await new MIM3CRVLevSwap__factory(await getFirstSigner()).deploy(...args),
-//     eContractid.MIM3CRVLevSwap,
-//     args,
-//     verify
-//   );
+export const deployMIM3CRVLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new MIM3CRVLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.MIM3CRVLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
 
 // export const deployIRONBANKLevSwap = async (
 //   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],

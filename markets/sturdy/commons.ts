@@ -210,7 +210,7 @@ export const CommonsConfig: ICommonConfiguration = {
       cvxFRAX_3CRV: '', //'0xf83e4943D76B9A94DA0aFb06E4F30DF773f78938',
       // cvxSTECRV: '',
       // cvxDOLA_3CRV: '',
-      // cvxMIM_3CRV: '', //'0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07',
+      cvxMIM_3CRV: '', //'0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07',
       cvxDAI_USDC_USDT_SUSD: '', //'0xd14A2bd5043F1909A6b20B14E465309FdAc3bf50',
       // cvxHBTC_WBTC: '',
       // cvxIRON_BANK: '', //'0x66C6074c5A5144877a12E542BBb8dD37110D7567',
@@ -227,6 +227,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       AURA: '',
+      MIM: '',
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
@@ -238,7 +239,7 @@ export const CommonsConfig: ICommonConfiguration = {
       cvxFRAX_3CRV: '0xf83e4943D76B9A94DA0aFb06E4F30DF773f78938',
       // cvxSTECRV: '',
       // cvxDOLA_3CRV: '',
-      // cvxMIM_3CRV: '0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07',
+      cvxMIM_3CRV: '0x40d174027481Dc17C3A714995fCb7Fb5bc7C5f07',
       cvxDAI_USDC_USDT_SUSD: '0xd14A2bd5043F1909A6b20B14E465309FdAc3bf50',
       auraDAI_USDC_USDT: '',
       // cvxHBTC_WBTC: '',
@@ -255,6 +256,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       AURA: '',
+      MIM: '',
     },
     [eEthereumNetwork.goerli]: {
       DAI: '',

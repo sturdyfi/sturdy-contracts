@@ -6,7 +6,7 @@ import {
   deployDAIUSDCUSDTSUSDOracle,
   deployFRAXUSDCOracle,
   deployIronBankOracle,
-  deployMIM3CRVPOracle,
+  deployMIM3CRVOracle,
   deployTUSDFRAXBPCOracle,
 } from '../../helpers/contracts-deployments';
 import {
@@ -295,7 +295,7 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //     <eNetwork>network
     //   ).cvxMIM_3CRV;
     //   if (!MIM3CRVOracleAddress) {
-    //     const MIM3CRVOracle = await deployMIM3CRVPOracle(verify);
+    //     const MIM3CRVOracle = await deployMIM3CRVOracle(verify);
     //     MIM3CRVOracleAddress = MIM3CRVOracle.address;
     //   }
     //   const sturdyOracle = await getSturdyOracle();

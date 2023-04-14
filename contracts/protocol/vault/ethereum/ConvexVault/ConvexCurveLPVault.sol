@@ -128,7 +128,7 @@ contract ConvexCurveLPVault is IncentiveVault {
    * @dev Get yield based on strategy and re-deposit
    * - Caller is anyone
    */
-  function processYield() external override onlyYieldProcessor {
+  function processYield() external override {
     // Claim Rewards(CRV, CVX, Extra incentive tokens)
     address baseRewardPool = getBaseRewardPool();
     IConvexBaseRewardPool(baseRewardPool).getReward(address(this), false);

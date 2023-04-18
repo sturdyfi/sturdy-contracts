@@ -489,7 +489,7 @@ export const deployDOLA3CRVOracle = async (verify?: boolean) =>
     verify
   );
 
-export const deployMIM3CRVOracle = async (verify?: boolean) =>
+export const deployMIMOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new MIMOracle__factory(await getFirstSigner()).deploy(),
     eContractid.MIMOracle,
@@ -497,7 +497,7 @@ export const deployMIM3CRVOracle = async (verify?: boolean) =>
     verify
   );
 
-export const deployMIMOracle = async (verify?: boolean) =>
+export const deployMIM3CRVOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new MIM3CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.MIM3CRVOracle,

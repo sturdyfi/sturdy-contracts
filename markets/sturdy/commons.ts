@@ -227,7 +227,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       AURA: '',
-      MIM: '',
+      MIM: '', // '0x7e704825B55Ba9bE27483BeD912E44cc5a0162bc'
     },
     [eEthereumNetwork.tenderly]: {
       DAI: '0x773616E4d11A78F511299002da57A0a94577F1f4',
@@ -256,7 +256,7 @@ export const CommonsConfig: ICommonConfiguration = {
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
       AURA: '',
-      MIM: '',
+      MIM: '', // '0x7e704825B55Ba9bE27483BeD912E44cc5a0162bc'
     },
     [eEthereumNetwork.goerli]: {
       DAI: '',

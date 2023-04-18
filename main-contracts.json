@@ -848,5 +848,15 @@
       "address": "0xc0ddd95419E2375B7cdc9C12a8Db464584E158f3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "MIMOracle": {
+    "main": {
+      "address": "0x7e704825B55Ba9bE27483BeD912E44cc5a0162bc",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x7e704825B55Ba9bE27483BeD912E44cc5a0162bc",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

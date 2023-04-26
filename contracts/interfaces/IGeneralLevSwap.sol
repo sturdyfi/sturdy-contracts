@@ -88,4 +88,6 @@ interface IGeneralLevSwap {
   ) external;
 
   function getAvailableBorrowAssets() external pure returns (address[] memory);
+
+  function COLLATERAL() external view returns (address);
 }

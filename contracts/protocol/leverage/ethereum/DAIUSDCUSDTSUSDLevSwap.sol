@@ -52,7 +52,6 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
       return _swapByPath(_amount, _path, _checkOutAmount);
     }
 
-    uint256 outAmount = _checkOutAmount ? _path.outAmount : 0;
     if (_isFrom) {
       // DAIUSDCUSDTSUSD -> borrowing asset
       require(_checkOutAmount == true, Errors.LS_INVALID_CONFIGURATION);
@@ -62,28 +61,12 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
       uint256[4] memory amounts;
 
       // receivable stable asset amount
-      amounts[coinIndex] = outAmount;
+      amounts[coinIndex] = _path.outAmount;
 
       // Withdraw a single asset from the pool
       ICurvePool(POOL).remove_liquidity_imbalance(amounts, _path.inAmount);
 
       return IERC20(to).balanceOf(address(this));
     }
-
-    // borrowing asset -> DAIUSDCUSDTSUSD
-    require(_path.swapTo == COLLATERAL, Errors.LS_INVALID_CONFIGURATION);
-
-    address from = _path.swapFrom;
-
-    IERC20(from).safeApprove(POOL, 0);
-    IERC20(from).safeApprove(POOL, _amount);
-
-    uint256 coinIndex = _getCoinIndex(from);
-    uint256[4] memory amountsAdded;
-    amountsAdded[coinIndex] = _amount;
-
-    ICurvePool(POOL).add_liquidity(amountsAdded, outAmount);
-
-    return IERC20(COLLATERAL).balanceOf(address(this));
   }
 }

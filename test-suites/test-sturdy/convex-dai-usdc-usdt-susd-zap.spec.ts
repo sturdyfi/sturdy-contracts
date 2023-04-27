@@ -253,10 +253,20 @@ makeSuite('SUSD Zap Deposit', (testEnv) => {
       );
       const paths = [
         {
-          routes: new Array(9).fill(ZERO_ADDRESS),
-          routeParams: new Array(4).fill([0, 0, 0]) as any,
-          swapType: 1, //NO_SWAP: Join/Exit pool
-          poolCount: 0,
+          routes: [
+            usdt.address,
+            SUSD_POOL,
+            DAI_USDC_USDT_SUSD_LP.address,
+            ...new Array(6).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [2, 0, 10 /*4-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 1,
           swapFrom: usdt.address,
           swapTo: DAI_USDC_USDT_SUSD_LP.address,
           inAmount: principalAmount,
@@ -476,10 +486,20 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
       );
       const zapPaths = [
         {
-          routes: new Array(9).fill(ZERO_ADDRESS),
-          routeParams: new Array(4).fill([0, 0, 0]) as any,
-          swapType: 1, //NO_SWAP: Join/Exit pool
-          poolCount: 0,
+          routes: [
+            usdt.address,
+            SUSD_POOL,
+            DAI_USDC_USDT_SUSD_LP.address,
+            ...new Array(6).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [2, 0, 10 /*4-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 1,
           swapFrom: usdt.address,
           swapTo: DAI_USDC_USDT_SUSD_LP.address,
           inAmount: principalAmount,
@@ -505,10 +525,20 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdt.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [2, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdt.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,

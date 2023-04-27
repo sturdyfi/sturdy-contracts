@@ -4,6 +4,23 @@ pragma solidity ^0.8.0;
 import {IGeneralLevSwap} from './IGeneralLevSwap.sol';
 
 interface IStructuredVault {
+  struct AutoExitPositionParams {
+    /// exit position params.
+    address swapper;
+    address borrowAsset;
+    address sAsset;
+    IGeneralLevSwap.FlashLoanType _flashLoanType;
+    IGeneralLevSwap.SwapInfo _swapInfo;
+    /// migration to underlying asset params.
+    IGeneralLevSwap.MultipSwapPath[5] _paths;
+    uint256 _pathLength;
+  }
+
+  struct AssetInfo {
+    uint256 price;
+    uint256 decimals;
+  }
+
   /**
    * @dev Deposits an `_amount` of underlying asset.
    * - Caller is anyone

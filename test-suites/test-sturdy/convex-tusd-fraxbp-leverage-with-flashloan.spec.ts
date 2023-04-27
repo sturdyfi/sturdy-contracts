@@ -377,61 +377,57 @@ makeSuite('TUSDFRAXBP Leverage Swap', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: [usdt.address, TUSD3CRV_POOL, TUSD.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routes: [
+              usdt.address,
+              TUSD3CRV_POOL,
+              TUSD.address,
+              TUSDFRAXBP_POOL,
+              TUSD_FRAXBP_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
             routeParams: [
               [3, 0, 2 /*exchange_underlying*/],
-              [0, 0, 0],
+              [0, 0, 7 /*2-coin-pool add_liquidity*/],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
+            poolCount: 2,
             swapFrom: usdt.address,
-            swapTo: TUSD.address,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
-            swapFrom: TUSD.address,
             swapTo: TUSD_FRAXBP_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
-            swapFrom: TUSD_FRAXBP_LP.address,
-            swapTo: TUSD.address,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
-            routes: [TUSD.address, TUSD3CRV_POOL, usdt.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routes: [
+              TUSD_FRAXBP_LP.address,
+              TUSDFRAXBP_POOL,
+              TUSD.address,
+              TUSD3CRV_POOL,
+              usdt.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
             routeParams: [
+              [0, 0, 12 /*2-coin-pool remove_liquidity_one_coin*/],
               [0, 3, 2 /*exchange_underlying*/],
-              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, //Curve
-            poolCount: 1,
-            swapFrom: TUSD.address,
+            poolCount: 2,
+            swapFrom: TUSD_FRAXBP_LP.address,
             swapTo: usdt.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         tusdfraxbpLevSwap
@@ -545,67 +541,53 @@ makeSuite('TUSDFRAXBP Leverage Swap', (testEnv) => {
               usdc.address,
               FRAX_USDC_POOL,
               FRAX_USDC_LP,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              TUSDFRAXBP_POOL,
+              TUSD_FRAXBP_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [1, 0, 7 /*2-coin-pool add_liquidity*/],
-              [0, 0, 0],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
+            poolCount: 2,
             swapFrom: usdc.address,
-            swapTo: FRAX_USDC_LP,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
-            swapFrom: FRAX_USDC_LP,
             swapTo: TUSD_FRAXBP_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
-            swapFrom: TUSD_FRAXBP_LP.address,
-            swapTo: FRAX_USDC_LP,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
             routes: [
+              TUSD_FRAXBP_LP.address,
+              TUSDFRAXBP_POOL,
               FRAX_USDC_LP,
               FRAX_USDC_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
-              [0, 1, 12 /*remove_liquidity_one_coin*/],
-              [0, 0, 0],
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, //Curve
-            poolCount: 1,
-            swapFrom: FRAX_USDC_LP,
+            poolCount: 2,
+            swapFrom: TUSD_FRAXBP_LP.address,
             swapTo: usdc.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         tusdfraxbpLevSwap
@@ -716,61 +698,57 @@ makeSuite('TUSDFRAXBP Leverage Swap', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: [dai.address, TUSD3CRV_POOL, TUSD.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routes: [
+              dai.address,
+              TUSD3CRV_POOL,
+              TUSD.address,
+              TUSDFRAXBP_POOL,
+              TUSD_FRAXBP_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
             routeParams: [
               [1, 0, 2 /*exchange_underlying*/],
-              [0, 0, 0],
+              [0, 0, 7 /*2-coin-pool add_liquidity*/],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
+            poolCount: 2,
             swapFrom: dai.address,
-            swapTo: TUSD.address,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
-            swapFrom: TUSD.address,
             swapTo: TUSD_FRAXBP_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
-            swapFrom: TUSD_FRAXBP_LP.address,
-            swapTo: TUSD.address,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
-            routes: [TUSD.address, TUSD3CRV_POOL, dai.address, ...new Array(6).fill(ZERO_ADDRESS)],
+            routes: [
+              TUSD_FRAXBP_LP.address,
+              TUSDFRAXBP_POOL,
+              TUSD.address,
+              TUSD3CRV_POOL,
+              dai.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
             routeParams: [
+              [0, 0, 12 /*2-coin-pool remove_liquidity_one_coin*/],
               [0, 1, 2 /*exchange_underlying*/],
-              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, //Curve
-            poolCount: 1,
-            swapFrom: TUSD.address,
+            poolCount: 2,
+            swapFrom: TUSD_FRAXBP_LP.address,
             swapTo: dai.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         tusdfraxbpLevSwap

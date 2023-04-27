@@ -274,10 +274,20 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdt.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [2, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdt.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -416,10 +426,20 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdc.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdc.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -558,10 +578,20 @@ makeSuite('SUSD Deleverage with AAVE Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              dai.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: dai.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -733,10 +763,20 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdt.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [2, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdt.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -875,10 +915,20 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdc.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdc.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -1017,10 +1067,20 @@ makeSuite('SUSD Deleverage with Balancer Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              dai.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: dai.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -1192,10 +1252,20 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdt.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [2, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdt.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -1478,10 +1548,20 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              usdc.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: usdc.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,
@@ -1764,10 +1844,20 @@ makeSuite('SUSD Deleverage with Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: new Array(9).fill(ZERO_ADDRESS),
-            routeParams: new Array(4).fill([0, 0, 0]) as any,
-            swapType: 1, //NO_SWAP: Join/Exit pool
-            poolCount: 0,
+            routes: [
+              dai.address,
+              SUSD_POOL,
+              DAI_USDC_USDT_SUSD_LP.address,
+              ...new Array(6).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 0, 10 /*4-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 1,
             swapFrom: dai.address,
             swapTo: DAI_USDC_USDT_SUSD_LP.address,
             inAmount,

@@ -8,6 +8,7 @@ import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
 import {IStructuredVault} from '../../../interfaces/IStructuredVault.sol';
 import {ICollateralAdapter} from '../../../interfaces/ICollateralAdapter.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
+import {IVariableYieldDistribution} from '../../../interfaces/IVariableYieldDistribution.sol';
 import {ICreditDelegationToken} from '../../../interfaces/ICreditDelegationToken.sol';
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -29,7 +30,12 @@ import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
  * @author Sturdy
  **/
 
-abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, SturdyERC20 {
+abstract contract StructuredVault is
+  IStructuredVault,
+  VersionedInitializable,
+  ReentrancyGuard,
+  SturdyERC20
+{
   using SafeERC20 for IERC20;
   using Math for uint256;
   using PercentageMath for uint256;
@@ -53,6 +59,9 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
   /// @notice The structured vault's minimum swap loss. 1% = 100
   uint256 private _swapLoss;
 
+  /// @notice The structured vault's admin address
+  address private _admin;
+
   /**
    * @dev Emitted on deposit()
    * @param user The user address
@@ -67,8 +76,58 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
    **/
   event Withdraw(address indexed user, uint256 amount);
 
+  /**
+   * @dev Emitted on enterPosition()
+   * @param swapper The swapper address
+   * @param borrowAsset The borrowing asset
+   * @param amount The leverage amount
+   * @param leverage The leverage percentage value
+   **/
+  event EnterPostion(
+    address indexed swapper,
+    address indexed borrowAsset,
+    uint256 amount,
+    uint256 leverage
+  );
+
+  /**
+   * @dev Emitted on exitPosition()
+   * @param swapper The swapper address
+   * @param borrowAsset The borrowing asset
+   * @param repayAmount The repay amount
+   * @param amount The amount of deleverage
+   **/
+  event ExitPostion(
+    address indexed swapper,
+    address indexed borrowAsset,
+    uint256 repayAmount,
+    uint256 amount
+  );
+
+  /**
+   * @dev Emitted on Migration()
+   * @param fromAsset The migration from asset address
+   * @param toAsset The migration to asset address
+   * @param fromAmount The migration from amount
+   * @param toAmount The migration result amount
+   **/
+  event Migration(
+    address indexed fromAsset,
+    address indexed toAsset,
+    uint256 fromAmount,
+    uint256 toAmount
+  );
+
+  /**
+   * @dev Emitted on processYield()
+   * @param sAssets The staked asset addresses of collateral internal asset to claim yield
+   * @param oldShareIndex The share index before process yield
+   * @param newShareIndex The share index after process yield
+   **/
+  event ProcessYield(address[] indexed sAssets, uint256 oldShareIndex, uint256 newShareIndex);
+
   modifier onlyAdmin() {
-    require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+    require(_admin == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
     _;
   }
 
@@ -171,7 +230,7 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
 
   /**
    * @dev Set the vault fee
-   * - Caller is Admin
+   * - Caller is vault Admin
    * @param fee_ - The fee percentage value. ex 1% = 100
    */
   function setFee(uint256 fee_) external payable onlyAdmin {
@@ -182,7 +241,7 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
 
   /**
    * @dev Set the vault minimum swap loss
-   * - Caller is Admin
+   * - Caller is vault Admin
    * @param swapLoss_ - The minimum swap loss percentage value. ex 1% = 100
    */
   function setSwapLoss(uint256 swapLoss_) external payable onlyAdmin {
@@ -192,8 +251,20 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
   }
 
   /**
-   * @dev Authorize the leverage/deleverage contract to handle the collateral, debt and staked internal asset.
+   * @dev Set the vault admin
    * - Caller is Admin
+   * @param admin_ - The vault admin address
+   */
+  function setAdmin(address admin_) external payable {
+    require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+    require(admin_ != address(0), Errors.VT_INVALID_CONFIGURATION);
+
+    _admin = admin_;
+  }
+
+  /**
+   * @dev Authorize the leverage/deleverage contract to handle the collateral, debt and staked internal asset.
+   * - Caller is vault Admin
    * @param _collateralAsset - The collateral external asset address
    * @param _swapper - The leverage/deleverage contract address
    */
@@ -225,7 +296,7 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
 
   /**
    * @dev Leverage an `_amount` of collateral asset via `_swapper`.
-   * - Caller is Admin
+   * - Caller is vault Admin
    * @param _swapper - The leverage/deleverage contract address
    * @param _amount - The amount of collateral
    * @param _leverage - Extra leverage value and must be greater than 0, ex. 300% = 300_00
@@ -272,11 +343,13 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
         _swapInfo
       );
     }
+
+    emit EnterPostion(_swapper, _borrowAsset, _amount, _leverage);
   }
 
   /**
    * @dev Deleverage an `_requiredAmount` of collateral asset via `_swapper`.
-   * - Caller is Admin
+   * - Caller is vault Admin
    * @param _swapper -  The leverage/deleverage contract address
    * @param _repayAmount - The amount of repay
    * @param _requiredAmount - The amount of collateral
@@ -304,21 +377,77 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
       _flashLoanType,
       _swapInfo
     );
+
+    emit ExitPostion(_swapper, _borrowAsset, _repayAmount, _requiredAmount);
   }
 
   /**
    * @dev Migration between collateral assets or underlying asset.
-   * - Caller is Admin
+   * - Caller is vault Admin
    * @param _amount - The migration amount of `from` collateral address.
    * @param _paths - The uniswap/balancer/curve swap paths between from asset and to asset
-   * @param _pathLength - The uniswap/balancer/curve swap path length between from asset and to asset
    */
   function migration(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath[5] calldata _paths,
-    uint256 _pathLength
+    IGeneralLevSwap.MultipSwapPath[] calldata _paths
   ) external payable onlyAdmin {
-    _migration(_amount, _paths, _pathLength);
+    _migration(_amount, _paths);
+  }
+
+  /**
+   * @dev Claim Yield and migration to underlying asset and distribute to users by increasing shareIndex
+   * - Caller is vault Admin
+   * @param _assets - The registered assets to variable yield distributor.
+                     Normally these are the staked asset addresss of collateral internal assets
+   * @param _amounts - The claiming amounts
+   * @param _params - The params to perform the migration between yield asset and underlying asset
+   */
+  function processYield(
+    address[] calldata _assets,
+    uint256[] calldata _amounts,
+    IStructuredVault.YieldMigrationParams[] calldata _params
+  ) external payable onlyAdmin {
+    address underlyingAsset = _underlyingAsset;
+    uint256 yieldAssetCount = _params.length;
+    uint256 underlyingAmountBefore = IERC20(underlyingAsset).balanceOf(address(this));
+
+    require(_assets.length == _amounts.length, Errors.VT_INVALID_CONFIGURATION);
+    require(yieldAssetCount != 0, Errors.VT_INVALID_CONFIGURATION);
+
+    // Claim yield assets
+    IVariableYieldDistribution yieldDistributor = IVariableYieldDistribution(
+      _addressesProvider.getAddress('VR_YIELD_DISTRIBUTOR')
+    );
+    yieldDistributor.claimRewards(_assets, _amounts, address(this));
+
+    // Migration yield assets to underlying asset
+    for (uint256 i; i < yieldAssetCount; ++i) {
+      IGeneralLevSwap.MultipSwapPath[] calldata paths = _params[i].paths;
+      require(paths[paths.length - 1].swapTo == underlyingAsset, Errors.VT_INVALID_CONFIGURATION);
+
+      _migration(IERC20(_params[i].yieldAsset).balanceOf(address(this)), paths);
+    }
+
+    // distribute yield and increase share index
+    uint256 oldIndex = _shareIndex;
+    uint256 increasedUnderlyingAmount = IERC20(underlyingAsset).balanceOf(address(this)) -
+      underlyingAmountBefore;
+    uint256 yieldShareRatio = increasedUnderlyingAmount.mulDiv(
+      DEFAULT_INDEX,
+      totalSupply(),
+      Math.Rounding.Down
+    );
+
+    // newIndex = oldIndex * (1 + yieldShareRatio)
+    uint256 newIndex = oldIndex.mulDiv(
+      yieldShareRatio + DEFAULT_INDEX,
+      DEFAULT_INDEX,
+      Math.Rounding.Down
+    );
+
+    _shareIndex = newIndex;
+
+    emit ProcessYield(_assets, oldIndex, newIndex);
   }
 
   /**
@@ -333,6 +462,13 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
    */
   function getSwapLoss() external view returns (uint256) {
     return _swapLoss;
+  }
+
+  /**
+   * @return The structured vault's admin address
+   */
+  function getAdmin() external view returns (address) {
+    return _admin;
   }
 
   /**
@@ -396,34 +532,66 @@ abstract contract StructuredVault is VersionedInitializable, ReentrancyGuard, St
     uint256 maxRequiredAmountPrice = _requiredUnderlyingAmount
       .mulDiv(underlying.price, 10 ** underlying.decimals, Math.Rounding.Down)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR + _swapLoss);
-
-    uint256 requiredCollateralAmount = maxRequiredAmountPrice.mulDiv(
+    uint256 migrationCollateralAmount = maxRequiredAmountPrice.mulDiv(
       10 ** collateral.decimals,
       collateral.price,
       Math.Rounding.Down
     );
-    uint256 repayAmount = _getRepayAmount(collateralAsset, maxRequiredAmountPrice, underlying);
 
-    //deleverage call
+    uint256 currCollateralAmount = IERC20(collateralAsset).balanceOf(address(this));
+    if (currCollateralAmount != 0) {
+      uint256 currCollateralAmountPrice = currCollateralAmount.mulDiv(
+        collateral.price,
+        10 ** collateral.decimals,
+        Math.Rounding.Down
+      );
+
+      unchecked {
+        if (maxRequiredAmountPrice <= currCollateralAmountPrice) maxRequiredAmountPrice = 0;
+        else maxRequiredAmountPrice -= currCollateralAmountPrice;
+      }
+    }
+
+    if (maxRequiredAmountPrice != 0) {
+      uint256 requiredCollateralAmount = maxRequiredAmountPrice.mulDiv(
+        10 ** collateral.decimals,
+        collateral.price,
+        Math.Rounding.Down
+      );
+      uint256 repayAmount = _getRepayAmount(collateralAsset, maxRequiredAmountPrice, underlying);
+
+      //exit position
+      IGeneralLevSwap(_params.swapper).withdrawWithFlashloan(
+        repayAmount,
+        requiredCollateralAmount,
+        _params.borrowAsset,
+        _params.sAsset,
+        _params.flashLoanType,
+        _params.swapInfo
+      );
+    }
+
     // migration call
+    uint256 resultAmount = _migration(migrationCollateralAmount, _params.paths);
+
+    require(resultAmount >= _requiredUnderlyingAmount, Errors.VT_SWAP_MISMATCH_RETURNED_AMOUNT);
   }
 
   function _migration(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath[5] calldata _paths,
-    uint256 _pathLength
+    IGeneralLevSwap.MultipSwapPath[] calldata _paths
   ) internal returns (uint256) {
-    require(_pathLength > 0, Errors.VT_INVALID_CONFIGURATION);
+    uint256 pathLength = _paths.length;
+    require(pathLength != 0, Errors.VT_INVALID_CONFIGURATION);
     require(_amount != 0, Errors.VT_INVALID_CONFIGURATION);
 
-    uint256 fromAssetAmount = IERC20(_paths[0].swapFrom).balanceOf(address(this));
-    require(fromAssetAmount >= _amount, Errors.VT_INVALID_CONFIGURATION);
-
     uint256 amount = _amount;
-    for (uint256 i; i < _pathLength; ++i) {
+    for (uint256 i; i < pathLength; ++i) {
       if (_paths[i].swapType == IGeneralLevSwap.SwapType.NONE) continue;
       amount = _processSwap(amount, _paths[i]);
     }
+
+    emit Migration(_paths[0].swapFrom, _paths[pathLength - 1].swapTo, _amount, amount);
 
     return amount;
   }

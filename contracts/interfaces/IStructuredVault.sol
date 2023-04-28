@@ -9,16 +9,21 @@ interface IStructuredVault {
     address swapper;
     address borrowAsset;
     address sAsset;
-    IGeneralLevSwap.FlashLoanType _flashLoanType;
-    IGeneralLevSwap.SwapInfo _swapInfo;
+    IGeneralLevSwap.FlashLoanType flashLoanType;
+    IGeneralLevSwap.SwapInfo swapInfo;
     /// migration to underlying asset params.
-    IGeneralLevSwap.MultipSwapPath[5] _paths;
-    uint256 _pathLength;
+    IGeneralLevSwap.MultipSwapPath[] paths;
   }
 
   struct AssetInfo {
     uint256 price;
     uint256 decimals;
+  }
+
+  struct YieldMigrationParams {
+    address yieldAsset;
+    /// migration to underlying asset params
+    IGeneralLevSwap.MultipSwapPath[] paths;
   }
 
   /**
@@ -36,8 +41,13 @@ interface IStructuredVault {
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
    * @param _amount The withdrawal amount
+   * @param _params - The params to perform the deleverage and migration to underlying asset
    */
-  function withdraw(address _to, uint256 _amount) external;
+  function withdraw(
+    address _to,
+    uint256 _amount,
+    IStructuredVault.AutoExitPositionParams calldata _params
+  ) external;
 
   /**
    * @dev Set the vault fee
@@ -45,6 +55,13 @@ interface IStructuredVault {
    * @param fee_ - The fee percentage value. ex 1% = 100
    */
   function setFee(uint256 fee_) external payable;
+
+  /**
+   * @dev Set the vault minimum swap loss
+   * - Caller is Admin
+   * @param swapLoss_ - The minimum swap loss percentage value. ex 1% = 100
+   */
+  function setSwapLoss(uint256 swapLoss_) external payable;
 
   /**
    * @dev Authorize the leverage/deleverage contract to handle the collateral, debt and staked internal asset.
@@ -101,19 +118,27 @@ interface IStructuredVault {
   ) external payable;
 
   /**
-   * @dev Leverage an `_amount` of collateral asset via `_swapper`.
+   * @dev Migration between collateral assets or underlying asset.
    * - Caller is Admin
-   * @param _fromAsset - The migration `from` collateral address.
-   * @param _toAsset - The migration `to` asset address. (collateral address or underlying asset address)
    * @param _amount - The migration amount of `from` collateral address.
    * @param _paths - The uniswap/balancer/curve swap paths between from asset and to asset
-   * @param _pathLength - The uniswap/balancer/curve swap path length between from asset and to asset
    */
   function migration(
-    address _fromAsset,
-    address _toAsset,
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath[5] calldata _paths,
-    uint256 _pathLength
+    IGeneralLevSwap.MultipSwapPath[] calldata _paths
+  ) external payable;
+
+  /**
+   * @dev Claim Yield and migration to underlying asset and distribute to users by increasing shareIndex
+   * - Caller is vault Admin
+   * @param _assets - The registered assets to variable yield distributor.
+                     Normally these are the staked asset addresss of collateral internal assets
+   * @param _amounts - The claiming amounts
+   * @param _params - The params to perform the migration between yield asset and underlying asset
+   */
+  function processYield(
+    address[] calldata _assets,
+    uint256[] calldata _amounts,
+    IStructuredVault.YieldMigrationParams[] calldata _params
   ) external payable;
 }

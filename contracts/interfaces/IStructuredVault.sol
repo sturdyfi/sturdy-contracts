@@ -50,6 +50,21 @@ interface IStructuredVault {
   ) external;
 
   /**
+   * @dev Set underlying asset address and lptoken info
+   * - Caller is vault Admin
+   * @param _underlying - The underlying asset address (ex: USDC/USDT/DAI/WETH)
+   * @param _name - The vault's lptoken name
+   * @param _symbol - The vault's lptoken symbol
+   * @param _decimals - The vault's lptoken decimals
+   */
+  function initUnderlyingAsset(
+    address _underlying,
+    string memory _name,
+    string memory _symbol,
+    uint8 _decimals
+  ) external payable;
+
+  /**
    * @dev Set the vault fee
    * - Caller is Admin
    * @param fee_ - The fee percentage value. ex 1% = 100
@@ -66,10 +81,11 @@ interface IStructuredVault {
   /**
    * @dev Authorize the leverage/deleverage contract to handle the collateral, debt and staked internal asset.
    * - Caller is Admin
-   * @param _collateralAsset - The collateral external asset address
+   * @param _asset - The collateral external asset address
    * @param _swapper - The leverage/deleverage contract address
+   * @param _isCollateral - If true, `_asset` is the collateral external asset
    */
-  function authorizeSwapper(address _collateralAsset, address _swapper) external payable;
+  function authorizeSwapper(address _asset, address _swapper, bool _isCollateral) external payable;
 
   /**
    * @dev Leverage an `_amount` of collateral asset via `_swapper`.

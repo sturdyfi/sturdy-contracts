@@ -131,29 +131,18 @@ abstract contract StructuredVault is
     _;
   }
 
-  constructor() SturdyERC20('Sturdy Structured LP Token', 'structured-lp', 18) {}
+  constructor() SturdyERC20('Sturdy Structured LP Token', 'SS-LP', 18) {}
 
   /**
    * @dev Function is invoked by the proxy contract when the Vault contract is deployed.
    * - Caller is initializer (LendingPoolAddressesProvider or deployer)
    * @param _provider The address of the provider
    **/
-  function initialize(
-    ILendingPoolAddressesProvider _provider,
-    address _underlying,
-    string memory name,
-    string memory symbol,
-    uint8 decimals
-  ) external initializer {
+  function initialize(ILendingPoolAddressesProvider _provider) external initializer {
     require(address(_provider) != address(0), Errors.VT_INVALID_CONFIGURATION);
 
     _addressesProvider = _provider;
     _shareIndex = DEFAULT_INDEX;
-    _underlyingAsset = _underlying;
-
-    _setName(name);
-    _setSymbol(symbol);
-    _setDecimals(decimals);
   }
 
   function getRevision() internal pure override returns (uint256) {
@@ -229,6 +218,30 @@ abstract contract StructuredVault is
   }
 
   /**
+   * @dev Set underlying asset address and lptoken info
+   * - Caller is vault Admin
+   * @param _underlying - The underlying asset address (ex: USDC/USDT/DAI/WETH)
+   * @param _name - The vault's lptoken name
+   * @param _symbol - The vault's lptoken symbol
+   * @param _decimals - The vault's lptoken decimals
+   */
+  function initUnderlyingAsset(
+    address _underlying,
+    string memory _name,
+    string memory _symbol,
+    uint8 _decimals
+  ) external payable onlyAdmin {
+    require(_underlying != address(0), Errors.VT_INVALID_CONFIGURATION);
+    if (_underlyingAsset == address(0)) {
+      _underlyingAsset = _underlying;
+    }
+
+    _setName(_name);
+    _setSymbol(_symbol);
+    _setDecimals(_decimals);
+  }
+
+  /**
    * @dev Set the vault fee
    * - Caller is vault Admin
    * @param fee_ - The fee percentage value. ex 1% = 100
@@ -265,32 +278,43 @@ abstract contract StructuredVault is
   /**
    * @dev Authorize the leverage/deleverage contract to handle the collateral, debt and staked internal asset.
    * - Caller is vault Admin
-   * @param _collateralAsset - The collateral external asset address
+   * @param _asset - The collateral external asset or borrowable asset address
    * @param _swapper - The leverage/deleverage contract address
+   * @param _isCollateral - If true, `_asset` is the collateral external asset
    */
-  function authorizeSwapper(address _collateralAsset, address _swapper) external payable onlyAdmin {
-    address internalAsset = ICollateralAdapter(_addressesProvider.getAddress('COLLATERAL_ADAPTER'))
-      .getInternalCollateralAsset(_collateralAsset);
-    DataTypes.ReserveData memory reserve = ILendingPool(_addressesProvider.getLendingPool())
-      .getReserveData(internalAsset);
-
-    // approve collateral asset
-    IERC20(_collateralAsset).safeApprove(_swapper, 0);
-    if (IERC20(_collateralAsset).allowance(address(this), _swapper) == 0) {
-      IERC20(_collateralAsset).safeApprove(_swapper, type(uint256).max);
+  function authorizeSwapper(
+    address _asset,
+    address _swapper,
+    bool _isCollateral
+  ) external payable onlyAdmin {
+    address reserveAsset = _asset;
+    if (_isCollateral) {
+      reserveAsset = ICollateralAdapter(_addressesProvider.getAddress('COLLATERAL_ADAPTER'))
+        .getInternalCollateralAsset(_asset);
     }
 
-    // approve debt asset
-    ICreditDelegationToken(reserve.variableDebtTokenAddress).approveDelegation(
-      _swapper,
-      type(uint256).max
-    );
+    DataTypes.ReserveData memory reserve = ILendingPool(_addressesProvider.getLendingPool())
+      .getReserveData(reserveAsset);
 
-    // approve staked asset
-    address sAsset = reserve.aTokenAddress;
-    IERC20(sAsset).safeApprove(_swapper, 0);
-    if (IERC20(sAsset).allowance(address(this), _swapper) == 0) {
-      IERC20(sAsset).safeApprove(_swapper, type(uint256).max);
+    // approve asset
+    IERC20(_asset).safeApprove(_swapper, 0);
+    if (IERC20(_asset).allowance(address(this), _swapper) == 0) {
+      IERC20(_asset).safeApprove(_swapper, type(uint256).max);
+    }
+
+    if (_isCollateral) {
+      // approve staked asset
+      address sAsset = reserve.aTokenAddress;
+      IERC20(sAsset).safeApprove(_swapper, 0);
+      if (IERC20(sAsset).allowance(address(this), _swapper) == 0) {
+        IERC20(sAsset).safeApprove(_swapper, type(uint256).max);
+      }
+    } else {
+      // approve debt asset
+      ICreditDelegationToken(reserve.variableDebtTokenAddress).approveDelegation(
+        _swapper,
+        type(uint256).max
+      );
     }
   }
 
@@ -319,9 +343,6 @@ abstract contract StructuredVault is
     IGeneralLevSwap.SwapInfo calldata _swapInfo
   ) external payable onlyAdmin {
     require(_swapper != address(0), Errors.VT_INVALID_CONFIGURATION);
-
-    address collateralAsset = IGeneralLevSwap(_swapper).COLLATERAL();
-    IERC20(collateralAsset).safeTransferFrom(_msgSender(), address(this), _amount);
 
     if (_zapPathLength != 0) {
       IGeneralLevSwap(_swapper).zapLeverageWithFlashloan(

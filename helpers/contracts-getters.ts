@@ -78,6 +78,7 @@ import {
   YieldDistributorAdapter__factory,
   ERC4626Vault__factory,
   ERC4626Router__factory,
+  StableStructuredVault__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -1197,6 +1198,17 @@ export const getERC4626Router = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.ERC4626Router}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getStableStructuredVault = async (assetSymbol: string, address?: tEthereumAddress) =>
+  await StableStructuredVault__factory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${assetSymbol.toUpperCase() + eContractid.StructuredVault}.${DRE.network.name}`)
+          .value()
       ).address,
     await getFirstSigner()
   );

@@ -16,13 +16,14 @@ import {
   iFantomParamsPerNetwork,
   eFantomNetwork,
 } from './types';
-import { MintableERC20 } from '../types/MintableERC20';
+
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
+import { MintableERC20 } from '../types';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 

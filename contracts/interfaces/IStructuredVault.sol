@@ -65,11 +65,12 @@ interface IStructuredVault {
   ) external payable;
 
   /**
-   * @dev Set the vault fee
-   * - Caller is Admin
-   * @param fee_ - The fee percentage value. ex 1% = 100
+   * @dev Set treasury address and vault fee
+   * - Caller is vault Admin
+   * @param treasury_ The treasury address
+   * @param fee_ The vault fee which has more two decimals, ex: 100% = 100_00
    */
-  function setFee(uint256 fee_) external payable;
+  function setTreasuryInfo(address treasury_, uint256 fee_) external payable;
 
   /**
    * @dev Set the vault minimum swap loss

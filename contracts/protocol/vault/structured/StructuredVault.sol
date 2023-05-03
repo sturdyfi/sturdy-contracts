@@ -53,6 +53,9 @@ abstract contract StructuredVault is
   /// @notice The sturdy's address provider
   ILendingPoolAddressesProvider private _addressesProvider;
 
+  /// @notice The structured vault's treasury address.
+  address private _treasury;
+
   /// @notice The structured vault's fee.  1% = 100
   uint256 private _fee;
 
@@ -125,6 +128,13 @@ abstract contract StructuredVault is
    * @param newShareIndex The share index after process yield
    **/
   event ProcessYield(address[] indexed sAssets, uint256 oldShareIndex, uint256 newShareIndex);
+
+  /**
+   * @dev Emitted on setTreasuryInfo()
+   * @param treasuryAddress The address of treasury
+   * @param fee The vault fee
+   **/
+  event SetTreasuryInfo(address indexed treasuryAddress, uint256 fee);
 
   modifier onlyAdmin() {
     require(_admin == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -242,14 +252,19 @@ abstract contract StructuredVault is
   }
 
   /**
-   * @dev Set the vault fee
+   * @dev Set treasury address and vault fee
    * - Caller is vault Admin
-   * @param fee_ - The fee percentage value. ex 1% = 100
+   * @param treasury_ The treasury address
+   * @param fee_ The vault fee which has more two decimals, ex: 100% = 100_00
    */
-  function setFee(uint256 fee_) external payable onlyAdmin {
-    require(fee_ < 100_00, Errors.VT_FEE_TOO_BIG);
+  function setTreasuryInfo(address treasury_, uint256 fee_) external payable onlyAdmin {
+    require(treasury_ != address(0), Errors.VT_TREASURY_INVALID);
+    require(fee_ <= 100_00, Errors.VT_FEE_TOO_BIG);
 
+    _treasury = treasury_;
     _fee = fee_;
+
+    emit SetTreasuryInfo(treasury_, fee_);
   }
 
   /**
@@ -449,10 +464,15 @@ abstract contract StructuredVault is
       _migration(IERC20(_params[i].yieldAsset).balanceOf(address(this)), paths);
     }
 
-    // distribute yield and increase share index
-    uint256 oldIndex = _shareIndex;
+    // process fee
     uint256 increasedUnderlyingAmount = IERC20(underlyingAsset).balanceOf(address(this)) -
       underlyingAmountBefore;
+    uint256 treasuryAmount = increasedUnderlyingAmount.percentMul(_fee);
+    IERC20(underlyingAsset).safeTransfer(_treasury, treasuryAmount);
+    increasedUnderlyingAmount -= treasuryAmount;
+
+    // distribute yield and increase share index
+    uint256 oldIndex = _shareIndex;
     uint256 yieldShareRatio = increasedUnderlyingAmount.mulDiv(
       DEFAULT_INDEX,
       totalSupply(),

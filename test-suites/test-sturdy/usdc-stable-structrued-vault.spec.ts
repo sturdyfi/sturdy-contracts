@@ -30,6 +30,8 @@ const TUSDFRAXBP_POOL = '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893';
 const THREE_CRV_LP = '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490';
 const THREE_CRV_POOL = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7';
 const FRAX3CRV_POOL = '0xd632f22692FaC7611d2AA1C0D552930D43CAEd3B';
+const SUSD_POOL = '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD';
+const SUSD = '0x57Ab1ec28D129707052df4dF418D58a2D46d5f51';
 const MultiSwapPathInitData = {
   routes: new Array(9).fill(ZERO_ADDRESS),
   routeParams: new Array(4).fill([0, 0, 0]) as any,
@@ -67,7 +69,9 @@ const calcMinAmountOut = async (
 
     if (poolCoinsLength == 2)
       return await curvePool['calc_token_amount(uint256[2],bool)'](amounts as any, isDeposit);
-    return await curvePool['calc_token_amount(uint256[3],bool)'](amounts as any, isDeposit);
+    if (poolCoinsLength == 3)
+      return await curvePool['calc_token_amount(uint256[3],bool)'](amounts as any, isDeposit);
+    return await curvePool['calc_token_amount(uint256[4],bool)'](amounts as any, isDeposit);
   }
 
   if (isExchange) {
@@ -118,7 +122,7 @@ const calcFRAXUSDCPrice = async (testEnv: TestEnv) => {
     .dividedBy(FRAXUSDCLpTotalSupply.toString());
 };
 
-const calcCollateralPrice = async (testEnv: TestEnv) => {
+const calcTUSDFRAXBPCollateralPrice = async (testEnv: TestEnv) => {
   const { deployer, oracle, TUSD, TUSD_FRAXBP_LP } = testEnv;
   const TUSDFRAXBPPool = ICurvePool__factory.connect(TUSDFRAXBP_POOL, deployer.signer);
   const tusdPrice = await oracle.getAssetPrice(TUSD.address);
@@ -133,14 +137,48 @@ const calcCollateralPrice = async (testEnv: TestEnv) => {
     .dividedBy(lpTotalSupply.toString());
 };
 
+const calcSUSDCollateralPrice = async (testEnv: TestEnv) => {
+  const { deployer, oracle, dai, usdc, usdt, DAI_USDC_USDT_SUSD_LP } = testEnv;
+
+  const curvePool = ICurvePool__factory.connect(SUSD_POOL, deployer.signer);
+  const daiPrice = await oracle.getAssetPrice(dai.address);
+  const daiTotalBalance = await curvePool['balances(int128)'](0);
+  const usdcPrice = await oracle.getAssetPrice(usdc.address);
+  const usdcTotalBalance = await curvePool['balances(int128)'](1);
+  const usdtPrice = await oracle.getAssetPrice(usdt.address);
+  const usdtTotalBalance = await curvePool['balances(int128)'](2);
+  const susdPrice = await oracle.getAssetPrice(SUSD);
+  const susdTotalBalance = await curvePool['balances(int128)'](3);
+  const lpTotalSupply = await DAI_USDC_USDT_SUSD_LP.totalSupply();
+
+  return new BigNumber(daiPrice.toString())
+    .multipliedBy(daiTotalBalance.toString())
+    .dividedBy(1e18)
+    .plus(
+      new BigNumber(usdcPrice.toString()).multipliedBy(usdcTotalBalance.toString()).dividedBy(1e6)
+    )
+    .plus(
+      new BigNumber(usdtPrice.toString()).multipliedBy(usdtTotalBalance.toString()).dividedBy(1e6)
+    )
+    .plus(
+      new BigNumber(susdPrice.toString()).multipliedBy(susdTotalBalance.toString()).dividedBy(1e18)
+    )
+    .multipliedBy(1e18)
+    .dividedBy(lpTotalSupply.toString());
+};
+
 const calcInAmount = async (
+  symbol: string,
   testEnv: TestEnv,
   amount: BigNumberish,
   leverage: BigNumberish,
   borrowingAsset: tEthereumAddress
 ) => {
   const { oracle } = testEnv;
-  const collateralPrice = await calcCollateralPrice(testEnv);
+  const collateralPrice =
+    symbol === 'TUSD_FRAXBP_LP'
+      ? await calcTUSDFRAXBPCollateralPrice(testEnv)
+      : await calcSUSDCollateralPrice(testEnv);
   const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
 
   const intputAmount = await convertToCurrencyDecimals(
@@ -399,6 +437,7 @@ makeSuite('USDC Structured Vault - ZapLeverage', (testEnv) => {
     ] as any;
     const inAmount = (
       await calcInAmount(
+        'TUSD_FRAXBP_LP',
         testEnv,
         await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, expectZapOutAmount2.toFixed(0)),
         leverage,
@@ -569,6 +608,7 @@ makeSuite('USDC Structured Vault - Leverage', (testEnv) => {
     // Prepare Leverage params
     const inAmount = (
       await calcInAmount(
+        'TUSD_FRAXBP_LP',
         testEnv,
         await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, leverageAmount),
         leverage,
@@ -683,7 +723,7 @@ makeSuite('USDC Structured Vault - Leverage', (testEnv) => {
   });
 });
 
-makeSuite('USDC Structured Vault - Deleverage', (testEnv) => {
+makeSuite('USDC Structured Vault - Deleverage (1)', (testEnv) => {
   let vault: StableStructuredVault;
   let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -739,6 +779,7 @@ makeSuite('USDC Structured Vault - Deleverage', (testEnv) => {
     // Prepare Leverage params
     const inAmount = (
       await calcInAmount(
+        'TUSD_FRAXBP_LP',
         testEnv,
         await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, leverageAmount),
         leverage,
@@ -854,100 +895,12 @@ makeSuite('USDC Structured Vault - Deleverage', (testEnv) => {
 
   it('admin Deleverage 99% TUSD_FRAXBP', async () => {
     const { usdc, TUSD_FRAXBP_LP, deployer, helpersContract, aCVXTUSD_FRAXBP } = testEnv;
-    const leverageAmount = (
-      await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, '5000')
-    ).toString();
     const deleverageAmount = (await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, '5000'))
       .mul(99)
       .div(100)
       .toString();
-    const leverage = 35000;
 
-    // Prepare Leverage params
-    const inAmount = (
-      await calcInAmount(
-        testEnv,
-        await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, leverageAmount),
-        leverage,
-        usdc.address
-      )
-    ).toString();
-    const expectOutAmount1 = new BigNumber(
-      (
-        await calcMinAmountOut(testEnv, 1, 0, inAmount, 2, true, true, false, FRAX_USDC_POOL)
-      ).toString()
-    ).multipliedBy(1 - slippage);
-    const expectOutAmount2 = new BigNumber(
-      (
-        await calcMinAmountOut(
-          testEnv,
-          1,
-          0,
-          expectOutAmount1.toFixed(0),
-          2,
-          true,
-          true,
-          false,
-          TUSDFRAXBP_POOL
-        )
-      ).toString()
-    ).multipliedBy(1 - slippage);
-    const swapInfo = {
-      paths: [
-        {
-          routes: [
-            usdc.address,
-            FRAX_USDC_POOL,
-            FRAX_USDC_LP,
-            TUSDFRAXBP_POOL,
-            TUSD_FRAXBP_LP.address,
-            ...new Array(4).fill(ZERO_ADDRESS),
-          ],
-          routeParams: [
-            [1, 0, 7 /*2-coin-pool add_liquidity*/],
-            [1, 0, 7 /*2-coin-pool add_liquidity*/],
-            [0, 0, 0],
-            [0, 0, 0],
-          ] as any,
-          swapType: 4, // curve
-          poolCount: 2,
-          swapFrom: usdc.address,
-          swapTo: TUSD_FRAXBP_LP.address,
-          inAmount,
-          outAmount: expectOutAmount2.toFixed(0),
-        },
-        MultiSwapPathInitData,
-        MultiSwapPathInitData,
-      ] as any,
-      reversePaths: [
-        {
-          routes: [
-            TUSD_FRAXBP_LP.address,
-            TUSDFRAXBP_POOL,
-            FRAX_USDC_LP,
-            FRAX_USDC_POOL,
-            usdc.address,
-            ...new Array(4).fill(ZERO_ADDRESS),
-          ],
-          routeParams: [
-            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
-            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
-            [0, 0, 0],
-            [0, 0, 0],
-          ] as any,
-          swapType: 4, //Curve
-          poolCount: 2,
-          swapFrom: TUSD_FRAXBP_LP.address,
-          swapTo: usdc.address,
-          inAmount: 0,
-          outAmount: 0,
-        },
-        MultiSwapPathInitData,
-        MultiSwapPathInitData,
-      ] as any,
-      pathLength: 1,
-    };
-
+    // Prepare Deleverage params
     const reverseExpectOutAmount1 = new BigNumber(
       (
         await calcMinAmountOut(
@@ -978,8 +931,62 @@ makeSuite('USDC Structured Vault - Deleverage', (testEnv) => {
         )
       ).toString()
     ).multipliedBy(1 - slippage);
-    swapInfo.reversePaths[0].inAmount = deleverageAmount;
-    swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
+
+    const swapInfo = {
+      paths: [
+        {
+          routes: [
+            usdc.address,
+            FRAX_USDC_POOL,
+            FRAX_USDC_LP,
+            TUSDFRAXBP_POOL,
+            TUSD_FRAXBP_LP.address,
+            ...new Array(4).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [1, 0, 7 /*2-coin-pool add_liquidity*/],
+            [1, 0, 7 /*2-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 2,
+          swapFrom: usdc.address,
+          swapTo: TUSD_FRAXBP_LP.address,
+          inAmount: 0,
+          outAmount: 0,
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any,
+      reversePaths: [
+        {
+          routes: [
+            TUSD_FRAXBP_LP.address,
+            TUSDFRAXBP_POOL,
+            FRAX_USDC_LP,
+            FRAX_USDC_POOL,
+            usdc.address,
+            ...new Array(4).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, //Curve
+          poolCount: 2,
+          swapFrom: TUSD_FRAXBP_LP.address,
+          swapTo: usdc.address,
+          inAmount: deleverageAmount,
+          outAmount: reverseExpectOutAmount2.toFixed(0),
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any,
+      pathLength: 1,
+    };
 
     const usdcDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
       .variableDebtTokenAddress;
@@ -998,6 +1005,236 @@ makeSuite('USDC Structured Vault - Deleverage', (testEnv) => {
     );
 
     expect(await TUSD_FRAXBP_LP.balanceOf(vault.address)).to.be.eq(deleverageAmount);
+  });
+});
+
+makeSuite('USDC Structured Vault - Deleverage (2)', (testEnv) => {
+  let vault: StableStructuredVault;
+  let daiusdcusdtsusdLevSwap = {} as IGeneralLevSwap;
+  let ltv = '';
+
+  before(async () => {
+    // deploy USDC Structured Vault contract
+    const {
+      usdc,
+      deployer,
+      cvxdai_usdc_usdt_susd,
+      vaultWhitelist,
+      convexDAIUSDCUSDTSUSDVault,
+      helpersContract,
+      owner,
+    } = testEnv;
+
+    vault = await deployStableStructuredVault('USDC');
+
+    await vault.setAdmin(deployer.address);
+    await vault.initUnderlyingAsset(
+      usdc.address,
+      'Sturdy Structured USDC LP Token',
+      'SS-USDC-LP',
+      6
+    );
+    await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+
+    daiusdcusdtsusdLevSwap = await getCollateralLevSwapper(testEnv, cvxdai_usdc_usdt_susd.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxdai_usdc_usdt_susd.address)
+    ).ltv.toString();
+
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(
+        convexDAIUSDCUSDTSUSDVault.address,
+        daiusdcusdtsusdLevSwap.address
+      );
+  });
+
+  it('admin leverage 5000 DAI_USDC_USDT_SUSD by borrowing USDC with leverage 4.5', async () => {
+    const { usdc, DAI_USDC_USDT_SUSD_LP, deployer } = testEnv;
+    const leverageAmount = (
+      await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, '5000')
+    ).toString();
+    const leverage = 35000;
+
+    // approving tokens for swapper
+    await vault.authorizeSwapper(
+      DAI_USDC_USDT_SUSD_LP.address,
+      daiusdcusdtsusdLevSwap.address,
+      true
+    );
+    await vault.authorizeSwapper(usdc.address, daiusdcusdtsusdLevSwap.address, false);
+
+    // Prepare Collateral
+    await mint('DAI_USDC_USDT_SUSD_LP', leverageAmount, deployer);
+    await DAI_USDC_USDT_SUSD_LP.transfer(vault.address, leverageAmount);
+
+    // Prepare Leverage params
+    const inAmount = (
+      await calcInAmount(
+        'DAI_USDC_USDT_SUSD_LP',
+        testEnv,
+        await convertToCurrencyUnits(DAI_USDC_USDT_SUSD_LP.address, leverageAmount),
+        leverage,
+        usdc.address
+      )
+    ).toString();
+    const expectOutAmount = new BigNumber(
+      (await calcMinAmountOut(testEnv, 1, 0, inAmount, 4, true, true, false, SUSD_POOL)).toString()
+    ).multipliedBy(1 - slippage);
+    const swapInfo = {
+      paths: [
+        {
+          routes: [
+            usdc.address,
+            SUSD_POOL,
+            DAI_USDC_USDT_SUSD_LP.address,
+            ...new Array(6).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [1, 0, 10 /*4-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 1,
+          swapFrom: usdc.address,
+          swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          inAmount,
+          outAmount: expectOutAmount.toFixed(0),
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any,
+      reversePaths: [
+        {
+          routes: new Array(9).fill(ZERO_ADDRESS),
+          routeParams: new Array(4).fill([0, 0, 0]) as any,
+          swapType: 1, //NO_SWAP: Join/Exit pool
+          poolCount: 0,
+          swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+          swapTo: usdc.address,
+          inAmount: 0,
+          outAmount: 0,
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any,
+      pathLength: 1,
+    };
+
+    // Prepare USDC to Lending Pool
+    const amountToDelegate = (
+      await calcTotalBorrowAmount(
+        testEnv,
+        DAI_USDC_USDT_SUSD_LP.address,
+        await convertToCurrencyUnits(DAI_USDC_USDT_SUSD_LP.address, leverageAmount),
+        ltv,
+        leverage,
+        usdc.address
+      )
+    ).toString();
+
+    // Depositor deposits USDT to Lending Pool
+    await mint('USDC', amountToDelegate, deployer);
+    await depositToLendingPool(usdc, deployer, amountToDelegate, testEnv);
+
+    // run Leverage
+    await vault.enterPosition(
+      daiusdcusdtsusdLevSwap.address,
+      leverageAmount,
+      leverage,
+      usdc.address,
+      0,
+      [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData],
+      0,
+      swapInfo
+    );
+
+    expect(await DAI_USDC_USDT_SUSD_LP.balanceOf(vault.address)).to.be.eq(0);
+  });
+
+  it('admin Deleverage 99% DAI_USDC_USDT_SUSD', async () => {
+    const { usdc, DAI_USDC_USDT_SUSD_LP, helpersContract, aCVXDAI_USDC_USDT_SUSD } = testEnv;
+    const deleverageAmount = (
+      await convertToCurrencyDecimals(DAI_USDC_USDT_SUSD_LP.address, '5000')
+    )
+      .mul(99)
+      .div(100)
+      .toString();
+
+    // Prepare Deleverage params
+    const swapInfo = {
+      paths: [
+        {
+          routes: [
+            usdc.address,
+            SUSD_POOL,
+            DAI_USDC_USDT_SUSD_LP.address,
+            ...new Array(6).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [1, 0, 10 /*4-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 1,
+          swapFrom: usdc.address,
+          swapTo: DAI_USDC_USDT_SUSD_LP.address,
+          inAmount: 0,
+          outAmount: 0,
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any,
+      reversePaths: [
+        {
+          routes: new Array(9).fill(ZERO_ADDRESS),
+          routeParams: new Array(4).fill([0, 0, 0]) as any,
+          swapType: 1, //NO_SWAP: Join/Exit pool
+          poolCount: 0,
+          swapFrom: DAI_USDC_USDT_SUSD_LP.address,
+          swapTo: usdc.address,
+          inAmount: 0,
+          outAmount: 0,
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any,
+      pathLength: 1,
+    };
+
+    const usdcDebtTokenAddress = (await helpersContract.getReserveTokensAddresses(usdc.address))
+      .variableDebtTokenAddress;
+    const varDebtToken = await getVariableDebtToken(usdcDebtTokenAddress);
+    const repayAmount = await varDebtToken.balanceOf(vault.address);
+    const outAmount = new BigNumber(repayAmount.toString())
+      .multipliedBy(1.0005) // aave v3 flashloan fee 0.05%
+      .plus(0.5)
+      .dp(0, 1) //round down with decimal 0
+      .toFixed(0);
+    const expectInAmount = new BigNumber(
+      (
+        await calcMinAmountOut(testEnv, 1, 0, outAmount, 4, false, true, false, SUSD_POOL)
+      ).toString()
+    );
+    swapInfo.reversePaths[0].inAmount = expectInAmount.multipliedBy(1 + slippage).toFixed(0);
+    swapInfo.reversePaths[0].outAmount = outAmount;
+
+    // run zapLeverage
+    await vault.exitPosition(
+      daiusdcusdtsusdLevSwap.address,
+      repayAmount,
+      deleverageAmount,
+      usdc.address,
+      aCVXDAI_USDC_USDT_SUSD.address,
+      0,
+      swapInfo
+    );
+
+    expect(await DAI_USDC_USDT_SUSD_LP.balanceOf(vault.address)).to.be.eq(deleverageAmount);
   });
 });
 
@@ -1105,8 +1342,6 @@ makeSuite('USDC Structured Vault - Migration to USDC', (testEnv) => {
         inAmount: migrationAmount,
         outAmount: expectOutAmount2.toFixed(0),
       },
-      MultiSwapPathInitData,
-      MultiSwapPathInitData,
     ] as any;
 
     // run zapLeverage
@@ -1119,7 +1354,7 @@ makeSuite('USDC Structured Vault - Migration to USDC', (testEnv) => {
   });
 });
 
-makeSuite('USDC Structured Vault - Migration to Collateral', (testEnv) => {
+makeSuite('USDC Structured Vault - Migration to Collateral(1)', (testEnv) => {
   let vault: StableStructuredVault;
   let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
   let ltv = '';
@@ -1399,6 +1634,7 @@ makeSuite('USDC Structured Vault - ZapLeverage and Yield Distribute', (testEnv) 
     ] as any;
     const inAmount = (
       await calcInAmount(
+        'TUSD_FRAXBP_LP',
         testEnv,
         await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, expectZapOutAmount2.toFixed(0)),
         leverage,
@@ -1624,3 +1860,886 @@ makeSuite('USDC Structured Vault - ZapLeverage and Yield Distribute', (testEnv) 
     );
   });
 });
+
+makeSuite('USDC Structured Vault - Withdraw', (testEnv) => {
+  let vault: StableStructuredVault;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let ltv = '';
+
+  before(async () => {
+    // deploy USDC Structured Vault contract
+    const {
+      usdc,
+      deployer,
+      cvxtusd_fraxbp,
+      vaultWhitelist,
+      convexTUSDFRAXBPVault,
+      helpersContract,
+      owner,
+    } = testEnv;
+
+    vault = await deployStableStructuredVault('USDC');
+
+    await vault.setAdmin(deployer.address);
+    await vault.initUnderlyingAsset(
+      usdc.address,
+      'Sturdy Structured USDC LP Token',
+      'SS-USDC-LP',
+      6
+    );
+    await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
+
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+  });
+
+  it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+    const { usdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+    // Prepare Enough USDC for users
+    await mint('USDC', depositAmount.toString(), user1);
+    await mint('USDC', depositAmount.mul(2).toString(), user2);
+    await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+    // Approve vault
+    await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+    await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+    await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+    // Deposit
+    await vault.deposit(user1.address, depositAmount);
+    await vault.deposit(user2.address, depositAmount.mul(2));
+    await vault.deposit(user3.address, depositAmount.mul(3));
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('user1 withdraw 2000 USDC failed, user4 withdraw user1`s 1000 USDC failed, user2 withdraw 2000 USDC success', async () => {
+    const { usdc, users, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP } = testEnv;
+    const [user1, user2, , user4] = users;
+    const withdrawAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+    // Prepare withdraw params
+    const params = {
+      swapper: ZERO_ADDRESS,
+      borrowAsset: ZERO_ADDRESS,
+      sAsset: ZERO_ADDRESS,
+      flashLoanType: 0,
+      swapInfo: {
+        paths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        reversePaths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        pathLength: 0,
+      },
+      paths: [],
+    };
+    await expect(vault.connect(user1.signer).withdraw(user1.address, withdrawAmount.mul(2), params))
+      .to.be.reverted;
+    await expect(vault.connect(user4.signer).withdraw(user1.address, withdrawAmount, params)).to.be
+      .reverted;
+    await expect(vault.connect(user2.signer).withdraw(user2.address, withdrawAmount.mul(2), params))
+      .to.not.be.reverted;
+
+    expect(await vault.totalSupply()).to.be.eq(withdrawAmount.mul(4));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(withdrawAmount.mul(4));
+    expect(await usdc.balanceOf(user2.address)).to.be.eq(withdrawAmount.mul(2));
+  });
+});
+
+makeSuite(
+  'USDC Structured Vault - Withdraw via deleverage and migration but vault has some USDC',
+  (testEnv) => {
+    let vault: StableStructuredVault;
+    let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+    let ltv = '';
+
+    before(async () => {
+      // deploy USDC Structured Vault contract
+      const {
+        usdc,
+        deployer,
+        cvxtusd_fraxbp,
+        vaultWhitelist,
+        convexTUSDFRAXBPVault,
+        helpersContract,
+        owner,
+      } = testEnv;
+
+      vault = await deployStableStructuredVault('USDC');
+
+      await vault.setAdmin(deployer.address);
+      await vault.initUnderlyingAsset(
+        usdc.address,
+        'Sturdy Structured USDC LP Token',
+        'SS-USDC-LP',
+        6
+      );
+      await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+      await vault.setSwapLoss(50); //0.5%
+
+      tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+      ltv = (
+        await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+      ).ltv.toString();
+
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+    });
+
+    it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+      const { usdc, users } = testEnv;
+      const [user1, user2, user3] = users;
+      const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+      // Prepare Enough USDC for users
+      await mint('USDC', depositAmount.toString(), user1);
+      await mint('USDC', depositAmount.mul(2).toString(), user2);
+      await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+      // Approve vault
+      await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+      await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+      await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+      // Deposit
+      await vault.deposit(user1.address, depositAmount);
+      await vault.deposit(user2.address, depositAmount.mul(2));
+      await vault.deposit(user3.address, depositAmount.mul(3));
+
+      expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+      expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+      expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+      expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+      expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+    });
+
+    it('admin zapLeverage 6000 USDC for TUSD_FRAXBP by borrowing USDC with leverage 4.5', async () => {
+      const { usdc, TUSD_FRAXBP_LP, deployer } = testEnv;
+      const zapLeverageAmount = (await convertToCurrencyDecimals(usdc.address, '6000')).toString();
+      const leverage = 35000;
+
+      // approving tokens for swapper
+      await vault.authorizeSwapper(TUSD_FRAXBP_LP.address, tusdfraxbpLevSwap.address, true);
+      await vault.authorizeSwapper(usdc.address, tusdfraxbpLevSwap.address, false);
+
+      // Prepare ZapLeverage params
+      const expectZapOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            zapLeverageAmount,
+            2,
+            true,
+            true,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectZapOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            expectZapOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const zapPaths = [
+        {
+          routes: [
+            usdc.address,
+            FRAX_USDC_POOL,
+            FRAX_USDC_LP,
+            TUSDFRAXBP_POOL,
+            TUSD_FRAXBP_LP.address,
+            ...new Array(4).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [1, 0, 7 /*2-coin-pool add_liquidity*/],
+            [1, 0, 7 /*2-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 2,
+          swapFrom: usdc.address,
+          swapTo: TUSD_FRAXBP_LP.address,
+          inAmount: zapLeverageAmount,
+          outAmount: expectZapOutAmount2.toFixed(0),
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any;
+      const inAmount = (
+        await calcInAmount(
+          'TUSD_FRAXBP_LP',
+          testEnv,
+          await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, expectZapOutAmount2.toFixed(0)),
+          leverage,
+          usdc.address
+        )
+      ).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 1, 0, inAmount, 2, true, true, false, FRAX_USDC_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            expectOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdc.address,
+              FRAX_USDC_POOL,
+              FRAX_USDC_LP,
+              TUSDFRAXBP_POOL,
+              TUSD_FRAXBP_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 2,
+            swapFrom: usdc.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount,
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: [
+              TUSD_FRAXBP_LP.address,
+              TUSDFRAXBP_POOL,
+              FRAX_USDC_LP,
+              FRAX_USDC_POOL,
+              usdc.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 2,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
+
+      // Prepare USDC to Lending Pool
+      const amountToDelegate = (
+        await calcTotalBorrowAmount(
+          testEnv,
+          TUSD_FRAXBP_LP.address,
+          await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, expectZapOutAmount2.toFixed(0)),
+          ltv,
+          leverage,
+          usdc.address
+        )
+      ).toString();
+      // Depositor deposits USDT to Lending Pool
+      await mint('USDC', amountToDelegate, deployer);
+      await depositToLendingPool(usdc, deployer, amountToDelegate, testEnv);
+
+      // run zapLeverage
+      await vault.enterPosition(
+        tusdfraxbpLevSwap.address,
+        zapLeverageAmount,
+        leverage,
+        usdc.address,
+        0,
+        zapPaths,
+        1,
+        swapInfo
+      );
+
+      expect(await vault.totalSupply()).to.be.eq(zapLeverageAmount);
+      expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    });
+
+    it('user1 withdraw 1000 USDC via auto deleverage and migration but vault has some USDC', async () => {
+      const { usdc, users, aCVXTUSD_FRAXBP, TUSD_FRAXBP_LP, deployer } = testEnv;
+      const [user1] = users;
+      const withdrawAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+      // Prepare 500 USDC for vault
+      await mint('USDC', withdrawAmount.div(2).toString(), deployer);
+      await usdc.transfer(vault.address, withdrawAmount.div(2));
+
+      // Prepare deleverage params
+      const deleverageAmount = new BigNumber(
+        (await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, '600')).mul(99).div(100).toString()
+      ).toFixed(0);
+      const reverseExpectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            deleverageAmount,
+            2,
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const reverseExpectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount1.toFixed(0),
+            2,
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdc.address,
+              FRAX_USDC_POOL,
+              FRAX_USDC_LP,
+              TUSDFRAXBP_POOL,
+              TUSD_FRAXBP_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 2,
+            swapFrom: usdc.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: [
+              TUSD_FRAXBP_LP.address,
+              TUSDFRAXBP_POOL,
+              FRAX_USDC_LP,
+              FRAX_USDC_POOL,
+              usdc.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 2,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: usdc.address,
+            inAmount: deleverageAmount,
+            outAmount: reverseExpectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
+
+      // Prepare Migration params
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            reverseExpectOutAmount2.toFixed(0),
+            2,
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            expectOutAmount1.toFixed(0),
+            2,
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const paths = [
+        {
+          routes: [
+            TUSD_FRAXBP_LP.address,
+            TUSDFRAXBP_POOL,
+            FRAX_USDC_LP,
+            FRAX_USDC_POOL,
+            usdc.address,
+            ...new Array(4).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, //Curve
+          poolCount: 2,
+          swapFrom: TUSD_FRAXBP_LP.address,
+          swapTo: usdc.address,
+          inAmount: deleverageAmount,
+          outAmount: expectOutAmount2.toFixed(0),
+        },
+      ] as any;
+
+      // Prepare Withdraw Params
+      const params = {
+        swapper: tusdfraxbpLevSwap.address,
+        borrowAsset: usdc.address,
+        sAsset: aCVXTUSD_FRAXBP.address,
+        flashLoanType: 0,
+        swapInfo,
+        paths,
+      };
+
+      expect(await usdc.balanceOf(vault.address)).to.be.eq(withdrawAmount.div(2));
+      expect(await usdc.balanceOf(user1.address)).to.be.eq(0);
+      expect(await vault.balanceOf(user1.address)).to.be.eq(withdrawAmount);
+      expect(await vault.totalSupply()).to.be.eq(withdrawAmount.mul(6));
+
+      // Withdraw
+      await vault.connect(user1.signer).withdraw(user1.address, withdrawAmount, params);
+
+      expect(await usdc.balanceOf(vault.address)).to.be.lte(withdrawAmount.div(8));
+      expect(await usdc.balanceOf(user1.address)).to.be.eq(withdrawAmount);
+      expect(await vault.balanceOf(user1.address)).to.be.eq(0);
+      expect(await vault.totalSupply()).to.be.eq(withdrawAmount.mul(5));
+    });
+  }
+);
+
+makeSuite(
+  'USDC Structured Vault - Withdraw via only migration since vault has enough collateral',
+  (testEnv) => {
+    let vault: StableStructuredVault;
+    let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+    let ltv = '';
+
+    before(async () => {
+      // deploy USDC Structured Vault contract
+      const {
+        usdc,
+        deployer,
+        cvxtusd_fraxbp,
+        vaultWhitelist,
+        convexTUSDFRAXBPVault,
+        helpersContract,
+        owner,
+      } = testEnv;
+
+      vault = await deployStableStructuredVault('USDC');
+
+      await vault.setAdmin(deployer.address);
+      await vault.initUnderlyingAsset(
+        usdc.address,
+        'Sturdy Structured USDC LP Token',
+        'SS-USDC-LP',
+        6
+      );
+      await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+      await vault.setSwapLoss(50); //0.5%
+
+      tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+      ltv = (
+        await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+      ).ltv.toString();
+
+      await vaultWhitelist
+        .connect(owner.signer)
+        .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+    });
+
+    it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+      const { usdc, users } = testEnv;
+      const [user1, user2, user3] = users;
+      const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+      // Prepare Enough USDC for users
+      await mint('USDC', depositAmount.toString(), user1);
+      await mint('USDC', depositAmount.mul(2).toString(), user2);
+      await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+      // Approve vault
+      await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+      await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+      await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+      // Deposit
+      await vault.deposit(user1.address, depositAmount);
+      await vault.deposit(user2.address, depositAmount.mul(2));
+      await vault.deposit(user3.address, depositAmount.mul(3));
+
+      expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+      expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+      expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+      expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+      expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+    });
+
+    it('admin zapLeverage 6000 USDC for TUSD_FRAXBP by borrowing USDC with leverage 4.5', async () => {
+      const { usdc, TUSD_FRAXBP_LP, deployer } = testEnv;
+      const zapLeverageAmount = (await convertToCurrencyDecimals(usdc.address, '6000')).toString();
+      const leverage = 35000;
+
+      // approving tokens for swapper
+      await vault.authorizeSwapper(TUSD_FRAXBP_LP.address, tusdfraxbpLevSwap.address, true);
+      await vault.authorizeSwapper(usdc.address, tusdfraxbpLevSwap.address, false);
+
+      // Prepare ZapLeverage params
+      const expectZapOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            zapLeverageAmount,
+            2,
+            true,
+            true,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectZapOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            expectZapOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const zapPaths = [
+        {
+          routes: [
+            usdc.address,
+            FRAX_USDC_POOL,
+            FRAX_USDC_LP,
+            TUSDFRAXBP_POOL,
+            TUSD_FRAXBP_LP.address,
+            ...new Array(4).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [1, 0, 7 /*2-coin-pool add_liquidity*/],
+            [1, 0, 7 /*2-coin-pool add_liquidity*/],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, // curve
+          poolCount: 2,
+          swapFrom: usdc.address,
+          swapTo: TUSD_FRAXBP_LP.address,
+          inAmount: zapLeverageAmount,
+          outAmount: expectZapOutAmount2.toFixed(0),
+        },
+        MultiSwapPathInitData,
+        MultiSwapPathInitData,
+      ] as any;
+      const inAmount = (
+        await calcInAmount(
+          'TUSD_FRAXBP_LP',
+          testEnv,
+          await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, expectZapOutAmount2.toFixed(0)),
+          leverage,
+          usdc.address
+        )
+      ).toString();
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(testEnv, 1, 0, inAmount, 2, true, true, false, FRAX_USDC_POOL)
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            0,
+            expectOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdc.address,
+              FRAX_USDC_POOL,
+              FRAX_USDC_LP,
+              TUSDFRAXBP_POOL,
+              TUSD_FRAXBP_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 2,
+            swapFrom: usdc.address,
+            swapTo: TUSD_FRAXBP_LP.address,
+            inAmount,
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: [
+              TUSD_FRAXBP_LP.address,
+              TUSDFRAXBP_POOL,
+              FRAX_USDC_LP,
+              FRAX_USDC_POOL,
+              usdc.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 2,
+            swapFrom: TUSD_FRAXBP_LP.address,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
+
+      // Prepare USDC to Lending Pool
+      const amountToDelegate = (
+        await calcTotalBorrowAmount(
+          testEnv,
+          TUSD_FRAXBP_LP.address,
+          await convertToCurrencyUnits(TUSD_FRAXBP_LP.address, expectZapOutAmount2.toFixed(0)),
+          ltv,
+          leverage,
+          usdc.address
+        )
+      ).toString();
+      // Depositor deposits USDT to Lending Pool
+      await mint('USDC', amountToDelegate, deployer);
+      await depositToLendingPool(usdc, deployer, amountToDelegate, testEnv);
+
+      // run zapLeverage
+      await vault.enterPosition(
+        tusdfraxbpLevSwap.address,
+        zapLeverageAmount,
+        leverage,
+        usdc.address,
+        0,
+        zapPaths,
+        1,
+        swapInfo
+      );
+
+      expect(await vault.totalSupply()).to.be.eq(zapLeverageAmount);
+      expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    });
+
+    it('user1 withdraw 1000 USDC via auto only migration since vault has enough collateral', async () => {
+      const { usdc, users, TUSD_FRAXBP_LP, deployer } = testEnv;
+      const [user1] = users;
+      const withdrawAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+      const deleverageAmount = await convertToCurrencyDecimals(TUSD_FRAXBP_LP.address, '600');
+
+      // Prepare Collateral for vault
+      await mint('TUSD_FRAXBP_LP', deleverageAmount.toString(), deployer);
+      await TUSD_FRAXBP_LP.transfer(vault.address, deleverageAmount);
+
+      // Prepare 500 USDC for vault
+      await mint('USDC', withdrawAmount.div(2).toString(), deployer);
+      await usdc.transfer(vault.address, withdrawAmount.div(2));
+
+      // Prepare Migration params
+      const expectOutAmount1 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            deleverageAmount.div(6).mul(5).toString(),
+            2,
+            false,
+            false,
+            false,
+            TUSDFRAXBP_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            0,
+            1,
+            expectOutAmount1.toFixed(0),
+            2,
+            false,
+            false,
+            false,
+            FRAX_USDC_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const paths = [
+        {
+          routes: [
+            TUSD_FRAXBP_LP.address,
+            TUSDFRAXBP_POOL,
+            FRAX_USDC_LP,
+            FRAX_USDC_POOL,
+            usdc.address,
+            ...new Array(4).fill(ZERO_ADDRESS),
+          ],
+          routeParams: [
+            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+            [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+            [0, 0, 0],
+            [0, 0, 0],
+          ] as any,
+          swapType: 4, //Curve
+          poolCount: 2,
+          swapFrom: TUSD_FRAXBP_LP.address,
+          swapTo: usdc.address,
+          inAmount: deleverageAmount.div(6).mul(5).toString(),
+          outAmount: expectOutAmount2.toFixed(0),
+        },
+      ] as any;
+
+      // Prepare Withdraw Params
+      const params = {
+        swapper: tusdfraxbpLevSwap.address,
+        borrowAsset: ZERO_ADDRESS,
+        sAsset: ZERO_ADDRESS,
+        flashLoanType: 0,
+        swapInfo: {
+          paths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+          reversePaths: [
+            MultiSwapPathInitData,
+            MultiSwapPathInitData,
+            MultiSwapPathInitData,
+          ] as any,
+          pathLength: 0,
+        },
+        paths,
+      };
+
+      expect(await TUSD_FRAXBP_LP.balanceOf(vault.address)).to.be.eq(deleverageAmount);
+      expect(await usdc.balanceOf(vault.address)).to.be.eq(withdrawAmount.div(2));
+      expect(await usdc.balanceOf(user1.address)).to.be.eq(0);
+      expect(await vault.balanceOf(user1.address)).to.be.eq(withdrawAmount);
+      expect(await vault.totalSupply()).to.be.eq(withdrawAmount.mul(6));
+
+      // Withdraw
+      await vault.connect(user1.signer).withdraw(user1.address, withdrawAmount, params);
+
+      expect(await TUSD_FRAXBP_LP.balanceOf(vault.address)).to.be.lte(deleverageAmount.div(4));
+      expect(await usdc.balanceOf(vault.address)).to.be.lte(withdrawAmount.div(4));
+      expect(await usdc.balanceOf(user1.address)).to.be.eq(withdrawAmount);
+      expect(await vault.balanceOf(user1.address)).to.be.eq(0);
+      expect(await vault.totalSupply()).to.be.eq(withdrawAmount.mul(5));
+    });
+  }
+);

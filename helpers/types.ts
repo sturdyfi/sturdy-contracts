@@ -210,6 +210,8 @@ export enum eContractid {
   VaultWhitelist = 'VaultWhitelist',
   ERC4626Vault = 'ERC4626Vault',
   ERC4626Router = 'ERC4626Router',
+  StructuredVault = 'StructuredVault',
+  StructuredVaultImpl = 'StructuredVaultImpl',
 }
 
 /*

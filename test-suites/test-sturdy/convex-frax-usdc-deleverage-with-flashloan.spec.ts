@@ -316,41 +316,24 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
               usdt.address,
               THREE_CRV_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              FRAXUSDC_POOL,
+              FRAX_USDC_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [2, 1, 1 /*exchange*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdt.address,
-            swapTo: usdc.address,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
-            routes: [
-              usdc.address,
-              FRAXUSDC_POOL,
-              FRAX_USDC_LP.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
-            ],
-            routeParams: [
               [1, 0, 7 /*2-coin-pool add_liquidity*/],
               [0, 0, 0],
               [0, 0, 0],
-              [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: usdt.address,
             swapTo: FRAX_USDC_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
@@ -359,44 +342,27 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
               FRAX_USDC_LP.address,
               FRAXUSDC_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              THREE_CRV_POOL,
+              usdt.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: FRAX_USDC_LP.address,
-            swapTo: usdc.address,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
-            routes: [
-              usdc.address,
-              THREE_CRV_POOL,
-              usdt.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
-            ],
-            routeParams: [
               [1, 2, 1 /*exchange*/],
               [0, 0, 0],
               [0, 0, 0],
-              [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: FRAX_USDC_LP.address,
             swapTo: usdt.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         fraxusdcLevSwap
@@ -468,9 +434,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -737,40 +701,28 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: [dai.address, THREE_CRV_POOL, usdc.address, ...new Array(6).fill(ZERO_ADDRESS)],
-            routeParams: [
-              [0, 1, 1 /*exchange*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: dai.address,
-            swapTo: usdc.address,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
             routes: [
+              dai.address,
+              THREE_CRV_POOL,
               usdc.address,
               FRAXUSDC_POOL,
               FRAX_USDC_LP.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
+              [0, 1, 1 /*exchange*/],
               [1, 0, 7 /*2-coin-pool add_liquidity*/],
-              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: dai.address,
             swapTo: FRAX_USDC_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
@@ -779,39 +731,27 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
               FRAX_USDC_LP.address,
               FRAXUSDC_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              THREE_CRV_POOL,
+              dai.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: FRAX_USDC_LP.address,
-            swapTo: usdc.address,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
-            routes: [usdc.address, THREE_CRV_POOL, dai.address, ...new Array(6).fill(ZERO_ADDRESS)],
-            routeParams: [
               [1, 0, 1 /*exchange*/],
               [0, 0, 0],
               [0, 0, 0],
-              [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: FRAX_USDC_LP.address,
             swapTo: dai.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         fraxusdcLevSwap
@@ -883,9 +823,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -1003,41 +941,24 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
               usdt.address,
               THREE_CRV_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              FRAXUSDC_POOL,
+              FRAX_USDC_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [2, 1, 1 /*exchange*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdt.address,
-            swapTo: usdc.address,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
-            routes: [
-              usdc.address,
-              FRAXUSDC_POOL,
-              FRAX_USDC_LP.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
-            ],
-            routeParams: [
               [1, 0, 7 /*2-coin-pool add_liquidity*/],
               [0, 0, 0],
               [0, 0, 0],
-              [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: usdt.address,
             swapTo: FRAX_USDC_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
@@ -1046,44 +967,27 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
               FRAX_USDC_LP.address,
               FRAXUSDC_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              THREE_CRV_POOL,
+              usdt.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: FRAX_USDC_LP.address,
-            swapTo: usdc.address,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
-            routes: [
-              usdc.address,
-              THREE_CRV_POOL,
-              usdt.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
-            ],
-            routeParams: [
               [1, 2, 1 /*exchange*/],
               [0, 0, 0],
               [0, 0, 0],
-              [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: FRAX_USDC_LP.address,
             swapTo: usdt.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         fraxusdcLevSwap
@@ -1158,9 +1062,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -1235,9 +1137,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -1312,9 +1212,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -1389,9 +1287,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -1862,40 +1758,28 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
       const swapInfo = {
         paths: [
           {
-            routes: [dai.address, THREE_CRV_POOL, usdc.address, ...new Array(6).fill(ZERO_ADDRESS)],
-            routeParams: [
-              [0, 1, 1 /*exchange*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: dai.address,
-            swapTo: usdc.address,
-            inAmount,
-            outAmount: expectOutAmount1.toFixed(0),
-          },
-          {
             routes: [
+              dai.address,
+              THREE_CRV_POOL,
               usdc.address,
               FRAXUSDC_POOL,
               FRAX_USDC_LP.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
+              [0, 1, 1 /*exchange*/],
               [1, 0, 7 /*2-coin-pool add_liquidity*/],
-              [0, 0, 0],
               [0, 0, 0],
               [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: dai.address,
             swapTo: FRAX_USDC_LP.address,
-            inAmount: expectOutAmount1.toFixed(0),
+            inAmount,
             outAmount: expectOutAmount2.toFixed(0),
           },
+          MultiSwapPathInitData,
           MultiSwapPathInitData,
         ] as any,
         reversePaths: [
@@ -1904,39 +1788,27 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
               FRAX_USDC_LP.address,
               FRAXUSDC_POOL,
               usdc.address,
-              ...new Array(6).fill(ZERO_ADDRESS),
+              THREE_CRV_POOL,
+              dai.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
             ],
             routeParams: [
               [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
-              [0, 0, 0],
-              [0, 0, 0],
-              [0, 0, 0],
-            ] as any,
-            swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: FRAX_USDC_LP.address,
-            swapTo: usdc.address,
-            inAmount: 0,
-            outAmount: 0,
-          },
-          {
-            routes: [usdc.address, THREE_CRV_POOL, dai.address, ...new Array(6).fill(ZERO_ADDRESS)],
-            routeParams: [
               [1, 0, 1 /*exchange*/],
               [0, 0, 0],
               [0, 0, 0],
-              [0, 0, 0],
             ] as any,
             swapType: 4, // curve
-            poolCount: 1,
-            swapFrom: usdc.address,
+            poolCount: 2,
+            swapFrom: FRAX_USDC_LP.address,
             swapTo: dai.address,
             inAmount: 0,
             outAmount: 0,
           },
           MultiSwapPathInitData,
+          MultiSwapPathInitData,
         ] as any,
-        pathLength: 2,
+        pathLength: 1,
       };
       await expect(
         fraxusdcLevSwap
@@ -2011,9 +1883,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -2088,9 +1958,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -2165,9 +2033,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(
@@ -2242,9 +2108,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
         ).toString()
       ).multipliedBy(1 - slippage);
       swapInfo.reversePaths[0].inAmount = reverseInAmount.toFixed(0);
-      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].inAmount = reverseExpectOutAmount1.toFixed(0);
-      swapInfo.reversePaths[1].outAmount = reverseExpectOutAmount2.toFixed(0);
+      swapInfo.reversePaths[0].outAmount = reverseExpectOutAmount2.toFixed(0);
       await fraxusdcLevSwap
         .connect(borrower.signer)
         .withdrawWithFlashloan(

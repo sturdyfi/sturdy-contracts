@@ -23,6 +23,7 @@ import {
   MIM3CRVLevSwap__factory,
   MIMOracle__factory,
   MintableERC20,
+  StableStructuredVault__factory,
   YieldDistributorAdapter__factory,
 } from '../types';
 import { MockContract } from 'ethereum-waffle';
@@ -76,6 +77,7 @@ import {
   getUniswapAdapter2Address,
   getCurveswapAdapter2Address,
   getBalancerswapAdapter2Address,
+  getStableStructuredVault,
 } from './contracts-getters';
 import {
   SturdyProtocolDataProvider__factory,
@@ -185,6 +187,7 @@ import {
   deployContract,
   verifyContract,
   getContract,
+  rawInsertContractAddressInDb,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelper__factory } from '../types';
 import { MintableDelegationERC20 } from '../types';
@@ -2995,3 +2998,32 @@ export const deployERC4626Router = async (verify?: boolean) =>
     [],
     verify
   );
+
+export const deployStableStructuredVault = async (assetSymbol: string, verify?: boolean) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+  const impl = await withSaveAndVerify(
+    await new StableStructuredVault__factory(libraries, await getFirstSigner()).deploy(),
+    assetSymbol.toUpperCase() + eContractid.StructuredVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await impl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String(assetSymbol.toUpperCase() + '_STRUCTURED_VAULT'),
+      impl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String(assetSymbol.toUpperCase() + '_STRUCTURED_VAULT')
+  );
+  await rawInsertContractAddressInDb(
+    assetSymbol.toUpperCase() + eContractid.StructuredVault,
+    proxyAddress
+  );
+
+  return await getStableStructuredVault(assetSymbol);
+};

@@ -10,6 +10,7 @@ import {
   getConvexIronBankVault,
   getConvexTUSDFRAXBPVault,
   getAuraBBAUSDVault,
+  getAuraBBA3USDVault,
 } from '../../helpers/contracts-getters';
 import {
   deployLeverageSwapManager,
@@ -19,6 +20,7 @@ import {
   deployTUSDFRAXBPLevSwap,
   deployAURABBAUSDLevSwap,
   deployMIM3CRVLevSwap,
+  deployAURABBA3USDLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -45,6 +47,7 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       MIM_3CRV_LP,
       TUSD_FRAXBP_LP,
       BAL_BB_A_USD_LP,
+      BAL_BB_A3_USD_LP,
       ReserveAssets,
       ChainlinkAggregator,
     } = poolConfig as ISturdyConfiguration;
@@ -174,21 +177,37 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
     );
     console.log('TUSDFRAXBPLevSwap: %s', tusdfraxbpLevSwap.address);
 
-    // deploy & register TUSDFRAXBPLevSwap
-    const aurabbausdVault = await getAuraBBAUSDVault();
-    const aurabbausdLevSwap = await deployAURABBAUSDLevSwap(
+    // // deploy & register auraBBAUSDLevSwap
+    // const aurabbausdVault = await getAuraBBAUSDVault();
+    // const aurabbausdLevSwap = await deployAURABBAUSDLevSwap(
+    //   [
+    //     getParamPerNetwork(BAL_BB_A_USD_LP, network),
+    //     aurabbausdVault.address,
+    //     addressProvider.address,
+    //   ],
+    //   verify
+    // );
+    // await leverageManager.registerLevSwapper(
+    //   getParamPerNetwork(ReserveAssets, network).auraBB_A_USD,
+    //   aurabbausdLevSwap.address
+    // );
+    // console.log('AURABBAUSDLevSwap: %s', aurabbausdLevSwap.address);
+
+    // deploy & register auraBBA3USDLevSwap
+    const aurabba3usdVault = await getAuraBBA3USDVault();
+    const aurabba3usdLevSwap = await deployAURABBA3USDLevSwap(
       [
-        getParamPerNetwork(BAL_BB_A_USD_LP, network),
-        aurabbausdVault.address,
+        getParamPerNetwork(BAL_BB_A3_USD_LP, network),
+        aurabba3usdVault.address,
         addressProvider.address,
       ],
       verify
     );
     await leverageManager.registerLevSwapper(
-      getParamPerNetwork(ReserveAssets, network).auraBB_A_USD,
-      aurabbausdLevSwap.address
+      getParamPerNetwork(ReserveAssets, network).auraBB_A3_USD,
+      aurabba3usdLevSwap.address
     );
-    console.log('AURABBAUSDLevSwap: %s', aurabbausdLevSwap.address);
+    console.log('AURABBA3USDLevSwap: %s', aurabba3usdLevSwap.address);
 
     console.log(`${CONTRACT_NAME}.address`, leverageManager.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

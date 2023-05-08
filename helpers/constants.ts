@@ -68,4 +68,5 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
   auraDAI_USDC_USDT: oneEther.multipliedBy('18.5478562').toFixed(),
   cvxTUSD_FRAXBP: oneEther.multipliedBy('18.5478562').toFixed(),
   auraBB_A_USD: oneEther.multipliedBy('18.5478562').toFixed(),
+  auraBB_A3_USD: oneEther.multipliedBy('18.5478562').toFixed(),
 };

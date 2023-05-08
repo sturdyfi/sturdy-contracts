@@ -76,6 +76,7 @@ export enum eContractid {
   BALDAIUSDCUSDTOracle = 'BALDAIUSDCUSDTOracle',
   TUSDFRAXBPOracle = 'TUSDFRAXBPOracle',
   BALBBAUSDOracle = 'BALBBAUSDOracle',
+  BALBBA3USDOracle = 'BALBBA3USDOracle',
   AURAOracle = 'AURAOracle',
   DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
   LendingPoolCollateralManager = 'LendingPoolCollateralManager',
@@ -143,6 +144,8 @@ export enum eContractid {
   ConvexTUSDFRAXBPVault = 'ConvexTUSDFRAXBPVault',
   AuraBBAUSDVaultImpl = 'AuraBBAUSDVaultImpl',
   AuraBBAUSDVault = 'AuraBBAUSDVault',
+  AuraBBA3USDVaultImpl = 'AuraBBA3USDVaultImpl',
+  AuraBBA3USDVault = 'AuraBBA3USDVault',
   YearnVaultImpl = 'YearnVaultImpl',
   YearnVault = 'YearnVault',
   YearnWETHVaultImpl = 'YearnWETHVaultImpl',
@@ -206,6 +209,7 @@ export enum eContractid {
   IRONBANKLevSwap = 'IRONBANKLevSwap',
   TUSDFRAXBPLevSwap = 'TUSDFRAXBPLevSwap',
   AURABBAUSDLevSwap = 'AURABBAUSDLevSwap',
+  AURABBA3USDLevSwap = 'AURABBA3USDLevSwap',
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
   VaultWhitelist = 'VaultWhitelist',
   ERC4626Vault = 'ERC4626Vault',
@@ -344,6 +348,7 @@ export interface iAssetBase<T> {
   auraDAI_USDC_USDT: T;
   cvxTUSD_FRAXBP: T;
   auraBB_A_USD: T;
+  auraBB_A3_USD: T;
   yvWFTM: T;
   mooWETH: T;
   yvWETH: T;
@@ -382,6 +387,7 @@ export type iSturdyPoolAssets<T> = Pick<
   | 'auraDAI_USDC_USDT'
   | 'cvxTUSD_FRAXBP'
   | 'auraBB_A_USD'
+  | 'auraBB_A3_USD'
 >;
 
 export type iFantomPoolAssets<T> = Pick<
@@ -429,6 +435,7 @@ export enum TokenContractId {
   auraDAI_USDC_USDT = 'auraDAI_USDC_USDT',
   cvxTUSD_FRAXBP = 'cvxTUSD_FRAXBP',
   auraBB_A_USD = 'auraBB_A_USD',
+  auraBB_A3_USD = 'auraBB_A3_USD',
   yvWFTM = 'yvWFTM',
   mooWETH = 'mooWETH',
   yvWETH = 'yvWETH',
@@ -598,6 +605,7 @@ export interface ISturdyConfiguration extends ICommonConfiguration {
   BAL_DAI_USDC_USDT_LP: iParamsPerNetwork<tEthereumAddress>;
   TUSD_FRAXBP_LP: iParamsPerNetwork<tEthereumAddress>;
   BAL_BB_A_USD_LP: iParamsPerNetwork<tEthereumAddress>;
+  BAL_BB_A3_USD_LP: iParamsPerNetwork<tEthereumAddress>;
   CRV: iParamsPerNetwork<tEthereumAddress>;
   CVX: iParamsPerNetwork<tEthereumAddress>;
   BAL: iParamsPerNetwork<tEthereumAddress>;

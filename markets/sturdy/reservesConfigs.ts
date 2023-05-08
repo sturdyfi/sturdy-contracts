@@ -16,6 +16,7 @@ import {
   rateStrategyAURADAI_USDC_USDT,
   rateStrategyCVXTUSD_FRAXBP,
   rateStrategyAURABB_A_USD,
+  rateStrategyAURABB_A3_USD,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -244,6 +245,20 @@ export const strategyCVXTUSD_FRAXBP: IReserveParams = {
 
 export const strategyAURABB_A_USD: IReserveParams = {
   strategy: rateStrategyAURABB_A_USD,
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+};
+
+export const strategyAURABB_A3_USD: IReserveParams = {
+  strategy: rateStrategyAURABB_A3_USD,
   baseLTVAsCollateral: '9000',
   liquidationThreshold: '9300',
   liquidationBonus: '10200',

@@ -78,8 +78,11 @@ task('sturdy:mainnet', 'Deploy development enviroment')
     console.log('6-12. Deploy Convex TUSD FRAXBP vault');
     await DRE.run('full:deploy-convex-tusd-fraxbp-vault', { pool: POOL_NAME, verify });
 
-    console.log('6-13. Deploy Aura BB-A-USD vault');
-    await DRE.run('full:deploy-aura-bb-a-usd-vault', { pool: POOL_NAME, verify });
+    // console.log('6-13. Deploy Aura BB-A-USD vault');
+    // await DRE.run('full:deploy-aura-bb-a-usd-vault', { pool: POOL_NAME, verify });
+
+    console.log('6-14. Deploy Aura BB-A3-USD vault');
+    await DRE.run('full:deploy-aura-bb-a3-usd-vault', { pool: POOL_NAME, verify });
 
     console.log('8. Initialize lending pool');
     await DRE.run('full:initialize-lending-pool', { pool: POOL_NAME, verify });

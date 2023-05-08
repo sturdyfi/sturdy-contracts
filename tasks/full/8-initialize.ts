@@ -42,6 +42,7 @@ import {
   getConvexTUSDFRAXBPVault,
   getSturdyIncentivesController,
   getAuraBBAUSDVault,
+  getAuraBBA3USDVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -92,7 +93,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
               // auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
               cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
-              auraBB_A_USD: (await getAuraBBAUSDVault()).address,
+              // auraBB_A_USD: (await getAuraBBAUSDVault()).address,
+              auraBB_A3_USD: (await getAuraBBA3USDVault()).address,
             }
           : {
               yvWFTM: (await getYearnVault()).address,

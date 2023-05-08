@@ -15,8 +15,10 @@ import {
   IFantomConfiguration,
 } from './types';
 import {
+  AURABBA3USDLevSwap__factory,
   AURABBAUSDLevSwap__factory,
   AURAOracle__factory,
+  BALBBA3USDOracle__factory,
   BALBBAUSDOracle__factory,
   ERC4626Router__factory,
   ERC4626Vault__factory,
@@ -78,6 +80,7 @@ import {
   getCurveswapAdapter2Address,
   getBalancerswapAdapter2Address,
   getStableStructuredVault,
+  getAuraBBA3USDVault,
 } from './contracts-getters';
 import {
   SturdyProtocolDataProvider__factory,
@@ -560,6 +563,14 @@ export const deployBALBBAUSDOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new BALBBAUSDOracle__factory(await getFirstSigner()).deploy(),
     eContractid.BALBBAUSDOracle,
+    [],
+    verify
+  );
+
+export const deployBALBBA3USDOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALBBA3USDOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.BALBBA3USDOracle,
     [],
     verify
   );
@@ -1508,6 +1519,31 @@ export const deployAuraBBAUSDVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.AuraBBAUSDVault, proxyAddress);
 
   return await getAuraBBAUSDVault();
+};
+
+export const deployAuraBBA3USDVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraBBA3USDVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_BB_A3_USD_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_BB_A3_USD_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraBBA3USDVault, proxyAddress);
+
+  return await getAuraBBA3USDVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>
@@ -2907,6 +2943,22 @@ export const deployAURABBAUSDLevSwap = async (
   const levSwap = await withSaveAndVerify(
     await new AURABBAUSDLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.AURABBAUSDLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployAURABBA3USDLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new AURABBA3USDLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.AURABBA3USDLevSwap,
     args,
     verify
   );

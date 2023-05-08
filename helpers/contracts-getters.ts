@@ -627,6 +627,15 @@ export const getAuraBBAUSDVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getAuraBBA3USDVault = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVault__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraBBA3USDVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVault__factory.connect(
     address ||

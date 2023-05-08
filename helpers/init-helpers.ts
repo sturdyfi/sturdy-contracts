@@ -401,6 +401,21 @@ export const initReservesByHelper = async (
     );
   }
 
+  if (tokenAddresses['auraBB_A3_USD']) {
+    //BAL VariableYieldDistributor config
+    const response = await pool.getReserveData(tokenAddresses.auraBB_A3_USD);
+    const VariableYieldDistributor = await getVariableYieldDistribution();
+    await VariableYieldDistributor.registerAsset(
+      response.aTokenAddress,
+      yieldAddresses['auraBB_A3_USD']
+    );
+
+    await yieldDistributorAdapter.setVariableYieldDistributor(
+      tokenAddresses.auraBB_A3_USD,
+      VariableYieldDistributor.address
+    );
+  }
+
   return gasUsage; // Deprecated
 };
 

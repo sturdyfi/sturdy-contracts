@@ -512,5 +512,35 @@
       "address": "0x9eE4530EE122E82c700Ef355CC9b8F11079AE636",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "sWETHStaticATokenImpl": {
+    "main": {
+      "address": "0xA1CDB0092359687C6ed519775fEF18003E9D1835",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xA1CDB0092359687C6ed519775fEF18003E9D1835",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "sWETHStaticAToken": {
+    "main": {
+      "address": "0x304A2050dF259DCA35335C90CE983AdC5f2Dc50C",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x304A2050dF259DCA35335C90CE983AdC5f2Dc50C",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "InitializableAdminUpgradeabilityProxy": {
+    "main": {
+      "address": "0x304A2050dF259DCA35335C90CE983AdC5f2Dc50C",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x304A2050dF259DCA35335C90CE983AdC5f2Dc50C",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

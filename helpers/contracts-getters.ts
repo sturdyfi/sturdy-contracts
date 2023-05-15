@@ -38,6 +38,7 @@ import {
   YieldDistributorAdapter__factory,
   ERC4626Vault__factory,
   ERC4626Router__factory,
+  StaticAToken__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -69,6 +70,17 @@ export const getLendingPoolConfiguratorProxy = async (address?: tEthereumAddress
 export const getAToken = async (address?: tEthereumAddress) =>
   await AToken__factory.connect(
     address || (await getDb().get(`${eContractid.AToken}.${DRE.network.name}`).value()).address,
+    await getFirstSigner()
+  );
+
+export const getStaticAToken = async (symbol: string, address?: tEthereumAddress) =>
+  await StaticAToken__factory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${symbol + eContractid.StaticAToken}.${DRE.network.name}`)
+          .value()
+      ).address,
     await getFirstSigner()
   );
 

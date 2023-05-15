@@ -141,6 +141,12 @@ library Errors {
   string internal constant LS_SUPPLY_FAILED = '116'; // Deposit fails when leverage works
   string internal constant LS_REPAY_FAILED = '117'; // Repay fails when leverage works
   string internal constant O_WRONG_PRICE = '118'; // not correct price oracle
+  string internal constant SAT_INVALID_OWNER = '119';
+  string internal constant SAT_INVALID_EXPIRATION = '120';
+  string internal constant SAT_INVALID_SIGNATURE = '121';
+  string internal constant SAT_INVALID_DEPOSITOR = '122';
+  string internal constant SAT_INVALID_RECIPIENT = '123';
+  string internal constant SAT_ONLY_ONE_AMOUNT_FORMAT_ALLOWED = '125';
 
   enum CollateralManagerErrors {
     NO_ERROR,

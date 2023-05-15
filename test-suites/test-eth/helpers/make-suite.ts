@@ -24,9 +24,10 @@ import {
   getSturdyOracle,
   getWETHGateway,
   getAuraRETHWETHVault,
+  getStaticAToken,
 } from '../../../helpers/contracts-getters';
 import { eNetwork, IEthConfiguration, tEthereumAddress } from '../../../helpers/types';
-import { LendingPool, WETHGateway } from '../../../types';
+import { LendingPool, StaticAToken, WETHGateway } from '../../../types';
 import { SturdyProtocolDataProvider } from '../../../types';
 import { MintableERC20 } from '../../../types';
 import { AToken } from '../../../types';
@@ -83,6 +84,7 @@ export interface TestEnv {
   helpersContract: SturdyProtocolDataProvider;
   weth: MintableERC20;
   aWeth: AToken;
+  // staticAWeth: StaticAToken;
   aCVXETH_STETH: AToken;
   aAURAWSTETH_WETH: AToken;
   aAURARETH_WETH: AToken;
@@ -126,6 +128,7 @@ const testEnv: TestEnv = {
   oracle: {} as SturdyOracle,
   weth: {} as MintableERC20,
   aWeth: {} as AToken,
+  // staticAWeth: {} as StaticAToken,
   aCVXETH_STETH: {} as AToken,
   aAURAWSTETH_WETH: {} as AToken,
   aAURARETH_WETH: {} as AToken,
@@ -264,6 +267,7 @@ export async function initializeMakeSuite() {
   }
 
   testEnv.aWeth = await getAToken(aWethAddress);
+  // testEnv.staticAWeth = await getStaticAToken('sWETH');
   testEnv.aCVXETH_STETH = await getAToken(aCVXETH_STETHAddress);
   testEnv.aAURAWSTETH_WETH = await getAToken(aAURAWSTETH_WETHAddress);
   testEnv.aAURARETH_WETH = await getAToken(aAURARETH_WETHAddress);

@@ -542,5 +542,15 @@
       "address": "0x304A2050dF259DCA35335C90CE983AdC5f2Dc50C",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "SWETHStaticATokenRateProvider": {
+    "main": {
+      "address": "0x76D7e52AF0f4031aB297cc0622CBbb3B782876f4",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x76D7e52AF0f4031aB297cc0622CBbb3B782876f4",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

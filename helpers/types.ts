@@ -99,6 +99,7 @@ export enum eContractid {
   SturdyAPRDataProvider = 'SturdyAPRDataProvider',
   ERC4626Vault = 'ERC4626Vault',
   ERC4626Router = 'ERC4626Router',
+  StaticATokenRateProvider = 'StaticATokenRateProvider',
 }
 
 /*

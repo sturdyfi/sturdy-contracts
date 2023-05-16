@@ -74,6 +74,7 @@ import {
   AURARETHWETHLevSwap__factory,
   InitializableAdminUpgradeabilityProxy__factory,
   StaticAToken__factory,
+  StaticATokenRateProvider__factory,
 } from '../types';
 import {
   withSaveAndVerify,
@@ -1101,3 +1102,15 @@ export const deployStaticAToken = async (
 
   return { proxy: proxy.address, implementation: staticATokenImplementation.address };
 };
+
+export const deployStaticATokenRateProvider = async (
+  args: [tEthereumAddress],
+  assetSymbol: string,
+  verify?: boolean
+) =>
+  withSaveAndVerify(
+    await new StaticATokenRateProvider__factory(await getFirstSigner()).deploy(...args),
+    assetSymbol.toUpperCase() + eContractid.StaticATokenRateProvider,
+    args,
+    verify
+  );

@@ -21,6 +21,8 @@ import {
   getVariableDebtToken,
 } from '../../helpers/contracts-getters';
 import {
+  deployAuraBBA3USDVault,
+  deployAuraBBA3USDVaultImpl,
   deployBasedMiMaticBeefyVaultImpl,
   deployBasedMiMaticLPOracle,
   deployBasedOracle,
@@ -90,6 +92,7 @@ WRONG RESERVE ASSET SETUP:
 
     // ToDo: Deploy yielddistributor parts instead parameter
     console.log('Yield Distributor Address: ', yielddistributor);
+    // const rates = { address: ZERO_ADDRESS };
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,
@@ -422,6 +425,30 @@ WRONG RESERVE ASSET SETUP:
     //     //etc...
     //   ]);
     // }
+
+    // auraBB_A3_USD reserve
+    {
+      // Deploy vault impl
+      const vaultImpl = await deployAuraBBA3USDVaultImpl(verify);
+      const addressesProvider = await getLendingPoolAddressesProvider();
+      await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+
+      console.log('_ids: ', [
+        localBRE.ethers.utils.formatBytes32String('AURA_BB_A3_USD_VAULT').toString(), //implement id
+        localBRE.ethers.utils.formatBytes32String('AURABAL_BB_A3_USD').toString(), //internal asset id
+        localBRE.ethers.utils.formatBytes32String('BAL_BB_A3_USD_LP').toString(), //external asset id
+        //etc...
+      ]);
+      console.log('_addresses: ', [
+        vaultImpl.address, //implement address
+        getParamPerNetwork(ReserveAssets, <eNetwork>network).auraBB_A3_USD, //internal asset
+        getParamPerNetwork(
+          (poolConfig as ISturdyConfiguration).BAL_BB_A3_USD_LP,
+          <eNetwork>network
+        ), //exterenal asset
+        //etc...
+      ]);
+    }
 
     console.log('_treasuryAddress: ', ReserveFactorTreasuryAddress[network]);
     console.log('_treasuryFee: ', '1000');

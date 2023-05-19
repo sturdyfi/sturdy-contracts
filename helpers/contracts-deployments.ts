@@ -1521,6 +1521,14 @@ export const deployAuraBBAUSDVault = async (verify?: boolean) => {
   return await getAuraBBAUSDVault();
 };
 
+export const deployAuraBBA3USDVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraBBA3USDVaultImpl,
+    [],
+    verify
+  );
+
 export const deployAuraBBA3USDVault = async (verify?: boolean) => {
   const vaultImpl = await withSaveAndVerify(
     await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),

@@ -218,7 +218,7 @@ export const CommonsConfig: ICommonConfiguration = {
       auraDAI_USDC_USDT: '',
       cvxTUSD_FRAXBP: '', //'0xa5A96C4E5873dBae8e41058f891A05Ad9aE3C71e',
       auraBB_A_USD: '',
-      auraBB_A3_USD: '',
+      auraBB_A3_USD: '',  //'0xe590F1fE03A48AF8F606ca17eE2EF8449c6903eA',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
       CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
@@ -227,7 +227,7 @@ export const CommonsConfig: ICommonConfiguration = {
       FRAX: '0x14d04Fff8D21bd62987a5cE9ce543d2F1edF5D3E',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
-      AURA: '',
+      AURA: '', // '0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
       MIM: '', // '0x7e704825B55Ba9bE27483BeD912E44cc5a0162bc'
     },
     [eEthereumNetwork.tenderly]: {
@@ -248,7 +248,7 @@ export const CommonsConfig: ICommonConfiguration = {
       cvxFRAX_USDC: '0xfE3b8248f5bFDE88233c87eE17D49143849f9f28',
       cvxTUSD_FRAXBP: '0xa5A96C4E5873dBae8e41058f891A05Ad9aE3C71e',
       auraBB_A_USD: '',
-      auraBB_A3_USD: '',
+      auraBB_A3_USD: '',  //'0xe590F1fE03A48AF8F606ca17eE2EF8449c6903eA',
       USD: '0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419',
       CRV: '0x8a12Be339B0cD1829b91Adc01977caa5E9ac121e',
       CVX: '0xC9CbF687f43176B302F03f5e58470b77D07c61c6',
@@ -257,7 +257,7 @@ export const CommonsConfig: ICommonConfiguration = {
       FRAX: '0x14d04Fff8D21bd62987a5cE9ce543d2F1edF5D3E',
       TUSD: '0x3886BA987236181D98F2401c507Fb8BeA7871dF2',
       SUSD: '0x8e0b7e6062272B5eF4524250bFFF8e5Bd3497757',
-      AURA: '',
+      AURA: '', // '0x8209BB16a39FD6B76799e7f34702e316cF1129F0',
       MIM: '', // '0x7e704825B55Ba9bE27483BeD912E44cc5a0162bc'
     },
     [eEthereumNetwork.goerli]: {

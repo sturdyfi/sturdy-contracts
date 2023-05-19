@@ -47,7 +47,7 @@ task(`full:deploy-aura-bb-a3-usd-vault`, `Deploys the ${CONTRACT_NAME} contract`
     console.log(`internal token: ${internalAssetAddress}`);
 
     // Deploy BALBBA3USD oracle
-    let BALBBA3USDOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).auraBB_A_USD;
+    let BALBBA3USDOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).auraBB_A3_USD;
     if (!BALBBA3USDOracleAddress) {
       const BALBBA3USDOracle = await deployBALBBA3USDOracle(verify);
       BALBBA3USDOracleAddress = BALBBA3USDOracle.address;

@@ -17,6 +17,7 @@ import {SturdyERC20} from '../../tokenization/SturdyERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Math} from '../../../dependencies/openzeppelin/contracts/Math.sol';
+import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
 import {DataTypes} from '../../../protocol/libraries/types/DataTypes.sol';
 import {ReserveConfiguration} from '../../../protocol/libraries/configuration/ReserveConfiguration.sol';
 import {BalancerswapAdapter2} from '../../libraries/swap/BalancerswapAdapter2.sol';
@@ -40,12 +41,16 @@ abstract contract StructuredVault is
   using Math for uint256;
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using WadRayMath for uint256;
 
   uint256 private constant VAULT_REVISION = 0x1;
   uint256 private constant DEFAULT_INDEX = 1e18;
 
   /// @notice The structured vault's underlying asset ex: USDC/USDT/DAI
   address private _underlyingAsset;
+
+  /// @notice The previous liquidity index of underlying asset in lendingPool (decimal 27)
+  uint256 private _prevSupplyIndex;
 
   /// @notice The share token index (decimal 18)
   uint256 private _shareIndex;
@@ -331,6 +336,47 @@ abstract contract StructuredVault is
         type(uint256).max
       );
     }
+  }
+
+  /**
+   * @dev Lend an `_amount` of underlying asset to lendingPool.
+   * - Caller is vault Admin
+   * @param _amount - The amount of underlying asset
+   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
+   *   0 if the action is executed directly by the user, without any middle-man
+   */
+  function supply(
+    uint256 _amount,
+    uint16 referralCode
+  ) external payable onlyAdmin {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
+    address asset = _underlyingAsset;
+    DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
+
+    if (_prevSupplyIndex > 0) {
+      // process the yield
+      reserve.liquidityIndex - _proveSupplyIndex
+    }
+    
+
+    // deposit
+    lendingPool.deposit(asset, _amount, address(this), referralCode);
+  }
+
+  /**
+   * @dev remove the `_amount` of underlying asset from lending pool.
+   * - Caller is vault Admin
+   * @param _amount - The amount of underlying asset
+   */
+  function exitSupply(
+    uint256 _amount
+  ) external payable onlyAdmin {
+    ILendingPoolAddressesProvider provider = _addressesProvider;
+    ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
+
+    // process the yield
+    lendingPool.withdraw(_underlyingAsset, _amount, address(this));
   }
 
   /**

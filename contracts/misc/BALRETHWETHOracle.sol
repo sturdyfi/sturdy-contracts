@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import '@balancer-labs/v2-interfaces/contracts/vault/IVault.sol';
+import '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
 import './interfaces/IOracle.sol';
 import './interfaces/IOracleValidate.sol';
 import '../interfaces/IChainlinkAggregator.sol';
@@ -54,10 +55,6 @@ contract BALRETHWETHOracle is IOracle, IOracleValidate {
   // Check the oracle (re-entrancy)
   /// @inheritdoc IOracleValidate
   function check() external {
-    IVault.UserBalanceOp[] memory ops = new IVault.UserBalanceOp[](1);
-    ops[0].kind = IVault.UserBalanceOpKind.WITHDRAW_INTERNAL;
-    ops[0].sender = address(this);
-
-    IVault(BALANCER_VAULT).manageUserBalance(ops);
+    VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
   }
 }

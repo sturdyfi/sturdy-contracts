@@ -57,8 +57,8 @@ task('sturdy:eth', 'Deploy development enviroment')
     // console.log('8-2. Deploy Liquidator');
     // await DRE.run('full:deploy-liquidator', { pool: POOL_NAME });
 
-    // console.log('8-3. Deploy Vault Helper');
-    // await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME, verify });
+    console.log('8-3. Deploy Vault Helper');
+    await DRE.run('full:deploy-vault-helper', { pool: POOL_NAME, verify });
 
     console.log('8-4. Deploy Yield Manager');
     await DRE.run('full:eth:deploy-yield-manager', { pool: POOL_NAME, verify });

@@ -3,11 +3,22 @@ import { task } from 'hardhat/config';
 import { loadPoolConfig } from '../../helpers/configuration';
 import {
   getATokensAndRatesHelper,
+  getAuraRETHWETHVault,
   getDeployVaultHelper,
+  getLendingPool,
   getLendingPoolAddressesProvider,
+  getSturdyOracle,
+  getVariableYieldDistribution,
+  getYieldDistributorAdapter,
 } from '../../helpers/contracts-getters';
-import { getEthersSigners } from '../../helpers/contracts-helpers';
+import {
+  getEthersSigners,
+  getParamPerNetwork,
+  insertContractAddressInDb,
+} from '../../helpers/contracts-helpers';
 import { impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
+import { eContractid, eNetwork } from '../../helpers/types';
+import { deployBALRETHWETHOracle } from '../../helpers/contracts-deployments';
 
 task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
   .addParam('pool', `Pool name to retrieve configuration`)
@@ -17,11 +28,12 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
 
     const network = process.env.FORK || DRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveAssets, ChainlinkAggregator } = poolConfig;
+    const { ChainlinkAggregator } = poolConfig;
 
     const vaultHelper = await getDeployVaultHelper();
     const aTokenHelper = await getATokensAndRatesHelper();
     const addressProvider = await getLendingPoolAddressesProvider();
+    const yieldDistributorAdapter = await getYieldDistributorAdapter();
     const _treasuryAddress = '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a';
     const _treasuryFee = 1000;
     const _aTokenHelper = aTokenHelper.address;
@@ -44,33 +56,35 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
 
     await waitForTx(await aTokenHelper.connect(signer).transferOwnership(vaultHelper.address));
 
-    // // cvxTUSD_FRAXBP reserve
+    // // auraRETH_WETH reserve
     // {
     //   // First deploy vault via addressProvider on the defender app
     //   const provider = await getLendingPoolAddressesProvider();
     //   await _deployer.sendTransaction({
     //     value: parseEther('90000'),
-    //     to: '0x4e489d9863c9bAAc6C4917E1221274760BA889F5',
+    //     to: '0xb4124ceb3451635dacedd11767f004d8a28c6ee7',
     //   });
-    //   await impersonateAccountsHardhat(['0x4e489d9863c9bAAc6C4917E1221274760BA889F5']);
-    //   signer = await ethers.provider.getSigner('0x4e489d9863c9bAAc6C4917E1221274760BA889F5'); //Owner
+    //   await impersonateAccountsHardhat(['0xb4124ceb3451635dacedd11767f004d8a28c6ee7']);
+    //   signer = await ethers.provider.getSigner('0xb4124ceb3451635dacedd11767f004d8a28c6ee7'); //Owner
     //   await provider.connect(signer).setAddressAsProxy(
-    //     '0x434f4e5645585f545553445f4652415842505f5641554c540000000000000000', // 'id: CONVEX_TUSD_FRAXBP_VAULT'
-    //     '0xda87577f9eb8B15B26C00619FD06d4485880310D' // vault implement address (CONVEX_TUSD_FRAXBP_VAULT)
+    //     '0x415552415f524554485f574554485f5641554c54000000000000000000000000', // 'id: AURA_RETH_WETH_VAULT'
+    //     '0xC72cf04a986cCF83b2d57d82F96A639586010c2D' // vault implement address (AURA_RETH_WETH_VAULT)
     //   );
 
     //   // saving the newly created contract address
     //   const newVaultProxyAddress = await addressProvider.getAddress(
-    //     '0x434f4e5645585f545553445f4652415842505f5641554c540000000000000000' // 'id: CONVEX_TUSD_FRAXBP_VAULT'
+    //     '0x415552415f524554485f574554485f5641554c54000000000000000000000000' // 'id: AURA_RETH_WETH_VAULT'
     //   );
-    //   await insertContractAddressInDb(eContractid.ConvexTUSDFRAXBPVault, newVaultProxyAddress);
+    //   await insertContractAddressInDb(eContractid.AuraRETHWETHVault, newVaultProxyAddress);
 
     //   // vault configuration
-    //   const vault = await getConvexTUSDFRAXBPVault();
-    //   signer = await ethers.provider.getSigner('0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'); //poolAdmin
+    //   const vault = await getAuraRETHWETHVault();
+    //   signer = await ethers.provider.getSigner(
+    //     '0xb4124ceb3451635dacedd11767f004d8a28c6ee7' /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
+    //   ); //poolAdmin
     //   await vault
     //     .connect(signer)
-    //     .setConfiguration(/*TUSD_FRAXBP_LP*/ '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893', 108); // set curve lp token & convex pool id
+    //     .setConfiguration(/*BAL_RETH_WETH_LP*/ '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276', 15); // set balancer lp token & aura pool id
     //   await vault.connect(signer).setIncentiveRatio('7500');
 
     //   const internalAsset = await vault.getInternalAsset();
@@ -80,25 +94,27 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //   // index.ts
 
     //   // transfer owner to vaule helper contract for deploying new vault
-    //   signer = await ethers.provider.getSigner('0x4e489d9863c9bAAc6C4917E1221274760BA889F5'); //Owner
+    //   signer = await ethers.provider.getSigner('0xb4124ceb3451635dacedd11767f004d8a28c6ee7'); //Owner
     //   await waitForTx(await addressProvider.connect(signer).transferOwnership(vaultHelper.address));
 
     //   // Run deployVault using the above param
     //   // The following params are generated by running this command but only for forked mainnet, when deploy mainnet, need to change command including network
-    //   // yarn hardhat external:get-param-for-new-vault --pool Sturdy --symbol cvxIRON_BANK --network main
+    //   // yarn hardhat external:get-param-for-new-vault --pool Sturdy --symbol auraBB_A3_USD --network main
 
-    //   signer = await ethers.provider.getSigner('0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'); //poolAdmin
+    //   signer = await ethers.provider.getSigner(
+    //     '0xb4124ceb3451635dacedd11767f004d8a28c6ee7' /*'0xfE6DE700427cc0f964aa6cE15dF2bB56C7eFDD60'*/
+    //   ); //poolAdmin
     //   await waitForTx(
     //     await vaultHelper.connect(signer).deployVault(
     //       [
-    //         '0x434f4e5645585f545553445f4652415842505f5641554c540000000000000000', // 'CONVEX_TUSD_FRAXBP_VAULT'
-    //         '0x435658545553445f465241584250000000000000000000000000000000000000', // 'CVXTUSD_FRAXBP'
-    //         '0x545553445f4652415842505f4c50000000000000000000000000000000000000', // 'TUSD_FRAXBP_LP'
+    //         '0x415552415f524554485f574554485f5641554c54000000000000000000000000', // 'AURA_RETH_WETH_VAULT'
+    //         '0x4155524142414c5f524554485f57455448000000000000000000000000000000', // 'AURABAL_RETH_WETH'
+    //         '0x42414c5f524554485f574554485f4c5000000000000000000000000000000000', // 'BAL_RETH_WETH_LP'
     //       ],
     //       [
-    //         '0xda87577f9eb8B15B26C00619FD06d4485880310D', // vault implement address (CONVEX_TUSD_FRAXBP_VAULT)
-    //         internalAsset, // internal asset address (CVXTUSD_FRAXBP)
-    //         '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893', // exterenal asset address (TUSD_FRAXBP_LP)
+    //         '0xC72cf04a986cCF83b2d57d82F96A639586010c2D', // vault implement address (AURA_RETH_WETH_VAULT)
+    //         internalAsset, // internal asset address (AURABAL_RETH_WETH)
+    //         '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276', // exterenal asset address (BAL_RETH_WETH_LP)
     //       ],
     //       _treasuryAddress,
     //       _treasuryFee,
@@ -117,56 +133,49 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //       ],
     //       [
     //         {
-    //           aTokenImpl: '0xc0b3799d31875cbAe5450528663A3D205d62Ac0F',
-    //           stableDebtTokenImpl: '0x98A60C175fF02fC099383c6F6504a82aD8B85248',
-    //           variableDebtTokenImpl: '0x6AdCd1C2a36eFbA34801384cc4A18f754A4de20E',
+    //           aTokenImpl: '0xeb05945568527aE1d314870eCeDF78290F44283a',
+    //           stableDebtTokenImpl: '0xa2BE6439d8def6dD6523AeFd02a1356772d15569',
+    //           variableDebtTokenImpl: '0x4eD6178D5dEf6AFD8e23334038609125cBB15C8F',
     //           underlyingAssetDecimals: '18',
-    //           interestRateStrategyAddress: '0x3a5e7db2E0EA9e69fB53Cd8582e64D4001746E8c',
+    //           interestRateStrategyAddress: '0x939FC67C23f3d2b165BD7C5cb15Ce8EEe3Fa4429',
     //           yieldAddress: '0x0000000000000000000000000000000000000000',
     //           underlyingAsset: internalAsset,
     //           treasury: '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a',
-    //           incentivesController: '0xA3e9B5e1dc6B24F296FfCF9c085E2546A466b883',
-    //           underlyingAssetName: 'cvxTUSD_FRAXBP',
-    //           aTokenName: 'Sturdy interest bearing cvxTUSD_FRAXBP',
-    //           aTokenSymbol: 'scvxTUSD_FRAXBP',
-    //           variableDebtTokenName: 'Sturdy variable debt bearing cvxTUSD_FRAXBP',
-    //           variableDebtTokenSymbol: 'variableDebtcvxTUSD_FRAXBP',
-    //           stableDebtTokenName: 'Sturdy stable debt bearing cvxTUSD_FRAXBP',
-    //           stableDebtTokenSymbol: 'stableDebtcvxTUSD_FRAXBP',
+    //           incentivesController: '0xA897716BA0c7603B10b8b2854c104912a6058542',
+    //           underlyingAssetName: 'auraRETH_WETH',
+    //           aTokenName: 'Sturdy interest bearing auraRETH_WETH',
+    //           aTokenSymbol: 'sauraRETH_WETH',
+    //           variableDebtTokenName: 'Sturdy variable debt bearing auraRETH_WETH',
+    //           variableDebtTokenSymbol: 'variableDebtauraRETH_WETH',
+    //           stableDebtTokenName: 'Sturdy stable debt bearing auraRETH_WETH',
+    //           stableDebtTokenSymbol: 'stableDebtauraRETH_WETH',
     //           params: '0x10',
     //         },
     //       ]
     //     )
     //   );
 
-    //   // Deploy TUSDFRAXBP oracle
-    //   let TUSDFRAXBPOracleAddress = getParamPerNetwork(
-    //     ChainlinkAggregator,
-    //     <eNetwork>network
-    //   ).cvxTUSD_FRAXBP;
-    //   if (!TUSDFRAXBPOracleAddress) {
-    //     const TUSDFRAXBPOracle = await deployTUSDFRAXBPCOracle(verify);
-    //     TUSDFRAXBPOracleAddress = TUSDFRAXBPOracle.address;
+    //   // Deploy BALRETHWETH oracle
+    //   let BALRETHWETHOracleAddress = getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).auraRETH_WETH;
+    //   if (!BALRETHWETHOracleAddress) {
+    //     const BALRETHWETHOracle = await deployBALRETHWETHOracle(verify);
+    //     BALRETHWETHOracleAddress = BALRETHWETHOracle.address;
     //   }
+
+    //   // Register
     //   const sturdyOracle = await getSturdyOracle();
-    //   await impersonateAccountsHardhat(['0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc']);
-    //   signer = await ethers.provider.getSigner('0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc'); //Owner
     //   await waitForTx(
-    //     await sturdyOracle.connect(signer).setAssetSources([
-    //       internalAsset,
-    //       '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893',
-    //       '0x0000000000085d4780B73119b644AE5ecd22b376'
-    //     ], [
-    //       TUSDFRAXBPOracleAddress,
-    //       TUSDFRAXBPOracleAddress,
-    //       getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).TUSD
-    //     ])
+    //     await sturdyOracle.setAssetSources(
+    //       [internalAsset, '0x1E19CF2D73a72Ef1332C882F20534B6519Be0276'],
+    //       [BALRETHWETHOracleAddress, BALRETHWETHOracleAddress],
+    //       [true, false]
+    //     )
     //   );
 
     //   // update the oracle configuration
     //   // common.ts
 
-    //   //CRV VariableYieldDistributor config
+    //   //BAL VariableYieldDistributor config
     //   const lendingPool = await getLendingPool();
     //   const response = await lendingPool.getReserveData(internalAsset);
     //   const VariableYieldDistributor = await getVariableYieldDistribution();
@@ -174,12 +183,10 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
     //     response.aTokenAddress,
     //     newVaultProxyAddress
     //   );
-    //   const reserveConfigs = getReserveConfigs(pool);
-    //   const strategyParams = reserveConfigs['strategyCVXTUSD_FRAXBP'];
-    //   const incentivesController = await getSturdyIncentivesController();
-    //   await incentivesController.connect(signer).configureAssets(
-    //     [response.aTokenAddress, response.variableDebtTokenAddress],
-    //     [strategyParams.emissionPerSecond, strategyParams.emissionPerSecond]
+
+    //   await yieldDistributorAdapter.setVariableYieldDistributor(
+    //     internalAsset,
+    //     VariableYieldDistributor.address
     //   );
     // }
 

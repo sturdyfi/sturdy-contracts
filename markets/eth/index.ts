@@ -27,13 +27,13 @@ export const EthConfig: IEthConfiguration = {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
       cvxETH_STETH: '0x901247D08BEbFD449526Da92941B35D756873Bcd',
       auraWSTETH_WETH: '0x10aA9eea35A3102Cc47d4d93Bc0BA9aE45557746',
-      auraRETH_WETH: '',
+      auraRETH_WETH: '0x36b6c4dCe5465721FBd6A10eDd95c4CaBABd71d2',
     },
     [eEthereumNetwork.tenderly]: {
       WETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
       cvxETH_STETH: '0x901247D08BEbFD449526Da92941B35D756873Bcd',
       auraWSTETH_WETH: '0x10aA9eea35A3102Cc47d4d93Bc0BA9aE45557746',
-      auraRETH_WETH: '',
+      auraRETH_WETH: '0x36b6c4dCe5465721FBd6A10eDd95c4CaBABd71d2',
     },
   },
   CRV: {

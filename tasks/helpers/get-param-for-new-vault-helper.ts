@@ -1,5 +1,11 @@
 import { task } from 'hardhat/config';
-import { eContractid, eEthereumNetwork, eNetwork, PoolConfiguration } from '../../helpers/types';
+import {
+  eContractid,
+  eEthereumNetwork,
+  eNetwork,
+  IEthConfiguration,
+  PoolConfiguration,
+} from '../../helpers/types';
 import { getTreasuryAddress, loadPoolConfig } from '../../helpers/configuration';
 import { getReserveConfigs } from '../../helpers/init-helpers';
 import {
@@ -12,7 +18,10 @@ import {
   getSturdyOracle,
   getVariableDebtToken,
 } from '../../helpers/contracts-getters';
-import { deployDefaultReserveInterestRateStrategy } from '../../helpers/contracts-deployments';
+import {
+  deployAuraRETHWETHVaultImpl,
+  deployDefaultReserveInterestRateStrategy,
+} from '../../helpers/contracts-deployments';
 import { impersonateAccountsHardhat, setDRE, waitForTx } from '../../helpers/misc-utils';
 import { ZERO_ADDRESS } from '../../helpers/constants';
 import { getParamPerNetwork, rawInsertContractAddressInDb } from '../../helpers/contracts-helpers';
@@ -66,6 +75,7 @@ WRONG RESERVE ASSET SETUP:
 
     // ToDo: Deploy yielddistributor parts instead parameter
     console.log('Yield Distributor Address: ', yielddistributor);
+    // const rates = { address: ZERO_ADDRESS };
     const rates = await deployDefaultReserveInterestRateStrategy(
       [
         addressProvider.address,
@@ -89,23 +99,26 @@ WRONG RESERVE ASSET SETUP:
       aTokenToUse = (await getCollateralATokenImpl()).address;
     }
 
-    // // cvxTUSD_FRAXBP reserve
+    // // auraRETH_WETH reserve
     // {
     //   // Deploy vault impl
-    //   const vaultImpl = await deployConvexTUSDFRAXBPVaultImpl(verify);
+    //   const vaultImpl = await deployAuraRETHWETHVaultImpl(verify);
     //   const addressesProvider = await getLendingPoolAddressesProvider();
     //   await waitForTx(await vaultImpl.initialize(addressesProvider.address));
 
     //   console.log('_ids: ', [
-    //     localBRE.ethers.utils.formatBytes32String('CONVEX_TUSD_FRAXBP_VAULT').toString(), //implement id
-    //     localBRE.ethers.utils.formatBytes32String('CVXTUSD_FRAXBP').toString(), //internal asset id
-    //     localBRE.ethers.utils.formatBytes32String('TUSD_FRAXBP_LP').toString(), //external asset id
+    //     localBRE.ethers.utils.formatBytes32String('AURA_RETH_WETH_VAULT').toString(), //implement id
+    //     localBRE.ethers.utils.formatBytes32String('AURABAL_RETH_WETH').toString(), //internal asset id
+    //     localBRE.ethers.utils.formatBytes32String('BAL_RETH_WETH_LP').toString(), //external asset id
     //     //etc...
     //   ]);
     //   console.log('_addresses: ', [
     //     vaultImpl.address, //implement address
-    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).cvxTUSD_FRAXBP, //internal asset
-    //     getParamPerNetwork((poolConfig as ISturdyConfiguration).TUSD_FRAXBP_LP, <eNetwork>network), //exterenal asset
+    //     getParamPerNetwork(ReserveAssets, <eNetwork>network).auraRETH_WETH, //internal asset
+    //     getParamPerNetwork(
+    //       (poolConfig as IEthConfiguration).BAL_RETH_WETH_LP,
+    //       <eNetwork>network
+    //     ), //exterenal asset
     //     //etc...
     //   ]);
     // }

@@ -552,5 +552,43 @@
       "address": "0x76D7e52AF0f4031aB297cc0622CBbb3B782876f4",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "DeployVaultHelper": {
+    "main": {
+      "address": "0x0eDEd17f65d64698B431c06cB21Fc67aB76B5AA9",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x0eDEd17f65d64698B431c06cB21Fc67aB76B5AA9",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "AuraRETHWETHVaultImpl": {
+    "main": {
+      "address": "0xf98198a77383f01A6D2b3f7ac67Fe452c56B338b",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xf98198a77383f01A6D2b3f7ac67Fe452c56B338b",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "AuraRETHWETHVault": {
+    "main": {
+      "address": "0x1C7E40d95eBb322a285638d88276BfE913E2D62d"
+    },
+    "localhost": {
+      "address": "0x1C7E40d95eBb322a285638d88276BfE913E2D62d"
+    }
+  },
+  "BALRETHWETHOracle": {
+    "main": {
+      "address": "0x5392508E362EC6D7ff61fF101e71B226c2df228E",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x5392508E362EC6D7ff61fF101e71B226c2df228E",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

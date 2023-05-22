@@ -13,6 +13,7 @@ import {ICreditDelegationToken} from '../../../interfaces/ICreditDelegationToken
 import {IPriceOracleGetter} from '../../../interfaces/IPriceOracleGetter.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IERC20Detailed} from '../../../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
+import {IScaledBalanceToken} from '../../../interfaces/IScaledBalanceToken.sol';
 import {SturdyERC20} from '../../tokenization/SturdyERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
@@ -131,8 +132,28 @@ abstract contract StructuredVault is
    * @param sAssets The staked asset addresses of collateral internal asset to claim yield
    * @param oldShareIndex The share index before process yield
    * @param newShareIndex The share index after process yield
+   * @param yieldAmount The increased yield amount of underlying asset
    **/
-  event ProcessYield(address[] indexed sAssets, uint256 oldShareIndex, uint256 newShareIndex);
+  event ProcessYield(
+    address[] indexed sAssets,
+    uint256 oldShareIndex,
+    uint256 newShareIndex,
+    uint256 yieldAmount
+  );
+
+  /**
+   * @dev Emitted on supply() or exitSupply()
+   * @param asset The underlying asset address
+   * @param oldShareIndex The share index before process yield
+   * @param newShareIndex The share index after process yield
+   * @param yieldAmount The increased yield amount of underlying asset
+   **/
+  event ProcessLendingYield(
+    address indexed asset,
+    uint256 oldShareIndex,
+    uint256 newShareIndex,
+    uint256 yieldAmount
+  );
 
   /**
    * @dev Emitted on setTreasuryInfo()
@@ -341,42 +362,49 @@ abstract contract StructuredVault is
   /**
    * @dev Lend an `_amount` of underlying asset to lendingPool.
    * - Caller is vault Admin
+   * @param _sAsset - staked asset address of underlying asset
    * @param _amount - The amount of underlying asset
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
    */
   function supply(
+    address _sAsset,
     uint256 _amount,
     uint16 referralCode
   ) external payable onlyAdmin {
-    ILendingPoolAddressesProvider provider = _addressesProvider;
-    ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
+    ILendingPool lendingPool = ILendingPool(_addressesProvider.getLendingPool());
+    uint256 scaledTotalBalance = IScaledBalanceToken(_sAsset).scaledBalanceOf(address(this));
     address asset = _underlyingAsset;
-    DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
-
-    if (_prevSupplyIndex > 0) {
-      // process the yield
-      reserve.liquidityIndex - _proveSupplyIndex
-    }
-    
 
     // deposit
     lendingPool.deposit(asset, _amount, address(this), referralCode);
+    DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
+
+    if (_prevSupplyIndex == 0 || scaledTotalBalance == 0) {
+      _prevSupplyIndex = reserve.liquidityIndex;
+      return;
+    }
+
+    _processLendingYield(asset, reserve, scaledTotalBalance);
   }
 
   /**
    * @dev remove the `_amount` of underlying asset from lending pool.
    * - Caller is vault Admin
+   * @param _sAsset - staked asset address of underlying asset
    * @param _amount - The amount of underlying asset
    */
-  function exitSupply(
-    uint256 _amount
-  ) external payable onlyAdmin {
-    ILendingPoolAddressesProvider provider = _addressesProvider;
-    ILendingPool lendingPool = ILendingPool(provider.getLendingPool());
+  function exitSupply(address _sAsset, uint256 _amount) external payable onlyAdmin {
+    ILendingPool lendingPool = ILendingPool(_addressesProvider.getLendingPool());
+    uint256 scaledTotalBalance = IScaledBalanceToken(_sAsset).scaledBalanceOf(address(this));
+    address asset = _underlyingAsset;
+    require(scaledTotalBalance != 0, Errors.VT_INVALID_CONFIGURATION);
 
-    // process the yield
-    lendingPool.withdraw(_underlyingAsset, _amount, address(this));
+    // withdraw
+    lendingPool.withdraw(asset, _amount, address(this));
+    DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
+
+    _processLendingYield(asset, reserve, scaledTotalBalance);
   }
 
   /**
@@ -490,51 +518,54 @@ abstract contract StructuredVault is
     IStructuredVault.YieldMigrationParams[] calldata _params
   ) external payable onlyAdmin {
     address underlyingAsset = _underlyingAsset;
-    uint256 yieldAssetCount = _params.length;
     uint256 underlyingAmountBefore = IERC20(underlyingAsset).balanceOf(address(this));
+    ILendingPoolAddressesProvider provider = _addressesProvider;
 
     require(_assets.length == _amounts.length, Errors.VT_INVALID_CONFIGURATION);
-    require(yieldAssetCount != 0, Errors.VT_INVALID_CONFIGURATION);
+    require(_params.length != 0, Errors.VT_INVALID_CONFIGURATION);
 
     // Claim yield assets
-    IVariableYieldDistribution yieldDistributor = IVariableYieldDistribution(
-      _addressesProvider.getAddress('VR_YIELD_DISTRIBUTOR')
+    IVariableYieldDistribution(provider.getAddress('VR_YIELD_DISTRIBUTOR')).claimRewards(
+      _assets,
+      _amounts,
+      address(this)
     );
-    yieldDistributor.claimRewards(_assets, _amounts, address(this));
 
     // Migration yield assets to underlying asset
-    for (uint256 i; i < yieldAssetCount; ++i) {
+    for (uint256 i; i < _params.length; ++i) {
       IGeneralLevSwap.MultipSwapPath[] calldata paths = _params[i].paths;
       require(paths[paths.length - 1].swapTo == underlyingAsset, Errors.VT_INVALID_CONFIGURATION);
 
       _migration(IERC20(_params[i].yieldAsset).balanceOf(address(this)), paths);
     }
-
-    // process fee
     uint256 increasedUnderlyingAmount = IERC20(underlyingAsset).balanceOf(address(this)) -
       underlyingAmountBefore;
-    uint256 treasuryAmount = increasedUnderlyingAmount.percentMul(_fee);
-    IERC20(underlyingAsset).safeTransfer(_treasury, treasuryAmount);
-    increasedUnderlyingAmount -= treasuryAmount;
 
-    // distribute yield and increase share index
+    uint256 lendingYieldAmount;
+    DataTypes.ReserveData memory reserve = ILendingPool(provider.getLendingPool()).getReserveData(
+      underlyingAsset
+    );
+    uint256 scaledTotalBalance = IScaledBalanceToken(reserve.aTokenAddress).scaledBalanceOf(
+      address(this)
+    );
+    uint256 prevSupplyIndex = _prevSupplyIndex;
+    if (scaledTotalBalance != 0 && reserve.liquidityIndex != prevSupplyIndex) {
+      lendingYieldAmount = scaledTotalBalance.rayMul(reserve.liquidityIndex - prevSupplyIndex);
+      _prevSupplyIndex = reserve.liquidityIndex;
+    }
+
+    // distribute yield
     uint256 oldIndex = _shareIndex;
-    uint256 yieldShareRatio = increasedUnderlyingAmount.mulDiv(
-      DEFAULT_INDEX,
-      totalSupply(),
-      Math.Rounding.Down
-    );
-
-    // newIndex = oldIndex * (1 + yieldShareRatio)
-    uint256 newIndex = oldIndex.mulDiv(
-      yieldShareRatio + DEFAULT_INDEX,
-      DEFAULT_INDEX,
-      Math.Rounding.Down
-    );
-
+    uint256 newIndex;
+    if (lendingYieldAmount != 0) {
+      newIndex = _distributeYield(increasedUnderlyingAmount + lendingYieldAmount, oldIndex);
+      emit ProcessLendingYield(underlyingAsset, oldIndex, newIndex, lendingYieldAmount);
+    } else {
+      newIndex = _distributeYield(increasedUnderlyingAmount, oldIndex);
+    }
     _shareIndex = newIndex;
 
-    emit ProcessYield(_assets, oldIndex, newIndex);
+    emit ProcessYield(_assets, oldIndex, newIndex, increasedUnderlyingAmount);
   }
 
   /**
@@ -605,6 +636,44 @@ abstract contract StructuredVault is
    **/
   function getRate() external view returns (uint256) {
     return _shareIndex;
+  }
+
+  function _distributeYield(uint256 _yieldAmount, uint256 _oldIndex) internal returns (uint256) {
+    // process fee
+    uint256 treasuryAmount = _yieldAmount.percentMul(_fee);
+    IERC20(_underlyingAsset).safeTransfer(_treasury, treasuryAmount);
+    _yieldAmount -= treasuryAmount;
+
+    // distribute yield and increase share index
+    uint256 yieldShareRatio = _yieldAmount.mulDiv(DEFAULT_INDEX, totalSupply(), Math.Rounding.Down);
+
+    // newIndex = _oldIndex * (1 + yieldShareRatio)
+    uint256 newIndex = _oldIndex.mulDiv(
+      yieldShareRatio + DEFAULT_INDEX,
+      DEFAULT_INDEX,
+      Math.Rounding.Down
+    );
+
+    return newIndex;
+  }
+
+  function _processLendingYield(
+    address _lendingAsset,
+    DataTypes.ReserveData memory _reserve,
+    uint256 _scaledTotalBalance
+  ) internal {
+    uint256 prevSupplyIndex = _prevSupplyIndex;
+    if (_reserve.liquidityIndex == prevSupplyIndex) return;
+
+    // distribute yield
+    uint256 oldIndex = _shareIndex;
+    uint256 yieldAmount = _scaledTotalBalance.rayMul(_reserve.liquidityIndex - prevSupplyIndex);
+    uint256 newIndex = _distributeYield(yieldAmount, oldIndex);
+    _shareIndex = newIndex;
+
+    emit ProcessLendingYield(_lendingAsset, oldIndex, newIndex, yieldAmount);
+
+    _prevSupplyIndex = _reserve.liquidityIndex;
   }
 
   function _autoExitAndMigration(

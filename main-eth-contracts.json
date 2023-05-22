@@ -590,5 +590,15 @@
       "address": "0x5392508E362EC6D7ff61fF101e71B226c2df228E",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
+  },
+  "AURARETHWETHLevSwap": {
+    "main": {
+      "address": "0x8793DDd75bC1807333A6d03FC266B0cA738283e1",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0x8793DDd75bC1807333A6d03FC266B0cA738283e1",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
   }
 }

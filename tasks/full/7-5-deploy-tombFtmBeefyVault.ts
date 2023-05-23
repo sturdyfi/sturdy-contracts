@@ -51,7 +51,8 @@ task(`full:deploy-tomb-ftm-beefy-vault`, `Deploys the ${CONTRACT_NAME} contract`
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(TOMB, network), getParamPerNetwork(ReserveAssets, network).mooTOMB_FTM],
-        [tombOracleAddress, mooTombFtmOracleAddress]
+        [tombOracleAddress, mooTombFtmOracleAddress],
+        [false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(TOMB, network))).toString());

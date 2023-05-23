@@ -75,7 +75,8 @@ task(`full:deploy-aura-bb-a-usd-vault`, `Deploys the ${CONTRACT_NAME} contract`)
           BALBBAUSDOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).BAL,
           AURAOracleAddress,
-        ]
+        ],
+        [true, false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

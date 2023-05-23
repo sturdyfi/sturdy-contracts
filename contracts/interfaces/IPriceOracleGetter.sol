@@ -13,4 +13,10 @@ interface IPriceOracleGetter {
    * @return the ETH price of the asset
    **/
   function getAssetPrice(address asset) external view returns (uint256);
+
+  /**
+   * @dev Validate the oracle
+   * @param asset the address of the asset
+   **/
+  function checkOracle(address asset) external;
 }

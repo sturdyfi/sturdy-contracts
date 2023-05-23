@@ -34,7 +34,8 @@ task(`full:deploy-yearn-link-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).yvLINK],
-        [getParamPerNetwork(ChainlinkAggregator, network).yvLINK]
+        [getParamPerNetwork(ChainlinkAggregator, network).yvLINK],
+        [false]
       )
     );
     console.log(

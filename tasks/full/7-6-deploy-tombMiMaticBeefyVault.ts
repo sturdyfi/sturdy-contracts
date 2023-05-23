@@ -50,7 +50,8 @@ task(`full:deploy-tomb-mimatic-beefy-vault`, `Deploys the ${CONTRACT_NAME} contr
           getParamPerNetwork(MIMATIC, network),
           getParamPerNetwork(ReserveAssets, network).mooTOMB_MIMATIC,
         ],
-        [getParamPerNetwork(ChainlinkAggregator, network).MIMATIC, mooTombMiMaticOracleAddress]
+        [getParamPerNetwork(ChainlinkAggregator, network).MIMATIC, mooTombMiMaticOracleAddress],
+        [false, false]
       )
     );
     console.log(

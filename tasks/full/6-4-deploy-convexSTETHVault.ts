@@ -46,7 +46,8 @@ task(`full:deploy-convex-steth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [internalAssetAddress, getParamPerNetwork(STECRV_LP, network)],
-        [steCRVOracleAddress, steCRVOracleAddress]
+        [steCRVOracleAddress, steCRVOracleAddress],
+        [false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

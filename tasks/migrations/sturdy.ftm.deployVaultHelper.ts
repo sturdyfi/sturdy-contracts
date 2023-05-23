@@ -979,7 +979,8 @@ task('sturdy:ftm:deployVaultHelper', 'Deploy vault')
               BALBBA3USDOracleAddress,
               getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).BAL,
               AURAOracleAddress,
-            ]
+            ],
+            [true, false, false, false]
           )
       );
 

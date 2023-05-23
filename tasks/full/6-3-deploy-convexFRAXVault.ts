@@ -66,7 +66,8 @@ task(`full:deploy-convex-frax-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
           FRAX3CRVOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).CRV,
           getParamPerNetwork(ChainlinkAggregator, network).CVX,
-        ]
+        ],
+        [false, false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

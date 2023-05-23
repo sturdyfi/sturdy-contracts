@@ -34,7 +34,8 @@ task(`full:deploy-yearn-spell-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).yvSPELL],
-        [getParamPerNetwork(ChainlinkAggregator, network).yvSPELL]
+        [getParamPerNetwork(ChainlinkAggregator, network).yvSPELL],
+        [false]
       )
     );
     console.log(

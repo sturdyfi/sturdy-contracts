@@ -150,6 +150,8 @@
   ],
   "license": "AGPLv3",
   "dependencies": {
+    "@balancer-labs/v2-interfaces": "^0.4.0",
+    "@balancer-labs/v2-pool-utils": "^4.0.0",
     "@nomiclabs/hardhat-etherscan": "^3.1.5",
     "hardhat-contract-sizer": "^2.7.0",
     "sol-merger": "^4.1.1",

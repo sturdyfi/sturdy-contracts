@@ -57,7 +57,8 @@ task(`full:deploy-based-mimatic-beefy-vault`, `Deploys the ${CONTRACT_NAME} cont
           getParamPerNetwork(BASED, network),
           getParamPerNetwork(ReserveAssets, network).mooBASED_MIMATIC,
         ],
-        [basedOracleAddress, mooBasedMiMaticOracleAddress]
+        [basedOracleAddress, mooBasedMiMaticOracleAddress],
+        [false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(BASED, network))).toString());

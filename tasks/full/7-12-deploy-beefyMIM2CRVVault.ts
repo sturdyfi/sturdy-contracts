@@ -46,7 +46,8 @@ task(`full:deploy-beefy-mim2crv-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).mooMIM_2CRV],
-        [mooMIM2CRVOracleAddress]
+        [mooMIM2CRVOracleAddress],
+        [false]
       )
     );
 

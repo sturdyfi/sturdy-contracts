@@ -35,7 +35,8 @@ task(`full:deploy-beefy-eth-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).mooWETH],
-        [mooWETHOracleAddress]
+        [mooWETHOracleAddress],
+        [false]
       )
     );
 

@@ -59,7 +59,8 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
           FRAXUSDCOracleAddress,
           FRAXUSDCOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).FRAX,
-        ]
+        ],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

@@ -51,11 +51,10 @@
   },
   "LendingPoolImpl": {
     "main": {
-      "address": "0xD3fB28B8C64993511E63898325420B1Ab1e57950",
-      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+      "address": "0x102A01611efCE588DC071714607be3c96F1318D6"
     },
     "localhost": {
-      "address": "0xD3fB28B8C64993511E63898325420B1Ab1e57950"
+      "address": "0x102A01611efCE588DC071714607be3c96F1318D6"
     }
   },
   "LendingPool": {
@@ -105,11 +104,11 @@
   },
   "SturdyOracle": {
     "main": {
-      "address": "0x116529C8E3897257762e8fFdD8c0184978f33150",
+      "address": "0xe5d78eB340627B8D5bcFf63590Ebec1EF9118C89",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x116529C8E3897257762e8fFdD8c0184978f33150",
+      "address": "0xe5d78eB340627B8D5bcFf63590Ebec1EF9118C89",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -353,11 +352,11 @@
   },
   "UiPoolDataProvider": {
     "main": {
-      "address": "0x7BE637cA0e8B5623345C365A9a8248E5f3550A29",
+      "address": "0x9ff79b260334Fa61F6b24190e8FaEc46Bc97b9d3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0x7BE637cA0e8B5623345C365A9a8248E5f3550A29",
+      "address": "0x9ff79b260334Fa61F6b24190e8FaEc46Bc97b9d3",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
@@ -869,6 +868,14 @@
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   },
+  "AuraBBA3USDVault": {
+    "main": {
+      "address": "0xcD23DB9B3FF90Cf200C60Efaa9b9F6Fbd139635F"
+    },
+    "localhost": {
+      "address": "0xcD23DB9B3FF90Cf200C60Efaa9b9F6Fbd139635F"
+    }
+  },
   "AURAOracle": {
     "main": {
       "address": "0x8209BB16a39FD6B76799e7f34702e316cF1129F0",
@@ -881,11 +888,21 @@
   },
   "BALBBA3USDOracle": {
     "main": {
-      "address": "0xe590F1fE03A48AF8F606ca17eE2EF8449c6903eA",
+      "address": "0xD9345caCa72e1376c00e534ed86A08CFCe129337",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     },
     "localhost": {
-      "address": "0xe590F1fE03A48AF8F606ca17eE2EF8449c6903eA",
+      "address": "0xD9345caCa72e1376c00e534ed86A08CFCe129337",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    }
+  },
+  "AURABBA3USDLevSwap": {
+    "main": {
+      "address": "0xB508171E31273887CB530B5268834C218B3A1303",
+      "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
+    },
+    "localhost": {
+      "address": "0xB508171E31273887CB530B5268834C218B3A1303",
       "deployer": "0x48Cc0719E3bF9561D861CB98E863fdA0CEB07Dbc"
     }
   }

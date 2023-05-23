@@ -83,6 +83,7 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
   ) internal {
     uint256 length = assets.length;
     require(length == sources.length, 'INCONSISTENT_PARAMS_LENGTH');
+    require(length == validateAvails.length, 'INCONSISTENT_PARAMS_LENGTH');
     for (uint256 i; i < length; ++i) {
       assetsSources[assets[i]] = sources[i];
       assetsValidatesAvail[assets[i]] = validateAvails[i];
@@ -104,7 +105,7 @@ contract SturdyOracle is IPriceOracleGetter, Ownable {
 
     if (asset == BASE_CURRENCY) {
       return BASE_CURRENCY_UNIT;
-    } else if (address(source) == address(0)) {
+    } else if (source == address(0)) {
       return _fallbackOracle.getAssetPrice(asset);
     } else {
       int256 price = IOracle(source).latestAnswer();

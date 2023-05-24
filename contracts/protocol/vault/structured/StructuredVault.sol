@@ -53,6 +53,9 @@ abstract contract StructuredVault is
   /// @notice The previous liquidity index of underlying asset in lendingPool (decimal 27)
   uint256 private _prevSupplyIndex;
 
+  /// @notice The lending yield amount of underlying asset in lendingPool
+  uint256 private _lendingYield;
+
   /// @notice The share token index (decimal 18)
   uint256 private _shareIndex;
 
@@ -328,6 +331,9 @@ abstract contract StructuredVault is
     address _swapper,
     bool _isCollateral
   ) external payable onlyAdmin {
+    require(_asset != address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(_swapper != address(0), Errors.VT_INVALID_CONFIGURATION);
+
     address reserveAsset = _asset;
     if (_isCollateral) {
       reserveAsset = ICollateralAdapter(_addressesProvider.getAddress('COLLATERAL_ADAPTER'))
@@ -372,11 +378,15 @@ abstract contract StructuredVault is
     uint256 _amount,
     uint16 referralCode
   ) external payable onlyAdmin {
+    require(_sAsset != address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(_amount != 0, Errors.VT_INVALID_CONFIGURATION);
+
     ILendingPool lendingPool = ILendingPool(_addressesProvider.getLendingPool());
     uint256 scaledTotalBalance = IScaledBalanceToken(_sAsset).scaledBalanceOf(address(this));
     address asset = _underlyingAsset;
 
     // deposit
+    IERC20(asset).safeApprove(address(lendingPool), _amount);
     lendingPool.deposit(asset, _amount, address(this), referralCode);
     DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
 
@@ -385,7 +395,7 @@ abstract contract StructuredVault is
       return;
     }
 
-    _processLendingYield(asset, reserve, scaledTotalBalance);
+    _getLendingYield(reserve, scaledTotalBalance);
   }
 
   /**
@@ -395,16 +405,10 @@ abstract contract StructuredVault is
    * @param _amount - The amount of underlying asset
    */
   function exitSupply(address _sAsset, uint256 _amount) external payable onlyAdmin {
-    ILendingPool lendingPool = ILendingPool(_addressesProvider.getLendingPool());
-    uint256 scaledTotalBalance = IScaledBalanceToken(_sAsset).scaledBalanceOf(address(this));
-    address asset = _underlyingAsset;
-    require(scaledTotalBalance != 0, Errors.VT_INVALID_CONFIGURATION);
+    require(_sAsset != address(0), Errors.VT_INVALID_CONFIGURATION);
+    require(_amount != 0, Errors.VT_INVALID_CONFIGURATION);
 
-    // withdraw
-    lendingPool.withdraw(asset, _amount, address(this));
-    DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
-
-    _processLendingYield(asset, reserve, scaledTotalBalance);
+    _exitSupply(_sAsset, _amount);
   }
 
   /**
@@ -538,34 +542,37 @@ abstract contract StructuredVault is
 
       _migration(IERC20(_params[i].yieldAsset).balanceOf(address(this)), paths);
     }
-    uint256 increasedUnderlyingAmount = IERC20(underlyingAsset).balanceOf(address(this)) -
-      underlyingAmountBefore;
-
-    uint256 lendingYieldAmount;
-    DataTypes.ReserveData memory reserve = ILendingPool(provider.getLendingPool()).getReserveData(
-      underlyingAsset
-    );
-    uint256 scaledTotalBalance = IScaledBalanceToken(reserve.aTokenAddress).scaledBalanceOf(
-      address(this)
-    );
-    uint256 prevSupplyIndex = _prevSupplyIndex;
-    if (scaledTotalBalance != 0 && reserve.liquidityIndex != prevSupplyIndex) {
-      lendingYieldAmount = scaledTotalBalance.rayMul(reserve.liquidityIndex - prevSupplyIndex);
-      _prevSupplyIndex = reserve.liquidityIndex;
-    }
 
     // distribute yield
     uint256 oldIndex = _shareIndex;
-    uint256 newIndex;
-    if (lendingYieldAmount != 0) {
-      newIndex = _distributeYield(increasedUnderlyingAmount + lendingYieldAmount, oldIndex);
-      emit ProcessLendingYield(underlyingAsset, oldIndex, newIndex, lendingYieldAmount);
-    } else {
-      newIndex = _distributeYield(increasedUnderlyingAmount, oldIndex);
-    }
+    uint256 increasedUnderlyingAmount = IERC20(underlyingAsset).balanceOf(address(this)) -
+      underlyingAmountBefore;
+    uint256 newIndex = _distributeYield(increasedUnderlyingAmount, oldIndex);
     _shareIndex = newIndex;
 
     emit ProcessYield(_assets, oldIndex, newIndex, increasedUnderlyingAmount);
+  }
+
+  /**
+   * @dev Claim Lending Yield of underlying asset from lending pool
+   * - Caller is vault Admin
+   */
+  function processLendingYield() external payable onlyAdmin {
+    address asset = _underlyingAsset;
+    DataTypes.ReserveData memory reserve = ILendingPool(_addressesProvider.getLendingPool()).getReserveData(asset);
+    uint256 scaledTotalBalance = IScaledBalanceToken(reserve.aTokenAddress).scaledBalanceOf(address(this));
+
+    _getLendingYield(reserve, scaledTotalBalance);
+    uint256 yieldAmount = _lendingYield;
+
+    require(yieldAmount != 0, Errors.VT_INVALID_CONFIGURATION);
+    
+    uint256 oldIndex = _shareIndex;
+    uint256 newIndex = _distributeYield(yieldAmount, oldIndex);
+    _shareIndex = newIndex;
+    _lendingYield = 0;
+
+    emit ProcessLendingYield(asset, oldIndex, newIndex, yieldAmount);
   }
 
   /**
@@ -638,6 +645,26 @@ abstract contract StructuredVault is
     return _shareIndex;
   }
 
+  /**
+   * @return The lending yield amount from lending pool
+   **/
+  function getLendingYield() external view returns (uint256) {
+    return _lendingYield;
+  }
+
+  function _exitSupply(address _sAsset, uint256 _amount) internal {
+    ILendingPool lendingPool = ILendingPool(_addressesProvider.getLendingPool());
+    uint256 scaledTotalBalance = IScaledBalanceToken(_sAsset).scaledBalanceOf(address(this));
+    address asset = _underlyingAsset;
+    require(scaledTotalBalance != 0, Errors.VT_INVALID_CONFIGURATION);
+
+    // withdraw
+    lendingPool.withdraw(asset, _amount, address(this));
+    DataTypes.ReserveData memory reserve = lendingPool.getReserveData(asset);
+
+    _getLendingYield(reserve, scaledTotalBalance);
+  }
+
   function _distributeYield(uint256 _yieldAmount, uint256 _oldIndex) internal returns (uint256) {
     // process fee
     uint256 treasuryAmount = _yieldAmount.percentMul(_fee);
@@ -657,22 +684,15 @@ abstract contract StructuredVault is
     return newIndex;
   }
 
-  function _processLendingYield(
-    address _lendingAsset,
+  function _getLendingYield(
     DataTypes.ReserveData memory _reserve,
     uint256 _scaledTotalBalance
   ) internal {
     uint256 prevSupplyIndex = _prevSupplyIndex;
     if (_reserve.liquidityIndex == prevSupplyIndex) return;
 
-    // distribute yield
-    uint256 oldIndex = _shareIndex;
-    uint256 yieldAmount = _scaledTotalBalance.rayMul(_reserve.liquidityIndex - prevSupplyIndex);
-    uint256 newIndex = _distributeYield(yieldAmount, oldIndex);
-    _shareIndex = newIndex;
-
-    emit ProcessLendingYield(_lendingAsset, oldIndex, newIndex, yieldAmount);
-
+    // update yield amount
+    _lendingYield += _scaledTotalBalance.rayMul(_reserve.liquidityIndex - prevSupplyIndex);
     _prevSupplyIndex = _reserve.liquidityIndex;
   }
 
@@ -680,7 +700,14 @@ abstract contract StructuredVault is
     uint256 _requiredUnderlyingAmount,
     IStructuredVault.AutoExitPositionParams calldata _params
   ) internal {
-    require(_params.swapper != address(0), Errors.VT_INVALID_CONFIGURATION);
+    if (_params.swapper == address(0)) {
+      // Exit Supply
+      require(_params.sAsset != address(0), Errors.VT_INVALID_CONFIGURATION);
+      
+      _exitSupply(_params.sAsset, _requiredUnderlyingAmount);
+      return;
+    }
+
     address collateralAsset = IGeneralLevSwap(_params.swapper).COLLATERAL();
     IStructuredVault.AssetInfo memory collateral = _getAssetInfo(collateralAsset);
     IStructuredVault.AssetInfo memory underlying = _getAssetInfo(_underlyingAsset);

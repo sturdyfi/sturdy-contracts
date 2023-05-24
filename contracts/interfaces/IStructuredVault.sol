@@ -6,6 +6,7 @@ import {IGeneralLevSwap} from './IGeneralLevSwap.sol';
 interface IStructuredVault {
   struct AutoExitPositionParams {
     /// exit position params.
+    /// if swapper is zero address, it means exitSupply
     address swapper;
     address borrowAsset;
     address sAsset;
@@ -158,4 +159,10 @@ interface IStructuredVault {
     uint256[] calldata _amounts,
     IStructuredVault.YieldMigrationParams[] calldata _params
   ) external payable;
+
+  /**
+   * @dev Claim Lending Yield of underlying asset from lending pool
+   * - Caller is vault Admin
+   */
+  function processLendingYield() external payable;
 }

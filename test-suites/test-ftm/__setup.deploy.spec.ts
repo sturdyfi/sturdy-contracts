@@ -320,7 +320,8 @@ const deployNewVault = async () => {
       [
         getParamPerNetwork(ChainlinkAggregator, <eNetwork>network).MIMATIC,
         mooTombMiMaticOracleAddress
-      ]
+      ],
+      [false, false]
     )
   );
 

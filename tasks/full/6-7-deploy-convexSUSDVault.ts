@@ -66,7 +66,8 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
           DAIUSDCUSDTSUSDOracleAddress,
           DAIUSDCUSDTSUSDOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).SUSD,
-        ]
+        ],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

@@ -95,13 +95,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       verify
     );
 
-    let FRAXUSDCOracleAddress = await sturdyOracle.getSourceOfAsset(
+    let [FRAXUSDCOracleAddress] = await sturdyOracle.getSourceOfAsset(
       getParamPerNetwork(ReserveAssets, network).cvxFRAX_USDC
     );
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(FRAX_USDC_LP, network)],
-        [FRAXUSDCOracleAddress]
+        [FRAXUSDCOracleAddress],
+        [false]
       )
     );
     await leverageManager.registerLevSwapper(
@@ -137,13 +138,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
       verify
     );
-    let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
+    let [MIM3CRVOracleAddress] = await sturdyOracle.getSourceOfAsset(
       getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
     );
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(MIM_3CRV_LP, network)],
-        [MIM3CRVOracleAddress]
+        [MIM3CRVOracleAddress],
+        [false]
       )
     );
     await leverageManager.registerLevSwapper(
@@ -162,13 +164,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       ],
       verify
     );
-    let TUSDFRAXBPOracleAddress = await sturdyOracle.getSourceOfAsset(
+    let [TUSDFRAXBPOracleAddress] = await sturdyOracle.getSourceOfAsset(
       getParamPerNetwork(ReserveAssets, network).cvxTUSD_FRAXBP
     );
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(TUSD_FRAXBP_LP, network)],
-        [TUSDFRAXBPOracleAddress]
+        [TUSDFRAXBPOracleAddress],
+        [false]
       )
     );
     await leverageManager.registerLevSwapper(

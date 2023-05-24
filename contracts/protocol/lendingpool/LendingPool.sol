@@ -172,6 +172,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
       }
     }
 
+    _validateOracle(onBehalfOf);
+
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
   }
 
@@ -343,6 +345,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address from,
     address to
   ) internal returns (uint256) {
+    _validateOracle(from);
+
     DataTypes.ReserveData storage reserve = _reserves[asset];
     uint256 amountToWithdraw = amount;
     address aToken = reserve.aTokenAddress;
@@ -454,6 +458,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
+    _validateOracle(onBehalfOf);
+
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     (uint256 stableDebt, uint256 variableDebt) = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -561,6 +567,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     uint256 debtToCover,
     bool receiveAToken
   ) external override whenNotPaused {
+    _validateOracle(user);
+
     address collateralManager = _addressesProvider.getLendingPoolCollateralManager();
 
     //solium-disable-next-line
@@ -743,6 +751,7 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   ) external override whenNotPaused {
     require(msg.sender == _reserves[asset].aTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
     require(from != to, Errors.LPC_INVALID_CONFIGURATION);
+    _validateOracle(from);
 
     DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
 
@@ -855,6 +864,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
   }
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
+    _validateOracle(vars.onBehalfOf);
+
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
@@ -991,6 +1002,20 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     } else {
       // sender is only lidoVault
       require(asset == _addressesProvider.getAddress('LIDO'), errCode);
+    }
+  }
+
+  /**
+   * @dev Validate the oracle of reserve assets (re-entrancy)
+   **/
+  function _validateOracle(address user) internal {
+    address oracle = _addressesProvider.getPriceOracle();
+    DataTypes.UserConfigurationMap memory userConfig = _usersConfig[user];
+    uint256 length = _reservesCount;
+    for (uint256 i; i < length; ++i) {
+      if (userConfig.isUsingAsCollateral(i)) {
+        IPriceOracleGetter(oracle).checkOracle(_reservesList[i]);
+      }
     }
   }
 }

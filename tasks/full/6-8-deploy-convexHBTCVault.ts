@@ -49,7 +49,8 @@ task(`full:deploy-convex-hbtc-wbtc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [internalAssetAddress, getParamPerNetwork(HBTC_WBTC_LP, network)],
-        [HBTCWBTCOracleAddress, HBTCWBTCOracleAddress]
+        [HBTCWBTCOracleAddress, HBTCWBTCOracleAddress],
+        [false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

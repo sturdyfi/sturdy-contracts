@@ -61,7 +61,8 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
           getParamPerNetwork(MIM_3CRV_LP, network),
           getParamPerNetwork(MIM, network),
         ],
-        [MIM3CRVOracleAddress, MIM3CRVOracleAddress, MIMOracleAddress]
+        [MIM3CRVOracleAddress, MIM3CRVOracleAddress, MIMOracleAddress],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

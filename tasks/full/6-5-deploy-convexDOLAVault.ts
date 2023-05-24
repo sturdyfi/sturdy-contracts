@@ -49,7 +49,8 @@ task(`full:deploy-convex-dola-3crv-vault`, `Deploys the ${CONTRACT_NAME} contrac
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [internalAssetAddress, getParamPerNetwork(DOLA_3CRV_LP, network)],
-        [DOLA3CRVOracleAddress, DOLA3CRVOracleAddress]
+        [DOLA3CRVOracleAddress, DOLA3CRVOracleAddress],
+        [false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

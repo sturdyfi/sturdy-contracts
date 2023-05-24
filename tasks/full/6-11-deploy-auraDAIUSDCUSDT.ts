@@ -67,7 +67,8 @@ task(`full:deploy-aura-dai-usdc-usdt-vault`, `Deploys the ${CONTRACT_NAME} contr
           BALDAIUSDCUSDTOracleAddress,
           BALDAIUSDCUSDTOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).BAL,
-        ]
+        ],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

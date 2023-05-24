@@ -3,7 +3,10 @@
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
+import '@balancer-labs/v2-interfaces/contracts/vault/IVault.sol';
+import '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
 import './interfaces/IOracle.sol';
+import './interfaces/IOracleValidate.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/IBalancerStablePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
@@ -11,7 +14,7 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 /**
  * @dev Oracle contract for BALBBAUSD LP Token
  */
-contract BALBBAUSDOracle is IOracle {
+contract BALBBAUSDOracle is IOracle, IOracleValidate {
   IBalancerStablePool private constant BAL_BB_A_USD =
     IBalancerStablePool(0xA13a9247ea42D743238089903570127DdA72fE44);
   IBalancerStablePool private constant BAL_BB_A_USDC =
@@ -27,6 +30,8 @@ contract BALBBAUSDOracle is IOracle {
     IChainlinkAggregator(0x986b5E1e1755e3C2440e960477f25201B0a8bbD4);
   IChainlinkAggregator private constant USDT =
     IChainlinkAggregator(0xEe9F2375b4bdF6387aa8265dD4FB8F16512A1d46);
+
+  address private constant BALANCER_VAULT = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
 
   /**
    * @dev Get LP Token Price
@@ -74,5 +79,11 @@ contract BALBBAUSDOracle is IOracle {
   /// @inheritdoc IOracle
   function latestAnswer() external view override returns (int256 rate) {
     return int256(_get());
+  }
+
+  // Check the oracle (re-entrancy)
+  /// @inheritdoc IOracleValidate
+  function check() external {
+    VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
   }
 }

@@ -44,7 +44,8 @@ task(`full:deploy-yearn-reth-wsteth-vault`, `Deploys the ${CONTRACT_NAME} contra
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).yvRETH_WSTETH],
-        [rETHWstETHOracleAddress]
+        [rETHWstETHOracleAddress],
+        [false, false]
       )
     );
     console.log(

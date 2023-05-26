@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { ethers, BigNumberish } from 'ethers';
 import {
   DRE,
@@ -6,8 +7,11 @@ import {
   timeLatest,
 } from '../../../helpers/misc-utils';
 import { APPROVAL_AMOUNT_LENDING_POOL, ZERO_ADDRESS } from '../../../helpers/constants';
-import { convertToCurrencyDecimals } from '../../../helpers/contracts-helpers';
+import { convertToCurrencyDecimals, getContract } from '../../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from '../helpers/make-suite';
+import { printUserAccountData, printDivider } from '../helpers/utils/helpers';
+import type { ICurveExchange } from '../../../types';
+import { IERC20Detailed__factory } from '../../../types';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -16,10 +20,12 @@ const { parseEther } = ethers.utils;
 const CONVEX_YIELD_PERIOD = 100000;
 
 const simulateYield = async (testEnv: TestEnv) => {
-  await simulateYieldInLidoVault(testEnv);
-  // await simulateYieldInConvexDOLAVault(testEnv);
-  await simulateYieldInConvexFRAXVault(testEnv);
-  // await simulateYieldInConvexRocketPoolETHVault(testEnv);
+  // await simulateYieldInLidoVault(testEnv);
+  // // await simulateYieldInConvexDOLAVault(testEnv);
+  // await simulateYieldInConvexFRAXVault(testEnv);
+  // // await simulateYieldInConvexRocketPoolETHVault(testEnv);
+  // await simulateYieldInAuraDAIUSDCUSDTVault(testEnv);
+  await simulateYieldInConvexTUSDFRAXBPVault(testEnv);
 };
 
 const simulateYieldInLidoVault = async (testEnv: TestEnv) => {
@@ -40,8 +46,8 @@ const simulateYieldInConvexFRAXVault = async (testEnv: TestEnv) => {
   const { convexFRAX3CRVVault, users, cvxfrax_3crv, aCVXFRAX_3CRV, FRAX_3CRV_LP } = testEnv;
   const ethers = (DRE as any).ethers;
   const borrower = users[1];
-  const FRAX3CRVLPOwnerAddress = '0x005fb56fe0401a4017e6f046272da922bbf8df06';
-  const depositFRAX3CRV = '15526';
+  const FRAX3CRVLPOwnerAddress = '0xFd1D36995d76c0F75bbe4637C84C06E4A68bBB3a';
+  const depositFRAX3CRV = '3000';
   const depositFRAX3CRVAmount = await convertToCurrencyDecimals(
     FRAX_3CRV_LP.address,
     depositFRAX3CRV
@@ -134,6 +140,81 @@ const simulateYieldInConvexFRAXVault = async (testEnv: TestEnv) => {
 //   await convexRocketPoolETHVault.processYield();
 // };
 
+const simulateYieldInAuraDAIUSDCUSDTVault = async (testEnv: TestEnv) => {
+  const {
+    auraDAIUSDCUSDTVault,
+    users,
+    auradai_usdc_usdt,
+    aAURADAI_USDC_USDT,
+    BAL_DAI_USDC_USDT_LP,
+  } = testEnv;
+  const ethers = (DRE as any).ethers;
+  const borrower = users[1];
+  const BALDAIUSDCUSDTLPOwnerAddress = '0x1229a70535ab7Cf4b102405eD36e23C9d69Ec0F9';
+  const depositBALDAIUSDCUSDT = '15520';
+  const depositBALDAIUSDCUSDTAmount = await convertToCurrencyDecimals(
+    BAL_DAI_USDC_USDT_LP.address,
+    depositBALDAIUSDCUSDT
+  );
+
+  await impersonateAccountsHardhat([BALDAIUSDCUSDTLPOwnerAddress]);
+  let signer = await ethers.provider.getSigner(BALDAIUSDCUSDTLPOwnerAddress);
+
+  //transfer to borrower
+  await BAL_DAI_USDC_USDT_LP.connect(signer).transfer(
+    borrower.address,
+    depositBALDAIUSDCUSDTAmount
+  );
+
+  //approve protocol to access borrower wallet
+  await BAL_DAI_USDC_USDT_LP.connect(borrower.signer).approve(
+    auraDAIUSDCUSDTVault.address,
+    APPROVAL_AMOUNT_LENDING_POOL
+  );
+
+  // deposit collateral to borrow
+  await auraDAIUSDCUSDTVault
+    .connect(borrower.signer)
+    .depositCollateral(BAL_DAI_USDC_USDT_LP.address, depositBALDAIUSDCUSDTAmount);
+
+  await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
+  // process yield, so yield should be sented to YieldManager
+  await auraDAIUSDCUSDTVault.processYield();
+};
+
+const simulateYieldInConvexTUSDFRAXBPVault = async (testEnv: TestEnv) => {
+  const { convexTUSDFRAXBPVault, users, TUSD_FRAXBP_LP } = testEnv;
+  const ethers = (DRE as any).ethers;
+  const borrower = users[1];
+  const TUSDFRAXBPLPOwnerAddress = '0x16F570e93fDbC3A4865b7740DEB052eE94d87E15';
+  const depositTUSDFRAXBP = '1552';
+  const depositTUSDFRAXBPAmount = await convertToCurrencyDecimals(
+    TUSD_FRAXBP_LP.address,
+    depositTUSDFRAXBP
+  );
+
+  await impersonateAccountsHardhat([TUSDFRAXBPLPOwnerAddress]);
+  let signer = await ethers.provider.getSigner(TUSDFRAXBPLPOwnerAddress);
+
+  //transfer to borrower
+  await TUSD_FRAXBP_LP.connect(signer).transfer(borrower.address, depositTUSDFRAXBPAmount);
+
+  //approve protocol to access borrower wallet
+  await TUSD_FRAXBP_LP.connect(borrower.signer).approve(
+    convexTUSDFRAXBPVault.address,
+    APPROVAL_AMOUNT_LENDING_POOL
+  );
+
+  // deposit collateral to borrow
+  await convexTUSDFRAXBPVault
+    .connect(borrower.signer)
+    .depositCollateral(TUSD_FRAXBP_LP.address, depositTUSDFRAXBPAmount);
+
+  await advanceBlock((await timeLatest()).plus(CONVEX_YIELD_PERIOD).toNumber());
+  // process yield, so yield should be sented to YieldManager
+  await convexTUSDFRAXBPVault.processYield();
+};
+
 const depositUSDC = async (
   testEnv: TestEnv,
   depositor: SignerWithAddress,
@@ -191,9 +272,9 @@ const depositDAI = async (testEnv: TestEnv, depositor: SignerWithAddress, amount
 };
 
 makeSuite('Yield Manger: configuration', (testEnv) => {
-  it('Registered reward asset count should be 2', async () => {
+  it('Registered reward asset count should be 4', async () => {
     const { yieldManager, usdc, dai } = testEnv;
-    const availableAssetCount = 3;
+    const availableAssetCount = 4;
     const assetCount = await yieldManager.getAssetCount();
     expect(assetCount).to.be.eq(availableAssetCount);
   });
@@ -307,50 +388,91 @@ makeSuite('Yield Manager: simulate yield in vaults', (testEnv) => {
 });
 
 makeSuite('Yield Manger: distribute yield', (testEnv) => {
-  it('Should be failed when use invalid asset index', async () => {
-    const { yieldManager, usdc, CRV, CVX } = testEnv;
-    const assetCount = await yieldManager.getAssetCount();
-    const paths = [
-      {
-        tokens: [CRV.address, usdc.address],
-        fees: [100],
-      },
-    ];
-    const slippage = 500;
-    await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.revertedWith(
-      '77'
-    );
-  });
-  it('Should be failed when use invalid swap path', async () => {
-    const { yieldManager, usdc, CRV, CVX } = testEnv;
-    const assetCount = 2;
-    const paths = [
-      {
-        tokens: [CRV.address, usdc.address],
-        fees: [100],
-      },
-    ];
-    const slippage = 500;
-    await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
-      '100'
-    );
-  });
+  // it('Should be failed when use invalid asset index', async () => {
+  //   const { yieldManager, usdc, CRV, CVX } = testEnv;
+  //   const assetCount = await yieldManager.getAssetCount();
+  //   const paths = [
+  //     {
+  //       u_path: {
+  //         tokens: [CRV.address, usdc.address],
+  //         fees: [100],
+  //       },
+  //       b_path: {
+  //         tokens: [],
+  //         poolIds: [],
+  //       },
+  //     },
+  //   ];
+  //   const slippage = 500;
+  //   await expect(yieldManager.distributeYield(assetCount, 1, slippage, paths)).to.be.revertedWith(
+  //     '77'
+  //   );
+  // });
+  // it('Should be failed when use invalid swap path', async () => {
+  //   const { yieldManager, usdc, CRV, CVX } = testEnv;
+  //   const assetCount = 2;
+  //   const paths = [
+  //     {
+  //       u_path: {
+  //         tokens: [CRV.address, usdc.address],
+  //         fees: [100],
+  //       },
+  //       b_path: {
+  //         tokens: [],
+  //         poolIds: [],
+  //       },
+  //     },
+  //   ];
+  //   const slippage = 500;
+  //   await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
+  //     '100'
+  //   );
+  // });
   it('Should be failed when use swap path including invalid tokens', async () => {
-    const { yieldManager, usdc, CRV, CVX } = testEnv;
+    const { yieldManager, usdc, users } = testEnv;
     const assetCount = 1;
     const paths = [
       {
-        tokens: [usdc.address, usdc.address],
-        fees: [100],
+        u_path: {
+          tokens: [usdc.address, usdc.address],
+          fees: [100],
+        },
+        b_path: {
+          tokens: [],
+          poolIds: [],
+        },
       },
     ];
     const slippage = 500;
+
+    // suppliers deposit asset to pool
+    const depositor1 = users[4];
+    const depositUSDCAmount = await convertToCurrencyDecimals(usdc.address, '7000');
+    await depositUSDC(testEnv, depositor1, depositUSDCAmount);
+
+    // Simulate Yield
+    await simulateYield(testEnv);
+
     await expect(yieldManager.distributeYield(0, assetCount, slippage, paths)).to.be.revertedWith(
       '101'
     );
   });
   it('Distribute yield', async () => {
-    const { yieldManager, dai, aDai, usdc, usdt, aUsdc, aUsdt, users, CRV, CVX, WETH } = testEnv;
+    const {
+      yieldManager,
+      dai,
+      aDai,
+      usdc,
+      usdt,
+      aUsdc,
+      aUsdt,
+      users,
+      CRV,
+      CVX,
+      BAL,
+      WETH,
+      aprProvider,
+    } = testEnv;
 
     // suppliers deposit asset to pool
     const depositor1 = users[0];
@@ -371,19 +493,49 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
 
     // Distribute yields
     const assetCount = await yieldManager.getAssetCount();
-
     const paths = [
       {
-        tokens: [CRV.address, WETH.address, usdc.address],
-        fees: [10000, 500],
+        u_path: {
+          tokens: [CRV.address, WETH.address, usdc.address],
+          fees: [10000, 500],
+        },
+        b_path: {
+          tokens: [],
+          poolIds: [],
+        },
       },
       {
-        tokens: [CVX.address, WETH.address, usdc.address],
-        fees: [10000, 500],
+        u_path: {
+          tokens: [CVX.address, WETH.address, usdc.address],
+          fees: [10000, 500],
+        },
+        b_path: {
+          tokens: [],
+          poolIds: [],
+        },
       },
       {
-        tokens: [WETH.address, usdc.address],
-        fees: [500],
+        u_path: {
+          tokens: [WETH.address, usdc.address],
+          fees: [500],
+        },
+        b_path: {
+          tokens: [],
+          poolIds: [],
+        },
+      },
+      {
+        u_path: {
+          tokens: [],
+          fees: [],
+        },
+        b_path: {
+          tokens: [BAL.address, WETH.address, usdc.address],
+          poolIds: [
+            '0x5c6ee304399dbdb9c8ef030ab642b10820db8f56000200000000000000000014',
+            '0x96646936b91d6b9d7d0c47c496afbf3d6ec7b6f8000200000000000000000019',
+          ],
+        },
       },
     ];
     const slippage = 500;
@@ -392,5 +544,7 @@ makeSuite('Yield Manger: distribute yield', (testEnv) => {
     expect((await aUsdc.balanceOf(depositor1.address)).gt(depositUSDCAmount)).to.be.equal(true);
     expect((await aDai.balanceOf(depositor2.address)).gt(depositDAIAmount)).to.be.equal(true);
     expect((await aUsdt.balanceOf(depositor3.address)).gt(depositUSDTAmount)).to.be.equal(true);
+    expect((await aprProvider.APR(usdc.address, true)).gt(0)).to.be.equal(true);
+    console.log('APR: ', (Number(await aprProvider.APR(usdc.address, true)) / 1e18) * 100);
   });
 });

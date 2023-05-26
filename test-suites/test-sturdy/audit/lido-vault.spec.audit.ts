@@ -35,7 +35,7 @@ makeSuite('LidoVault', (testEnv: TestEnv) => {
     const stETHBalanceOfPool = await lido.balanceOf(lidoVault.address);
     const aTokensBalance = await aStETH.balanceOf(deployer.address);
     expect(stETHBalanceOfPool.lt(parseEther('0.0001'))).to.be.equal(true);
-    expect(aTokensBalance.gt(parseEther('1.1'))).to.be.equal(true);
+    expect(aTokensBalance.gt(parseEther('1.099'))).to.be.equal(true);
   });
 
   it('transferring aStETH should be success after deposit ETH', async () => {

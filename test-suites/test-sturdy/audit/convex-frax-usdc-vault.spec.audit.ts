@@ -30,7 +30,7 @@ const prepareCollateralForUser = async (
   const { FRAX_USDC_LP } = testEnv;
   const ethers = (DRE as any).ethers;
 
-  const LPOwnerAddress = '0xdd84ce1adcb3a4908db61a1dfa3353c3974c5a2b';
+  const LPOwnerAddress = '0x664d8F8F2417F52CbbF5Bd82Ba82EEfc58a87f07';
   await impersonateAccountsHardhat([LPOwnerAddress]);
   const signer = await ethers.provider.getSigner(LPOwnerAddress);
 

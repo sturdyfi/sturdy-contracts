@@ -132,7 +132,7 @@ makeSuite('convexMIM3CRVVault - Process Yield', (testEnv: TestEnv) => {
     const { convexMIM3CRVVault, users, MIM_3CRV_LP, CRV, CVX, yieldManager } = testEnv;
     const borrower = users[1];
 
-    // borrower provides DOLA3CRV
+    // borrower provides MIM3CRV
     const assetAmountToDeposit = await convertToCurrencyDecimals(
       MIM_3CRV_LP.address,
       DEPOSIT_AMOUNT

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -231,13 +231,21 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         ISturdyIncentivesController aTokenIncentiveController
       ) {
         if (address(aTokenIncentiveController) != address(0)) {
-          address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
+          address[] memory assets = new address[](1);
+          assets[0] = baseData.aTokenAddress;
+          aUserIncentiveData.rewardsBalance = aTokenIncentiveController.getRewardsBalance(
+            assets,
+            user
+          );
+          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController
+            .getUserUnclaimedRewards(user);
+
           aUserIncentiveData.tokenincentivesUserIndex = aTokenIncentiveController.getUserAssetData(
             user,
             baseData.aTokenAddress
           );
-          aUserIncentiveData.userUnclaimedRewards = aTokenIncentiveController
-            .getUserUnclaimedRewards(user);
+
+          address aRewardToken = aTokenIncentiveController.REWARD_TOKEN();
           aUserIncentiveData.tokenAddress = baseData.aTokenAddress;
           aUserIncentiveData.rewardTokenAddress = aRewardToken;
           aUserIncentiveData.incentiveControllerAddress = address(aTokenIncentiveController);
@@ -253,13 +261,21 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
         ISturdyIncentivesController vTokenIncentiveController
       ) {
         if (address(vTokenIncentiveController) != address(0)) {
-          address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
+          address[] memory assets = new address[](1);
+          assets[0] = baseData.variableDebtTokenAddress;
+          vUserIncentiveData.rewardsBalance = vTokenIncentiveController.getRewardsBalance(
+            assets,
+            user
+          );
+          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController
+            .getUserUnclaimedRewards(user);
+
           vUserIncentiveData.tokenincentivesUserIndex = vTokenIncentiveController.getUserAssetData(
             user,
             baseData.variableDebtTokenAddress
           );
-          vUserIncentiveData.userUnclaimedRewards = vTokenIncentiveController
-            .getUserUnclaimedRewards(user);
+
+          address vRewardToken = vTokenIncentiveController.REWARD_TOKEN();
           vUserIncentiveData.tokenAddress = baseData.variableDebtTokenAddress;
           vUserIncentiveData.rewardTokenAddress = vRewardToken;
           vUserIncentiveData.incentiveControllerAddress = address(vTokenIncentiveController);
@@ -333,8 +349,12 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
       .getUserAssetData(user, asset);
     address[] memory assets = new address[](1);
     assets[0] = asset;
+    rewardUserData.rewardsBalance = IStableYieldDistribution(yieldDistributor).getRewardsBalance(
+      assets,
+      user
+    );
     rewardUserData.userUnclaimedRewards = IStableYieldDistribution(yieldDistributor)
-      .getRewardsBalance(assets, user);
+      .getUserUnclaimedRewards(user);
     rewardUserData.tokenAddress = asset;
     rewardUserData.rewardTokenAddress = rewardToken;
     rewardUserData.distributorAddress = yieldDistributor;
@@ -352,7 +372,7 @@ contract UiIncentiveDataProvider is IUiIncentiveDataProvider {
     assets[0] = asset;
     AggregatedRewardsData[] memory rewardData = IVariableYieldDistribution(yieldDistributor)
       .getRewardsBalance(assets, user);
-    rewardUserData.userUnclaimedRewards = rewardData[0].balance;
+    rewardUserData.rewardsBalance = rewardData[0].balance;
     rewardUserData.tokenAddress = asset;
     rewardUserData.rewardTokenAddress = rewardData[0].rewardToken;
     rewardUserData.distributorAddress = yieldDistributor;

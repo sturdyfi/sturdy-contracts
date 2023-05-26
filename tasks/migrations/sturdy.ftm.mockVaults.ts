@@ -67,7 +67,7 @@ task('sturdy:testnet:ftm:mockVaults', 'Deploy dai token')
     // const abalance = await aCVXFRAX_USDC.balanceOf(deployerAddress);
 
     // const swapManager = await getLeverageSwapManager();
-    // const fraxusdcSwapper = await IGeneralLevSwapFactory.connect(await swapManager.getLevSwapper('0x27403B2756E9c2f436FB13e0B188Dd231F1da170'), signer);
+    // const fraxusdcSwapper = await IGeneralLevSwap2Factory.connect(await swapManager.getLevSwapper('0x27403B2756E9c2f436FB13e0B188Dd231F1da170'), signer);
     // await aCVXFRAX_USDC
     //     .connect(signer)
     //     .approve(fraxusdcSwapper.address, abalance.mul(2));

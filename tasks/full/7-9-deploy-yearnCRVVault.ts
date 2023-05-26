@@ -34,7 +34,8 @@ task(`full:deploy-yearn-crv-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).yvCRV],
-        [getParamPerNetwork(ChainlinkAggregator, network).yvCRV]
+        [getParamPerNetwork(ChainlinkAggregator, network).yvCRV],
+        [false]
       )
     );
     console.log(

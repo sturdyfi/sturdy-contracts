@@ -58,7 +58,8 @@ task(`full:deploy-yearn-fbeets-vault`, `Deploys the ${CONTRACT_NAME} contract`)
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(ReserveAssets, network).yvfBEETS, getParamPerNetwork(BEETS, network)],
-        [fbeetsOracleAddress, beetsOracleAddress]
+        [fbeetsOracleAddress, beetsOracleAddress],
+        [false, false]
       )
     );
 

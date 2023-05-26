@@ -47,7 +47,7 @@ task(`full:deploy-convex-rocket-pool-eth-vault`, `Deploys the ${CONTRACT_NAME} c
     // Register crETHwstETH-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
-      await sturdyOracle.setAssetSources([internalAssetAddress], [rETHWstETHOracleAddress])
+      await sturdyOracle.setAssetSources([internalAssetAddress], [rETHWstETHOracleAddress], [false])
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
 

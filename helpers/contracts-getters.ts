@@ -78,6 +78,7 @@ import {
   YieldDistributorAdapter__factory,
   ERC4626Vault__factory,
   ERC4626Router__factory,
+  StableStructuredVault__factory,
 } from '../types';
 import { IERC20Detailed__factory } from '../types';
 import { IWETH__factory } from '../types';
@@ -617,6 +618,24 @@ export const getConvexTUSDFRAXBPVault = async (address?: tEthereumAddress) =>
     await getFirstSigner()
   );
 
+export const getAuraBBAUSDVault = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVault__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraBBAUSDVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getAuraBBA3USDVault = async (address?: tEthereumAddress) =>
+  await AuraBalancerLPVault__factory.connect(
+    address ||
+      (
+        await getDb().get(`${eContractid.AuraBBA3USDVault}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
 export const getYearnVaultImpl = async (address?: tEthereumAddress) =>
   await YearnVault__factory.connect(
     address ||
@@ -1115,6 +1134,21 @@ export const getBalancerswapAdapterAddress = async () => {
   return db?.address;
 };
 
+export const getUniswapAdapter2Address = async () => {
+  const db = await getDb().get(`${eContractid.UniswapAdapter2}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getCurveswapAdapter2Address = async () => {
+  const db = await getDb().get(`${eContractid.CurveswapAdapter2}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
+export const getBalancerswapAdapter2Address = async () => {
+  const db = await getDb().get(`${eContractid.BalancerswapAdapter2}.${DRE.network.name}`).value();
+  return db?.address;
+};
+
 export const getLeverageSwapManager = async (address?: tEthereumAddress) =>
   await LeverageSwapManager__factory.connect(
     address ||
@@ -1173,6 +1207,17 @@ export const getERC4626Router = async (address?: tEthereumAddress) =>
     address ||
       (
         await getDb().get(`${eContractid.ERC4626Router}.${DRE.network.name}`).value()
+      ).address,
+    await getFirstSigner()
+  );
+
+export const getStableStructuredVault = async (assetSymbol: string, address?: tEthereumAddress) =>
+  await StableStructuredVault__factory.connect(
+    address ||
+      (
+        await getDb()
+          .get(`${assetSymbol.toUpperCase() + eContractid.StructuredVault}.${DRE.network.name}`)
+          .value()
       ).address,
     await getFirstSigner()
   );

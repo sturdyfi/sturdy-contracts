@@ -15,9 +15,17 @@ import {
   IFantomConfiguration,
 } from './types';
 import {
+  AURABBA3USDLevSwap__factory,
+  AURABBAUSDLevSwap__factory,
+  AURAOracle__factory,
+  BALBBA3USDOracle__factory,
+  BALBBAUSDOracle__factory,
   ERC4626Router__factory,
   ERC4626Vault__factory,
+  MIM3CRVLevSwap__factory,
+  MIMOracle__factory,
   MintableERC20,
+  StableStructuredVault__factory,
   YieldDistributorAdapter__factory,
 } from '../types';
 import { MockContract } from 'ethereum-waffle';
@@ -67,6 +75,12 @@ import {
   getAuraDAIUSDCUSDTVault,
   getBalancerswapAdapterAddress,
   getConvexTUSDFRAXBPVault,
+  getAuraBBAUSDVault,
+  getUniswapAdapter2Address,
+  getCurveswapAdapter2Address,
+  getBalancerswapAdapter2Address,
+  getStableStructuredVault,
+  getAuraBBA3USDVault,
 } from './contracts-getters';
 import {
   SturdyProtocolDataProvider__factory,
@@ -156,8 +170,6 @@ import {
   FRAX3CRVLevSwap__factory,
   DAIUSDCUSDTSUSDLevSwap__factory,
   FRAXUSDCOracle__factory,
-  MIM3CRVLevSwap__factory,
-  IRONBANKLevSwap__factory,
   FRAXUSDCLevSwap__factory,
   SturdyAPRDataProvider__factory,
   AuraBalancerLPVault__factory,
@@ -178,15 +190,17 @@ import {
   deployContract,
   verifyContract,
   getContract,
+  rawInsertContractAddressInDb,
 } from './contracts-helpers';
 import { StableAndVariableTokensHelper__factory } from '../types';
 import { MintableDelegationERC20 } from '../types';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { LendingPoolLibraryAddresses } from '../types/factories/protocol/lendingpool/LendingPool__factory';
-import { YieldManagerLibraryAddresses } from '../types/factories/incentives/YieldManager__factory';
-import { LidoVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/LidoVault__factory';
-import { YearnRETHWstETHVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/YearnRETHWstETHVault__factory';
+import { LendingPoolLibraryAddresses } from '../types/factories/contracts/protocol/lendingpool/LendingPool__factory';
+import { YieldManagerLibraryAddresses } from '../types/factories/contracts/incentives/YieldManager__factory';
+import { LidoVaultLibraryAddresses } from '../types/factories/contracts/protocol/vault/ethereum/LidoVault__factory';
+import { YearnRETHWstETHVaultLibraryAddresses } from '../types/factories/contracts/protocol/vault/ethereum/YearnRETHWstETHVault__factory';
+import { DAIUSDCUSDTSUSDLevSwapLibraryAddresses } from '../types/factories/contracts/protocol/leverage/ethereum/DAIUSDCUSDTSUSDLevSwap__factory';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -367,7 +381,7 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deploySturdyOracle = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
+  args: [tEthereumAddress[], tEthereumAddress[], boolean[], tEthereumAddress, tEthereumAddress, string],
   verify?: boolean
 ) =>
   withSaveAndVerify(
@@ -481,7 +495,15 @@ export const deployDOLA3CRVOracle = async (verify?: boolean) =>
     verify
   );
 
-export const deployMIM3CRVPOracle = async (verify?: boolean) =>
+export const deployMIMOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new MIMOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.MIMOracle,
+    [],
+    verify
+  );
+
+export const deployMIM3CRVOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new MIM3CRVOracle__factory(await getFirstSigner()).deploy(),
     eContractid.MIM3CRVOracle,
@@ -533,6 +555,30 @@ export const deployTUSDFRAXBPCOracle = async (verify?: boolean) =>
   withSaveAndVerify(
     await new TUSDFRAXBPOracle__factory(await getFirstSigner()).deploy(),
     eContractid.TUSDFRAXBPOracle,
+    [],
+    verify
+  );
+
+export const deployBALBBAUSDOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALBBAUSDOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.BALBBAUSDOracle,
+    [],
+    verify
+  );
+
+export const deployBALBBA3USDOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new BALBBA3USDOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.BALBBA3USDOracle,
+    [],
+    verify
+  );
+
+export const deployAURAOracle = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new AURAOracle__factory(await getFirstSigner()).deploy(),
+    eContractid.AURAOracle,
     [],
     verify
   );
@@ -1448,6 +1494,64 @@ export const deployConvexTUSDFRAXBPVault = async (verify?: boolean) => {
   await insertContractAddressInDb(eContractid.ConvexTUSDFRAXBPVault, proxyAddress);
 
   return await getConvexTUSDFRAXBPVault();
+};
+
+export const deployAuraBBAUSDVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraBBAUSDVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_BB_A_USD_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_BB_A_USD_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraBBAUSDVault, proxyAddress);
+
+  return await getAuraBBAUSDVault();
+};
+
+export const deployAuraBBA3USDVaultImpl = async (verify?: boolean) =>
+  withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraBBA3USDVaultImpl,
+    [],
+    verify
+  );
+
+export const deployAuraBBA3USDVault = async (verify?: boolean) => {
+  const vaultImpl = await withSaveAndVerify(
+    await new AuraBalancerLPVault__factory(await getFirstSigner()).deploy(),
+    eContractid.AuraBBA3USDVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await vaultImpl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String('AURA_BB_A3_USD_VAULT'),
+      vaultImpl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String('AURA_BB_A3_USD_VAULT')
+  );
+  await insertContractAddressInDb(eContractid.AuraBBA3USDVault, proxyAddress);
+
+  return await getAuraBBA3USDVault();
 };
 
 export const deployYearnVaultImpl = async (verify?: boolean) =>
@@ -2575,6 +2679,72 @@ export const deployBalancerswapAdapterLibrary = async (verify?: boolean) => {
   return withSaveAndVerify(balancerswapAdapter, eContractid.BalancerswapAdapter, [], verify);
 };
 
+export const deployUniswapAdapter2Library = async (verify?: boolean) => {
+  const contractAddress = await getUniswapAdapter2Address();
+  if (contractAddress) {
+    return await getContract(eContractid.UniswapAdapter2, contractAddress);
+  }
+
+  const uniswapAdapterArtifact = await readArtifact(eContractid.UniswapAdapter2);
+
+  const linkedUniswapAdapterByteCode = linkBytecode(uniswapAdapterArtifact, {});
+
+  const uniswapAdapter__factory = await DRE.ethers.getContractFactory(
+    uniswapAdapterArtifact.abi,
+    linkedUniswapAdapterByteCode
+  );
+
+  const uniswapAdapter = await (
+    await uniswapAdapter__factory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(uniswapAdapter, eContractid.UniswapAdapter2, [], verify);
+};
+
+export const deployCurveswapAdapter2Library = async (verify?: boolean) => {
+  const contractAddress = await getCurveswapAdapter2Address();
+  if (contractAddress) {
+    return await getContract(eContractid.CurveswapAdapter2, contractAddress);
+  }
+
+  const curveswapAdapterArtifact = await readArtifact(eContractid.CurveswapAdapter2);
+
+  const linkedCurveswapAdapterByteCode = linkBytecode(curveswapAdapterArtifact, {});
+
+  const curveswapAdapter__factory = await DRE.ethers.getContractFactory(
+    curveswapAdapterArtifact.abi,
+    linkedCurveswapAdapterByteCode
+  );
+
+  const curveswapAdapter = await (
+    await curveswapAdapter__factory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(curveswapAdapter, eContractid.CurveswapAdapter2, [], verify);
+};
+
+export const deployBalancerswapAdapter2Library = async (verify?: boolean) => {
+  const contractAddress = await getBalancerswapAdapter2Address();
+  if (contractAddress) {
+    return await getContract(eContractid.BalancerswapAdapter2, contractAddress);
+  }
+
+  const balancerswapAdapterArtifact = await readArtifact(eContractid.BalancerswapAdapter2);
+
+  const linkedBalancerswapAdapterByteCode = linkBytecode(balancerswapAdapterArtifact, {});
+
+  const balancerswapAdapter__factory = await DRE.ethers.getContractFactory(
+    balancerswapAdapterArtifact.abi,
+    linkedBalancerswapAdapterByteCode
+  );
+
+  const balancerswapAdapter = await (
+    await balancerswapAdapter__factory.connect(await getFirstSigner()).deploy()
+  ).deployed();
+
+  return withSaveAndVerify(balancerswapAdapter, eContractid.BalancerswapAdapter2, [], verify);
+};
+
 export const deploySwapAdapterLibraries = async (
   verify?: boolean
 ): Promise<YieldManagerLibraryAddresses> => {
@@ -2588,6 +2758,23 @@ export const deploySwapAdapterLibraries = async (
     ['contracts/protocol/libraries/swap/UniswapAdapter.sol:UniswapAdapter']: uniswapAdapter.address,
     ['contracts/protocol/libraries/swap/CurveswapAdapter.sol:CurveswapAdapter']:
       curveswapAdapter.address,
+  };
+};
+
+export const deploySwapAdapter2Libraries = async (
+  verify?: boolean
+): Promise<DAIUSDCUSDTSUSDLevSwapLibraryAddresses> => {
+  const uniswapAdapter2 = await deployUniswapAdapter2Library(verify);
+  const curveswapAdapter2 = await deployCurveswapAdapter2Library(verify);
+  const balancerswapAdapter2 = await deployBalancerswapAdapter2Library(verify);
+
+  return {
+    ['contracts/protocol/libraries/swap/BalancerswapAdapter2.sol:BalancerswapAdapter2']:
+      balancerswapAdapter2.address,
+    ['contracts/protocol/libraries/swap/UniswapAdapter2.sol:UniswapAdapter2']:
+      uniswapAdapter2.address,
+    ['contracts/protocol/libraries/swap/CurveswapAdapter2.sol:CurveswapAdapter2']:
+      curveswapAdapter2.address,
   };
 };
 
@@ -2667,52 +2854,67 @@ export const deployLeverageSwapManager = async (verify?: boolean) => {
 export const deployFRAX3CRVLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new FRAX3CRVLevSwap__factory(await getFirstSigner()).deploy(...args),
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new FRAX3CRVLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.FRAX3CRVLevSwap,
     args,
     verify
   );
 
+  return levSwap;
+};
+
 export const deployDAIUSDCUSDTSUSDLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new DAIUSDCUSDTSUSDLevSwap__factory(await getFirstSigner()).deploy(...args),
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new DAIUSDCUSDTSUSDLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.DAIUSDCUSDTSUSDLevSwap,
     args,
     verify
   );
 
+  return levSwap;
+};
+
 export const deployMIM3CRVLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new MIM3CRVLevSwap__factory(await getFirstSigner()).deploy(...args),
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new MIM3CRVLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.MIM3CRVLevSwap,
     args,
     verify
   );
 
-export const deployIRONBANKLevSwap = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
-  verify?: boolean
-) =>
-  withSaveAndVerify(
-    await new IRONBANKLevSwap__factory(await getFirstSigner()).deploy(...args),
-    eContractid.IRONBANKLevSwap,
-    args,
-    verify
-  );
+  return levSwap;
+};
+
+// export const deployIRONBANKLevSwap = async (
+//   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+//   verify?: boolean
+// ) =>
+//   withSaveAndVerify(
+//     await new IRONBANKLevSwap__factory(await getFirstSigner()).deploy(...args),
+//     eContractid.IRONBANKLevSwap,
+//     args,
+//     verify
+//   );
 
 export const deployFRAXUSDCLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) => {
-  const libraries = await deploySwapAdapterLibraries(verify);
+  const libraries = await deploySwapAdapter2Libraries(verify);
 
   const levSwap = await withSaveAndVerify(
     await new FRAXUSDCLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
@@ -2728,11 +2930,43 @@ export const deployTUSDFRAXBPLevSwap = async (
   args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
   verify?: boolean
 ) => {
-  const libraries = await deploySwapAdapterLibraries(verify);
+  const libraries = await deploySwapAdapter2Libraries(verify);
 
   const levSwap = await withSaveAndVerify(
     await new TUSDFRAXBPLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
     eContractid.TUSDFRAXBPLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployAURABBAUSDLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new AURABBAUSDLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.AURABBAUSDLevSwap,
+    args,
+    verify
+  );
+
+  return levSwap;
+};
+
+export const deployAURABBA3USDLevSwap = async (
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  verify?: boolean
+) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+
+  const levSwap = await withSaveAndVerify(
+    await new AURABBA3USDLevSwap__factory(libraries, await getFirstSigner()).deploy(...args),
+    eContractid.AURABBA3USDLevSwap,
     args,
     verify
   );
@@ -2806,7 +3040,7 @@ export const deployStaticAToken = async (
 };
 
 export const deployERC4626Vault = async (
-  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress],
+  args: [tEthereumAddress, tEthereumAddress, tEthereumAddress, tEthereumAddress],
   assetSymbol: string,
   verify?: boolean
 ) =>
@@ -2824,3 +3058,32 @@ export const deployERC4626Router = async (verify?: boolean) =>
     [],
     verify
   );
+
+export const deployStableStructuredVault = async (assetSymbol: string, verify?: boolean) => {
+  const libraries = await deploySwapAdapter2Libraries(verify);
+  const impl = await withSaveAndVerify(
+    await new StableStructuredVault__factory(libraries, await getFirstSigner()).deploy(),
+    assetSymbol.toUpperCase() + eContractid.StructuredVaultImpl,
+    [],
+    verify
+  );
+
+  const addressesProvider = await getLendingPoolAddressesProvider();
+  await waitForTx(await impl.initialize(addressesProvider.address));
+  await waitForTx(
+    await addressesProvider.setAddressAsProxy(
+      DRE.ethers.utils.formatBytes32String(assetSymbol.toUpperCase() + '_STRUCTURED_VAULT'),
+      impl.address
+    )
+  );
+
+  const proxyAddress = await addressesProvider.getAddress(
+    DRE.ethers.utils.formatBytes32String(assetSymbol.toUpperCase() + '_STRUCTURED_VAULT')
+  );
+  await rawInsertContractAddressInDb(
+    assetSymbol.toUpperCase() + eContractid.StructuredVault,
+    proxyAddress
+  );
+
+  return await getStableStructuredVault(assetSymbol);
+};

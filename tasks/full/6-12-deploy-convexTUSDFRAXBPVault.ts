@@ -64,7 +64,8 @@ task(`full:deploy-convex-tusd-fraxbp-vault`, `Deploys the ${CONTRACT_NAME} contr
           TUSDFRAXBPOracleAddress,
           TUSDFRAXBPOracleAddress,
           getParamPerNetwork(ChainlinkAggregator, network).TUSD,
-        ]
+        ],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

@@ -1,27 +1,41 @@
 import BigNumber from 'bignumber.js';
-import { ethers, BigNumberish } from 'ethers';
+import { BigNumberish } from 'ethers';
 import { DRE, impersonateAccountsHardhat, waitForTx } from '../../helpers/misc-utils';
-import { oneEther } from '../../helpers/constants';
+import { ZERO_ADDRESS, oneEther } from '../../helpers/constants';
 import { convertToCurrencyDecimals } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import {
   getVariableDebtToken,
   getLendingPoolConfiguratorProxy,
 } from '../../helpers/contracts-getters';
-import { MintableERC20 } from '../../types';
+import { ICurvePool__factory, MintableERC20, MintableERC20__factory } from '../../types';
 import { ProtocolErrors, RateMode, tEthereumAddress } from '../../helpers/types';
 import { getUserData } from './helpers/utils/helpers';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
+import { IGeneralLevSwap2__factory } from '../../types';
+import { IGeneralLevSwap2 } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
-const { parseEther } = ethers.utils;
+
+const slippage = 0.0002; //0.02%
+const THREE_CRV_LP = '0x6c3F90f043a72FA612cbac8115EE7e52BDe6E490';
+const THREE_CRV_POOL = '0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7';
+const MIM3CRV_POOL = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B';
+const MultiSwapPathInitData = {
+  routes: new Array(9).fill(ZERO_ADDRESS),
+  routeParams: new Array(4).fill([0, 0, 0]) as any,
+  swapType: 0, //NONE
+  poolCount: 0,
+  swapFrom: ZERO_ADDRESS,
+  swapTo: ZERO_ADDRESS,
+  inAmount: '0',
+  outAmount: '0',
+};
 
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -83,6 +97,7 @@ const calcTotalBorrowAmount = async (
       .plus(amount.toString())
       .multipliedBy(collateralPrice.toString())
       .multipliedBy(ltv.toString())
+      .multipliedBy(1.5) // make enough amount
       .div(10000)
       .div(borrowingAssetPrice.toString())
       .toFixed(0)
@@ -112,17 +127,104 @@ const depositToLendingPool = async (
   await pool.connect(user.signer).deposit(token.address, amount, user.address, '0');
 };
 
+const calcThreeCRVPrice = async (testEnv: TestEnv) => {
+  const { deployer, oracle, dai, usdc, usdt } = testEnv;
+  const threeCRVPool = ICurvePool__factory.connect(THREE_CRV_POOL, deployer.signer);
+  const threeCRVLP = MintableERC20__factory.connect(THREE_CRV_LP, deployer.signer);
+  const daiPrice = await oracle.getAssetPrice(dai.address);
+  const daiTotalBalance = await threeCRVPool['balances(uint256)'](0);
+  const usdcPrice = await oracle.getAssetPrice(usdc.address);
+  const usdcTotalBalance = await threeCRVPool['balances(uint256)'](1);
+  const usdtPrice = await oracle.getAssetPrice(usdt.address);
+  const usdtTotalBalance = await threeCRVPool['balances(uint256)'](2);
+  const threeCRVLpTotalSupply = await threeCRVLP.totalSupply();
+
+  return new BigNumber(daiPrice.toString())
+    .multipliedBy(daiTotalBalance.toString())
+    .dividedBy(1e18)
+    .plus(
+      new BigNumber(usdcPrice.toString()).multipliedBy(usdcTotalBalance.toString()).dividedBy(1e6)
+    )
+    .plus(
+      new BigNumber(usdtPrice.toString()).multipliedBy(usdtTotalBalance.toString()).dividedBy(1e6)
+    )
+    .multipliedBy(1e18)
+    .dividedBy(threeCRVLpTotalSupply.toString());
+};
+
+const calcCollateralPrice = async (testEnv: TestEnv) => {
+  const { deployer, oracle, MIM, MIM_3CRV_LP } = testEnv;
+  const MIM3CRVPool = ICurvePool__factory.connect(MIM3CRV_POOL, deployer.signer);
+  const mimPrice = await oracle.getAssetPrice(MIM.address);
+  const mimTotalBalance = await MIM3CRVPool['balances(uint256)'](0);
+  const threeCRVPrice = await calcThreeCRVPrice(testEnv);
+  const threeCRVTotalBalance = await MIM3CRVPool['balances(uint256)'](1);
+  const lpTotalSupply = await MIM_3CRV_LP.totalSupply();
+
+  return new BigNumber(mimPrice.toString())
+    .multipliedBy(mimTotalBalance.toString())
+    .plus(new BigNumber(threeCRVPrice.toString()).multipliedBy(threeCRVTotalBalance.toString()))
+    .dividedBy(lpTotalSupply.toString());
+};
+
+const calcInAmount = async (
+  testEnv: TestEnv,
+  amount: BigNumberish,
+  leverage: BigNumberish,
+  borrowingAsset: tEthereumAddress
+) => {
+  const { oracle } = testEnv;
+  const collateralPrice = await calcCollateralPrice(testEnv);
+  const borrowingAssetPrice = await oracle.getAssetPrice(borrowingAsset);
+
+  const intputAmount = await convertToCurrencyDecimals(
+    borrowingAsset,
+    new BigNumber(amount.toString())
+      .multipliedBy(leverage.toString())
+      .div(10000)
+      .multipliedBy(collateralPrice.toFixed(0))
+      .div(borrowingAssetPrice.toString())
+      .div(1 - 0.015) // flashloan fee + extra(swap loss) = 1.5%
+      .toFixed(0)
+  );
+
+  return intputAmount;
+};
+
+const calcMinAmountOut = async (
+  testEnv: TestEnv,
+  fromIndex: number,
+  amount: BigNumberish,
+  poolCoinsLength: number,
+  isDeposit: boolean,
+  isCalcTokenAmount: boolean,
+  pool: tEthereumAddress
+) => {
+  const { deployer } = testEnv;
+
+  const curvePool = ICurvePool__factory.connect(pool, deployer.signer);
+  if (isCalcTokenAmount) {
+    const amounts = new Array<BigNumberish>(poolCoinsLength).fill('0');
+    amounts[fromIndex] = amount;
+
+    if (poolCoinsLength == 2)
+      return await curvePool['calc_token_amount(uint256[2],bool)'](amounts as any, isDeposit);
+    return await curvePool['calc_token_amount(uint256[3],bool)'](amounts as any, isDeposit);
+  }
+
+  return await curvePool['calc_withdraw_one_coin(uint256,int128)'](amount, fromIndex);
+};
+
 makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
-  const slippage = 100;
 
   /// LTV = 0.8, slippage = 0.02, Aave fee = 0.0009
   /// leverage / (1 + leverage) <= LTV / (1 + slippage) / (1 + Aave fee)
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let mim3crvLevSwap = {} as IGeneralLevSwap;
+  let mim3crvLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -140,7 +242,7 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
   describe('configuration', () => {
     it('DAI, USDC, USDT should be available for borrowing.', async () => {
       const { dai, usdc, usdt } = testEnv;
-      const coins = (await mim3crvLevSwap.getAvailableStableCoins()).map((coin) =>
+      const coins = (await mim3crvLevSwap.getAvailableBorrowAssets()).map((coin) =>
         coin.toUpperCase()
       );
       expect(coins.length).to.be.equal(3);
@@ -154,13 +256,19 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       const { dai } = testEnv;
       const principalAmount = 0;
       const stableCoin = dai.address;
+      const swapInfo = {
+        paths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        reversePaths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        pathLength: 0,
+      };
+
       await expect(
         mim3crvLevSwap.enterPositionWithFlashloan(
           principalAmount,
           leverage,
-          slippage,
           stableCoin,
-          0
+          0,
+          swapInfo
         )
       ).to.be.revertedWith('113');
     });
@@ -168,13 +276,18 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       const { aDai } = testEnv;
       const principalAmount = 10;
       const stableCoin = aDai.address;
+      const swapInfo = {
+        paths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        reversePaths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        pathLength: 0,
+      };
       await expect(
         mim3crvLevSwap.enterPositionWithFlashloan(
           principalAmount,
           leverage,
-          slippage,
           stableCoin,
-          0
+          0,
+          swapInfo
         )
       ).to.be.revertedWith('114');
     });
@@ -183,10 +296,15 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       const borrower = users[1];
       const principalAmount = await convertToCurrencyDecimals(MIM_3CRV_LP.address, '1000');
       const stableCoin = dai.address;
+      const swapInfo = {
+        paths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        reversePaths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        pathLength: 0,
+      };
       await expect(
         mim3crvLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, stableCoin, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, stableCoin, 0, swapInfo)
       ).to.be.revertedWith('115');
     });
   });
@@ -240,17 +358,89 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdt.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (await calcMinAmountOut(testEnv, 2, inAmount, 3, true, true, THREE_CRV_POOL)).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            expectOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            MIM3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdt.address,
+              THREE_CRV_POOL,
+              THREE_CRV_LP,
+              MIM3CRV_POOL,
+              MIM_3CRV_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [2, 0, 8 /*3-coin-pool add_liquidity*/],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 2,
+            swapFrom: usdt.address,
+            swapTo: MIM_3CRV_LP.address,
+            inAmount,
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: [
+              MIM_3CRV_LP.address,
+              MIM3CRV_POOL,
+              THREE_CRV_LP,
+              THREE_CRV_POOL,
+              usdt.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 2, 12 /*3-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 2,
+            swapFrom: MIM_3CRV_LP.address,
+            swapTo: usdt.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         mim3crvLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
       await mim3crvLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdt.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdt.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, MIM_3CRV_LP.address, LPAmount);
@@ -322,17 +512,89 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, usdc.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (await calcMinAmountOut(testEnv, 1, inAmount, 3, true, true, THREE_CRV_POOL)).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            expectOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            MIM3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              usdc.address,
+              THREE_CRV_POOL,
+              THREE_CRV_LP,
+              MIM3CRV_POOL,
+              MIM_3CRV_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [1, 0, 8 /*3-coin-pool add_liquidity*/],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 2,
+            swapFrom: usdc.address,
+            swapTo: MIM_3CRV_LP.address,
+            inAmount,
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: [
+              MIM_3CRV_LP.address,
+              MIM3CRV_POOL,
+              THREE_CRV_LP,
+              THREE_CRV_POOL,
+              usdc.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 1, 12 /*3-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 2,
+            swapFrom: MIM_3CRV_LP.address,
+            swapTo: usdc.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         mim3crvLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
       await mim3crvLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, usdc.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, usdc.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, MIM_3CRV_LP.address, LPAmount);
@@ -404,17 +666,89 @@ makeSuite('MIM3CRV Leverage Swap', (testEnv) => {
       expect(userGlobalDataBefore.totalDebtETH.toString()).to.be.bignumber.equal('0');
 
       // leverage
+      const inAmount = (await calcInAmount(testEnv, LPAmount, leverage, dai.address)).toString();
+      const expectOutAmount1 = new BigNumber(
+        (await calcMinAmountOut(testEnv, 0, inAmount, 3, true, true, THREE_CRV_POOL)).toString()
+      ).multipliedBy(1 - slippage);
+      const expectOutAmount2 = new BigNumber(
+        (
+          await calcMinAmountOut(
+            testEnv,
+            1,
+            expectOutAmount1.toFixed(0),
+            2,
+            true,
+            true,
+            MIM3CRV_POOL
+          )
+        ).toString()
+      ).multipliedBy(1 - slippage);
+      const swapInfo = {
+        paths: [
+          {
+            routes: [
+              dai.address,
+              THREE_CRV_POOL,
+              THREE_CRV_LP,
+              MIM3CRV_POOL,
+              MIM_3CRV_LP.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 0, 8 /*3-coin-pool add_liquidity*/],
+              [1, 0, 7 /*2-coin-pool add_liquidity*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, // curve
+            poolCount: 2,
+            swapFrom: dai.address,
+            swapTo: MIM_3CRV_LP.address,
+            inAmount,
+            outAmount: expectOutAmount2.toFixed(0),
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        reversePaths: [
+          {
+            routes: [
+              MIM_3CRV_LP.address,
+              MIM3CRV_POOL,
+              THREE_CRV_LP,
+              THREE_CRV_POOL,
+              dai.address,
+              ...new Array(4).fill(ZERO_ADDRESS),
+            ],
+            routeParams: [
+              [0, 1, 12 /*2-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 12 /*3-coin-pool remove_liquidity_one_coin*/],
+              [0, 0, 0],
+              [0, 0, 0],
+            ] as any,
+            swapType: 4, //Curve
+            poolCount: 2,
+            swapFrom: MIM_3CRV_LP.address,
+            swapTo: dai.address,
+            inAmount: 0,
+            outAmount: 0,
+          },
+          MultiSwapPathInitData,
+          MultiSwapPathInitData,
+        ] as any,
+        pathLength: 1,
+      };
       await expect(
         mim3crvLevSwap
           .connect(borrower.signer)
-          .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0)
+          .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo)
       ).to.be.revertedWith('118');
       await vaultWhitelist
         .connect(owner.signer)
         .addAddressToWhitelistUser(convexMIM3CRVVault.address, borrower.address);
       await mim3crvLevSwap
         .connect(borrower.signer)
-        .enterPositionWithFlashloan(principalAmount, leverage, slippage, dai.address, 0);
+        .enterPositionWithFlashloan(principalAmount, leverage, dai.address, 0, swapInfo);
 
       const userGlobalDataAfter = await pool.getUserAccountData(borrower.address);
       const collateralETHAmount = await calcETHAmount(testEnv, MIM_3CRV_LP.address, LPAmount);

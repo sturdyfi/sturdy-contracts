@@ -16,13 +16,14 @@ import {
   iFantomParamsPerNetwork,
   eFantomNetwork,
 } from './types';
-import { MintableERC20 } from '../types/MintableERC20';
+
 import { Artifact } from 'hardhat/types';
 import { Artifact as BuidlerArtifact } from '@nomiclabs/buidler/types';
 import { verifyEtherscanContract } from './etherscan-verification';
 import { getFirstSigner, getIErc20Detailed } from './contracts-getters';
 import { usingTenderly, verifyAtTenderly } from './tenderly-utils';
 import { getDefenderRelaySigner, usingDefender } from './defender-utils';
+import { MintableERC20 } from '../types';
 
 export type MockTokenMap = { [symbol: string]: MintableERC20 };
 
@@ -98,7 +99,7 @@ export const deployContract = async <ContractType extends Contract>(
 export const withSaveAndVerify = async <ContractType extends Contract>(
   instance: ContractType,
   id: string,
-  args: (string | string[])[],
+  args: (string | string[] | boolean[])[],
   verify?: boolean
 ): Promise<ContractType> => {
   await waitForTx(instance.deployTransaction);
@@ -190,7 +191,7 @@ export const convertToCurrencyDecimals = async (tokenAddress: tEthereumAddress, 
   const token = await getIErc20Detailed(tokenAddress);
   let decimals = (await token.decimals()).toString();
 
-  return ethers.utils.parseUnits(amount, decimals);
+  return ethers.utils.parseUnits(new BigNumber(amount).toFixed(Number(decimals)), decimals);
 };
 
 export const convertToCurrencyUnits = async (tokenAddress: string, amount: string) => {
@@ -355,7 +356,7 @@ export const buildParaSwapLiquiditySwapParams = (
 export const verifyContract = async (
   id: string,
   instance: Contract,
-  args: (string | string[])[]
+  args: (string | string[] | boolean[])[]
 ) => {
   if (usingTenderly()) {
     await verifyAtTenderly(id, instance);

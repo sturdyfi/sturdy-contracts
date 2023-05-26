@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
@@ -30,7 +30,7 @@ contract AuraBalancerLPVault is IncentiveVault {
   using PercentageMath for uint256;
 
   IConvexBooster internal constant AURA_BOOSTER =
-    IConvexBooster(0x7818A1DA7BD1E64c199029E86Ba244a9798eEE10);
+    IConvexBooster(0xA57b8d98dAE62B26Ec3bcC4a365338157060B234);
   address internal balancerLPToken;
   address internal internalAssetToken;
   uint256 internal auraPoolId;
@@ -146,7 +146,7 @@ contract AuraBalancerLPVault is IncentiveVault {
    * @param _offset extraRewards start offset.
    * @param _count extraRewards count
    */
-  function processExtraYield(uint256 _offset, uint256 _count) external payable onlyAdmin {
+  function processExtraYield(uint256 _offset, uint256 _count) external {
     address baseRewardPool = getBaseRewardPool();
     uint256 extraRewardsLength = IConvexBaseRewardPool(baseRewardPool).extraRewardsLength();
 

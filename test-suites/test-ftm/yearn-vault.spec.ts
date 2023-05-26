@@ -354,7 +354,7 @@ makeSuite('yearnVault', (testEnv: TestEnv) => {
 //       yearnVault.depositCollateral(ZERO_ADDRESS, parseEther('101'), { value: parseEther('101') })
 //     ).to.be.reverted;
 //     await expect(
-//       yearnVault.depositCollateral(ZERO_ADDRESS, parseEther('99'), { value: parseEther('99') })
+//       yearnVault.depositCollateral(ZERO_ADDRESS, parseEther('97'), { value: parseEther('97') })
 //     ).to.not.be.reverted;
 //   });
 // });

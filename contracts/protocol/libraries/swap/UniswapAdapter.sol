@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -98,11 +98,10 @@ library UniswapAdapter {
     return IERC20Detailed(asset).decimals();
   }
 
-  function _getPrice(ILendingPoolAddressesProvider addressesProvider, address asset)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getPrice(
+    ILendingPoolAddressesProvider addressesProvider,
+    address asset
+  ) internal view returns (uint256) {
     return IPriceOracleGetter(addressesProvider.getPriceOracle()).getAssetPrice(asset);
   }
 
@@ -119,8 +118,8 @@ library UniswapAdapter {
     uint256 fromAssetPrice = _getPrice(addressesProvider, assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(addressesProvider, assetToSwapTo);
 
-    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10**toAssetDecimals) /
-      (toAssetPrice * 10**fromAssetDecimals)).percentMul(
+    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10 ** toAssetDecimals) /
+      (toAssetPrice * 10 ** fromAssetDecimals)).percentMul(
         PercentageMath.PERCENTAGE_FACTOR - slippage
       );
 

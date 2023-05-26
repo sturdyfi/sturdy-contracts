@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
@@ -22,11 +22,7 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
    * @param index The new liquidity index of the reserve
    * @return `true` if the the previous balance of the user was 0
    */
-  function mint(
-    address user,
-    uint256 amount,
-    uint256 index
-  ) external payable returns (bool);
+  function mint(address user, uint256 amount, uint256 index) external payable returns (bool);
 
   /**
    * @dev Emitted after aTokens are burned
@@ -73,11 +69,7 @@ interface IAToken is IERC20, IScaledBalanceToken, IInitializableAToken {
    * @param to The recipient
    * @param value The amount of tokens getting transferred
    **/
-  function transferOnLiquidation(
-    address from,
-    address to,
-    uint256 value
-  ) external payable;
+  function transferOnLiquidation(address from, address to, uint256 value) external payable;
 
   /**
    * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer

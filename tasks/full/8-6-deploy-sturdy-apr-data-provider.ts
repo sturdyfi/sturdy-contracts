@@ -52,12 +52,12 @@ task(`full:deploy-sturdy-apr-data-provider`, `Deploys the ${CONTRACT_NAME} contr
       4,
       '0xA5407eAE9Ba41422680e2e00537571bcC53efBfD' //convex LP pool address
     );
-    //IRON_BANK
-    await aprProvider.registerConvexReserve(
-      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
-      29,
-      '0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF' //convex LP pool address
-    );
+    // //IRON_BANK
+    // await aprProvider.registerConvexReserve(
+    //   getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
+    //   29,
+    //   '0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF' //convex LP pool address
+    // );
     //FRAX_USDC
     await aprProvider.registerConvexReserve(
       getParamPerNetwork(ReserveAssets, network).cvxFRAX_USDC,

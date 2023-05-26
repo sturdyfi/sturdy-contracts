@@ -32,7 +32,6 @@ import {
   getConvexFRAX3CRVVault,
   getConvexSTETHVault,
   getConvexDOLA3CRVVault,
-  getFXSStableYieldDistribution,
   getConvexMIM3CRVVault,
   getConvexDAIUSDCUSDTSUSDVault,
   getVariableYieldDistribution,
@@ -42,6 +41,8 @@ import {
   getAuraDAIUSDCUSDTVault,
   getConvexTUSDFRAXBPVault,
   getSturdyIncentivesController,
+  getAuraBBAUSDVault,
+  getAuraBBA3USDVault,
 } from '../../helpers/contracts-getters';
 
 task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
@@ -88,10 +89,12 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               cvxMIM_3CRV: (await getConvexMIM3CRVVault()).address,
               cvxDAI_USDC_USDT_SUSD: (await getConvexDAIUSDCUSDTSUSDVault()).address,
               // cvxHBTC_WBTC: (await getConvexHBTCWBTCVault()).address,
-              cvxIRON_BANK: (await getConvexIronBankVault()).address,
+              // cvxIRON_BANK: (await getConvexIronBankVault()).address,
               cvxFRAX_USDC: (await getConvexFRAXUSDCVault()).address,
-              auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
+              // auraDAI_USDC_USDT: (await getAuraDAIUSDCUSDTVault()).address,
               cvxTUSD_FRAXBP: (await getConvexTUSDFRAXBPVault()).address,
+              // auraBB_A_USD: (await getAuraBBAUSDVault()).address,
+              auraBB_A3_USD: (await getAuraBBA3USDVault()).address,
             }
           : {
               yvWFTM: (await getYearnVault()).address,
@@ -109,20 +112,6 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
               yvSPELL: (await getYearnSPELLVault()).address,
             };
 
-      const yieldDistributor =
-        pool == ConfigNames.Sturdy
-          ? {
-              // cvxFRAX_3CRV: (await getFXSStableYieldDistribution()).address,
-              cvxFRAX_3CRV: (await getVariableYieldDistribution()).address,
-              cvxIRON_BANK: (await getVariableYieldDistribution()).address,
-              cvxFRAX_USDC: (await getVariableYieldDistribution()).address,
-              cvxMIM_3CRV: (await getVariableYieldDistribution()).address,
-              cvxDAI_USDC_USDT_SUSD: (await getVariableYieldDistribution()).address,
-              auraDAI_USDC_USDT: (await getVariableYieldDistribution()).address,
-              cvxTUSD_FRAXBP: (await getVariableYieldDistribution()).address,
-            }
-          : {};
-
       await initReservesByHelper(
         ReservesConfig,
         reserveAssets,
@@ -130,10 +119,8 @@ task('full:initialize-lending-pool', 'Initialize lending pool configuration.')
         StableDebtTokenNamePrefix,
         VariableDebtTokenNamePrefix,
         SymbolPrefix,
-        admin,
         treasuryAddress,
         yieldAddresses,
-        yieldDistributor,
         verify
       );
       await configureReservesByHelper(ReservesConfig, reserveAssets, testHelpers, admin);

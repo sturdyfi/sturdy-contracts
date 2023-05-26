@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
@@ -49,7 +49,8 @@ library BalancerswapAdapter {
 
     // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     IERC20(assetToSwapFrom).safeApprove(address(BALANCER_VAULT), 0);
-    IERC20(assetToSwapFrom).safeApprove(address(BALANCER_VAULT), amountToSwap);
+    if (IERC20(assetToSwapFrom).allowance(address(this), address(BALANCER_VAULT)) == 0)
+      IERC20(assetToSwapFrom).safeApprove(address(BALANCER_VAULT), amountToSwap);
 
     IBalancerVault.BatchSwapStep[] memory swaps = new IBalancerVault.BatchSwapStep[](length - 1);
     int256[] memory limits = new int256[](length);
@@ -102,11 +103,10 @@ library BalancerswapAdapter {
     return IERC20Detailed(asset).decimals();
   }
 
-  function _getPrice(ILendingPoolAddressesProvider addressesProvider, address asset)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getPrice(
+    ILendingPoolAddressesProvider addressesProvider,
+    address asset
+  ) internal view returns (uint256) {
     return IPriceOracleGetter(addressesProvider.getPriceOracle()).getAssetPrice(asset);
   }
 
@@ -123,8 +123,8 @@ library BalancerswapAdapter {
     uint256 fromAssetPrice = _getPrice(addressesProvider, assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(addressesProvider, assetToSwapTo);
 
-    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10**toAssetDecimals) /
-      (toAssetPrice * 10**fromAssetDecimals)).percentMul(
+    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10 ** toAssetDecimals) /
+      (toAssetPrice * 10 ** fromAssetDecimals)).percentMul(
         PercentageMath.PERCENTAGE_FACTOR - slippage
       );
 

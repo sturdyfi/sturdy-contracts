@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -9,23 +9,18 @@ interface IStableYieldDistribution {
     address to
   ) external returns (uint256);
 
-  function getRewardsBalance(address[] calldata assets, address user)
-    external
-    view
-    returns (uint256);
+  function getRewardsBalance(
+    address[] calldata assets,
+    address user
+  ) external view returns (uint256);
 
   function REWARD_TOKEN() external view returns (address);
 
   function getDistributionEnd() external view returns (uint256);
 
-  function getAssetData(address asset)
-    external
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    );
+  function getAssetData(address asset) external view returns (uint256, uint256, uint256);
 
   function getUserAssetData(address user, address asset) external view returns (uint256);
+
+  function getUserUnclaimedRewards(address user) external view returns (uint256);
 }

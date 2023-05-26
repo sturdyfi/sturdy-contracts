@@ -15,6 +15,8 @@ import {
   rateStrategyCVXFRAX_USDC,
   rateStrategyAURADAI_USDC_USDT,
   rateStrategyCVXTUSD_FRAXBP,
+  rateStrategyAURABB_A_USD,
+  rateStrategyAURABB_A3_USD,
 } from './rateStrategies';
 
 export const strategyDAI: IReserveParams = {
@@ -71,7 +73,7 @@ export const strategySTETH: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyYVRETH_WSTETH: IReserveParams = {
   strategy: rateStrategyYVRETH_WSTETH,
@@ -85,7 +87,7 @@ export const strategyYVRETH_WSTETH: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXRETH_WSTETH: IReserveParams = {
   strategy: rateStrategyCVXRETH_WSTETH,
@@ -99,7 +101,7 @@ export const strategyCVXRETH_WSTETH: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXFRAX_3CRV: IReserveParams = {
   strategy: rateStrategyCVXFRAX_3CRV,
@@ -113,7 +115,7 @@ export const strategyCVXFRAX_3CRV: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXSTECRV: IReserveParams = {
   strategy: rateStrategyCVXSTECRV,
@@ -127,7 +129,7 @@ export const strategyCVXSTECRV: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXDOLA_3CRV: IReserveParams = {
   strategy: rateStrategyCVXDOLA_3CRV,
@@ -141,13 +143,13 @@ export const strategyCVXDOLA_3CRV: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXMIM_3CRV: IReserveParams = {
   strategy: rateStrategyCVXMIM_3CRV,
-  baseLTVAsCollateral: '8000',
-  liquidationThreshold: '9300',
-  liquidationBonus: '10200',
+  baseLTVAsCollateral: '8300',
+  liquidationThreshold: '8500',
+  liquidationBonus: '10600',
   borrowingEnabled: false,
   stableBorrowRateEnabled: false,
   reserveDecimals: '18',
@@ -155,7 +157,7 @@ export const strategyCVXMIM_3CRV: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXDAI_USDC_USDT_SUSD: IReserveParams = {
   strategy: rateStrategyCVXDAI_USDC_USDT_SUSD,
@@ -169,7 +171,7 @@ export const strategyCVXDAI_USDC_USDT_SUSD: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXHBTC_WBTC: IReserveParams = {
   strategy: rateStrategyCVXHBTC_WBTC,
@@ -183,7 +185,7 @@ export const strategyCVXHBTC_WBTC: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXIRON_BANK: IReserveParams = {
   strategy: rateStrategyCVXIRON_BANK,
@@ -197,7 +199,7 @@ export const strategyCVXIRON_BANK: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXFRAX_USDC: IReserveParams = {
   strategy: rateStrategyCVXFRAX_USDC,
@@ -211,7 +213,7 @@ export const strategyCVXFRAX_USDC: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyAURADAI_USDC_USDT: IReserveParams = {
   strategy: rateStrategyAURADAI_USDC_USDT,
@@ -225,7 +227,7 @@ export const strategyAURADAI_USDC_USDT: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
 
 export const strategyCVXTUSD_FRAXBP: IReserveParams = {
   strategy: rateStrategyCVXTUSD_FRAXBP,
@@ -239,4 +241,32 @@ export const strategyCVXTUSD_FRAXBP: IReserveParams = {
   reserveFactor: '0',
   collateralEnabled: true,
   emissionPerSecond: '0',
-  };
+};
+
+export const strategyAURABB_A_USD: IReserveParams = {
+  strategy: rateStrategyAURABB_A_USD,
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+};
+
+export const strategyAURABB_A3_USD: IReserveParams = {
+  strategy: rateStrategyAURABB_A3_USD,
+  baseLTVAsCollateral: '9000',
+  liquidationThreshold: '9300',
+  liquidationBonus: '10200',
+  borrowingEnabled: false,
+  stableBorrowRateEnabled: false,
+  reserveDecimals: '18',
+  aTokenImpl: eContractid.ATokenForCollateral,
+  reserveFactor: '0',
+  collateralEnabled: true,
+  emissionPerSecond: '0',
+};

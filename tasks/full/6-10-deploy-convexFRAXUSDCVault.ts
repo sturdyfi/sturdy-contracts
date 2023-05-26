@@ -24,7 +24,7 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, FRAX_USDC_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, FRAX_USDC_LP, FRAX } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -50,8 +50,17 @@ task(`full:deploy-convex-frax-usdc-vault`, `Deploys the ${CONTRACT_NAME} contrac
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(FRAX_USDC_LP, network)],
-        [FRAXUSDCOracleAddress, FRAXUSDCOracleAddress]
+        [
+          internalAssetAddress,
+          getParamPerNetwork(FRAX_USDC_LP, network),
+          getParamPerNetwork(FRAX, network),
+        ],
+        [
+          FRAXUSDCOracleAddress,
+          FRAXUSDCOracleAddress,
+          getParamPerNetwork(ChainlinkAggregator, network).FRAX,
+        ],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

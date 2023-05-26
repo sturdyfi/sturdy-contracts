@@ -169,3 +169,27 @@ export const rateStrategyCVXTUSD_FRAXBP: IInterestRateStrategyParams = {
   stableRateSlope2: '0',
   capacity: '0',
 }
+
+// auraBB_A_USD
+export const rateStrategyAURABB_A_USD: IInterestRateStrategyParams = {
+  name: "rateStrategyAURABB_A_USD",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}
+
+// auraBB_A3_USD
+export const rateStrategyAURABB_A3_USD: IInterestRateStrategyParams = {
+  name: "rateStrategyAURABB_A3_USD",
+  optimalUtilizationRate: new BigNumber(0.45).multipliedBy(oneRay).toFixed(),
+  baseVariableBorrowRate: '0',
+  variableRateSlope1: '0',
+  variableRateSlope2: '0',
+  stableRateSlope1: '0',
+  stableRateSlope2: '0',
+  capacity: '0',
+}

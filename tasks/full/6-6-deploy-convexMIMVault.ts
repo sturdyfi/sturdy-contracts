@@ -1,8 +1,9 @@
 import { task } from 'hardhat/config';
 import { ConfigNames, loadPoolConfig } from '../../helpers/configuration';
 import {
-  deployMIM3CRVPOracle,
+  deployMIM3CRVOracle,
   deployConvexMIM3CRVVault,
+  deployMIMOracle,
 } from '../../helpers/contracts-deployments';
 import { getLendingPoolConfiguratorProxy, getSturdyOracle } from '../../helpers/contracts-getters';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -23,7 +24,7 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
 
     const network = process.env.FORK ? <eNetwork>process.env.FORK : <eNetwork>localBRE.network.name;
     const poolConfig = loadPoolConfig(pool);
-    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, MIM_3CRV_LP } =
+    const { ReserveAssets, ReserveFactorTreasuryAddress, ChainlinkAggregator, MIM_3CRV_LP, MIM } =
       poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -41,19 +42,31 @@ task(`full:deploy-convex-mim-3crv-vault`, `Deploys the ${CONTRACT_NAME} contract
     // Deploy MIM3CRV oracle
     let MIM3CRVOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).cvxMIM_3CRV;
     if (!MIM3CRVOracleAddress) {
-      const MIM3CRVOracle = await deployMIM3CRVPOracle(verify);
+      const MIM3CRVOracle = await deployMIM3CRVOracle(verify);
       MIM3CRVOracleAddress = MIM3CRVOracle.address;
+    }
+
+    let MIMOracleAddress = getParamPerNetwork(ChainlinkAggregator, network).MIM;
+    if (!MIMOracleAddress) {
+      const MIMOracle = await deployMIMOracle(verify);
+      MIMOracleAddress = MIMOracle.address;
     }
 
     // Register cMIM3CRV-f
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(MIM_3CRV_LP, network)],
-        [MIM3CRVOracleAddress, MIM3CRVOracleAddress]
+        [
+          internalAssetAddress,
+          getParamPerNetwork(MIM_3CRV_LP, network),
+          getParamPerNetwork(MIM, network),
+        ],
+        [MIM3CRVOracleAddress, MIM3CRVOracleAddress, MIMOracleAddress],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());
+    console.log((await sturdyOracle.getAssetPrice(getParamPerNetwork(MIM, network))).toString());
 
     console.log(`${CONTRACT_NAME}.address`, vault.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

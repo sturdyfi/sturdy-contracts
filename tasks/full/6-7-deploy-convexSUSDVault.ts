@@ -28,6 +28,7 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
       ReserveFactorTreasuryAddress,
       ChainlinkAggregator,
       DAI_USDC_USDT_SUSD_LP,
+      SUSD,
     } = poolConfig as ISturdyConfiguration;
     const treasuryAddress = getParamPerNetwork(ReserveFactorTreasuryAddress, network);
 
@@ -56,8 +57,17 @@ task(`full:deploy-convex-dai-usdc-usdt-susd-vault`, `Deploys the ${CONTRACT_NAME
     const sturdyOracle = await getSturdyOracle();
     await waitForTx(
       await sturdyOracle.setAssetSources(
-        [internalAssetAddress, getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network)],
-        [DAIUSDCUSDTSUSDOracleAddress, DAIUSDCUSDTSUSDOracleAddress]
+        [
+          internalAssetAddress,
+          getParamPerNetwork(DAI_USDC_USDT_SUSD_LP, network),
+          getParamPerNetwork(SUSD, network),
+        ],
+        [
+          DAIUSDCUSDTSUSDOracleAddress,
+          DAIUSDCUSDTSUSDOracleAddress,
+          getParamPerNetwork(ChainlinkAggregator, network).SUSD,
+        ],
+        [false, false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

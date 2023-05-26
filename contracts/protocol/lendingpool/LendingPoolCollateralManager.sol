@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 import {IERC20} from '../../dependencies/openzeppelin/contracts//IERC20.sol';
@@ -306,7 +306,7 @@ contract LendingPoolCollateralManager is
       collateralReserve.getIndexFromPricePerShare()
     );
     uint256 decimal = IERC20Detailed(collateralReserve.aTokenAddress).decimals();
-    if (decimal < 18) amountCollateral = amountCollateral / 10**(18 - decimal);
+    if (decimal < 18) amountCollateral = amountCollateral / 10 ** (18 - decimal);
     uint256 amountCollateralExternal = IGeneralVault(vault).withdrawOnLiquidation(
       collateralAsset,
       amountCollateral
@@ -359,15 +359,15 @@ contract LendingPoolCollateralManager is
     // This is the maximum possible amount of the selected collateral that can be liquidated, given the
     // max amount of liquidatable debt
     vars.maxAmountCollateralToLiquidate =
-      (vars.debtAssetPrice * debtToCover * 10**vars.collateralDecimals).percentMul(
+      (vars.debtAssetPrice * debtToCover * 10 ** vars.collateralDecimals).percentMul(
         vars.liquidationBonus
       ) /
-      (vars.collateralPrice * 10**vars.debtAssetDecimals);
+      (vars.collateralPrice * 10 ** vars.debtAssetDecimals);
 
     if (vars.maxAmountCollateralToLiquidate > userCollateralBalance) {
       collateralAmount = userCollateralBalance;
-      debtAmountNeeded = ((vars.collateralPrice * collateralAmount * 10**vars.debtAssetDecimals) /
-        (vars.debtAssetPrice * 10**vars.collateralDecimals)).percentDiv(vars.liquidationBonus);
+      debtAmountNeeded = ((vars.collateralPrice * collateralAmount * 10 ** vars.debtAssetDecimals) /
+        (vars.debtAssetPrice * 10 ** vars.collateralDecimals)).percentDiv(vars.liquidationBonus);
     } else {
       collateralAmount = vars.maxAmountCollateralToLiquidate;
       debtAmountNeeded = debtToCover;

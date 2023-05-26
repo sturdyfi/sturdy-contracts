@@ -13,10 +13,13 @@ makeSuite('ERC4626Router-USDC', (testEnv) => {
 
   before(async () => {
     // deploy USDC ERC4626 contract
-    const { usdc, aUsdc, pool, users } = testEnv;
+    const { usdc, aUsdc, pool, incentiveController, users } = testEnv;
     const user = users[0];
 
-    erc4626Vault = await deployERC4626Vault([usdc.address, aUsdc.address, pool.address], 'USDC');
+    erc4626Vault = await deployERC4626Vault(
+      [usdc.address, aUsdc.address, pool.address, incentiveController.address],
+      'USDC'
+    );
 
     // deploy ERC4626Router contract
     erc4626Router = await deployERC4626Router();
@@ -115,10 +118,13 @@ makeSuite('ERC4626Router-USDT', (testEnv) => {
 
   before(async () => {
     // deploy USDT ERC4626 contract
-    const { usdt, aUsdt, pool, users } = testEnv;
+    const { usdt, aUsdt, pool, incentiveController, users } = testEnv;
     const user = users[0];
 
-    erc4626Vault = await deployERC4626Vault([usdt.address, aUsdt.address, pool.address], 'USDT');
+    erc4626Vault = await deployERC4626Vault(
+      [usdt.address, aUsdt.address, pool.address, incentiveController.address],
+      'USDT'
+    );
 
     // deploy ERC4626Router contract
     erc4626Router = await deployERC4626Router();
@@ -217,10 +223,13 @@ makeSuite('ERC4626Router-DAI', (testEnv) => {
 
   before(async () => {
     // deploy DAI ERC4626 contract
-    const { dai, aDai, pool, users } = testEnv;
+    const { dai, aDai, pool, incentiveController, users } = testEnv;
     const user = users[0];
 
-    erc4626Vault = await deployERC4626Vault([dai.address, aDai.address, pool.address], 'DAI');
+    erc4626Vault = await deployERC4626Vault(
+      [dai.address, aDai.address, pool.address, incentiveController.address],
+      'DAI'
+    );
 
     // deploy ERC4626Router contract
     erc4626Router = await deployERC4626Router();

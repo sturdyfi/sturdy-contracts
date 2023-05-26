@@ -132,7 +132,7 @@ const buidlerConfig: HardhatUserConfig = {
       url: 'http://localhost:8545',
       blockGasLimit: DEFAULT_BLOCK_GAS_LIMIT,
       gas: DEFAULT_BLOCK_GAS_LIMIT,
-      gasPrice: 61946393506,
+      gasPrice: 84860013094,
       allowUnlimitedContractSize: UNLIMITED_BYTECODE_SIZE,
       forking: {...buildForkConfig() } as HardhatNetworkForkingUserConfig,
       timeout: 1200000

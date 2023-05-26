@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -101,11 +101,7 @@ contract VariableYieldDistribution is VersionedInitializable {
     emit AssetRegistered(asset, yieldAddress);
   }
 
-  function receivedRewards(
-    address asset,
-    address rewardToken,
-    uint256 amount
-  ) external {
+  function receivedRewards(address asset, address rewardToken, uint256 amount) external {
     AssetData storage assetData = assets[asset];
     address _rewardToken = assetData.rewardToken;
     address _yieldAddress = assetData.yieldAddress;
@@ -136,11 +132,10 @@ contract VariableYieldDistribution is VersionedInitializable {
     }
   }
 
-  function getRewardsBalance(address[] calldata _assets, address _user)
-    external
-    view
-    returns (AggregatedRewardsData[] memory)
-  {
+  function getRewardsBalance(
+    address[] calldata _assets,
+    address _user
+  ) external view returns (AggregatedRewardsData[] memory) {
     uint256 length = _assets.length;
     AggregatedRewardsData[] memory rewards = new AggregatedRewardsData[](length);
 
@@ -175,29 +170,15 @@ contract VariableYieldDistribution is VersionedInitializable {
     return claimedAmount;
   }
 
-  function getUserAssetData(address user, address asset)
-    public
-    view
-    returns (
-      uint256,
-      uint256,
-      uint256
-    )
-  {
+  function getUserAssetData(
+    address user,
+    address asset
+  ) public view returns (uint256, uint256, uint256) {
     UserData storage userData = assets[asset].users[user];
     return (userData.index, userData.expectedRewards, userData.claimableRewards);
   }
 
-  function getAssetData(address asset)
-    public
-    view
-    returns (
-      uint256,
-      address,
-      address,
-      uint256
-    )
-  {
+  function getAssetData(address asset) public view returns (uint256, address, address, uint256) {
     return (
       assets[asset].index,
       assets[asset].yieldAddress,
@@ -384,7 +365,7 @@ contract VariableYieldDistribution is VersionedInitializable {
     uint256 reserveIndex,
     uint256 userIndex
   ) internal pure returns (uint256) {
-    return (principalUserBalance * (reserveIndex - userIndex)) / 10**uint256(PRECISION);
+    return (principalUserBalance * (reserveIndex - userIndex)) / 10 ** uint256(PRECISION);
   }
 
   /**
@@ -403,14 +384,12 @@ contract VariableYieldDistribution is VersionedInitializable {
       return currentIndex;
     }
 
-    return (increasedRewards * (10**uint256(PRECISION))) / totalBalance + currentIndex;
+    return (increasedRewards * (10 ** uint256(PRECISION))) / totalBalance + currentIndex;
   }
 
-  function _getAvailableRewardsAmount(AssetData storage assetData)
-    internal
-    view
-    returns (uint256 lastAvailableRewards, uint256 increasedRewards)
-  {
+  function _getAvailableRewardsAmount(
+    AssetData storage assetData
+  ) internal view returns (uint256 lastAvailableRewards, uint256 increasedRewards) {
     address vault = assetData.yieldAddress;
     uint256 oldAmount = assetData.lastAvailableRewards;
     lastAvailableRewards = IncentiveVault(vault).getCurrentTotalIncentiveAmount();

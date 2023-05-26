@@ -9,15 +9,18 @@ import {
   getConvexFRAXUSDCVault,
   getConvexIronBankVault,
   getConvexTUSDFRAXBPVault,
+  getAuraBBAUSDVault,
+  getAuraBBA3USDVault,
 } from '../../helpers/contracts-getters';
 import {
   deployLeverageSwapManager,
   deployFRAX3CRVLevSwap,
   deployDAIUSDCUSDTSUSDLevSwap,
-  deployMIM3CRVLevSwap,
   deployFRAXUSDCLevSwap,
-  deployIRONBANKLevSwap,
   deployTUSDFRAXBPLevSwap,
+  deployAURABBAUSDLevSwap,
+  deployMIM3CRVLevSwap,
+  deployAURABBA3USDLevSwap,
 } from '../../helpers/contracts-deployments';
 import { eNetwork, ISturdyConfiguration } from '../../helpers/types';
 import { getParamPerNetwork } from '../../helpers/contracts-helpers';
@@ -43,6 +46,8 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       IRON_BANK_LP,
       MIM_3CRV_LP,
       TUSD_FRAXBP_LP,
+      BAL_BB_A_USD_LP,
+      BAL_BB_A3_USD_LP,
       ReserveAssets,
       ChainlinkAggregator,
     } = poolConfig as ISturdyConfiguration;
@@ -90,13 +95,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       verify
     );
 
-    let FRAXUSDCOracleAddress = await sturdyOracle.getSourceOfAsset(
+    let [FRAXUSDCOracleAddress] = await sturdyOracle.getSourceOfAsset(
       getParamPerNetwork(ReserveAssets, network).cvxFRAX_USDC
     );
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(FRAX_USDC_LP, network)],
-        [FRAXUSDCOracleAddress]
+        [FRAXUSDCOracleAddress],
+        [false]
       )
     );
     await leverageManager.registerLevSwapper(
@@ -105,26 +111,26 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
     );
     console.log('FRAXUSDCLevSwap: %s', fraxusdcLevSwap.address);
 
-    // deploy & register IRONBANKLevSwap
-    const ironbankVault = await getConvexIronBankVault();
-    const ironbankLevSwap = await deployIRONBANKLevSwap(
-      [getParamPerNetwork(IRON_BANK_LP, network), ironbankVault.address, addressProvider.address],
-      verify
-    );
-    let IronBankOracleAddress = await sturdyOracle.getSourceOfAsset(
-      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK
-    );
-    await waitForTx(
-      await sturdyOracle.setAssetSources(
-        [getParamPerNetwork(IRON_BANK_LP, network)],
-        [IronBankOracleAddress]
-      )
-    );
-    await leverageManager.registerLevSwapper(
-      getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
-      ironbankLevSwap.address
-    );
-    console.log('IRONBANKLevSwap: %s', ironbankLevSwap.address);
+    // // deploy & register IRONBANKLevSwap
+    // const ironbankVault = await getConvexIronBankVault();
+    // const ironbankLevSwap = await deployIRONBANKLevSwap(
+    //   [getParamPerNetwork(IRON_BANK_LP, network), ironbankVault.address, addressProvider.address],
+    //   verify
+    // );
+    // let IronBankOracleAddress = await sturdyOracle.getSourceOfAsset(
+    //   getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK
+    // );
+    // await waitForTx(
+    //   await sturdyOracle.setAssetSources(
+    //     [getParamPerNetwork(IRON_BANK_LP, network)],
+    //     [IronBankOracleAddress]
+    //   )
+    // );
+    // await leverageManager.registerLevSwapper(
+    //   getParamPerNetwork(ReserveAssets, network).cvxIRON_BANK,
+    //   ironbankLevSwap.address
+    // );
+    // console.log('IRONBANKLevSwap: %s', ironbankLevSwap.address);
 
     // deploy & register MIM3CRVLevSwap
     const mim3crvVault = await getConvexMIM3CRVVault();
@@ -132,13 +138,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       [getParamPerNetwork(MIM_3CRV_LP, network), mim3crvVault.address, addressProvider.address],
       verify
     );
-    let MIM3CRVOracleAddress = await sturdyOracle.getSourceOfAsset(
+    let [MIM3CRVOracleAddress] = await sturdyOracle.getSourceOfAsset(
       getParamPerNetwork(ReserveAssets, network).cvxMIM_3CRV
     );
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(MIM_3CRV_LP, network)],
-        [MIM3CRVOracleAddress]
+        [MIM3CRVOracleAddress],
+        [false]
       )
     );
     await leverageManager.registerLevSwapper(
@@ -157,13 +164,14 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       ],
       verify
     );
-    let TUSDFRAXBPOracleAddress = await sturdyOracle.getSourceOfAsset(
+    let [TUSDFRAXBPOracleAddress] = await sturdyOracle.getSourceOfAsset(
       getParamPerNetwork(ReserveAssets, network).cvxTUSD_FRAXBP
     );
     await waitForTx(
       await sturdyOracle.setAssetSources(
         [getParamPerNetwork(TUSD_FRAXBP_LP, network)],
-        [TUSDFRAXBPOracleAddress]
+        [TUSDFRAXBPOracleAddress],
+        [false]
       )
     );
     await leverageManager.registerLevSwapper(
@@ -171,6 +179,38 @@ task(`full:deploy-leverage-swap-manager`, `Deploys the ${CONTRACT_NAME} contract
       tusdfraxbpLevSwap.address
     );
     console.log('TUSDFRAXBPLevSwap: %s', tusdfraxbpLevSwap.address);
+
+    // // deploy & register auraBBAUSDLevSwap
+    // const aurabbausdVault = await getAuraBBAUSDVault();
+    // const aurabbausdLevSwap = await deployAURABBAUSDLevSwap(
+    //   [
+    //     getParamPerNetwork(BAL_BB_A_USD_LP, network),
+    //     aurabbausdVault.address,
+    //     addressProvider.address,
+    //   ],
+    //   verify
+    // );
+    // await leverageManager.registerLevSwapper(
+    //   getParamPerNetwork(ReserveAssets, network).auraBB_A_USD,
+    //   aurabbausdLevSwap.address
+    // );
+    // console.log('AURABBAUSDLevSwap: %s', aurabbausdLevSwap.address);
+
+    // deploy & register auraBBA3USDLevSwap
+    const aurabba3usdVault = await getAuraBBA3USDVault();
+    const aurabba3usdLevSwap = await deployAURABBA3USDLevSwap(
+      [
+        getParamPerNetwork(BAL_BB_A3_USD_LP, network),
+        aurabba3usdVault.address,
+        addressProvider.address,
+      ],
+      verify
+    );
+    await leverageManager.registerLevSwapper(
+      getParamPerNetwork(ReserveAssets, network).auraBB_A3_USD,
+      aurabba3usdLevSwap.address
+    );
+    console.log('AURABBA3USDLevSwap: %s', aurabba3usdLevSwap.address);
 
     console.log(`${CONTRACT_NAME}.address`, leverageManager.address);
     console.log(`\tFinished ${CONTRACT_NAME} deployment`);

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
 /**
@@ -13,4 +13,10 @@ interface IPriceOracleGetter {
    * @return the ETH price of the asset
    **/
   function getAssetPrice(address asset) external view returns (uint256);
+
+  /**
+   * @dev Validate the oracle
+   * @param asset the address of the asset
+   **/
+  function checkOracle(address asset) external;
 }

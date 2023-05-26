@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -16,7 +16,9 @@ interface IProtocolDataProvider {
 
   function getAllATokens() external view returns (TokenData[] memory);
 
-  function getReserveConfigurationData(address asset)
+  function getReserveConfigurationData(
+    address asset
+  )
     external
     view
     returns (
@@ -32,7 +34,9 @@ interface IProtocolDataProvider {
       bool isFrozen
     );
 
-  function getReserveData(address asset)
+  function getReserveData(
+    address asset
+  )
     external
     view
     returns (
@@ -48,7 +52,10 @@ interface IProtocolDataProvider {
       uint40 lastUpdateTimestamp
     );
 
-  function getUserReserveData(address asset, address user)
+  function getUserReserveData(
+    address asset,
+    address user
+  )
     external
     view
     returns (
@@ -63,7 +70,9 @@ interface IProtocolDataProvider {
       bool usageAsCollateralEnabled
     );
 
-  function getReserveTokensAddresses(address asset)
+  function getReserveTokensAddresses(
+    address asset
+  )
     external
     view
     returns (

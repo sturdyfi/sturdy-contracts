@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
@@ -15,6 +15,11 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 library CurveswapAdapter {
   using PercentageMath for uint256;
   using SafeERC20 for IERC20;
+
+  struct Path {
+    address[9] routes;
+    uint256[3][4] swapParams;
+  }
 
   address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
@@ -68,11 +73,10 @@ library CurveswapAdapter {
     return IERC20Detailed(asset).decimals();
   }
 
-  function _getPrice(ILendingPoolAddressesProvider addressesProvider, address asset)
-    internal
-    view
-    returns (uint256)
-  {
+  function _getPrice(
+    ILendingPoolAddressesProvider addressesProvider,
+    address asset
+  ) internal view returns (uint256) {
     if (asset == ETH) {
       return 1e18;
     }
@@ -92,8 +96,8 @@ library CurveswapAdapter {
     uint256 fromAssetPrice = _getPrice(addressesProvider, assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(addressesProvider, assetToSwapTo);
 
-    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10**toAssetDecimals) /
-      (toAssetPrice * 10**fromAssetDecimals)).percentMul(
+    uint256 minAmountOut = ((amountToSwap * fromAssetPrice * 10 ** toAssetDecimals) /
+      (toAssetPrice * 10 ** fromAssetDecimals)).percentMul(
         PercentageMath.PERCENTAGE_FACTOR - slippage
       );
 

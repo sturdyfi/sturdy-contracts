@@ -13,6 +13,7 @@ const DAI_USDC_USDT_SUSD_LP = '0xC25a3A3b969415c80451098fa907EC722572917F';
 const FRAX_USDC_LP = '0x3175Df0976dFA876431C2E9eE6Bc45b65d3473CC';
 const IRON_BANK_LP = '0x5282a4eF67D9C33135340fB3289cc1711c13638C';
 const MIM_3CRV_LP = '0x5a6A4D54456819380173272A5E8E9B9904BdF41B';
+const TUSD_FRAXBP_LP = '0x33baeDa08b8afACc4d3d07cf31d49FC1F1f3E893';
 
 const TOKEN_INFO: {
   symbol: string;
@@ -22,32 +23,32 @@ const TOKEN_INFO: {
   {
     symbol: 'DAI',
     address: DAI,
-    owner: '0x5d38b4e4783e34e2301a2a36c39a03c45798c4dd',
+    owner: '0x28C6c06298d514Db089934071355E5743bf21d60',
   },
   {
     symbol: 'USDC',
     address: USDC,
-    owner: '0x72a53cdbbcc1b9efa39c834a540550e23463aacb',
+    owner: '0x28C6c06298d514Db089934071355E5743bf21d60',
   },
   {
     symbol: 'USDT',
     address: USDT,
-    owner: '0x5a52e96bacdabb82fd05763e25335261b270efcb',
+    owner: '0x28C6c06298d514Db089934071355E5743bf21d60',
   },
   {
     symbol: 'FRAX_3CRV_LP',
     address: FRAX_3CRV_LP,
-    owner: '0xb38c0ffd01ed7c02cf476c639cc07f88babb328b',
+    owner: '0x499f39d4861f214808376C890aA7Cf6E424fb05B',
   },
   {
     symbol: 'DAI_USDC_USDT_SUSD_LP',
     address: DAI_USDC_USDT_SUSD_LP,
-    owner: '0x8f649FE750340A295dDdbBd7e1EC8f378cF24b42',
+    owner: '0x9E51BE7071F086d3A1fD5Dc0016177473619b237',
   },
   {
     symbol: 'FRAX_USDC_LP',
     address: FRAX_USDC_LP,
-    owner: '0x4C8397f58d62E3b8fd1Fa47Ca897672561e5b0B9',
+    owner: '0xE9e5861d73A523000FE755034a8a612496079C50',
   },
   {
     symbol: 'IRON_BANK_LP',
@@ -58,6 +59,11 @@ const TOKEN_INFO: {
     symbol: 'MIM_3CRV_LP',
     address: MIM_3CRV_LP,
     owner: '0xe896e539e557BC751860a7763C8dD589aF1698Ce',
+  },
+  {
+    symbol: 'TUSD_FRAXBP_LP',
+    address: TUSD_FRAXBP_LP,
+    owner: '0x16f570e93fdbc3a4865b7740deb052ee94d87e15',
   },
 ];
 

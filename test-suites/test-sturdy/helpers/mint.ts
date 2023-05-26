@@ -63,7 +63,7 @@ const TOKEN_INFO: {
   {
     symbol: 'TUSD_FRAXBP_LP',
     address: TUSD_FRAXBP_LP,
-    owner: '0x566cdC415fDF629a47e365B5FDfAdCE51a2F8752',
+    owner: '0x16f570e93fdbc3a4865b7740deb052ee94d87e15',
   },
 ];
 

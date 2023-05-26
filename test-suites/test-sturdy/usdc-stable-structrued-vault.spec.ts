@@ -114,11 +114,11 @@ const calcFRAXUSDCPrice = async (testEnv: TestEnv) => {
 
   return new BigNumber(fraxPrice.toString())
     .multipliedBy(fraxTotalBalance.toString())
-    .dividedBy(1e18)
+    .dividedBy(10**18)
     .plus(
       new BigNumber(usdcPrice.toString()).multipliedBy(usdcTotalBalance.toString()).dividedBy(1e6)
     )
-    .multipliedBy(1e18)
+    .multipliedBy(10**18)
     .dividedBy(FRAXUSDCLpTotalSupply.toString());
 };
 
@@ -153,7 +153,7 @@ const calcSUSDCollateralPrice = async (testEnv: TestEnv) => {
 
   return new BigNumber(daiPrice.toString())
     .multipliedBy(daiTotalBalance.toString())
-    .dividedBy(1e18)
+    .dividedBy(10**18)
     .plus(
       new BigNumber(usdcPrice.toString()).multipliedBy(usdcTotalBalance.toString()).dividedBy(1e6)
     )
@@ -161,9 +161,9 @@ const calcSUSDCollateralPrice = async (testEnv: TestEnv) => {
       new BigNumber(usdtPrice.toString()).multipliedBy(usdtTotalBalance.toString()).dividedBy(1e6)
     )
     .plus(
-      new BigNumber(susdPrice.toString()).multipliedBy(susdTotalBalance.toString()).dividedBy(1e18)
+      new BigNumber(susdPrice.toString()).multipliedBy(susdTotalBalance.toString()).dividedBy(10**18)
     )
-    .multipliedBy(1e18)
+    .multipliedBy(10**18)
     .dividedBy(lpTotalSupply.toString());
 };
 
@@ -2743,3 +2743,727 @@ makeSuite(
     });
   }
 );
+
+makeSuite('USDC Structured Vault - Supply and Supply', (testEnv) => {
+  let vault: StableStructuredVault;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let ltv = '';
+
+  before(async () => {
+    // deploy USDC Structured Vault contract
+    const {
+      usdc,
+      deployer,
+      cvxtusd_fraxbp,
+      vaultWhitelist,
+      convexTUSDFRAXBPVault,
+      helpersContract,
+      owner,
+    } = testEnv;
+
+    vault = await deployStableStructuredVault('USDC');
+
+    await vault.setAdmin(deployer.address);
+    await vault.initUnderlyingAsset(
+      usdc.address,
+      'Sturdy Structured USDC LP Token',
+      'SS-USDC-LP',
+      6
+    );
+    await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
+
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+  });
+
+  it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+    const { usdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+    // Prepare Enough USDC for users
+    await mint('USDC', depositAmount.toString(), user1);
+    await mint('USDC', depositAmount.mul(2).toString(), user2);
+    await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+    // Approve vault
+    await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+    await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+    await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+    // Deposit
+    await vault.deposit(user1.address, depositAmount);
+    await vault.deposit(user2.address, depositAmount.mul(2));
+    await vault.deposit(user3.address, depositAmount.mul(3));
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('admin lend 6000 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const lendingAmount = (await convertToCurrencyDecimals(usdc.address, '6000'))
+
+    // Lending
+    await vault.supply(aUsdc.address, lendingAmount, 0);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('make yield 120 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users, pool, configurator, deployer } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+
+    // Prepare Enough yield USDC for deployer
+    await mint('USDC', yieldAmount.toString(), deployer);
+
+    // register deployer as vault to simulate yield
+    await configurator.registerVault(deployer.address);
+
+    // approve and simulate yield
+    await usdc.approve(pool.address, yieldAmount);
+    await pool.depositYield(usdc.address, yieldAmount);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('user4 Deposit 3000 USDC', async () => {
+    const { usdc, users } = testEnv;
+    const [,,, user4] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '3000');
+
+    // Prepare Enough USDC for user4
+    await mint('USDC', depositAmount.toString(), user4);
+
+    // Approve vault
+    await usdc.connect(user4.signer).approve(vault.address, depositAmount);
+
+    // Deposit
+    await vault.deposit(user4.address, depositAmount);
+
+    expect(await vault.balanceOf(user4.address)).to.be.eq(depositAmount);
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(3));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount);
+  });
+
+  it('admin lend 1000 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3, user4] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Lending
+    await vault.supply(aUsdc.address, lendingAmount, 0);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.mul(3));
+    expect(await vault.balanceOf(user4.address)).to.be.eq(lendingAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(9));
+    expect(await vault.getLendingYield()).to.be.eq(yieldAmount);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(2));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(prevTreasuryAmount);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(7).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('admin process lending yield', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3, user4] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // // Process Lending Yield
+    await vault.processLendingYield();
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount.add(yieldAmount.div(10).mul(9).div(9)));
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2).add(yieldAmount.div(10).mul(9).div(9).mul(2)));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(3)));
+    expect(await vault.balanceOf(user4.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(3)));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(9).add(yieldAmount.div(10).mul(9)));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(2).sub(yieldAmount.div(10)));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(yieldAmount.div(10).add(prevTreasuryAmount));
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(7).add(yieldAmount));
+    expect(await vault.getRate()).to.be.gt(new BigNumber(1e18).toString());
+  });
+})
+
+makeSuite('USDC Structured Vault - Supply and ExitSupply', (testEnv) => {
+  let vault: StableStructuredVault;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let ltv = '';
+
+  before(async () => {
+    // deploy USDC Structured Vault contract
+    const {
+      usdc,
+      deployer,
+      cvxtusd_fraxbp,
+      vaultWhitelist,
+      convexTUSDFRAXBPVault,
+      helpersContract,
+      owner,
+    } = testEnv;
+
+    vault = await deployStableStructuredVault('USDC');
+
+    await vault.setAdmin(deployer.address);
+    await vault.initUnderlyingAsset(
+      usdc.address,
+      'Sturdy Structured USDC LP Token',
+      'SS-USDC-LP',
+      6
+    );
+    await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
+
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+  });
+
+  it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+    const { usdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+    // Prepare Enough USDC for users
+    await mint('USDC', depositAmount.toString(), user1);
+    await mint('USDC', depositAmount.mul(2).toString(), user2);
+    await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+    // Approve vault
+    await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+    await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+    await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+    // Deposit
+    await vault.deposit(user1.address, depositAmount);
+    await vault.deposit(user2.address, depositAmount.mul(2));
+    await vault.deposit(user3.address, depositAmount.mul(3));
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('admin lend 6000 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const lendingAmount = (await convertToCurrencyDecimals(usdc.address, '6000'))
+
+    // Lending
+    await vault.supply(aUsdc.address, lendingAmount, 0);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('make yield 120 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users, pool, configurator, deployer } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+
+    // Prepare Enough yield USDC for deployer
+    await mint('USDC', yieldAmount.toString(), deployer);
+
+    // register deployer as vault to simulate yield
+    await configurator.registerVault(deployer.address);
+
+    // approve and simulate yield
+    await usdc.approve(pool.address, yieldAmount);
+    await pool.depositYield(usdc.address, yieldAmount);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('admin exit lending 1000 USDC from lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const removeAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Exit Supply
+    await vault.exitSupply(aUsdc.address, removeAmount);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(removeAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(removeAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(removeAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(removeAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(yieldAmount);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(removeAmount);
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(prevTreasuryAmount);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(removeAmount.mul(5).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('admin process lending yield', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Process Lending Yield
+    await vault.processLendingYield();
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount.add(yieldAmount.div(10).mul(9).div(6)));
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2).add(yieldAmount.div(10).mul(9).div(6).mul(2)));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(6).mul(3)));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(6).add(yieldAmount.div(10).mul(9)));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(lendingAmount.sub(yieldAmount.div(10)));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(yieldAmount.div(10).add(prevTreasuryAmount));
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(5).add(yieldAmount));
+    expect(await vault.getRate()).to.be.gt(new BigNumber(1e18).toString());
+  });
+})
+
+makeSuite('USDC Structured Vault - Supply and Withdraw with autoExitAndMigration', (testEnv) => {
+  let vault: StableStructuredVault;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let ltv = '';
+
+  before(async () => {
+    // deploy USDC Structured Vault contract
+    const {
+      usdc,
+      deployer,
+      cvxtusd_fraxbp,
+      vaultWhitelist,
+      convexTUSDFRAXBPVault,
+      helpersContract,
+      owner,
+    } = testEnv;
+
+    vault = await deployStableStructuredVault('USDC');
+
+    await vault.setAdmin(deployer.address);
+    await vault.initUnderlyingAsset(
+      usdc.address,
+      'Sturdy Structured USDC LP Token',
+      'SS-USDC-LP',
+      6
+    );
+    await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
+
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+  });
+
+  it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+    const { usdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+    // Prepare Enough USDC for users
+    await mint('USDC', depositAmount.toString(), user1);
+    await mint('USDC', depositAmount.mul(2).toString(), user2);
+    await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+    // Approve vault
+    await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+    await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+    await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+    // Deposit
+    await vault.deposit(user1.address, depositAmount);
+    await vault.deposit(user2.address, depositAmount.mul(2));
+    await vault.deposit(user3.address, depositAmount.mul(3));
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('admin lend 6000 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const lendingAmount = (await convertToCurrencyDecimals(usdc.address, '6000'))
+
+    // Lending
+    await vault.supply(aUsdc.address, lendingAmount, 0);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('make yield 120 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users, pool, configurator, deployer } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+
+    // Prepare Enough yield USDC for deployer
+    await mint('USDC', yieldAmount.toString(), deployer);
+
+    // register deployer as vault to simulate yield
+    await configurator.registerVault(deployer.address);
+
+    // approve and simulate yield
+    await usdc.approve(pool.address, yieldAmount);
+    await pool.depositYield(usdc.address, yieldAmount);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('User3 withdraw 2000 USDC', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const withdrawAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Prepare withdraw params
+    const params = {
+      swapper: ZERO_ADDRESS,
+      borrowAsset: ZERO_ADDRESS,
+      sAsset: aUsdc.address,
+      flashLoanType: 0,
+      swapInfo: {
+        paths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        reversePaths: [MultiSwapPathInitData, MultiSwapPathInitData, MultiSwapPathInitData] as any,
+        pathLength: 0,
+      },
+      paths: [],
+    };
+
+    // Withdraw
+    await vault.connect(user3.signer).withdraw(user3.address, withdrawAmount.mul(2), params);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(withdrawAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(withdrawAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(withdrawAmount);
+    expect(await vault.totalSupply()).to.be.eq(withdrawAmount.mul(4));
+    expect(await vault.getLendingYield()).to.be.eq(yieldAmount);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(prevTreasuryAmount);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(withdrawAmount.mul(4).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('admin process lending yield, but not enough usdc for treasury', async () => {
+    const { usdc, aUsdc, users, deployer } = testEnv;
+    const [user1, user2, user3] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Process lending yield failed
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    await expect(vault.processLendingYield()).to.be.reverted;
+    
+    // send usdc to vault for treasury
+    await mint('USDC', yieldAmount.div(10).toString(), deployer);
+    await usdc.transfer(vault.address, yieldAmount.div(10));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(yieldAmount.div(10));
+    
+    // Process lending yield
+    await vault.processLendingYield();
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount.add(yieldAmount.div(10).mul(9).div(4)));
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2).add(yieldAmount.div(10).mul(9).div(4).mul(2)));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.add(yieldAmount.div(10).mul(9).div(4)));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(4).add(yieldAmount.div(10).mul(9)));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(yieldAmount.div(10).add(prevTreasuryAmount));
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(4).add(yieldAmount));
+    expect(await vault.getRate()).to.be.gt(new BigNumber(1e18).toString());
+  });
+})
+
+makeSuite('USDC Structured Vault - Supply and process yield 2 times', (testEnv) => {
+  let vault: StableStructuredVault;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let ltv = '';
+
+  before(async () => {
+    // deploy USDC Structured Vault contract
+    const {
+      usdc,
+      deployer,
+      cvxtusd_fraxbp,
+      vaultWhitelist,
+      convexTUSDFRAXBPVault,
+      helpersContract,
+      owner,
+    } = testEnv;
+
+    vault = await deployStableStructuredVault('USDC');
+
+    await vault.setAdmin(deployer.address);
+    await vault.initUnderlyingAsset(
+      usdc.address,
+      'Sturdy Structured USDC LP Token',
+      'SS-USDC-LP',
+      6
+    );
+    await vault.setTreasuryInfo(treasuryAddress, 1000); //10% performance fee
+
+    tusdfraxbpLevSwap = await getCollateralLevSwapper(testEnv, cvxtusd_fraxbp.address);
+    ltv = (
+      await helpersContract.getReserveConfigurationData(cvxtusd_fraxbp.address)
+    ).ltv.toString();
+
+    await vaultWhitelist
+      .connect(owner.signer)
+      .addAddressToWhitelistContract(convexTUSDFRAXBPVault.address, tusdfraxbpLevSwap.address);
+  });
+
+  it('user1: 1000, user2: 2000, user3: 3000 USDC deposit', async () => {
+    const { usdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+
+    // Prepare Enough USDC for users
+    await mint('USDC', depositAmount.toString(), user1);
+    await mint('USDC', depositAmount.mul(2).toString(), user2);
+    await mint('USDC', depositAmount.mul(3).toString(), user3);
+
+    // Approve vault
+    await usdc.connect(user1.signer).approve(vault.address, depositAmount);
+    await usdc.connect(user2.signer).approve(vault.address, depositAmount.mul(2));
+    await usdc.connect(user3.signer).approve(vault.address, depositAmount.mul(3));
+
+    // Deposit
+    await vault.deposit(user1.address, depositAmount);
+    await vault.deposit(user2.address, depositAmount.mul(2));
+    await vault.deposit(user3.address, depositAmount.mul(3));
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('admin lend 6000 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const lendingAmount = (await convertToCurrencyDecimals(usdc.address, '6000'))
+
+    // Lending
+    await vault.supply(aUsdc.address, lendingAmount, 0);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6));
+  });
+
+  it('make yield 120 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users, pool, configurator, deployer } = testEnv;
+    const [user1, user2, user3] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+
+    // Prepare Enough yield USDC for deployer
+    await mint('USDC', yieldAmount.toString(), deployer);
+
+    // register deployer as vault to simulate yield
+    await configurator.registerVault(deployer.address);
+
+    // approve and simulate yield
+    await usdc.approve(pool.address, yieldAmount);
+    await pool.depositYield(usdc.address, yieldAmount);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(6));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(0);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(6).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('user4 Deposit 3000 USDC', async () => {
+    const { usdc, users } = testEnv;
+    const [,,, user4] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '3000');
+
+    // Prepare Enough USDC for user4
+    await mint('USDC', depositAmount.toString(), user4);
+
+    // Approve vault
+    await usdc.connect(user4.signer).approve(vault.address, depositAmount);
+
+    // Deposit
+    await vault.deposit(user4.address, depositAmount);
+
+    expect(await vault.balanceOf(user4.address)).to.be.eq(depositAmount);
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(3));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount);
+  });
+
+  it('admin lend 1000 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3, user4] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Lending
+    await vault.supply(aUsdc.address, lendingAmount, 0);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount);
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.mul(3));
+    expect(await vault.balanceOf(user4.address)).to.be.eq(lendingAmount.mul(3));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(9));
+    expect(await vault.getLendingYield()).to.be.eq(yieldAmount);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(2));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(prevTreasuryAmount);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(7).add(yieldAmount));
+    expect(await vault.getRate()).to.be.eq(new BigNumber(1e18).toString());
+  });
+
+  it('admin process lending yield', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3, user4] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Process Lending Yield
+    await vault.processLendingYield();
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount.add(yieldAmount.div(10).mul(9).div(9)));
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2).add(yieldAmount.div(10).mul(9).div(9).mul(2)));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(3)));
+    expect(await vault.balanceOf(user4.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(3)));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(9).add(yieldAmount.div(10).mul(9)));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(2).sub(yieldAmount.div(10)));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(yieldAmount.div(10).add(prevTreasuryAmount));
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(7).add(yieldAmount));
+    expect(await vault.getRate()).to.be.gt(new BigNumber(1e18).toString());
+  });
+
+  it('make yield 120 USDC to lending pool', async () => {
+    const { usdc, aUsdc, users, pool, configurator, deployer } = testEnv;
+    const [user1, user2, user3, user4] = users;
+    const depositAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+
+    // Prepare Enough yield USDC for deployer
+    await mint('USDC', yieldAmount.toString(), deployer);
+
+    // approve and simulate yield
+    await usdc.approve(pool.address, yieldAmount);
+    await pool.depositYield(usdc.address, yieldAmount);
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(depositAmount.add(yieldAmount.div(10).mul(9).div(9)));
+    expect(await vault.balanceOf(user2.address)).to.be.eq(depositAmount.mul(2).add(yieldAmount.div(10).mul(9).div(9).mul(2)));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(depositAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(3)));
+    expect(await vault.balanceOf(user4.address)).to.be.eq(depositAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(3)));
+    expect(await vault.totalSupply()).to.be.eq(depositAmount.mul(9).add(yieldAmount.div(10).mul(9)));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(2).sub(yieldAmount.div(10)));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(prevTreasuryAmount);
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(depositAmount.mul(7).add(yieldAmount.mul(2)));
+    expect(await vault.getRate()).to.be.gt(new BigNumber(1e18).toString());
+  });
+
+  it('admin process lending yield', async () => {
+    const { usdc, aUsdc, users } = testEnv;
+    const [user1, user2, user3, user4] = users;
+    const lendingAmount = await convertToCurrencyDecimals(usdc.address, '1000');
+    const yieldAmount = (await convertToCurrencyDecimals(usdc.address, '120'));
+    const prevTreasuryAmount = await usdc.balanceOf(treasuryAddress);
+    const prevRate = await vault.getRate();
+
+    // // Process Lending Yield
+    await vault.processLendingYield();
+
+    expect(await vault.balanceOf(user1.address)).to.be.eq(lendingAmount.add(yieldAmount.div(10).mul(9).div(9).mul(2).sub(1)));
+    expect(await vault.balanceOf(user2.address)).to.be.eq(lendingAmount.mul(2).add(yieldAmount.div(10).mul(9).div(9).mul(4).sub(1)));
+    expect(await vault.balanceOf(user3.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(6).sub(1)));
+    expect(await vault.balanceOf(user4.address)).to.be.eq(lendingAmount.mul(3).add(yieldAmount.div(10).mul(9).div(9).mul(6).sub(1)));
+    expect(await vault.totalSupply()).to.be.eq(lendingAmount.mul(9).add(yieldAmount.div(10).mul(9).mul(2).sub(1)));
+    expect(await vault.getLendingYield()).to.be.eq(0);
+    expect(await usdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(2).sub(yieldAmount.div(10).mul(2)));
+    expect(await usdc.balanceOf(treasuryAddress)).to.be.eq(yieldAmount.div(10).add(prevTreasuryAmount));
+    expect(await aUsdc.balanceOf(vault.address)).to.be.eq(lendingAmount.mul(7).add(yieldAmount.mul(2)));
+    expect(await vault.getRate()).to.be.gt(prevRate);
+  });
+})

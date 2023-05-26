@@ -7,8 +7,8 @@ import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
 import {
   ICurvePool__factory,
-  IGeneralLevSwap,
-  IGeneralLevSwap__factory,
+  IGeneralLevSwap2,
+  IGeneralLevSwap2__factory,
   MintableERC20,
 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
@@ -33,7 +33,7 @@ const MultiSwapPathInitData = {
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -222,7 +222,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const leverage = 36000;
-  let fraxusdcLevSwap = {} as IGeneralLevSwap;
+  let fraxusdcLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -847,7 +847,7 @@ makeSuite('FRAXUSDC Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const leverage = 36000;
-  let fraxusdcLevSwap = {} as IGeneralLevSwap;
+  let fraxusdcLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import {IGeneralLevSwap} from './IGeneralLevSwap.sol';
+import {IGeneralLevSwap2} from './IGeneralLevSwap2.sol';
 
 interface IStructuredVault {
   struct AutoExitPositionParams {
@@ -10,10 +10,10 @@ interface IStructuredVault {
     address swapper;
     address borrowAsset;
     address sAsset;
-    IGeneralLevSwap.FlashLoanType flashLoanType;
-    IGeneralLevSwap.SwapInfo swapInfo;
+    IGeneralLevSwap2.FlashLoanType flashLoanType;
+    IGeneralLevSwap2.SwapInfo swapInfo;
     /// migration to underlying asset params.
-    IGeneralLevSwap.MultipSwapPath[] paths;
+    IGeneralLevSwap2.MultipSwapPath[] paths;
   }
 
   struct AssetInfo {
@@ -24,7 +24,7 @@ interface IStructuredVault {
   struct YieldMigrationParams {
     address yieldAsset;
     /// migration to underlying asset params
-    IGeneralLevSwap.MultipSwapPath[] paths;
+    IGeneralLevSwap2.MultipSwapPath[] paths;
   }
 
   /**
@@ -108,10 +108,10 @@ interface IStructuredVault {
     uint256 _amount,
     uint256 _leverage,
     address _borrowAsset,
-    IGeneralLevSwap.FlashLoanType _flashLoanType,
-    IGeneralLevSwap.MultipSwapPath[3] calldata _zapPaths,
+    IGeneralLevSwap2.FlashLoanType _flashLoanType,
+    IGeneralLevSwap2.MultipSwapPath[3] calldata _zapPaths,
     uint256 _zapPathLength,
-    IGeneralLevSwap.SwapInfo calldata _swapInfo
+    IGeneralLevSwap2.SwapInfo calldata _swapInfo
   ) external payable;
 
   /**
@@ -131,8 +131,8 @@ interface IStructuredVault {
     uint256 _requiredAmount,
     address _borrowAsset,
     address _sAsset,
-    IGeneralLevSwap.FlashLoanType _flashLoanType,
-    IGeneralLevSwap.SwapInfo calldata _swapInfo
+    IGeneralLevSwap2.FlashLoanType _flashLoanType,
+    IGeneralLevSwap2.SwapInfo calldata _swapInfo
   ) external payable;
 
   /**
@@ -143,7 +143,7 @@ interface IStructuredVault {
    */
   function migration(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath[] calldata _paths
+    IGeneralLevSwap2.MultipSwapPath[] calldata _paths
   ) external payable;
 
   /**

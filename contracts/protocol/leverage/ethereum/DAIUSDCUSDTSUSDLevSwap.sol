@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import {GeneralLevSwap} from '../GeneralLevSwap.sol';
+import {GeneralLevSwap2} from '../GeneralLevSwap2.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {IGeneralLevSwap2} from '../../../interfaces/IGeneralLevSwap2.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
-contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
+contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap2 {
   using SafeERC20 for IERC20;
 
   address private constant POOL = 0xA5407eAE9Ba41422680e2e00537571bcC53efBfD;
@@ -21,7 +21,7 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
     address _asset,
     address _vault,
     address _provider
-  ) GeneralLevSwap(_asset, _vault, _provider) {
+  ) GeneralLevSwap2(_asset, _vault, _provider) {
     ENABLED_BORROW_ASSETS[DAI] = true;
     ENABLED_BORROW_ASSETS[USDC] = true;
     ENABLED_BORROW_ASSETS[USDT] = true;
@@ -44,11 +44,11 @@ contract DAIUSDCUSDTSUSDLevSwap is GeneralLevSwap {
   // DAIUSDCUSDTSUSD <-> borrowing asset
   function _processSwap(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath memory _path,
+    IGeneralLevSwap2.MultipSwapPath memory _path,
     bool _isFrom,
     bool _checkOutAmount
   ) internal override returns (uint256) {
-    if (_path.swapType > IGeneralLevSwap.SwapType.NO_SWAP) {
+    if (_path.swapType > IGeneralLevSwap2.SwapType.NO_SWAP) {
       return _swapByPath(_amount, _path, _checkOutAmount);
     }
 

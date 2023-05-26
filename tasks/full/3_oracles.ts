@@ -62,6 +62,7 @@ task('full:deploy-oracles', 'Deploy oracles for dev enviroment')
           [
             tokens,
             aggregators,
+            Array(tokens.length).fill(false),
             fallbackOracleAddress,
             await getQuoteCurrency(poolConfig),
             poolConfig.OracleQuoteUnit,

@@ -11,8 +11,8 @@ import {
 import { ICurvePool__factory, MintableERC20 } from '../../types';
 import { ProtocolErrors, RateMode, tEthereumAddress } from '../../helpers/types';
 import { getUserData } from './helpers/utils/helpers';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
+import { IGeneralLevSwap2__factory } from '../../types';
+import { IGeneralLevSwap2 } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -34,7 +34,7 @@ const MultiSwapPathInitData = {
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -204,7 +204,7 @@ makeSuite('SUSD Leverage Swap', (testEnv) => {
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let susdLevSwap = {} as IGeneralLevSwap;
+  let susdLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {

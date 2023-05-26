@@ -7,8 +7,8 @@ import { mint } from './helpers/mint';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
 import { ICurvePool__factory, MintableERC20 } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
+import { IGeneralLevSwap2__factory } from '../../types';
+import { IGeneralLevSwap2 } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -30,7 +30,7 @@ const MultiSwapPathInitData = {
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const calcTotalBorrowAmount = async (
@@ -161,7 +161,7 @@ const calcETHAmount = async (testEnv: TestEnv, asset: tEthereumAddress, amount: 
 
 makeSuite('SUSD Zap Deposit', (testEnv) => {
   const LPAmount = '1000';
-  let susdLevSwap = {} as IGeneralLevSwap;
+  let susdLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -309,7 +309,7 @@ makeSuite('SUSD Zap Leverage with Flashloan', (testEnv) => {
   /// leverage / (1 + leverage) <= 0.8 / 1.02 / 1.0009 = 0.7836084
   /// leverage <= 0.7836084 / (1 - 0.7836084) = 3.62125
   const leverage = 36000;
-  let susdLevSwap = {} as IGeneralLevSwap;
+  let susdLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {

@@ -5,7 +5,7 @@ import { oneEther, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals, convertToCurrencyUnits } from '../../helpers/contracts-helpers';
 import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
-import { MintableERC20, IGeneralLevSwap, IGeneralLevSwap__factory } from '../../types';
+import { MintableERC20, IGeneralLevSwap2, IGeneralLevSwap2__factory } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
 
 const chai = require('chai');
@@ -34,7 +34,7 @@ const MultiSwapPathInitData = {
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -196,7 +196,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const leverage = 36000;
-  let aurabbausdLevSwap = {} as IGeneralLevSwap;
+  let aurabbausdLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -801,7 +801,7 @@ makeSuite('AURABBAUSD Deleverage with Flashloan', (testEnv) => {
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let aurabbausdLevSwap = {} as IGeneralLevSwap;
+  let aurabbausdLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {

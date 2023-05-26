@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import {CurveswapAdapter} from '../protocol/libraries/swap/CurveswapAdapter.sol';
 
-interface IGeneralLevSwap {
+interface IGeneralLevSwap2 {
   enum FlashLoanType {
     AAVE,
     BALANCER

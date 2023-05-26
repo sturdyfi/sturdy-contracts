@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import {ReentrancyGuard} from '../../../dependencies/openzeppelin/contracts/ReentrancyGuard.sol';
 import {VersionedInitializable} from '../../../protocol/libraries/sturdy-upgradeability/VersionedInitializable.sol';
 import {ILendingPoolAddressesProvider} from '../../../interfaces/ILendingPoolAddressesProvider.sol';
-import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {IGeneralLevSwap2} from '../../../interfaces/IGeneralLevSwap2.sol';
 import {IStructuredVault} from '../../../interfaces/IStructuredVault.sol';
 import {ICollateralAdapter} from '../../../interfaces/ICollateralAdapter.sol';
 import {ILendingPool} from '../../../interfaces/ILendingPool.sol';
@@ -430,15 +430,15 @@ abstract contract StructuredVault is
     uint256 _amount,
     uint256 _leverage,
     address _borrowAsset,
-    IGeneralLevSwap.FlashLoanType _flashLoanType,
-    IGeneralLevSwap.MultipSwapPath[3] calldata _zapPaths,
+    IGeneralLevSwap2.FlashLoanType _flashLoanType,
+    IGeneralLevSwap2.MultipSwapPath[3] calldata _zapPaths,
     uint256 _zapPathLength,
-    IGeneralLevSwap.SwapInfo calldata _swapInfo
+    IGeneralLevSwap2.SwapInfo calldata _swapInfo
   ) external payable onlyAdmin {
     require(_swapper != address(0), Errors.VT_INVALID_CONFIGURATION);
 
     if (_zapPathLength != 0) {
-      IGeneralLevSwap(_swapper).zapLeverageWithFlashloan(
+      IGeneralLevSwap2(_swapper).zapLeverageWithFlashloan(
         _underlyingAsset,
         _amount,
         _leverage,
@@ -449,7 +449,7 @@ abstract contract StructuredVault is
         _swapInfo
       );
     } else {
-      IGeneralLevSwap(_swapper).enterPositionWithFlashloan(
+      IGeneralLevSwap2(_swapper).enterPositionWithFlashloan(
         _amount,
         _leverage,
         _borrowAsset,
@@ -478,12 +478,12 @@ abstract contract StructuredVault is
     uint256 _requiredAmount,
     address _borrowAsset,
     address _sAsset,
-    IGeneralLevSwap.FlashLoanType _flashLoanType,
-    IGeneralLevSwap.SwapInfo calldata _swapInfo
+    IGeneralLevSwap2.FlashLoanType _flashLoanType,
+    IGeneralLevSwap2.SwapInfo calldata _swapInfo
   ) external payable onlyAdmin {
     require(_swapper != address(0), Errors.VT_INVALID_CONFIGURATION);
 
-    IGeneralLevSwap(_swapper).withdrawWithFlashloan(
+    IGeneralLevSwap2(_swapper).withdrawWithFlashloan(
       _repayAmount,
       _requiredAmount,
       _borrowAsset,
@@ -503,7 +503,7 @@ abstract contract StructuredVault is
    */
   function migration(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath[] calldata _paths
+    IGeneralLevSwap2.MultipSwapPath[] calldata _paths
   ) external payable onlyAdmin {
     _migration(_amount, _paths);
   }
@@ -537,7 +537,7 @@ abstract contract StructuredVault is
 
     // Migration yield assets to underlying asset
     for (uint256 i; i < _params.length; ++i) {
-      IGeneralLevSwap.MultipSwapPath[] calldata paths = _params[i].paths;
+      IGeneralLevSwap2.MultipSwapPath[] calldata paths = _params[i].paths;
       require(paths[paths.length - 1].swapTo == underlyingAsset, Errors.VT_INVALID_CONFIGURATION);
 
       _migration(IERC20(_params[i].yieldAsset).balanceOf(address(this)), paths);
@@ -708,7 +708,7 @@ abstract contract StructuredVault is
       return;
     }
 
-    address collateralAsset = IGeneralLevSwap(_params.swapper).COLLATERAL();
+    address collateralAsset = IGeneralLevSwap2(_params.swapper).COLLATERAL();
     IStructuredVault.AssetInfo memory collateral = _getAssetInfo(collateralAsset);
     IStructuredVault.AssetInfo memory underlying = _getAssetInfo(_underlyingAsset);
 
@@ -744,7 +744,7 @@ abstract contract StructuredVault is
       uint256 repayAmount = _getRepayAmount(collateralAsset, maxRequiredAmountPrice, underlying);
 
       //exit position
-      IGeneralLevSwap(_params.swapper).withdrawWithFlashloan(
+      IGeneralLevSwap2(_params.swapper).withdrawWithFlashloan(
         repayAmount,
         requiredCollateralAmount,
         _params.borrowAsset,
@@ -762,7 +762,7 @@ abstract contract StructuredVault is
 
   function _migration(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath[] calldata _paths
+    IGeneralLevSwap2.MultipSwapPath[] calldata _paths
   ) internal returns (uint256) {
     uint256 pathLength = _paths.length;
     require(pathLength != 0, Errors.VT_INVALID_CONFIGURATION);
@@ -770,7 +770,7 @@ abstract contract StructuredVault is
 
     uint256 amount = _amount;
     for (uint256 i; i < pathLength; ++i) {
-      if (_paths[i].swapType == IGeneralLevSwap.SwapType.NONE) continue;
+      if (_paths[i].swapType == IGeneralLevSwap2.SwapType.NONE) continue;
       amount = _processSwap(amount, _paths[i]);
     }
 
@@ -781,12 +781,12 @@ abstract contract StructuredVault is
 
   function _swapByPath(
     uint256 _fromAmount,
-    IGeneralLevSwap.MultipSwapPath memory _path
+    IGeneralLevSwap2.MultipSwapPath memory _path
   ) internal returns (uint256) {
     uint256 poolCount = _path.poolCount;
     require(poolCount > 0, Errors.LS_INVALID_CONFIGURATION);
 
-    if (_path.swapType == IGeneralLevSwap.SwapType.BALANCER) {
+    if (_path.swapType == IGeneralLevSwap2.SwapType.BALANCER) {
       // Balancer Swap
       BalancerswapAdapter2.Path memory path;
       path.tokens = new address[](poolCount + 1);
@@ -808,7 +808,7 @@ abstract contract StructuredVault is
         );
     }
 
-    if (_path.swapType == IGeneralLevSwap.SwapType.UNISWAP) {
+    if (_path.swapType == IGeneralLevSwap2.SwapType.UNISWAP) {
       // UniSwap
       UniswapAdapter2.Path memory path;
       path.tokens = new address[](poolCount + 1);
@@ -880,6 +880,6 @@ abstract contract StructuredVault is
 
   function _processSwap(
     uint256,
-    IGeneralLevSwap.MultipSwapPath memory
+    IGeneralLevSwap2.MultipSwapPath memory
   ) internal virtual returns (uint256);
 }

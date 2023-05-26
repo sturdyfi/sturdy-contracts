@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-// import {GeneralLevSwap} from '../GeneralLevSwap.sol';
+// import {GeneralLevSwap2} from '../GeneralLevSwap2.sol';
 // import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
 // import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 // import {Errors} from '../../libraries/helpers/Errors.sol';
@@ -28,7 +28,7 @@ pragma abicoder v2;
 //   ) external returns (uint256);
 // }
 
-// contract IRONBANKLevSwap is GeneralLevSwap {
+// contract IRONBANKLevSwap is GeneralLevSwap2 {
 //   using SafeERC20 for IERC20;
 
 //   ICurvePool public constant IRONBANK = ICurvePool(0x2dded6Da1BF5DBdF597C45fcFaa3194e53EcfeAF);
@@ -41,7 +41,7 @@ pragma abicoder v2;
 //     address _asset,
 //     address _vault,
 //     address _provider
-//   ) GeneralLevSwap(_asset, _vault, _provider) {
+//   ) GeneralLevSwap2(_asset, _vault, _provider) {
 //     ENABLED_STABLE_COINS[DAI] = true;
 //     ENABLED_STABLE_COINS[USDC] = true;
 //     ENABLED_STABLE_COINS[USDT] = true;

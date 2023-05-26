@@ -7,8 +7,8 @@
 // import { getVariableDebtToken } from '../../helpers/contracts-getters';
 // import { MintableERC20 } from '../../types';
 // import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
-// import { IGeneralLevSwap__factory } from '../../types';
-// import { IGeneralLevSwap } from '../../types';
+// import { IGeneralLevSwap2__factory } from '../../types';
+// import { IGeneralLevSwap2 } from '../../types';
 
 // const chai = require('chai');
 // const { expect } = chai;
@@ -16,7 +16,7 @@
 // const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
 //   const { levSwapManager, deployer } = testEnv;
 //   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-//   return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+//   return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 // };
 
 // const mint = async (
@@ -96,7 +96,7 @@
 //   const LPAmount = '200';
 //   const slippage2 = '70'; //0.7%
 //   const leverage = 36000;
-//   let ironbankLevSwap = {} as IGeneralLevSwap;
+//   let ironbankLevSwap = {} as IGeneralLevSwap2;
 //   let ltv = '';
 
 //   before(async () => {
@@ -404,7 +404,7 @@
 //   const LPAmount = '200';
 //   const slippage2 = '70'; //0.7%
 //   const leverage = 36000;
-//   let ironbankLevSwap = {} as IGeneralLevSwap;
+//   let ironbankLevSwap = {} as IGeneralLevSwap2;
 //   let ltv = '';
 
 //   before(async () => {

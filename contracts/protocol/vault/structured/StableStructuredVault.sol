@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import {StructuredVault, IGeneralLevSwap, IERC20, Errors} from './StructuredVault.sol';
+import {StructuredVault, IGeneralLevSwap2, IERC20, Errors} from './StructuredVault.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 
 /**
@@ -26,9 +26,9 @@ contract StableStructuredVault is StructuredVault {
 
   function _processSwap(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath memory _path
+    IGeneralLevSwap2.MultipSwapPath memory _path
   ) internal override returns (uint256) {
-    if (_path.swapType > IGeneralLevSwap.SwapType.NO_SWAP) {
+    if (_path.swapType > IGeneralLevSwap2.SwapType.NO_SWAP) {
       return _swapByPath(_amount, _path);
     }
 

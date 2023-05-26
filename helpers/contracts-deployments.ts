@@ -196,11 +196,11 @@ import { StableAndVariableTokensHelper__factory } from '../types';
 import { MintableDelegationERC20 } from '../types';
 import { readArtifact as buidlerReadArtifact } from '@nomiclabs/buidler/plugins';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { LendingPoolLibraryAddresses } from '../types/factories/protocol/lendingpool/LendingPool__factory';
-import { YieldManagerLibraryAddresses } from '../types/factories/incentives/YieldManager__factory';
-import { LidoVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/LidoVault__factory';
-import { YearnRETHWstETHVaultLibraryAddresses } from '../types/factories/protocol/vault/ethereum/YearnRETHWstETHVault__factory';
-import { DAIUSDCUSDTSUSDLevSwapLibraryAddresses } from '../types/factories/protocol/leverage/ethereum/DAIUSDCUSDTSUSDLevSwap__factory';
+import { LendingPoolLibraryAddresses } from '../types/factories/contracts/protocol/lendingpool/LendingPool__factory';
+import { YieldManagerLibraryAddresses } from '../types/factories/contracts/incentives/YieldManager__factory';
+import { LidoVaultLibraryAddresses } from '../types/factories/contracts/protocol/vault/ethereum/LidoVault__factory';
+import { YearnRETHWstETHVaultLibraryAddresses } from '../types/factories/contracts/protocol/vault/ethereum/YearnRETHWstETHVault__factory';
+import { DAIUSDCUSDTSUSDLevSwapLibraryAddresses } from '../types/factories/contracts/protocol/leverage/ethereum/DAIUSDCUSDTSUSDLevSwap__factory';
 
 const readArtifact = async (id: string) => {
   if (DRE.network.name === eEthereumNetwork.buidlerevm) {
@@ -381,7 +381,7 @@ export const deployMockAggregator = async (price: tStringTokenSmallUnits, verify
   );
 
 export const deploySturdyOracle = async (
-  args: [tEthereumAddress[], tEthereumAddress[], tEthereumAddress, tEthereumAddress, string],
+  args: [tEthereumAddress[], tEthereumAddress[], boolean[], tEthereumAddress, tEthereumAddress, string],
   verify?: boolean
 ) =>
   withSaveAndVerify(

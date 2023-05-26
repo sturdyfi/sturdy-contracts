@@ -2,14 +2,14 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import {GeneralLevSwap} from '../GeneralLevSwap.sol';
+import {GeneralLevSwap2} from '../GeneralLevSwap2.sol';
 import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {IGeneralLevSwap2} from '../../../interfaces/IGeneralLevSwap2.sol';
 import {ICurvePool} from '../../../interfaces/ICurvePool.sol';
 import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 
-contract FRAX3CRVLevSwap is GeneralLevSwap {
+contract FRAX3CRVLevSwap is GeneralLevSwap2 {
   using SafeERC20 for IERC20;
 
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
@@ -20,7 +20,7 @@ contract FRAX3CRVLevSwap is GeneralLevSwap {
     address _asset,
     address _vault,
     address _provider
-  ) GeneralLevSwap(_asset, _vault, _provider) {
+  ) GeneralLevSwap2(_asset, _vault, _provider) {
     ENABLED_BORROW_ASSETS[DAI] = true;
     ENABLED_BORROW_ASSETS[USDC] = true;
     ENABLED_BORROW_ASSETS[USDT] = true;
@@ -36,7 +36,7 @@ contract FRAX3CRVLevSwap is GeneralLevSwap {
   // FRAX3CRV <-> borrowing asset
   function _processSwap(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath memory _path,
+    IGeneralLevSwap2.MultipSwapPath memory _path,
     bool _isFrom,
     bool _checkOutAmount
   ) internal override returns (uint256) {

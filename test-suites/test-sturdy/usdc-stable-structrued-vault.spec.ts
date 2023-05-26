@@ -4,8 +4,8 @@ import { MAX_UINT_AMOUNT, ZERO_ADDRESS } from '../../helpers/constants';
 import { convertToCurrencyDecimals, convertToCurrencyUnits } from '../../helpers/contracts-helpers';
 import {
   ICurvePool__factory,
-  IGeneralLevSwap,
-  IGeneralLevSwap__factory,
+  IGeneralLevSwap2,
+  IGeneralLevSwap2__factory,
   MintableERC20,
   MintableERC20__factory,
   StableStructuredVault,
@@ -46,7 +46,7 @@ const MultiSwapPathInitData = {
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const calcMinAmountOut = async (
@@ -306,7 +306,7 @@ makeSuite('USDC Structured Vault - User Deposit', (testEnv) => {
 
 makeSuite('USDC Structured Vault - ZapLeverage', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -554,7 +554,7 @@ makeSuite('USDC Structured Vault - ZapLeverage', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Leverage', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -725,7 +725,7 @@ makeSuite('USDC Structured Vault - Leverage', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Deleverage (1)', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -1010,7 +1010,7 @@ makeSuite('USDC Structured Vault - Deleverage (1)', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Deleverage (2)', (testEnv) => {
   let vault: StableStructuredVault;
-  let daiusdcusdtsusdLevSwap = {} as IGeneralLevSwap;
+  let daiusdcusdtsusdLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -1240,7 +1240,7 @@ makeSuite('USDC Structured Vault - Deleverage (2)', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Migration to USDC', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -1356,7 +1356,7 @@ makeSuite('USDC Structured Vault - Migration to USDC', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Migration to Collateral(1)', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -1503,7 +1503,7 @@ makeSuite('USDC Structured Vault - Migration to Collateral(1)', (testEnv) => {
 
 makeSuite('USDC Structured Vault - ZapLeverage and Yield Distribute', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -1863,7 +1863,7 @@ makeSuite('USDC Structured Vault - ZapLeverage and Yield Distribute', (testEnv) 
 
 makeSuite('USDC Structured Vault - Withdraw', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -1961,7 +1961,7 @@ makeSuite(
   'USDC Structured Vault - Withdraw via deleverage and migration but vault has some USDC',
   (testEnv) => {
     let vault: StableStructuredVault;
-    let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+    let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
     let ltv = '';
 
     before(async () => {
@@ -2392,7 +2392,7 @@ makeSuite(
   'USDC Structured Vault - Withdraw via only migration since vault has enough collateral',
   (testEnv) => {
     let vault: StableStructuredVault;
-    let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+    let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
     let ltv = '';
 
     before(async () => {
@@ -2746,7 +2746,7 @@ makeSuite(
 
 makeSuite('USDC Structured Vault - Supply and Supply', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -2920,7 +2920,7 @@ makeSuite('USDC Structured Vault - Supply and Supply', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Supply and ExitSupply', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -3072,7 +3072,7 @@ makeSuite('USDC Structured Vault - Supply and ExitSupply', (testEnv) => {
 
 makeSuite('USDC Structured Vault - Supply and Withdraw with autoExitAndMigration', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -3247,7 +3247,7 @@ makeSuite('USDC Structured Vault - Supply and Withdraw with autoExitAndMigration
 
 makeSuite('USDC Structured Vault - Supply and process yield 2 times', (testEnv) => {
   let vault: StableStructuredVault;
-  let tusdfraxbpLevSwap = {} as IGeneralLevSwap;
+  let tusdfraxbpLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {

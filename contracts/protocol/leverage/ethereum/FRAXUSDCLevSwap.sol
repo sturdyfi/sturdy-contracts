@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import {GeneralLevSwap} from '../GeneralLevSwap.sol';
-import {IGeneralLevSwap} from '../../../interfaces/IGeneralLevSwap.sol';
+import {GeneralLevSwap2} from '../GeneralLevSwap2.sol';
+import {IGeneralLevSwap2} from '../../../interfaces/IGeneralLevSwap2.sol';
 
-contract FRAXUSDCLevSwap is GeneralLevSwap {
+contract FRAXUSDCLevSwap is GeneralLevSwap2 {
   address private constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
   address private constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address private constant USDT = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
@@ -14,7 +14,7 @@ contract FRAXUSDCLevSwap is GeneralLevSwap {
     address _asset,
     address _vault,
     address _provider
-  ) GeneralLevSwap(_asset, _vault, _provider) {
+  ) GeneralLevSwap2(_asset, _vault, _provider) {
     ENABLED_BORROW_ASSETS[DAI] = true;
     ENABLED_BORROW_ASSETS[USDC] = true;
     ENABLED_BORROW_ASSETS[USDT] = true;
@@ -30,7 +30,7 @@ contract FRAXUSDCLevSwap is GeneralLevSwap {
   // FRAXUSDC <-> borrowing asset
   function _processSwap(
     uint256 _amount,
-    IGeneralLevSwap.MultipSwapPath memory _path,
+    IGeneralLevSwap2.MultipSwapPath memory _path,
     bool,
     bool _checkOutAmount
   ) internal override returns (uint256) {

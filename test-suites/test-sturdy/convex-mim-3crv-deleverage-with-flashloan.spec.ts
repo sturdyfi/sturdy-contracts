@@ -7,8 +7,8 @@ import { makeSuite, TestEnv, SignerWithAddress } from './helpers/make-suite';
 import { getVariableDebtToken } from '../../helpers/contracts-getters';
 import { ICurvePool__factory, MintableERC20, MintableERC20__factory } from '../../types';
 import { ProtocolErrors, tEthereumAddress } from '../../helpers/types';
-import { IGeneralLevSwap__factory } from '../../types';
-import { IGeneralLevSwap } from '../../types';
+import { IGeneralLevSwap2__factory } from '../../types';
+import { IGeneralLevSwap2 } from '../../types';
 
 const chai = require('chai');
 const { expect } = chai;
@@ -31,7 +31,7 @@ const MultiSwapPathInitData = {
 const getCollateralLevSwapper = async (testEnv: TestEnv, collateral: tEthereumAddress) => {
   const { levSwapManager, deployer } = testEnv;
   const levSwapAddress = await levSwapManager.getLevSwapper(collateral);
-  return IGeneralLevSwap__factory.connect(levSwapAddress, deployer.signer);
+  return IGeneralLevSwap2__factory.connect(levSwapAddress, deployer.signer);
 };
 
 const mint = async (
@@ -238,7 +238,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
   const { INVALID_HF } = ProtocolErrors;
   const LPAmount = '1000';
   const leverage = 36000;
-  let mim3crvLevSwap = {} as IGeneralLevSwap;
+  let mim3crvLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {
@@ -879,7 +879,7 @@ makeSuite('MIM3CRV Deleverage with Flashloan', (testEnv) => {
   const LPAmount = '1000';
   const slippage2 = '70'; //0.7%
   const leverage = 36000;
-  let mim3crvLevSwap = {} as IGeneralLevSwap;
+  let mim3crvLevSwap = {} as IGeneralLevSwap2;
   let ltv = '';
 
   before(async () => {

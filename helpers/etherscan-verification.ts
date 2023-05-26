@@ -29,7 +29,7 @@ function delay(ms: number) {
 
 export const verifyEtherscanContract = async (
   address: string,
-  constructorArguments: (string | string[])[],
+  constructorArguments: (string | string[] | boolean[])[],
   libraries?: string
 ) => {
   const currentNetwork = DRE.network.name;

@@ -187,3 +187,22 @@ Claim Lending Yield of underlying asset from lending pool.
   ```
   function processLendingYield() external;
   ```
+
+## View Functions
+
+### GetUnderlyingAsset
+
+The function to get underlying asset address.
+Returns the address of underlying asset.
+
+  ```
+  function getUnderlyingAsset() external view returns (address);
+  ```
+
+### GetFee
+
+Returns the structured vault's fee.
+
+  ```
+  function getFee() external view returns (uint256);
+  ```

@@ -52,7 +52,7 @@ task(`full:eth:deploy-aura-reth-weth-vault`, `Deploys the ${CONTRACT_NAME} contr
       await sturdyOracle.setAssetSources(
         [internalAssetAddress, getParamPerNetwork(BAL_RETH_WETH_LP, network)],
         [BALRETHWETHOracleAddress, BALRETHWETHOracleAddress],
-        [true, false]
+        [false, false]
       )
     );
     console.log((await sturdyOracle.getAssetPrice(internalAssetAddress)).toString());

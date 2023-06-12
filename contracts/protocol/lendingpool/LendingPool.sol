@@ -526,6 +526,8 @@ contract LendingPool is VersionedInitializable, ILendingPool, LendingPoolStorage
     address asset,
     bool useAsCollateral
   ) external override whenNotPaused {
+    _validateOracle(msg.sender);
+
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateSetUseReserveAsCollateral(

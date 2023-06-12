@@ -6,7 +6,6 @@ pragma experimental ABIEncoderV2;
 import '@balancer-labs/v2-interfaces/contracts/vault/IVault.sol';
 import '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
 import './interfaces/IOracle.sol';
-import './interfaces/IOracleValidate.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/IBalancerStablePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
@@ -14,7 +13,7 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 /**
  * @dev Oracle contract for BALBBAUSD LP Token
  */
-contract BALBBAUSDOracle is IOracle, IOracleValidate {
+contract BALBBAUSDOracle is IOracle {
   IBalancerStablePool private constant BAL_BB_A_USD =
     IBalancerStablePool(0xA13a9247ea42D743238089903570127DdA72fE44);
   IBalancerStablePool private constant BAL_BB_A_USDC =
@@ -37,6 +36,9 @@ contract BALBBAUSDOracle is IOracle, IOracleValidate {
    * @dev Get LP Token Price
    */
   function _get() internal view returns (uint256) {
+    // Check the oracle (re-entrancy)
+    VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
+
     uint256 usdcLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A_USDC);
     uint256 usdtLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A_USDT);
     uint256 daiLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A_DAI);
@@ -79,11 +81,5 @@ contract BALBBAUSDOracle is IOracle, IOracleValidate {
   /// @inheritdoc IOracle
   function latestAnswer() external view override returns (int256 rate) {
     return int256(_get());
-  }
-
-  // Check the oracle (re-entrancy)
-  /// @inheritdoc IOracleValidate
-  function check() external {
-    VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
   }
 }

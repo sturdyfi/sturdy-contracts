@@ -4,11 +4,12 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import '@balancer-labs/v2-interfaces/contracts/vault/IVault.sol';
-import '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
+import {VaultReentrancyLib} from '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
 import './interfaces/IOracle.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/IBalancerStablePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
+import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
 /**
  * @dev Oracle contract for BALBBAUSD LP Token
@@ -33,16 +34,27 @@ contract BALBBAUSDOracle is IOracle {
     // Check the oracle (re-entrancy)
     VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
 
-    (, int256 usdcPrice, , , ) = USDC.latestRoundData();
-    (, int256 usdtPrice, , , ) = USDT.latestRoundData();
-    (, int256 daiPrice, , , ) = DAI.latestRoundData();
+    uint256 usdcPrice = _getAssetPrice(USDC);
+    uint256 usdtPrice = _getAssetPrice(USDT);
+    uint256 daiPrice = _getAssetPrice(DAI);
 
-    uint256 minValue = Math.min(
-      Math.min(uint256(usdcPrice), uint256(usdtPrice)),
-      uint256(daiPrice)
-    );
+    uint256 minValue = Math.min(Math.min(usdcPrice, usdtPrice), daiPrice);
 
-    return (BAL_BB_A_USD.getRate() * minValue) / 1e18;
+    return (BAL_BB_A_USD.getRate() * minValue) / 10 ** BAL_BB_A_USD.decimals();
+  }
+
+  /**
+   * @dev Get Asset Token Price
+   */
+  function _getAssetPrice(IChainlinkAggregator _asset) internal view returns (uint256) {
+    (, int256 assetPrice, , uint256 updatedAt, ) = _asset.latestRoundData();
+
+    // asset's chainlink price unit is eth
+    require(_asset.decimals() == 18, Errors.O_WRONG_PRICE);
+    require(updatedAt > block.timestamp - 1 days, Errors.O_WRONG_PRICE);
+    require(assetPrice > 0, Errors.O_WRONG_PRICE);
+
+    return uint256(assetPrice);
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

@@ -16,12 +16,6 @@ import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
 contract BALBBA3USDOracle is IOracle {
   IBalancerStablePool private constant BAL_BB_A3_USD =
     IBalancerStablePool(0xfeBb0bbf162E64fb9D0dfe186E517d84C395f016);
-  IBalancerStablePool private constant BAL_BB_A3_USDC =
-    IBalancerStablePool(0xcbFA4532D8B2ade2C261D3DD5ef2A2284f792692);
-  IBalancerStablePool private constant BAL_BB_A3_USDT =
-    IBalancerStablePool(0xA1697F9Af0875B63DdC472d6EeBADa8C1fAB8568);
-  IBalancerStablePool private constant BAL_BB_A3_DAI =
-    IBalancerStablePool(0x6667c6fa9f2b3Fc1Cc8D85320b62703d938E4385);
 
   IChainlinkAggregator private constant DAI =
     IChainlinkAggregator(0x773616E4d11A78F511299002da57A0a94577F1f4);
@@ -39,30 +33,16 @@ contract BALBBA3USDOracle is IOracle {
     // Check the oracle (re-entrancy)
     VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
 
-    uint256 usdcLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A3_USDC);
-    uint256 usdtLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A3_USDT);
-    uint256 daiLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A3_DAI);
+    (, int256 usdcPrice, , , ) = USDC.latestRoundData();
+    (, int256 usdtPrice, , , ) = USDT.latestRoundData();
+    (, int256 daiPrice, , , ) = DAI.latestRoundData();
 
     uint256 minValue = Math.min(
-      Math.min(usdcLinearPoolPrice, usdtLinearPoolPrice),
-      daiLinearPoolPrice
+      Math.min(usdcPrice, usdtPrice),
+      daiPrice
     );
 
     return (BAL_BB_A3_USD.getRate() * minValue) / 1e18;
-  }
-
-  /**
-   * @dev Get price for LinearPool LP Token
-   */
-  function _getLinearPoolPrice(IBalancerStablePool _poolAddress) internal view returns (uint256) {
-    IChainlinkAggregator mainToken;
-
-    if (_poolAddress == BAL_BB_A3_USDC) mainToken = USDC;
-    else if (_poolAddress == BAL_BB_A3_USDT) mainToken = USDT;
-    else mainToken = DAI;
-
-    (, int256 mainTokenPrice, , , ) = mainToken.latestRoundData();
-    return (_poolAddress.getRate() * uint256(mainTokenPrice)) / 1e18;
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

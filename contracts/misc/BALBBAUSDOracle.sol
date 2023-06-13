@@ -38,8 +38,8 @@ contract BALBBAUSDOracle is IOracle {
     (, int256 daiPrice, , , ) = DAI.latestRoundData();
 
     uint256 minValue = Math.min(
-      Math.min(usdcPrice, usdtPrice),
-      daiPrice
+      Math.min(uint256(usdcPrice), uint256(usdtPrice)),
+      uint256(daiPrice)
     );
 
     return (BAL_BB_A_USD.getRate() * minValue) / 1e18;

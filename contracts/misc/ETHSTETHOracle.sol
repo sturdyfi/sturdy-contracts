@@ -9,12 +9,15 @@ import '../interfaces/ICurvePoolAdmin.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
+import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
 
 /**
  * @dev Oracle contract for ETHSTETH LP Token
  */
 contract ETHSTETHOracle is IOracle, IOracleValidate {
   ICurvePool private constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
+  IERC20Detailed private constant ETHSTETH_LP =
+    IERC20Detailed(0x06325440D014e39736583c165C2963BA99fAf14E);
   ICurvePoolAdmin private constant ADMIN =
     ICurvePoolAdmin(0xeCb456EA5365865EbAb8a2661B0c503410e9B347);
   IChainlinkAggregator private constant STETH =
@@ -25,12 +28,14 @@ contract ETHSTETHOracle is IOracle, IOracleValidate {
    */
   function _get() internal view returns (uint256) {
     (, int256 stETHPrice, , uint256 updatedAt, ) = STETH.latestRoundData();
+
+    require(STETH.decimals() == 18, Errors.O_WRONG_PRICE);
     require(updatedAt > block.timestamp - 1 days, Errors.O_WRONG_PRICE);
     require(stETHPrice > 0, Errors.O_WRONG_PRICE);
 
     uint256 minValue = Math.min(uint256(stETHPrice), 1e18);
 
-    return (ETHSTETH.get_virtual_price() * minValue) / 1e18;
+    return (ETHSTETH.get_virtual_price() * minValue) / 10 ** ETHSTETH_LP.decimals();
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

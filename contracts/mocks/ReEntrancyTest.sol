@@ -55,7 +55,7 @@ contract ReEntrancyTest {
   uint256 private collateralAmount;
 
   receive() external payable {
-    if (isCheckEnabled) _borrowWETHFromPool(collateralAmount / 4);
+    if (isCheckEnabled) _borrowWETHFromPool(collateralAmount / 6);
   }
 
   function test() external {
@@ -71,7 +71,7 @@ contract ReEntrancyTest {
     require(ethAmount > 0);
 
     //borrow
-    _borrowWETHFromPool(collateralAmount / 4);
+    _borrowWETHFromPool(collateralAmount / 6);
   }
 
   function _depositWETHToPool(uint256 amount) internal {

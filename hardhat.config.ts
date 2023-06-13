@@ -68,7 +68,7 @@ const getCommonNetworkConfig = (networkName: eNetwork, networkId: number) => ({
 
 let forkMode;
 
-const buidlerConfig: HardhatUserConfig = {
+const buidlerConfig = {
   solidity: {
     compilers: [
       {

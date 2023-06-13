@@ -28,12 +28,14 @@ contract BALRETHWETHOracle is IOracle {
     VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
 
     (, int256 rETHPrice, , uint256 updatedAt, ) = RETH.latestRoundData();
+
+    require(RETH.decimals() == 18, Errors.O_WRONG_PRICE);
     require(updatedAt > block.timestamp - 1 days, Errors.O_WRONG_PRICE);
     require(rETHPrice > 0, Errors.O_WRONG_PRICE);
 
     uint256 minValue = Math.min(uint256(rETHPrice), 1e18);
 
-    return (BALRETHWETH.getRate() * minValue) / 1e18;
+    return (BALRETHWETH.getRate() * minValue) / 10 ** BALRETHWETH.decimals();
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

@@ -28,12 +28,14 @@ contract BALWSTETHWETHOracle is IOracle {
     VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
 
     (, int256 stETHPrice, , uint256 updatedAt, ) = STETH.latestRoundData();
+
+    require(STETH.decimals() == 18, Errors.O_WRONG_PRICE);
     require(updatedAt > block.timestamp - 1 days, Errors.O_WRONG_PRICE);
     require(stETHPrice > 0, Errors.O_WRONG_PRICE);
 
     uint256 minValue = Math.min(uint256(stETHPrice), 1e18);
 
-    return (BALWSTETHWETH.getRate() * minValue) / 1e18;
+    return (BALWSTETHWETH.getRate() * minValue) / 10 ** BALWSTETHWETH.decimals();
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

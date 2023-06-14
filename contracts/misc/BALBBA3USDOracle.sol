@@ -40,7 +40,7 @@ contract BALBBA3USDOracle is IOracle {
 
     uint256 minValue = Math.min(Math.min(usdcPrice, usdtPrice), daiPrice);
 
-    return (BAL_BB_A3_USD.getRate() * minValue) / 10 ** BAL_BB_A3_USD.decimals();
+    return (BAL_BB_A3_USD.getRate() * minValue) / 1e18;
   }
 
   /**

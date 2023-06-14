@@ -5,6 +5,4 @@ interface IBalancerStablePool {
   function getRate() external view returns (uint256);
 
   function getWrappedTokenRate() external view returns (uint256);
-
-  function decimals() external view returns (uint8);
 }

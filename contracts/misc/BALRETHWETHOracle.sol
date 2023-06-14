@@ -35,7 +35,7 @@ contract BALRETHWETHOracle is IOracle {
 
     uint256 minValue = Math.min(uint256(rETHPrice), 1e18);
 
-    return (BALRETHWETH.getRate() * minValue) / 10 ** BALRETHWETH.decimals();
+    return (BALRETHWETH.getRate() * minValue) / 1e18;
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

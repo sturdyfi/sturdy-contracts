@@ -35,7 +35,7 @@ contract BALWSTETHWETHOracle is IOracle {
 
     uint256 minValue = Math.min(uint256(stETHPrice), 1e18);
 
-    return (BALWSTETHWETH.getRate() * minValue) / 10 ** BALWSTETHWETH.decimals();
+    return (BALWSTETHWETH.getRate() * minValue) / 1e18;
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

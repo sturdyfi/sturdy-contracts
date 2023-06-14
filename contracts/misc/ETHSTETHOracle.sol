@@ -35,7 +35,7 @@ contract ETHSTETHOracle is IOracle, IOracleValidate {
 
     uint256 minValue = Math.min(uint256(stETHPrice), 1e18);
 
-    return (ETHSTETH.get_virtual_price() * minValue) / 10 ** ETHSTETH_LP.decimals();
+    return (ETHSTETH.get_virtual_price() * minValue) / 1e18;
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false

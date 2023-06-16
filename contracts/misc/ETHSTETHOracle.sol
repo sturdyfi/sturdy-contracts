@@ -16,8 +16,6 @@ import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detai
  */
 contract ETHSTETHOracle is IOracle, IOracleValidate {
   ICurvePool private constant ETHSTETH = ICurvePool(0xDC24316b9AE028F1497c275EB9192a3Ea0f67022);
-  IERC20Detailed private constant ETHSTETH_LP =
-    IERC20Detailed(0x06325440D014e39736583c165C2963BA99fAf14E);
   ICurvePoolAdmin private constant ADMIN =
     ICurvePoolAdmin(0xeCb456EA5365865EbAb8a2661B0c503410e9B347);
   IChainlinkAggregator private constant STETH =

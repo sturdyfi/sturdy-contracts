@@ -4,25 +4,19 @@ pragma solidity ^0.8.0;
 pragma experimental ABIEncoderV2;
 
 import '@balancer-labs/v2-interfaces/contracts/vault/IVault.sol';
-import '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
+import {VaultReentrancyLib} from '@balancer-labs/v2-pool-utils/contracts/lib/VaultReentrancyLib.sol';
 import './interfaces/IOracle.sol';
-import './interfaces/IOracleValidate.sol';
 import '../interfaces/IChainlinkAggregator.sol';
 import '../interfaces/IBalancerStablePool.sol';
 import {Math} from '../dependencies/openzeppelin/contracts/Math.sol';
+import {Errors} from '../protocol/libraries/helpers/Errors.sol';
 
 /**
  * @dev Oracle contract for BALBBAUSD LP Token
  */
-contract BALBBAUSDOracle is IOracle, IOracleValidate {
+contract BALBBAUSDOracle is IOracle {
   IBalancerStablePool private constant BAL_BB_A_USD =
     IBalancerStablePool(0xA13a9247ea42D743238089903570127DdA72fE44);
-  IBalancerStablePool private constant BAL_BB_A_USDC =
-    IBalancerStablePool(0x82698aeCc9E28e9Bb27608Bd52cF57f704BD1B83);
-  IBalancerStablePool private constant BAL_BB_A_USDT =
-    IBalancerStablePool(0x2F4eb100552ef93840d5aDC30560E5513DFfFACb);
-  IBalancerStablePool private constant BAL_BB_A_DAI =
-    IBalancerStablePool(0xae37D54Ae477268B9997d4161B96b8200755935c);
 
   IChainlinkAggregator private constant DAI =
     IChainlinkAggregator(0x773616E4d11A78F511299002da57A0a94577F1f4);
@@ -37,30 +31,30 @@ contract BALBBAUSDOracle is IOracle, IOracleValidate {
    * @dev Get LP Token Price
    */
   function _get() internal view returns (uint256) {
-    uint256 usdcLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A_USDC);
-    uint256 usdtLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A_USDT);
-    uint256 daiLinearPoolPrice = _getLinearPoolPrice(BAL_BB_A_DAI);
+    // Check the oracle (re-entrancy)
+    VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
 
-    uint256 minValue = Math.min(
-      Math.min(usdcLinearPoolPrice, usdtLinearPoolPrice),
-      daiLinearPoolPrice
-    );
+    uint256 usdcPrice = _getAssetPrice(USDC);
+    uint256 usdtPrice = _getAssetPrice(USDT);
+    uint256 daiPrice = _getAssetPrice(DAI);
+
+    uint256 minValue = Math.min(Math.min(usdcPrice, usdtPrice), daiPrice);
 
     return (BAL_BB_A_USD.getRate() * minValue) / 1e18;
   }
 
   /**
-   * @dev Get price for LinearPool LP Token
+   * @dev Get Asset Token Price
    */
-  function _getLinearPoolPrice(IBalancerStablePool _poolAddress) internal view returns (uint256) {
-    IChainlinkAggregator mainToken;
+  function _getAssetPrice(IChainlinkAggregator _asset) internal view returns (uint256) {
+    (, int256 assetPrice, , uint256 updatedAt, ) = _asset.latestRoundData();
 
-    if (_poolAddress == BAL_BB_A_USDC) mainToken = USDC;
-    else if (_poolAddress == BAL_BB_A_USDT) mainToken = USDT;
-    else mainToken = DAI;
+    // asset's chainlink price unit is eth
+    require(_asset.decimals() == 18, Errors.O_WRONG_PRICE);
+    require(updatedAt > block.timestamp - 1 days, Errors.O_WRONG_PRICE);
+    require(assetPrice > 0, Errors.O_WRONG_PRICE);
 
-    (, int256 mainTokenPrice, , , ) = mainToken.latestRoundData();
-    return (_poolAddress.getRate() * uint256(mainTokenPrice)) / 1e18;
+    return uint256(assetPrice);
   }
 
   // Get the latest exchange rate, if no valid (recent) rate is available, return false
@@ -79,11 +73,5 @@ contract BALBBAUSDOracle is IOracle, IOracleValidate {
   /// @inheritdoc IOracle
   function latestAnswer() external view override returns (int256 rate) {
     return int256(_get());
-  }
-
-  // Check the oracle (re-entrancy)
-  /// @inheritdoc IOracleValidate
-  function check() external {
-    VaultReentrancyLib.ensureNotInVaultContext(IVault(BALANCER_VAULT));
   }
 }

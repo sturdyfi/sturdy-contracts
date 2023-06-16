@@ -149,6 +149,7 @@ library Errors {
   string internal constant SAT_INVALID_RECIPIENT = '123';
   string internal constant SAT_ONLY_ONE_AMOUNT_FORMAT_ALLOWED = '125';
   string internal constant LS_REPAY_FAILED = '126';
+  string internal constant O_WRONG_PRICE = '127';   // not correct price oracle
 
   enum CollateralManagerErrors {
     NO_ERROR,

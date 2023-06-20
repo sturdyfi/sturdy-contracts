@@ -299,7 +299,7 @@ library ReserveConfiguration {
   }
 
   /**
-   * @dev Gets the configuration paramters of the reserve
+   * @dev Gets the configuration parameters of the reserve
    * @param self The reserve configuration
    * @return The state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
    **/
@@ -318,7 +318,7 @@ library ReserveConfiguration {
   }
 
   /**
-   * @dev Gets the configuration paramters of the reserve from a memory object
+   * @dev Gets the configuration parameters of the reserve from a memory object
    * @param self The reserve configuration
    * @return The state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
    **/
